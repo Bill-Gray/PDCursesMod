@@ -181,6 +181,15 @@ int main( int argc, char **argv)
                         }
                     }
                     break;
+                case 'd':     /* set window size before initscr */
+                    {
+                        int n_lines, n_cols;
+
+                        if( sscanf( argv[i] + 2, "%d,%d", &n_lines,
+                                    &n_cols) == 2)
+                            resize_term( n_lines, n_cols);
+                    }
+                    break;
 #ifdef PDC_WIDE
                 case 'u':
                     sscanf( argv[i] + 2, "%x", &unicode_offset);
@@ -466,10 +475,13 @@ int main( int argc, char **argv)
             }
             else if( mouse_event.x >= color_block_start)
             {
+                int shift = ((mouse_event.bstate & BUTTON_MODIFIER_SHIFT) ?
+                           N_CURSORS - 1 : 1);
+
                 if( mouse_event.y == 19)  /* blink/non-blink toggle */
-                    cursor_state_1 = (cursor_state_1 + 1) % N_CURSORS;
+                    cursor_state_1 = (cursor_state_1 + shift) % N_CURSORS;
                 else if( mouse_event.y == 20)  /* cycle cursor state */
-                    cursor_state_2 = (cursor_state_2 + 1) % N_CURSORS;
+                    cursor_state_2 = (cursor_state_2 + shift) % N_CURSORS;
             }
 #ifdef PDC_WIDE
             else if( mouse_event.x >= 40 && mouse_event.x < 40 + 10)

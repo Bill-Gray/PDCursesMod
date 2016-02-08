@@ -518,6 +518,11 @@ int PDC_resize_screen(int nlines, int ncols)
     if (nlines < 2 || ncols < 2)
         return ERR;
 
+    if( !stdscr)      /* window hasn't been created yet;  we're */
+    {                 /* specifying its size before doing so    */
+        return OK;    /* ...which doesn't work (yet) on Win32   */
+    }
+
     max = GetLargestConsoleWindowSize(pdc_con_out);
 
     rect.Left = rect.Top = 0;
@@ -687,7 +692,7 @@ int PDC_set_function_key( const unsigned function, const int new_key)
 {
     int old_key = -1;
 
-    if( function < MAX_FUNCTION_KEYS)
+    if( function < PDC_MAX_FUNCTION_KEYS)
     {
          old_key = PDC_shutdown_key[function];
          PDC_shutdown_key[function] = new_key;

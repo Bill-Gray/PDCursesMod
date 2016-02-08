@@ -140,6 +140,8 @@ static struct
  {XK_L6,        FALSE,  KEY_COPY,    KEY_SCOPY,    KEY_COPY,    KEY_COPY},
  {XK_L9,        FALSE,  KEY_FIND,    KEY_SFIND,    KEY_FIND,    KEY_FIND},
  {XK_Menu,      FALSE,  KEY_OPTIONS, KEY_SOPTIONS, KEY_OPTIONS, KEY_OPTIONS},
+ {XK_Super_R,   FALSE,  KEY_COMMAND, KEY_SCOMMAND, KEY_COMMAND, KEY_COMMAND},
+ {XK_Super_L,   FALSE,  KEY_COMMAND, KEY_SCOMMAND, KEY_COMMAND, KEY_COMMAND},
 #ifdef HAVE_SUNKEYSYM_H
  {SunXK_F36,    FALSE,  KEY_F(41),   KEY_F(43),    KEY_F(45),   KEY_F(47)},
  {SunXK_F37,    FALSE,  KEY_F(42),   KEY_F(44),    KEY_F(46),   KEY_F(48)},
@@ -415,13 +417,14 @@ static XtResource app_resources[] =
     RSTRING(textCursor, TextCursor)
 };
 
+
 #undef RCURSOR
 #undef RFONT
 #undef RSTRING
 #undef RCOLOR
 #undef RPIXEL
-#undef RINT
-#undef APPDATAOFF
+/* #undef RINT          */
+/* #undef APPDATAOFF    */
 #undef DEFFONT
 #undef DEFBOLDFONT
 #undef DEFITALICFONT
@@ -671,7 +674,17 @@ static Pixel dimmed_color( Pixel ival)
     return( oval);
 }
 
+/* see 'addch.c' for an explanation of how combining chars are handled. */
+/* Though note that right now,  it doesn't work at all;  we'll have to  */
+/* arrange shared memory or communication between the X process and the */
+/* "host" process... to be done later.                                  */
+
 #if defined( CHTYPE_LONG) && CHTYPE_LONG >= 2
+   #ifdef PDC_WIDE
+      #define USING_COMBINING_CHARACTER_SCHEME
+      int PDC_expand_combined_characters( const cchar_t c, cchar_t *added);  /* addch.c */
+   #endif
+
             /* PDCurses stores RGBs in fifteen bits,  five bits each */
             /* for red, green, blue.  A Pixel uses eight bits per    */
             /* channel.  Hence the following.                        */
@@ -689,7 +702,6 @@ static Pixel extract_packed_rgb( const chtype color)
 void PDC_get_rgb_values( const chtype srcp,
             Pixel *foreground_rgb, Pixel *background_rgb)
 {
-    const int color = (int)(( srcp & A_COLOR) >> PDC_COLOR_SHIFT);
     bool reverse_colors = ((srcp & A_REVERSE) ? TRUE : FALSE);
     bool intensify_backgnd = FALSE;
 
@@ -899,16 +911,57 @@ static int _display_text(const chtype *ch, int row, int col,
         curr &= A_CHARTEXT;
         if( curr <= 0xffff)      /* BMP Unicode */
         {
-           text[i].byte1 = (curr & 0xff00) >> 8;
-           text[i++].byte2 = curr & 0x00ff;
+            if( !curr)
+                curr = ' ';
+            text[i].byte1 = (curr & 0xff00) >> 8;
+            text[i++].byte2 = curr & 0x00ff;
         }
         else     /* SMP & combining chars */
         {
-/*          printf( "%lx not handled\n", (unsigned long)curr); */
+            const chtype MAX_UNICODE = 0x110000;
+
+            if( curr < MAX_UNICODE)    /* Supplemental Multilingual Plane */
+            {                          /* (SMP);  store w/surrogates      */
+                const unsigned short part1 = (unsigned short)
+                        (0xd800 | ((curr - 0x10000) >> 10));
+                const unsigned short part2 = (unsigned short)
+                        (0xdc00 | (curr & 0x3ff));
+
+                text[i].byte1 = part1 >> 8;
+                text[i++].byte2 = part1 & 0xff;
+                text[i].byte1 = part2 >> 8;
+                text[i++].byte2 = part2 & 0xff;
+            }
+#ifdef USING_COMBINING_CHARACTER_SCHEME
+            else if( curr > MAX_UNICODE)
+            {
+#ifdef GOT_COMBINING_CHARS_IN_X
+                cchar_t added[10];
+                int n_combined = 0;
+
+                printf( "curr = %x\n", curr);
+                while( (curr = PDC_expand_combined_characters( curr,
+                                   &added[n_combined])) > MAX_UNICODE)
+//                  n_combined++;
+                {
+                    printf( "iter %d: new root %x, added %x\n",
+                        n_combined, (unsigned)curr, (unsigned)added[n_combined]);
+                    n_combined++;
+                }
+                while( n_combined >= 0)
+                {
+                    text[i].byte1   = added[n_combined] >> 8;
+                    text[i++].byte2 = added[n_combined] & 0xff;
+                    n_combined--;
+                }
+#else
             text[i].byte1 = 0;
             text[i++].byte2 = '?';
+#endif
+            }
+#endif
         }
-#else
+#else                /* non-wide case */
         text[i++] = curr & 0xff;
 #endif
     }
@@ -3112,6 +3165,8 @@ static void _dummy_handler(Widget w, XtPointer client_data,
 int XCursesSetupX(int argc, char *argv[])
 {
     char *myargv[] = {"PDCurses", NULL};
+    char override_text[2][10];
+    char **new_argv = NULL;
     extern bool sb_started;
 
     int italic_font_valid, bold_font_valid;
@@ -3119,7 +3174,7 @@ int XCursesSetupX(int argc, char *argv[])
     int bold_font_width, bold_font_height;
     XColor pointerforecolor, pointerbackcolor;
     XrmValue rmfrom, rmto;
-    int i = 0;
+    int i;
     int minwidth, minheight;
 
     XC_LOG(("XCursesSetupX called\n"));
@@ -3131,6 +3186,29 @@ int XCursesSetupX(int argc, char *argv[])
     }
 
     program_name = argv[0];
+    if( XCursesLINES != 24 || XCursesCOLS != 80)
+    {                      /* a call to resize() was made before initscr() */
+        int pass;
+
+        new_argv = (char **)calloc( argc + 5, sizeof( char *));
+        for( i = 0; i < argc; i++)
+            new_argv[i] = argv[i];
+        argv = new_argv;
+        for( pass = 0; pass < 2; pass++)
+        {
+            const char *override = (pass ? "-cols" : "-lines");
+
+            i = 0;
+            while( i < argc && strcmp( argv[i], override))
+               i++;
+            argv[i] = override;
+            argv[i + 1] = override_text[pass];
+            sprintf( override_text[pass], "%d",
+                        (pass ? XCursesCOLS : XCursesLINES));
+            if( i == argc)    /* this is new (usual case) */
+               argc += 2;
+        }
+    }
 
     /* Keep open the 'write' end of the socket so the XCurses process
        can send a CURSES_EXIT to itself from within the signal handler */
@@ -3167,6 +3245,8 @@ int XCursesSetupX(int argc, char *argv[])
 
     topLevel = XtVaAppInitialize(&app_context, class_name, options,
                                  XtNumber(options), &argc, argv, NULL, NULL);
+    if( new_argv)
+        free( new_argv);
 
     XtVaGetApplicationResources(topLevel, &xc_app_data, app_resources,
                                 XtNumber(app_resources), NULL);
