@@ -687,6 +687,11 @@ void PDC_set_resize_limits( const int new_min_lines, const int new_max_lines,
 {
 }
 
+/* As above, added for Win32a, added here to avoid the unresolved */
+void PDC_set_default_size( const int lines, const int cols)
+{
+}
+
 /* PDC_set_function_key() does nothing on this platform */
 int PDC_set_function_key( const unsigned function, const int new_key)
 {

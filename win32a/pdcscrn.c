@@ -12,6 +12,8 @@ COLORREF *pdc_rgbs = (COLORREF *)NULL;
 static int menu_shown = 1;
 static int min_lines = 25, max_lines = 25;
 static int min_cols = 80, max_cols = 80;
+static int user_default_lines = 0;
+static int user_default_cols = 0;
 
 #if defined( CHTYPE_LONG) && CHTYPE_LONG >= 2 && defined( PDC_WIDE)
     #define USING_COMBINING_CHARACTER_SCHEME
@@ -1219,6 +1221,14 @@ void PDC_set_resize_limits( const int new_min_lines, const int new_max_lines,
     max_lines = max( new_max_lines, min_lines);
     min_cols = max( new_min_cols, 2);
     max_cols = max( new_max_cols, min_cols);
+    user_default_lines = max( min( user_default_lines, max_lines), min_lines);
+    user_default_cols = max( min( user_default_cols, max_cols), min_cols);
+}
+
+void PDC_set_default_size( const int lines, const int cols)
+{
+    user_default_lines = max( min( lines, max_lines), min_lines);
+    user_default_cols = max( min( cols, max_cols), min_cols);
 }
 
       /* The screen should hold the characters (PDC_cxChar * n_default_columns */
@@ -2134,8 +2144,8 @@ INLINE int set_up_window( void)
     WNDCLASS   wndclass ;
     HMENU hMenu;
     HANDLE hInstance = GetModuleHandleA( NULL);
-    int n_default_columns = 80;
-    int n_default_rows = 25;
+    int n_default_columns = ( user_default_cols > 0) ? user_default_cols : 80;
+    int n_default_rows = ( user_default_lines > 0) ? user_default_lines : 25;
     int xsize, ysize, window_style;
     int xloc = CW_USEDEFAULT;
     int yloc = CW_USEDEFAULT;
@@ -2183,6 +2193,7 @@ INLINE int set_up_window( void)
 
     get_default_sizes_from_registry( &n_default_columns, &n_default_rows, &xloc, &yloc,
                      &menu_shown);
+
     if( PDC_n_rows > 2 && PDC_n_cols > 2)
     {
         n_default_columns = PDC_n_cols;
