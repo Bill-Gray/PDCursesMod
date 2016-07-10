@@ -2213,6 +2213,14 @@ INLINE int set_up_window( void)
         adjust_window_size( &xsize, &ysize, window_style, menu_shown);
     }
 
+    /* if the window is off screen, move it somewhere visible */
+    int desktop_xsize = GetSystemMetrics( SM_CXVIRTUALSCREEN);
+    int desktop_ysize = GetSystemMetrics( SM_CYVIRTUALSCREEN);
+    if ( xloc < 0 || xloc > desktop_xsize || yloc < 0 || yloc > desktop_ysize)
+    {
+        xloc = yloc = 0;
+    }
+
     PDC_hWnd = CreateWindow( AppName, WindowTitle, window_style,
                     xloc, yloc,
                     xsize, ysize,
