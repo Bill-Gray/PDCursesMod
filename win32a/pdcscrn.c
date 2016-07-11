@@ -1223,8 +1223,11 @@ void PDC_set_resize_limits( const int new_min_lines, const int new_max_lines,
     max_lines = max( new_max_lines, min_lines);
     min_cols = max( new_min_cols, 2);
     max_cols = max( new_max_cols, min_cols);
-    user_default_lines = max( min( user_default_lines, max_lines), min_lines);
-    user_default_cols = max( min( user_default_cols, max_cols), min_cols);
+
+    if ( user_default_lines > 0 && user_default_cols > 0)
+    {
+        PDC_set_default_size( user_default_lines, user_default_cols);
+    }
 }
 
 void PDC_set_default_size( const int lines, const int cols)
@@ -2194,8 +2197,9 @@ INLINE int set_up_window( void)
     WNDCLASS   wndclass ;
     HMENU hMenu;
     HANDLE hInstance = GetModuleHandleA( NULL);
-    int n_default_columns = ( user_default_cols > 0) ? user_default_cols : 80;
-    int n_default_rows = ( user_default_lines > 0) ? user_default_lines : 25;
+    bool custom_default_size = ( user_default_cols > 0 && user_default_lines > 0);
+    int n_default_columns = custom_default_size ? user_default_cols : 80;
+    int n_default_rows = custom_default_size ? user_default_lines : 25;
     int xsize, ysize, window_style;
     int xloc = CW_USEDEFAULT;
     int yloc = CW_USEDEFAULT;
