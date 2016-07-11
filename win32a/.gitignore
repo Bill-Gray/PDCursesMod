@@ -3,3 +3,4 @@ trace
 *.exe
 *.obj
 *.lib
+*.ilk
