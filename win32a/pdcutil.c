@@ -1,6 +1,7 @@
 /* Public Domain Curses */
 
 #include "pdcwin.h"
+#include "curses.h"
 
 void PDC_beep(void)
 {
@@ -15,23 +16,24 @@ void PDC_napms(int ms)     /* 'ms' = milli,  _not_ microseconds! */
 {
     /* RR: keep GUI window responsive while PDCurses sleeps */
     MSG msg;
-    DWORD milliseconds_sleep_limit = ms + GetTickCount();
+    DWORD start, end, delta;
     extern bool PDC_bDone;
 
-    PDC_LOG(("PDC_napms() - called: ms=%d\n", ms));
+    start = GetTickCount();
+
+    //PDC_LOG(("PDC_napms() - called: ms=%d\n", ms));
 
     /* Pump all pending messages from WIN32 to the window handler */
-    while( !PDC_bDone && GetTickCount() < milliseconds_sleep_limit )
+    while( !PDC_bDone && PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) )
     {
-        while( PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) )
-        {
-           TranslateMessage(&msg);
-           DispatchMessage(&msg);
-        }
-        Sleep(1);
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
     }
 
-    /* Sleep(ms); */
+    end = GetTickCount();
+    delta = end - start;
+    delta = ms > delta ? ms - delta : 0;
+    Sleep(delta);
 }
 
 const char *PDC_sysname(void)
