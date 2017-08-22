@@ -1,13 +1,9 @@
 CMAKE_MINIMUM_REQUIRED (VERSION 2.8.4)
-if(NOT DEFINED CMAKE_BUILD_TYPE)
-set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type")
-endif()
 
 PROJECT (pdcurses C)
 
 #read version from curses.h
 file(READ ${CMAKE_SOURCE_DIR}/curses.h _curses_h_contents)
-
 string(REGEX REPLACE ".*#define[ \t]+PDC_VER_MAJOR[ \t]+([-0-9A-Za-z.]+).*" "\\1" PRODUCT_VERSION_MAJOR ${_curses_h_contents})
 string(REGEX REPLACE ".*#define[ \t]+PDC_VER_MINOR[ \t]+([-0-9A-Za-z.]+).*" "\\1" PRODUCT_VERSION_MINOR ${_curses_h_contents})
 string(REGEX REPLACE ".*#define[ \t]+PDC_VER_CHANGE[ \t]+([-0-9A-Za-z.]+).*" "\\1" PRODUCT_VERSION_PATCH ${_curses_h_contents})
@@ -30,7 +26,7 @@ MESSAGE(STATUS "ABI_MAJOR = ${ABI_MAJOR}")
 MESSAGE(STATUS "ABI_MINOR = ${ABI_MINOR}")
 MESSAGE(STATUS "ABI = ${ABI}")
 
-#ADD_SUBDIRECTORY(win32)
+ADD_SUBDIRECTORY(win32)
 ADD_SUBDIRECTORY(win32a)
 
 set(CPACK_COMPONENTS_ALL applications)

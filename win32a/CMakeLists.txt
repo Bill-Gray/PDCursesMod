@@ -30,7 +30,7 @@ set(PRODUCT_ICON "pdcurses.ico")
 
 set(PDCURSES_SRCDIR ${CMAKE_SOURCE_DIR})
 
-set(osdir ${PDCURSES_SRCDIR}/win32a)
+set(osdir ${PDCURSES_SRCDIR}/${PROJECT_NAME})
 set(srcdir ${PDCURSES_SRCDIR}/pdcurses)
 set (demodir ${PDCURSES_SRCDIR}/demos)
 
@@ -60,7 +60,7 @@ INCLUDE_DIRECTORIES (${srcdir} ${osdir} ${PDCURSES_SRCDIR})
 
 IF(PDC_DLL_BUILD)
 
-  ADD_LIBRARY (pdcurses SHARED ${src_files} ${pdc_src_files})
+  ADD_LIBRARY (pdcurses_${PROJECT_NAME} SHARED ${src_files} ${pdc_src_files})
 
   file(READ "${PDCURSES_SRCDIR}/exp-base.def" _DEF_BASE_)
   file(READ "${PDCURSES_SRCDIR}/exp-wide.def" _DEF_WIDE_)
@@ -73,19 +73,28 @@ IF(PDC_DLL_BUILD)
     file(WRITE ${deffile} "LIBRARY pdcurses\nEXPORTS\n${_DEF_BASE_}")    
   ENDIF (PDC_WIDE)
 
-  SET_TARGET_PROPERTIES(pdcurses PROPERTIES LINK_FLAGS "/DEF:\"${deffile}\"")
+  SET_TARGET_PROPERTIES(pdcurses_${PROJECT_NAME} PROPERTIES LINK_FLAGS "/DEF:\"${deffile}\"")
 
-  INSTALL (TARGETS pdcurses RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX} COMPONENT applications)
+  INSTALL (TARGETS pdcurses_${PROJECT_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}/Debug COMPONENT applications CONFIGURATIONS Debug)
+  INSTALL (TARGETS pdcurses_${PROJECT_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}/Release COMPONENT applications CONFIGURATIONS Release)
+  INSTALL (TARGETS pdcurses_${PROJECT_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}/MinSizeRel COMPONENT applications CONFIGURATIONS MinSizeRel)
+  INSTALL (TARGETS pdcurses_${PROJECT_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}/RelWithDebInfo COMPONENT applications CONFIGURATIONS RelWithDebInfo)
 
 ELSE(PDC_DLL_BUILD)
-  ADD_LIBRARY (pdcurses STATIC ${src_files} ${pdc_src_files})
+  ADD_LIBRARY (pdcurses_${PROJECT_NAME} STATIC ${src_files} ${pdc_src_files})
 ENDIF(PDC_DLL_BUILD)
-
+SET_TARGET_PROPERTIES(pdcurses_${PROJECT_NAME} PROPERTIES OUTPUT_NAME "pdcurses")
+  
 FUNCTION (define_exe arg)
-  ADD_EXECUTABLE (${arg} ${demodir}/${arg}.c)
-  TARGET_LINK_LIBRARIES (${arg} pdcurses gdi32.lib winspool.lib shell32.lib ole32.lib comdlg32.lib advapi32.lib)
-  ADD_DEPENDENCIES (${arg} pdcurses)
-  INSTALL (TARGETS ${arg} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX} COMPONENT applications)
+  set(exe_name "${arg}_${PROJECT_NAME}")
+  ADD_EXECUTABLE (${exe_name} ${demodir}/${arg}.c)
+  TARGET_LINK_LIBRARIES (${exe_name} pdcurses_${PROJECT_NAME} gdi32.lib winspool.lib shell32.lib ole32.lib comdlg32.lib advapi32.lib)
+  ADD_DEPENDENCIES (${exe_name} pdcurses_${PROJECT_NAME})
+  INSTALL (TARGETS ${exe_name} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}/Debug COMPONENT applications CONFIGURATIONS Debug)
+  INSTALL (TARGETS ${exe_name} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}/Release COMPONENT applications CONFIGURATIONS Release)
+  INSTALL (TARGETS ${exe_name} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}/MinSizeRel COMPONENT applications CONFIGURATIONS MinSizeRel)
+  INSTALL (TARGETS ${exe_name} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}/RelWithDebInfo COMPONENT applications CONFIGURATIONS RelWithDebInfo)
+  SET_TARGET_PROPERTIES(${exe_name} PROPERTIES OUTPUT_NAME ${arg})
 ENDFUNCTION ()
 
 define_exe(version)
@@ -99,13 +108,18 @@ define_exe(rain)
 define_exe(worm)
 
 if(WIN32)
-  SET_TARGET_PROPERTIES(newtest PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS")
+  SET_TARGET_PROPERTIES(newtest_${PROJECT_NAME} PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS")
 endif(WIN32)
 
-ADD_EXECUTABLE (tuidemo ${demodir}/tuidemo.c ${demodir}/tui.c)
-TARGET_LINK_LIBRARIES (tuidemo pdcurses gdi32.lib winspool.lib shell32.lib ole32.lib comdlg32.lib advapi32.lib)
-ADD_DEPENDENCIES (tuidemo pdcurses)
-INSTALL (TARGETS tuidemo RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX} COMPONENT applications)
+ADD_EXECUTABLE (tuidemo_${PROJECT_NAME} ${demodir}/tuidemo.c ${demodir}/tui.c)
+TARGET_LINK_LIBRARIES (tuidemo_${PROJECT_NAME} pdcurses_${PROJECT_NAME} gdi32.lib winspool.lib shell32.lib ole32.lib comdlg32.lib advapi32.lib)
+ADD_DEPENDENCIES (tuidemo_${PROJECT_NAME} pdcurses_${PROJECT_NAME})
+INSTALL (TARGETS tuidemo_${PROJECT_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}/Debug COMPONENT applications CONFIGURATIONS Debug)
+INSTALL (TARGETS tuidemo_${PROJECT_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}/Release COMPONENT applications CONFIGURATIONS Release)
+INSTALL (TARGETS tuidemo_${PROJECT_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}/MinSizeRel COMPONENT applications CONFIGURATIONS MinSizeRel)
+INSTALL (TARGETS tuidemo_${PROJECT_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}/RelWithDebInfo COMPONENT applications CONFIGURATIONS RelWithDebInfo)
+SET_TARGET_PROPERTIES(tuidemo_${PROJECT_NAME} PROPERTIES OUTPUT_NAME "tuidemo")
+
 
 IF (WIN32)
   ADD_DEFINITIONS(-D_WIN32)
