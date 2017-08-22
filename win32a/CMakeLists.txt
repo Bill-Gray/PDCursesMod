@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED (VERSION 2.8.4)
+CMAKE_MINIMUM_REQUIRED (VERSION 2.8.6)
 
 PROJECT (win32a C)
 
@@ -32,13 +32,10 @@ set(PDCURSES_SRCDIR ${CMAKE_SOURCE_DIR})
 
 set(osdir ${PDCURSES_SRCDIR}/win32a)
 set(srcdir ${PDCURSES_SRCDIR}/pdcurses)
-SET (demodir ${PDCURSES_SRCDIR}/demos)
+set (demodir ${PDCURSES_SRCDIR}/demos)
 
-configure_file(
-  ${osdir}/resource.in
-  ${osdir}/resource.h
-  @ONLY)
-  
+configure_file ( ${osdir}/resource.in ${osdir}/resource.h @ONLY )
+
 SET (src_files
     ${srcdir}/addch.c ${srcdir}/addchstr.c ${srcdir}/addstr.c ${srcdir}/attr.c
     ${srcdir}/beep.c ${srcdir}/bkgd.c ${srcdir}/border.c ${srcdir}/clear.c
@@ -60,15 +57,33 @@ SET (pdc_src_files
 )
 
 INCLUDE_DIRECTORIES (${srcdir} ${osdir} ${PDCURSES_SRCDIR})
+
 IF(PDC_DLL_BUILD)
-ADD_LIBRARY (pdcurses SHARED ${src_files} ${pdc_src_files})
+
+  ADD_LIBRARY (pdcurses SHARED ${src_files} ${pdc_src_files})
+
+  file(READ "${PDCURSES_SRCDIR}/exp-base.def" _DEF_BASE_)
+  file(READ "${PDCURSES_SRCDIR}/exp-wide.def" _DEF_WIDE_)
+
+  IF (PDC_WIDE)
+    SET(deffile "${CMAKE_BINARY_DIR}/pdcursew.def")
+    file(WRITE ${deffile} "LIBRARY pdcurses\nEXPORTS\n${_DEF_BASE_}${_DEF_WIDE_}")
+  ELSE (PDC_WIDE)
+    SET(deffile "${CMAKE_BINARY_DIR}/pdcurses.def")
+    file(WRITE ${deffile} "LIBRARY pdcurses\nEXPORTS\n${_DEF_BASE_}")    
+  ENDIF (PDC_WIDE)
+
+  SET_TARGET_PROPERTIES(pdcurses PROPERTIES LINK_FLAGS "/DEF:\"${deffile}\"")
+
+  INSTALL (TARGETS pdcurses RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX} COMPONENT applications)
+
 ELSE(PDC_DLL_BUILD)
-ADD_LIBRARY (pdcurses STATIC ${src_files} ${pdc_src_files})
+  ADD_LIBRARY (pdcurses STATIC ${src_files} ${pdc_src_files})
 ENDIF(PDC_DLL_BUILD)
 
 FUNCTION (define_exe arg)
   ADD_EXECUTABLE (${arg} ${demodir}/${arg}.c)
-  TARGET_LINK_LIBRARIES (${arg} pdcurses)
+  TARGET_LINK_LIBRARIES (${arg} pdcurses gdi32.lib winspool.lib shell32.lib ole32.lib comdlg32.lib advapi32.lib)
   ADD_DEPENDENCIES (${arg} pdcurses)
   INSTALL (TARGETS ${arg} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX} COMPONENT applications)
 ENDFUNCTION ()
@@ -84,14 +99,11 @@ define_exe(rain)
 define_exe(worm)
 
 if(WIN32)
-set_target_properties(newtest PROPERTIES LINK_FLAGS_DEBUG "/SUBSYSTEM:WINDOWS")
-set_target_properties(newtest PROPERTIES LINK_FLAGS_RELWITHDEBINFO "/SUBSYSTEM:WINDOWS")
-set_target_properties(newtest PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS")
-set_target_properties(newtest PROPERTIES LINK_FLAGS_MINSIZEREL "/SUBSYSTEM:WINDOWS")
+  SET_TARGET_PROPERTIES(newtest PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS")
 endif(WIN32)
 
 ADD_EXECUTABLE (tuidemo ${demodir}/tuidemo.c ${demodir}/tui.c)
-TARGET_LINK_LIBRARIES (tuidemo pdcurses)
+TARGET_LINK_LIBRARIES (tuidemo pdcurses gdi32.lib winspool.lib shell32.lib ole32.lib comdlg32.lib advapi32.lib)
 ADD_DEPENDENCIES (tuidemo pdcurses)
 INSTALL (TARGETS tuidemo RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX} COMPONENT applications)
 
