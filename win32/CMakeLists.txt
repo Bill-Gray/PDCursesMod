@@ -1,6 +1,11 @@
 CMAKE_MINIMUM_REQUIRED (VERSION 2.8.6)
 
-PROJECT (win32 C)
+if(POLICY CMP0048)
+    cmake_policy(SET CMP0048 NEW)
+endif()
+
+PROJECT(win32 VERSION "${PROJECT_VERSION}" LANGUAGES C)
+
 
 option(PDC_DLL_BUILD "Dynamic Library" OFF)
 option(PDC_UTF8 "Force to UTF8" OFF)

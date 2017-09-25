@@ -1,30 +1,34 @@
 CMAKE_MINIMUM_REQUIRED (VERSION 2.8.4)
 
-PROJECT (pdcurses C)
+FIND_PACKAGE(Git REQUIRED)
 
-#read version from curses.h
-file(READ ${CMAKE_SOURCE_DIR}/curses.h _curses_h_contents)
-string(REGEX REPLACE ".*#define[ \t]+PDC_VER_MAJOR[ \t]+([-0-9A-Za-z.]+).*" "\\1" PRODUCT_VERSION_MAJOR ${_curses_h_contents})
-string(REGEX REPLACE ".*#define[ \t]+PDC_VER_MINOR[ \t]+([-0-9A-Za-z.]+).*" "\\1" PRODUCT_VERSION_MINOR ${_curses_h_contents})
-string(REGEX REPLACE ".*#define[ \t]+PDC_VER_CHANGE[ \t]+([-0-9A-Za-z.]+).*" "\\1" PRODUCT_VERSION_PATCH ${_curses_h_contents})
-set(PRODUCT_VERSION_REVISION 0) #not defined in curses.h
-    
-#read version from version.mif
-file(READ ${CMAKE_SOURCE_DIR}/version.mif _version_mif_contents)
-string(REGEX REPLACE ".*VER[ \t]+=[ \t]+([-0-9A-Za-z.]+).*" "\\1" VER ${_version_mif_contents})
-string(REGEX REPLACE ".*VERDOT[ \t]+=[ \t]+([-0-9A-Za-z.]+).*" "\\1" VERDOT ${_version_mif_contents})
-string(REGEX REPLACE ".*ABI_MAJOR[ \t]+=[ \t]+([-0-9A-Za-z.]+).*" "\\1" ABI_MAJOR ${_version_mif_contents})
-string(REGEX REPLACE ".*ABI_MINOR[ \t]+=[ \t]+([-0-9A-Za-z.]+).*" "\\1" ABI_MINOR ${_version_mif_contents})
-set(ABI ${ABI_MAJOR}.${ABI_MINOR})
+SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 
-MESSAGE(STATUS "PRODUCT_VERSION_MAJOR = ${PRODUCT_VERSION_MAJOR}")
-MESSAGE(STATUS "PRODUCT_VERSION_MINOR = ${PRODUCT_VERSION_MINOR}")
-MESSAGE(STATUS "PRODUCT_VERSION_PATCH = ${PRODUCT_VERSION_PATCH}")
-MESSAGE(STATUS "VER = ${VER}")
-MESSAGE(STATUS "VERDOT = ${VERDOT}")
-MESSAGE(STATUS "ABI_MAJOR = ${ABI_MAJOR}")
-MESSAGE(STATUS "ABI_MINOR = ${ABI_MINOR}")
-MESSAGE(STATUS "ABI = ${ABI}")
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build, options are: DEBUG, RELEASE, or MINSIZEREL." FORCE)
+    message("No build type specified, defaulting to Release.")
+endif()
+
+OPTION(BUILD_SDL2 "Build SDL2 Library" OFF)
+
+
+INCLUDE(git_label_version)
+
+if(POLICY CMP0048)
+    cmake_policy(SET CMP0048 NEW)
+endif()
+#if(POLICY CMP0054)
+#    cmake_policy(SET CMP0054 NEW)
+#endif()
+#if(POLICY CMP0056)
+#    cmake_policy(SET CMP0056 NEW)
+#endif()
+
+INCLUDE(build_external)
+
+PROJECT (pdcurses VERSION "${PROJECT_VERSION}" LANGUAGES C)
+
+#INCLUDE(gen_config_header)
 
 ADD_SUBDIRECTORY(win32)
 ADD_SUBDIRECTORY(win32a)
