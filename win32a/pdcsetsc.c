@@ -46,7 +46,7 @@ int PDC_curs_set(int visibility)
     return ret_vis;
 }
 
-void PDC_set_title(const char *title)
+/*void PDC_set_title(const char *title)
 {
     extern HWND PDC_hWnd;
 #ifdef PDC_WIDE
@@ -60,7 +60,24 @@ void PDC_set_title(const char *title)
 #else
     SetWindowTextA( PDC_hWnd, title);
 #endif
+}*/
+
+void PDC_set_title(const char *title)
+{
+	extern HWND PDC_hWnd;
+	PDC_LOG(("PDC_set_title() - called:<%s>\n", title));
+	SetWindowTextA( PDC_hWnd, title);
 }
+
+#ifdef PDC_WIDE
+void PDC_set_titleW(const wchar_t *title)
+{
+    extern HWND PDC_hWnd;
+    PDC_LOG_W(("PDC_set_titleW() - called:<%s>\n", title));
+
+    SetWindowTextW( PDC_hWnd, title);
+}
+#endif
 
         /* If PDC_really_blinking is TRUE,  then text with the A_BLINK   */
         /* attribute will actually blink.  Otherwise,  such text will    */

@@ -55,6 +55,15 @@ void PDC_set_title(const char *title)
     SDL_SetWindowTitle(pdc_window, title);
 }
 
+#ifdef PDC_WIDE
+void PDC_set_titleW(const char *title)
+{
+    PDC_LOG_W(("PDC_set_titleW() - called:<%s>\n", title));
+
+//    SDL_SetWindowTitle(pdc_window, title);
+}
+#endif
+
 /* See comments in win32a/pdcsetsc.c or x11/pdcsetsc.c.  This does
 essentially the same thing. */
 

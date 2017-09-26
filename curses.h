@@ -1745,6 +1745,10 @@ PDCEX int     PDC_set_blink(bool);
 PDCEX int     PDC_set_line_color(short);
 PDCEX void    PDC_set_title(const char *);
 
+#ifdef PDC_WIDE
+PDCEX void	  PDC_set_titleW(const wchar_t*);
+#endif
+
 PDCEX int     PDC_clearclipboard(void);
 PDCEX int     PDC_freeclipboard(char *);
 PDCEX int     PDC_getclipboard(char **, long *);

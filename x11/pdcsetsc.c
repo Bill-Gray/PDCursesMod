@@ -67,6 +67,26 @@ void PDC_set_title(const char *title)
     XCursesExitCursesProcess(1, "exiting from PDC_set_title");
 }
 
+#ifdef PDC_WIDE
+void PDC_set_titleW(const wchar_t *title)
+{
+//    int len;
+
+    PDC_LOG_W(("PDC_set_titleW() - called:<%s>\n", title));
+
+ //   len = wcslen(title) + 1;        /* write nul character */
+
+  /*  XCursesInstruct(CURSES_TITLE);
+
+    if (XC_write_display_socket_int(len) >= 0)
+        if (XC_write_socket(xc_display_sock, title, len) >= 0)
+            return;
+
+    XCursesExitCursesProcess(1, "exiting from PDC_set_title");*/
+}
+#endif
+
+
         /* If PDC_really_blinking is TRUE,  then text with the A_BLINK   */
         /* attribute will actually blink.  Otherwise,  such text will    */
         /* be shown with higher color intensity (the R, G, and B values  */

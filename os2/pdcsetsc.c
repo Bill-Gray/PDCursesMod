@@ -87,6 +87,13 @@ void PDC_set_title(const char *title)
     PDC_LOG(("PDC_set_title() - called:<%s>\n", title));
 }
 
+#ifdef PDC_WIDE
+void PDC_set_titleW(const wchar_t *title)
+{
+    PDC_LOG_W(("PDC_set_titleW() - called:<%s>\n", title));
+}
+#endif
+
 int PDC_set_blink(bool blinkon)
 {
 #ifndef EMXVIDEO

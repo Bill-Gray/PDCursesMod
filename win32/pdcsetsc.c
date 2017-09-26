@@ -67,8 +67,9 @@ int PDC_curs_set(int visibility)
     return ret_vis;
 }
 
-void PDC_set_title(const char *title)
+/*void PDC_set_title(const char *title)
 {
+    extern HWND PDC_hWnd;
 #ifdef PDC_WIDE
     wchar_t wtitle[512];
 #endif
@@ -76,11 +77,28 @@ void PDC_set_title(const char *title)
 
 #ifdef PDC_WIDE
     PDC_mbstowcs(wtitle, title, 511);
-    SetConsoleTitleW(wtitle);
+    SetWindowTextW( PDC_hWnd, wtitle);
 #else
-    SetConsoleTitleA(title);
+    SetWindowTextA( PDC_hWnd, title);
 #endif
+}*/
+
+void PDC_set_title(const char *title)
+{
+	extern HWND PDC_hWnd;
+	PDC_LOG(("PDC_set_title() - called:<%s>\n", title));
+	SetWindowTextA( PDC_hWnd, title);
 }
+
+#ifdef PDC_WIDE
+void PDC_set_titleW(const wchar_t *title)
+{
+    extern HWND PDC_hWnd;
+    PDC_LOG_W(("PDC_set_titleW() - called:<%s>\n", title));
+
+    SetWindowTextW( PDC_hWnd, title);
+}
+#endif
 
 int PDC_set_blink(bool blinkon)
 {
