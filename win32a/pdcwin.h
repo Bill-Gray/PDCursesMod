@@ -3,8 +3,12 @@
 /* $Id: pdcwin.h,v 1.6 2008/07/13 06:36:32 wmcbrine Exp $ */
 
 #ifdef PDC_WIDE
+#ifndef UNICODE
 # define UNICODE
+#endif
+#ifndef _UNICODE
 # define _UNICODE
+#endif
 #endif
 
 #include <windows.h>

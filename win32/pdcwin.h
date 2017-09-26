@@ -1,7 +1,9 @@
 /* Public Domain Curses */
 
 #ifdef PDC_WIDE
+#ifndef UNICODE
 # define UNICODE
+#endif
 #endif
 
 #include <windows.h>
