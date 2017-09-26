@@ -24,16 +24,14 @@ if(POLICY CMP0048)
     cmake_policy(SET CMP0048 NEW)
 endif()
 
-if (BUILD_SDL2)
-    INCLUDE(build_dependents)
-endif ()
+INCLUDE(build_dependents)
 
 PROJECT (pdcurses VERSION "${PROJECT_VERSION}" LANGUAGES C)
 
 INCLUDE(gen_config_header)
 
 IF(CYGWIN)
-    MESSAGE(STATUS "Windows Kit um lib dir = ${WINDOWS_KIT_LIBRARY_DIR}")
+    MESSAGE(STATUS "Windows Kit UM lib path = ${WINDOWS_KIT_LIBRARY_DIR}")
     LINK_DIRECTORIES(${WINDOWS_KIT_LIBRARY_DIR})
 ENDIF()
 
