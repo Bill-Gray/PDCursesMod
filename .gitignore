@@ -43,3 +43,4 @@ win32/*.def
 *.map
 *.lib
 m
+.vscode
