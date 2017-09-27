@@ -4,29 +4,42 @@ FIND_PACKAGE(Git REQUIRED)
 
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build, options are: DEBUG, RELEASE, or MINSIZEREL." FORCE)
-    message("No build type specified, defaulting to Release.")
-endif()
+IF(NOT CMAKE_BUILD_TYPE)
+    SET(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build, options are: DEBUG, RELEASE, or MINSIZEREL." FORCE)
+    MESSAGE("No build type specified, defaulting to Release.")
+ENDIF()
 
-option(PDC_DLL_BUILD "Dynamic Library" OFF)
-option(PDC_UTF8 "Force to UTF8" OFF)
-option(PDC_WIDE "Unicode" OFF)
-option(PDCDEBUG "Debug" OFF)
-option(PDC_CHTYPE_32 "CHTYPE_32" OFF)
-option(PDC_CHTYPE_16 "CHTYPE_16" OFF)
-option(PDC_SDL2_BUILD "Build SDL2 bits" ON)
-option(BUILD_SDL2 "Build SDL2 Library" ON)
+OPTION(PDC_DLL_BUILD "Build pdcurses.dll" OFF)
+OPTION(PDC_UTF8 "Force to UTF8" OFF)
+OPTION(PDC_WIDE "Unicode" OFF)
+OPTION(PDCDEBUG "Debug" OFF)
+OPTION(PDC_CHTYPE_32 "CHTYPE_32" OFF)
+OPTION(PDC_CHTYPE_16 "CHTYPE_16" OFF)
+OPTION(PDC_SDL2_BUILD "Build SDL2 Project" ON)
+OPTION(PDC_SDL2_DEPS_BUILD "Build SDL2 and dependencies" ON)
 
 INCLUDE(git_label_version)
 
-if(POLICY CMP0048)
-    cmake_policy(SET CMP0048 NEW)
-endif()
+MESSAGE(STATUS "PDC_DLL_BUILD = ${PDC_DLL_BUILD}")
+MESSAGE(STATUS "PDC_UTF8 = ${PDC_UTF8}")
+MESSAGE(STATUS "PDC_WIDE = ${PDC_WIDE}")
+MESSAGE(STATUS "PDCDEBUG = ${PDCDEBUG}")
+MESSAGE(STATUS "PDC_CHTYPE_32 = ${PDC_CHTYPE_32}")
+MESSAGE(STATUS "PDC_CHTYPE_16 = ${PDC_CHTYPE_16}")
+MESSAGE(STATUS "Build SDL2 Project = ${PDC_SDL2_BUILD}")
+MESSAGE(STATUS "Build SDL2 and dependencies = ${PDC_SDL2_DEPS_BUILD}")
 
-INCLUDE(build_dependents)
+IF(POLICY CMP0048)
+    CMAKE_POLICY(SET CMP0048 NEW)
+ENDIF()
+
+SET(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "Name suffix for debug builds")
+MARK_AS_ADVANCED(CMAKE_IMPORT_LIBRARY_SUFFIX CMAKE_DEBUG_POSTFIX)
+
+INCLUDE(build_dependencies)
 
 PROJECT (pdcurses VERSION "${PROJECT_VERSION}" LANGUAGES C)
+
 
 INCLUDE(gen_config_header)
 
@@ -37,8 +50,9 @@ ENDIF()
 
 ADD_SUBDIRECTORY(win32)
 ADD_SUBDIRECTORY(win32a)
-if (PDC_SDL2_BUILD)
-    ADD_SUBDIRECTORY(sdl2)
-endif ()
 
-set(CPACK_COMPONENTS_ALL applications)
+IF(PDC_SDL2_BUILD)
+    ADD_SUBDIRECTORY(sdl2)
+ENDIF()
+
+SET(CPACK_COMPONENTS_ALL applications)
