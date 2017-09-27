@@ -2,14 +2,14 @@
 CMake Options
 -------------
 
-    option(PDC_SDL2_BUILD "Build SDL2 Project" ON)
-    option(BUILD_SDL2 "Build SDL2 Library" ON)
-    option(PDCDEBUG "Debug" OFF)
-    option(PDC_DLL_BUILD "Dynamic Library" OFF)
-    option(PDC_UTF8 "Force to UTF8" OFF)
-    option(PDC_WIDE "Unicode" OFF)
-    option(PDC_CHTYPE_32 "CHTYPE_32" OFF)
-    option(PDC_CHTYPE_16 "CHTYPE_16" OFF)
+    OPTION(PDC_DLL_BUILD "Build pdcurses.dll" OFF)
+    OPTION(PDC_UTF8 "Force to UTF8" OFF)
+    OPTION(PDC_WIDE "Unicode" OFF)
+    OPTION(PDCDEBUG "Debug" OFF)
+    OPTION(PDC_CHTYPE_32 "CHTYPE_32" OFF)
+    OPTION(PDC_CHTYPE_16 "CHTYPE_16" OFF)
+    OPTION(PDC_SDL2_BUILD "Build SDL2 Project" ON)
+    OPTION(PDC_SDL2_DEPS_BUILD "Build SDL2 and dependencies" ON)
     
 
 To override the default option value, use the "-DBUILD_SDL2=ON" scheme.  If you set it once, CMake caches the value.
@@ -26,14 +26,14 @@ Native Windows Building
 Win32 (pdcurses.sln)
 
     mkdir build32 & pushd build32
-	cmake -G"Visual Studio 15" -DBUILD_SDL2=ON -DCMAKE_INSTALL_PREFIX=c:\tmp\pdcurses\Win32 -DCMAKE_BUILD_TYPE=Debug -DPDCDEBUG=ON ..
+	cmake -G"Visual Studio 15" -DPDC_WIDE=ON -DCMAKE_INSTALL_PREFIX=c:\tmp\pdcurses\Win32 -DCMAKE_BUILD_TYPE=Debug -DPDCDEBUG=ON ..
 	popd
 	cmake --build build32 --config Debug --target install
 
 Win64 (pdcurses.sln)
 
     mkdir build64 & pushd build64
-	cmake -G"Visual Studio 15 Win64" -DBUILD_SDL2=ON -DCMAKE_INSTALL_PREFIX=c:\tmp\pdcurses\Win64 -DCMAKE_BUILD_TYPE=Debug -DPDCDEBUG=ON ..
+	cmake -G"Visual Studio 15 Win64" -DPDC_WIDE=ON -DCMAKE_INSTALL_PREFIX=c:\tmp\pdcurses\Win64 -DCMAKE_BUILD_TYPE=Debug -DPDCDEBUG=ON ..
 	popd
 	cmake --build build64 --config Debug --target install
 
