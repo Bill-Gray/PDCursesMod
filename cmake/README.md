@@ -78,3 +78,13 @@ Cygwin
 	cmake --build build --config Debug --target install
 
 Note: The demo apps will all build, only version.exe works.  All other apps print "Redirection is not supported."
+
+
+Linux Building
+--------------
+
+SDL2 (Only project currently supported with CMake)
+
+    cmake .. -DPDC_WIDE=ON -DCMAKE_INSTALL_PREFIX=/home/joel/git/PDCurses/build64/out -DCMAKE_BUILD_TYPE=Debug
+    make install -j16
+

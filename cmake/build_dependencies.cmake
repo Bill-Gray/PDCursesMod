@@ -17,11 +17,26 @@ IF (PDC_SDL2_DEPS_BUILD)
             ${SDL_CMAKE_BUILD_OPTS}
             -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}/${CMAKE_BUILD_TYPE}
             -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+            -DCMAKE_C_FLAGS=-fPIC ${EXTERNAL_C_FLAGS}
         )
 
     MESSAGE(STATUS "SDL2 Installing to: ${CMAKE_INSTALL_PREFIX}/${CMAKE_BUILD_TYPE}")
     SET(SDL2_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_BUILD_TYPE}/include/SDL2)
     SET(SDL2_LIBRARY_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_BUILD_TYPE}/lib)
+
+    IF(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        IF(WIN32)
+            set(SDL2_LIBRARIES "SDL2d.lib;SDL2maind.lib")
+        ELSE()
+            set(SDL2_LIBRARIES SDL2-2.0d SDL2maind)
+        ENDIF()
+    ELSE()
+        IF(WIN32)
+            set(SDL2_LIBRARIES "SDL2.lib;SDL2main.lib")
+        ELSE()
+            set(SDL2_LIBRARIES SDL2-2.0 SDL2main)
+        ENDIF()
+    ENDIF()
 
     IF (PDC_WIDE)
 
@@ -47,7 +62,6 @@ IF (PDC_SDL2_DEPS_BUILD)
         SET(ZLIB_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_BUILD_TYPE}/include)
         SET(ZLIB_LIBRARY_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_BUILD_TYPE}/lib)
 
-
         ExternalProject_Add(freetype2_ext
             GIT_REPOSITORY "https://git.savannah.gnu.org/git/freetype/freetype2.git"
             GIT_TAG "VER-2-8-1"
@@ -59,8 +73,9 @@ IF (PDC_SDL2_DEPS_BUILD)
                 ${FT2_CMAKE_BUILD_OPTS}
                 -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}/${CMAKE_BUILD_TYPE}
                 -DCMAKE_CXX_FLAGS=${EXTERNAL_CXX_FLAGS}
-                -DCMAKE_C_FLAGS=${EXTERNAL_C_FLAGS}
+                -DCMAKE_C_FLAGS=-fPIC ${EXTERNAL_C_FLAGS}
                 -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                -DWITH_HarfBuzz=OFF
                 -DWITH_ZLIB=ON
                 -DZLIB_INCLUDE_DIR=${CMAKE_INSTALL_PREFIX}/${CMAKE_BUILD_TYPE}/include
                 -DZLIB_LIBRARY_DIR=${CMAKE_INSTALL_PREFIX}/${CMAKE_BUILD_TYPE}/lib
@@ -96,7 +111,6 @@ IF (PDC_SDL2_DEPS_BUILD)
                 -DFT2_LIBRARY_DIR=${CMAKE_INSTALL_PREFIX}/${CMAKE_BUILD_TYPE}/lib
                 -DSDL2_INCLUDE_DIR=${CMAKE_INSTALL_PREFIX}/${CMAKE_BUILD_TYPE}/include/SDL2
                 -DSDL2_LIBRARY_DIR=${CMAKE_INSTALL_PREFIX}/${CMAKE_BUILD_TYPE}/lib
-                -DSDL2_LIBRARIES=${SDL2_LIBRARIES}
             )
 
         ADD_DEPENDENCIES(sdl2_ttf_ext sdl2_ext freetype2_ext)
@@ -106,19 +120,15 @@ IF (PDC_SDL2_DEPS_BUILD)
 
         IF(CMAKE_BUILD_TYPE STREQUAL "Debug")
             IF(WIN32)
-                set(SDL2_LIBRARIES "SDL2d.lib;SDL2maind.lib")
                 set(SDL2_TTF_LIBRARIES "SDL2_ttfd.lib;freetyped.lib;zlibd.lib")
             ELSE()
-                set(SDL2_LIBRARIES "-lSDL2d;-lSDL2maind")
-                set(SDL2_TTF_LIBRARIES "-lSDL2_ttfd;-lfreetyped;-lzlibd")
+                set(SDL2_TTF_LIBRARIES SDL2_ttfd freetyped z dl png sndio bz2)
             ENDIF()
         ELSE()
             IF(WIN32)
-                set(SDL2_LIBRARIES "SDL2.lib;SDL2main.lib")
                 set(SDL2_TTF_LIBRARIES "SDL2_ttf.lib;freetype.lib;zlib.lib")
             ELSE()
-                set(SDL2_LIBRARIES "-lSDL2;-lSDL2main")
-                set(SDL2_TTF_LIBRARIES "-lSDL2_ttf;-lfreetype;-lzlib")
+                set(SDL2_TTF_LIBRARIES SDL2_ttf freetype z dl png sndio bz2)
             ENDIF()
         ENDIF()
     

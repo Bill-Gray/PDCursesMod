@@ -12,10 +12,6 @@ ENDIF()
 SET(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "Name suffix for debug builds")
 MARK_AS_ADVANCED(CMAKE_IMPORT_LIBRARY_SUFFIX CMAKE_DEBUG_POSTFIX)
 
-file(READ ${CMAKE_SOURCE_DIR}/SDL2_ttf.spec file_contents)
-message(STATUS "file_contents=${file_contents}")
-#string( REGEX REPLACE )
-#string( REGEX MATCH "([0-9]+\\.[0-9]+\\.[0-9]+)" PROJECT_VERSION "${file_contents}" )
 
 SET(PROJECT_VERSION ${SDL2_TTF_RELEASE})
 PROJECT (sdl2_ttf VERSION "${PROJECT_VERSION}" LANGUAGES C)
@@ -30,52 +26,86 @@ LINK_DIRECTORIES(
     ${FT2_LIBRARY_DIR}
     ${SDL2_LIBRARY_DIR})
 
+
 INSTALL (FILES SDL_ttf.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include/SDL2_ttf)
 
-ADD_LIBRARY(SDL2_ttf-static STATIC SDL_ttf.c Version.rc SDL_ttf.h)
+set(SDL2_ttf_source_files SDL_ttf.c)
+
+IF(WIN32)
+    LIST(INSERT SDL2_ttf_source_files 0 Version.rc)
+ENDIF()    
+
+ADD_LIBRARY(SDL2_ttf-static STATIC ${SDL2_ttf_source_files} SDL_ttf.h)
 INSTALL (TARGETS SDL2_ttf-static 
     ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
     COMPONENT libraries)
 
-ADD_LIBRARY(SDL2_ttf SHARED SDL_ttf.c Version.rc SDL_ttf.h)
+ADD_LIBRARY(SDL2_ttf SHARED ${SDL2_ttf_source_files} SDL_ttf.h)
+IF(WIN32)
 TARGET_LINK_LIBRARIES (SDL2_ttf
     debug SDL2maind 
     debug SDL2d 
-    debug zlibd 
     debug freetyped
+    debug zlibd
     optimized SDL2main
     optimized SDL2
-    optimized zlib
+    optimized freetype
+    optimized zlib)
+ELSE()
+TARGET_LINK_LIBRARIES (SDL2_ttf z dl png sndio bz2
+    debug SDL2maind
+    debug SDL2-2.0d
+    debug freetyped
+    optimized SDL2main
+    optimized SDL2-2.0
     optimized freetype)
+ENDIF()
 
-INSTALL (TARGETS SDL2_ttf 
+INSTALL (TARGETS SDL2_ttf
     ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
     RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
+    LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib    
     COMPONENT libraries)
 
 ADD_EXECUTABLE (showfont ${CMAKE_SOURCE_DIR}/showfont.c)
-TARGET_LINK_LIBRARIES (showfont SDL2_ttf-static 
+IF(WIN32)
+TARGET_LINK_LIBRARIES (showfont SDL2_ttf
     debug SDL2maind 
     debug SDL2d 
-    debug zlibd 
     debug freetyped
     optimized SDL2main
     optimized SDL2
-    optimized zlib
     optimized freetype)
+ELSE()
+TARGET_LINK_LIBRARIES (showfont SDL2_ttf z dl png sndio bz2
+    debug SDL2maind 
+    debug SDL2-2.0d 
+    debug freetyped
+    optimized SDL2main
+    optimized SDL2-2.0
+    optimized freetype)
+ENDIF()
 
 INSTALL (TARGETS showfont RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin COMPONENT applications)
 
 ADD_EXECUTABLE (glfont ${CMAKE_SOURCE_DIR}/glfont.c)
-TARGET_LINK_LIBRARIES (glfont SDL2_ttf-static
+IF(WIN32)
+TARGET_LINK_LIBRARIES (glfont SDL2_ttf
     debug SDL2maind 
     debug SDL2d 
-    debug zlibd 
     debug freetyped
     optimized SDL2main
     optimized SDL2
-    optimized zlib
     optimized freetype)
+ELSE()
+TARGET_LINK_LIBRARIES (glfont SDL2_ttf z dl png sndio bz2
+    debug SDL2maind 
+    debug SDL2-2.0d 
+    debug freetyped
+    optimized SDL2main
+    optimized SDL2-2.0
+    optimized freetype)
+ENDIF()
 
 INSTALL (TARGETS glfont RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin COMPONENT applications)
 
