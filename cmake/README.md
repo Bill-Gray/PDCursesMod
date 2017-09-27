@@ -12,7 +12,7 @@ CMake Options
     option(PDC_CHTYPE_16 "CHTYPE_16" OFF)
     
 
-To override the default option value, use the "-DBUILD_SDL2=ON" scheme.  One you set it, CMake caches the value
+To override the default option value, use the "-DBUILD_SDL2=ON" scheme.  If you set it once, CMake caches the value.
 
 When using pre-built SDL2 bits, simply set these two variables when invoking cmake the first time.
 
