@@ -1,9 +1,10 @@
 CMAKE_MINIMUM_REQUIRED (VERSION 2.8.4)
 
 IF(NOT CMAKE_BUILD_TYPE)
-    SET(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build, options are: DEBUG, RELEASE, or MINSIZEREL." FORCE)
+    SET(CMAKE_BUILD_TYPE "RELEASE" CACHE STRING "Choose the type of build, options are: DEBUG, RELEASE, or MINSIZEREL." FORCE)
     MESSAGE("No build type specified, defaulting to Release.")
 ENDIF()
+STRING(TOUPPER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE)
 
 IF(POLICY CMP0048)
     CMAKE_POLICY(SET CMP0048 NEW)
@@ -41,72 +42,19 @@ INSTALL (TARGETS SDL2_ttf-static
     COMPONENT libraries)
 
 ADD_LIBRARY(SDL2_ttf SHARED ${SDL2_ttf_source_files} SDL_ttf.h)
-IF(WIN32)
-TARGET_LINK_LIBRARIES (SDL2_ttf
-    debug SDL2maind 
-    debug SDL2d 
-    debug freetyped
-    debug zlibd
-    optimized SDL2main
-    optimized SDL2
-    optimized freetype
-    optimized zlib)
-ELSE()
-TARGET_LINK_LIBRARIES (SDL2_ttf z dl png sndio bz2
-    debug SDL2maind
-    debug SDL2-2.0d
-    debug freetyped
-    optimized SDL2main
-    optimized SDL2-2.0
-    optimized freetype)
-ENDIF()
-
+TARGET_LINK_LIBRARIES (SDL2_ttf "${SDL2_LIBRARY};${FT2_LIBRARY};${ZLIB_LIBRARY}")
 INSTALL (TARGETS SDL2_ttf
     ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
     RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
-    LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib    
+    LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
     COMPONENT libraries)
 
 ADD_EXECUTABLE (showfont ${CMAKE_SOURCE_DIR}/showfont.c)
-IF(WIN32)
-TARGET_LINK_LIBRARIES (showfont SDL2_ttf
-    debug SDL2maind 
-    debug SDL2d 
-    debug freetyped
-    optimized SDL2main
-    optimized SDL2
-    optimized freetype)
-ELSE()
-TARGET_LINK_LIBRARIES (showfont SDL2_ttf z dl png sndio bz2
-    debug SDL2maind 
-    debug SDL2-2.0d 
-    debug freetyped
-    optimized SDL2main
-    optimized SDL2-2.0
-    optimized freetype)
-ENDIF()
-
+TARGET_LINK_LIBRARIES (showfont SDL2_ttf "${SDL2_LIBRARIES};${FT2_LIBRARY};${ZLIB_LIBRARY}")
 INSTALL (TARGETS showfont RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin COMPONENT applications)
 
 ADD_EXECUTABLE (glfont ${CMAKE_SOURCE_DIR}/glfont.c)
-IF(WIN32)
-TARGET_LINK_LIBRARIES (glfont SDL2_ttf
-    debug SDL2maind 
-    debug SDL2d 
-    debug freetyped
-    optimized SDL2main
-    optimized SDL2
-    optimized freetype)
-ELSE()
-TARGET_LINK_LIBRARIES (glfont SDL2_ttf z dl png sndio bz2
-    debug SDL2maind 
-    debug SDL2-2.0d 
-    debug freetyped
-    optimized SDL2main
-    optimized SDL2-2.0
-    optimized freetype)
-ENDIF()
-
+TARGET_LINK_LIBRARIES (glfont SDL2_ttf "${SDL2_LIBRARIES};${FT2_LIBRARY};${ZLIB_LIBRARY}")
 INSTALL (TARGETS glfont RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin COMPONENT applications)
 
 set(CPACK_COMPONENTS_ALL libraries applications)

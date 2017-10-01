@@ -26,7 +26,7 @@ Native Windows Building
 Win32 (pdcurses.sln)
 
     mkdir build32 & pushd build32
-	cmake -G"Visual Studio 15" -DPDC_WIDE=ON -DCMAKE_INSTALL_PREFIX=c:\tmp\pdcurses\Win32 -DCMAKE_BUILD_TYPE=Debug -DPDCDEBUG=ON ..
+	cmake -G"Visual Studio 15" -DPDC_WIDE=ON -DCMAKE_INSTALL_PREFIX=c:\tmp\pdcurses\Win32 -DCMAKE_BUILD_TYPE=DEBUG -DPDCDEBUG=ON ..
 	popd
 	cmake --build build32 --config Debug --target install
 
@@ -73,7 +73,7 @@ Cygwin
 ------
 
     mkdir build && pushd build
-    cmake .. -G"Unix Makefiles" -DPDC_SDL2_BUILD=OFF -DCMAKE_INSTALL_PREFIX=/cygdrive/c/tmp/pdcurses/Cyg64 -DCMAKE_BUILD_TYPE=Debug -DPDCDEBUG=ON -DWINDOWS_KIT_LIBRARY_DIR=/cygdrive/c/Program\ Files\ \(x86\)/Windows\ Kits/10/Lib/10.0.14393.0/um/x64 ..
+    cmake .. -G"Unix Makefiles" -DPDC_SDL2_BUILD=OFF -DCMAKE_INSTALL_PREFIX=/cygdrive/c/tmp/pdcurses/Cyg64 -DCMAKE_BUILD_TYPE=DEBUG -DPDCDEBUG=ON -DWINDOWS_KIT_LIBRARY_DIR=/cygdrive/c/Program\ Files\ \(x86\)/Windows\ Kits/10/Lib/10.0.14393.0/um/x64 ..
     popd
 	cmake --build build --config Debug --target install
 
@@ -85,6 +85,6 @@ Linux Building
 
 SDL2 (Only project currently supported with CMake)
 
-    cmake .. -DPDC_WIDE=ON -DCMAKE_INSTALL_PREFIX=/home/joel/git/PDCurses/build64/out -DCMAKE_BUILD_TYPE=Debug
+    cmake .. -DPDC_WIDE=ON -DCMAKE_INSTALL_PREFIX=/home/joel/git/PDCurses/build64/out -DCMAKE_BUILD_TYPE=DEBUG
     make install -j16
 
