@@ -418,6 +418,22 @@ PDCEX  chtype       acs_map[];    /* alternate character set map */
 PDCEX  char         ttytype[];    /* terminal name/description */
 PDCEX PDC_version_info PDC_version;
 
+/* Compatibility methods */
+
+PDCEX  int              compat_getlines(void);
+PDCEX  int              compat_getcols(void);
+PDCEX  WINDOW           *compat_getstdscr(void);
+PDCEX  WINDOW           *compat_getcurscr(void);
+PDCEX  SCREEN           *compat_getsp(void);
+PDCEX  MOUSE_STATUS     compat_getmouse_status(void);
+PDCEX  int              compat_getcolors(void);
+PDCEX  int              compat_getcolor_pairs(void);
+PDCEX  int              compat_gettabsize(void);
+PDCEX  void             compat_settabsize(int);
+PDCEX  chtype           *compat_getacs_map(void);
+PDCEX  char             *compat_getttytype(void);
+PDCEX  PDC_version_info compat_getpdc_version(void);
+
 /*man-start**************************************************************
 
 PDCurses Text Attributes
