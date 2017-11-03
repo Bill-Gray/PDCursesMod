@@ -22,6 +22,7 @@ typedef struct
 
 /* PDCEX is defined in curses.h */
 PDCEX  TERMINAL *cur_term;
+PDCEX  TERMINAL *compat_getcur_term(void);
 
 int     del_curterm(TERMINAL *);
 int     putp(const char *);
