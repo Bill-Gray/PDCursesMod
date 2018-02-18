@@ -3,8 +3,12 @@
 /* $Id: pdcwin.h,v 1.6 2008/07/13 06:36:32 wmcbrine Exp $ */
 
 #ifdef PDC_WIDE
-# define UNICODE
-# define _UNICODE
+#ifndef UNICODE
+#define UNICODE
+#endif
+#ifndef _UNICODE
+#define _UNICODE
+#endif
 #endif
 
 #include <windows.h>
@@ -80,9 +84,9 @@ for alternate chars.  With 16-bit chtypes,  there are only eight
 bits available to the character.  PDC_REAL_ATTR_SHIFT gives the
 number of low bits devoted to storing characters. */
 
-# if(CHTYPE_LONG >= 2)     /* 64-bit chtypes */
+#if(CHTYPE_LONG >= 2)     /* 64-bit chtypes */
     # define PDC_REAL_ATTR_SHIFT  21
-# else
+#else
 #ifdef CHTYPE_LONG         /* 32-bit chtypes */
     # define PDC_REAL_ATTR_SHIFT  17
 #else                      /* 16-bit chtypes */
