@@ -1,6 +1,8 @@
 /* Public Domain Curses */
 
 #include "pdcsdl.h"
+#include <stdlib.h>
+#include <ctype.h>
 
 /*man-start**************************************************************
 
@@ -165,10 +167,15 @@ static int _process_key_event(void)
 {
     int i, key = 0;
     unsigned long old_modifiers = pdc_key_modifiers;
+    static int repeat_count;
 
     pdc_key_modifiers = 0L;
     SP->key_code = FALSE;
 
+    if( event.key.repeat && event.type == SDL_KEYDOWN)
+        repeat_count++;
+    else
+        repeat_count = 0;
     if (event.type == SDL_KEYUP)
     {
         if (SP->return_key_modifiers && event.key.keysym.sym == oldkey)
@@ -220,6 +227,9 @@ static int _process_key_event(void)
 
         if (event.key.keysym.mod & KMOD_ALT)
             pdc_key_modifiers |= PDC_KEY_MODIFIER_ALT;
+
+        if( repeat_count)
+            pdc_key_modifiers |= PDC_KEY_MODIFIER_REPEAT;
     }
 
     for (i = 0; key_table[i].keycode; i++)
@@ -391,6 +401,8 @@ static int _process_mouse_event(void)
     return KEY_MOUSE;
 }
 
+void PDC_twice_a_second( void);           /* pdcdisp.c */
+
 /* return the next available key or mouse event */
 
 int PDC_get_key(void)
@@ -405,12 +417,11 @@ int PDC_get_key(void)
         case SDL_WINDOWEVENT_SIZE_CHANGED:
         case SDL_WINDOWEVENT_RESIZED:
             if (pdc_own_window &&
-               (event.window.data2 / pdc_fheight != LINES ||
-                event.window.data1 / pdc_fwidth != COLS))
+                     (pdc_sheight != event.window.data2
+                   || pdc_swidth != event.window.data1))
             {
                 pdc_sheight = event.window.data2;
                 pdc_swidth = event.window.data1;
-
                 if (!SP->resized)
                 {
                     SP->resized = TRUE;
@@ -438,6 +449,9 @@ int PDC_get_key(void)
     case SDL_TEXTINPUT:
         PDC_mouse_set();
         return _process_key_event();
+    case SDL_USEREVENT:             /* timer event,  every 500 millisec */
+        PDC_twice_a_second( );
+        break;
     }
 
     return -1;

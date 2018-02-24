@@ -618,6 +618,9 @@ void inputTest(WINDOW *win)
 
             if (PDC_get_key_modifiers() & PDC_KEY_MODIFIER_NUMLOCK)
                 waddstr(win, " NUMLOCK");
+
+            if (PDC_get_key_modifiers() & PDC_KEY_MODIFIER_REPEAT)
+                waddstr(win, " REPEAT");
 #endif            /* end of mouse display */
         }
         wrefresh(win);
@@ -1004,7 +1007,7 @@ void clipboardTest(WINDOW *win)
         "This test will place the following string in the system clipboard:");
     mvaddstr(2, 1, text);
 
-    i = PDC_setclipboard(text, strlen(text));
+    i = PDC_setclipboard(text, (long)strlen(text));
 
     switch(i)
     {
@@ -1210,6 +1213,13 @@ void acsTest(WINDOW *win)
 
     static const wchar_t fullwidth[] = { 0xff26, 0xff55, 0xff4c, 0xff4c,
         0xff57, 0xff49, 0xff44, 0xff54, 0xff48, 0 };  /* "Fullwidth" */
+
+    static const wchar_t combining_marks[] = { L'C', L'o', 0x35c, L'm',
+                   L'b', 0x30a, L'i', L'n', L'i', 0x304, L'n', 0x30b, 0x329,
+                   L'g', 0x310,
+                   L' ', L'C', 0x338, L'h', 0x306,  L'a', 0x361, L'r', L's',
+                   0x30e, 0x348, 0 };
+
 #endif
 
     int i, tmarg = 1, ncols = (COLS - 4) / 19;
@@ -1268,7 +1278,7 @@ void acsTest(WINDOW *win)
             xloc += col_size;
         }
 #endif
-    /* Spanish, Russian, Greek, Georgian, fullwidth */
+    /* Spanish, Russian, Greek, Georgian, fullwidth, combining */
 
         tmarg += n_rows * 2;
         mvaddwstr(tmarg, COLS / 8 - 5, L"Espa\xf1ol");
@@ -1278,6 +1288,7 @@ void acsTest(WINDOW *win)
         mvaddwstr(tmarg + 1, COLS / 8 - 5, fullwidth);
 
 #if(CHTYPE_LONG >= 2)       /* "non-standard" 64-bit chtypes     */
+        mvaddwstr(tmarg + 1, 3 * (COLS / 8) - 5, combining_marks);
         mvaddch( tmarg + 1, 7 * (COLS / 8) - 5, (chtype)0x1d11e);
 #endif            /* U+1D11E = musical symbol G clef */
 
@@ -1425,22 +1436,42 @@ void colorTest(WINDOW *win)
                                  orgcolors[i].green,
                                  orgcolors[i].blue);
     }
-/* BJG additions: */
-    if( LINES >= 18) do  /* show off all 256 colors */
-    {
-       tmarg = LINES / 2 - 8;
-       erase( );
-       for( i = 0; i < COLOR_PAIRS; i++)
-           {
-           char tbuff[4];
-           const int col = COLS / 2 - 24;
 
-           if( i >= 16)
-              init_pair((short)i, (short)i, COLOR_BLACK);
-           attrset( COLOR_PAIR( i) | A_REVERSE);
-           sprintf( tbuff, "%02x ", i);
-           mvaddstr( tmarg + i / 16, col + (i % 16) * 3, tbuff);
-           }
+    if (COLORS >= 256) do
+        {
+        int x, y, z, lmarg = (COLS - 77) / 2;
+
+        erase();
+
+        attrset(A_BOLD);
+        mvaddstr(tmarg, (COLS - 15) / 2, "Extended Colors");
+        attrset(A_NORMAL);
+
+        mvaddstr(tmarg + 3, lmarg, "6x6x6 Color Cube (16-231):");
+
+        for (i = 16; i < 256; i++)
+            init_pair(i, COLOR_BLACK, i);
+
+        for (i = 16, z = 0; z < 6; z++)
+            for (y = 0; y < 6; y++)
+                for (x = 0; x < 6; x++)
+                {
+                    chtype ch = ' ' | COLOR_PAIR(i++);
+
+                    mvaddch(tmarg + 5 + y, z * 13 + x * 2 + lmarg, ch);
+                    addch(ch);
+                }
+
+        mvaddstr(tmarg + 13, lmarg, "Greyscale (232-255):");
+
+        for (x = 0; x < 24; x++)
+        {
+            chtype ch = ' ' | COLOR_PAIR(232 + x);
+
+            mvaddch(tmarg + 15, x * 2 + lmarg, ch);
+            addch(ch);
+        }
+
 #ifdef CHTYPE_LONG
        attrset( A_LEFTLINE);
        mvaddstr( tmarg + 17, col1, "A_LEFTLINE");

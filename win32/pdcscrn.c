@@ -392,7 +392,11 @@ int PDC_scr_open(int argc, char **argv)
         exit(1);
     }
 
+#if defined(_MSC_VER) && _MSC_VER >= 1800   /* VS2013 and above can't build */
+    is_nt = TRUE;    /* non-NT (Win9x/3.1/ME) targets anyway,  so always true */
+#else
     is_nt = !(GetVersion() & 0x80000000);
+#endif
 
     GetConsoleScreenBufferInfo(pdc_con_out, &csbi);
     GetConsoleScreenBufferInfo(pdc_con_out, &orig_scr);
@@ -515,35 +519,43 @@ int PDC_resize_screen(int nlines, int ncols)
     SMALL_RECT rect;
     COORD size, max;
 
-    if (nlines < 2 || ncols < 2)
-        return ERR;
+    if( nlines || ncols)
+    {
+        if (nlines < 2 || ncols < 2)
+            return ERR;
 
-    if( !stdscr)      /* window hasn't been created yet;  we're */
-    {                 /* specifying its size before doing so    */
-        return OK;    /* ...which doesn't work (yet) on Win32   */
+        if( !stdscr)      /* window hasn't been created yet;  we're */
+        {                 /* specifying its size before doing so    */
+            return OK;    /* ...which doesn't work (yet) on Win32   */
+        }
+
+        max = GetLargestConsoleWindowSize(pdc_con_out);
+
+        rect.Left = rect.Top = 0;
+        rect.Right = ncols - 1;
+
+        if (rect.Right > max.X)
+            rect.Right = max.X;
+
+        rect.Bottom = nlines - 1;
+
+        if (rect.Bottom > max.Y)
+            rect.Bottom = max.Y;
+
+        size.X = rect.Right + 1;
+        size.Y = rect.Bottom + 1;
+
+        _fit_console_window(pdc_con_out, &rect);
+        SetConsoleScreenBufferSize(pdc_con_out, size);
+        _fit_console_window(pdc_con_out, &rect);
+        SetConsoleScreenBufferSize(pdc_con_out, size);
+        SetConsoleActiveScreenBuffer(pdc_con_out);
     }
 
-    max = GetLargestConsoleWindowSize(pdc_con_out);
+    PDC_flushinp();
 
-    rect.Left = rect.Top = 0;
-    rect.Right = ncols - 1;
-
-    if (rect.Right > max.X)
-        rect.Right = max.X;
-
-    rect.Bottom = nlines - 1;
-
-    if (rect.Bottom > max.Y)
-        rect.Bottom = max.Y;
-
-    size.X = rect.Right + 1;
-    size.Y = rect.Bottom + 1;
-
-    _fit_console_window(pdc_con_out, &rect);
-    SetConsoleScreenBufferSize(pdc_con_out, size);
-    _fit_console_window(pdc_con_out, &rect);
-    SetConsoleScreenBufferSize(pdc_con_out, size);
-    SetConsoleActiveScreenBuffer(pdc_con_out);
+    SP->resized = FALSE;
+    SP->cursrow = SP->curscol = 0;
 
     return OK;
 }
