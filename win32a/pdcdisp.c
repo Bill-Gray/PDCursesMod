@@ -241,7 +241,7 @@ int PDC_set_preferred_fontface( const TCHAR* fontface)
 }
 
 static int CALLBACK EnumFontCallback(
-    ENUMLOGFONT* lplf, NEWTEXTMETRIC* lpntm, DWORD type, LPVOID user)
+    const LOGFONT* lplf, const TEXTMETRIC* lpntm, DWORD type, LPARAM user)
 {
     /* we specified a filter in PDC_fontface_exists, so if we get here
     at all, that means the font exists. */
