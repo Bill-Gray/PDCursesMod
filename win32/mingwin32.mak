@@ -90,6 +90,14 @@ ifeq ($(UTF8),Y)
 	CFLAGS += -DPDC_FORCE_UTF8
 endif
 
+ifeq ($(INFOEX),N)
+	PDCCFLAGS += -DHAVE_NO_INFOEX
+else
+	ifeq ($(INFOEX),Y)
+		PDCCFLAGS += -DHAVE_INFOEX
+	endif
+endif
+
 LINK	   = $(PREFIX)gcc
 
 ifeq ($(DLL),Y)
@@ -146,7 +154,7 @@ $(LIBOBJS) : %.o: $(srcdir)/%.c
 	$(CC) -c $(CFLAGS) $<
 
 $(PDCOBJS) : %.o: $(osdir)/%.c
-	$(CC) -c $(CFLAGS) $<
+	$(CC) -c $(CFLAGS) $(PDCCFLAGS) $<
 
 firework.exe newdemo.exe newtest.exe ptest.exe rain.exe testcurs.exe  \
 version.exe worm.exe xmas.exe: %.exe: $(demodir)/%.c
