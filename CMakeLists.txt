@@ -1,68 +1,55 @@
-CMAKE_MINIMUM_REQUIRED (VERSION 2.8.4)
+cmake_minimum_required(VERSION 3.11)
 
-FIND_PACKAGE(Git REQUIRED)
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "MinSizeRel" CACHE STRING "Choose the type of build, options are: Debug, Release, or MinSizeRel." FORCE)
+    message(STATUS "CMAKE_BUILD_TYPE not set, defaulting to MinSizeRel.")
+endif()
 
-SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
+set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/cmake")
 
-IF(NOT CMAKE_BUILD_TYPE)
-    SET(CMAKE_BUILD_TYPE "RELEASE" CACHE STRING "Choose the type of build, options are: DEBUG, RELEASE, or MINSIZEREL." FORCE)
-    MESSAGE("No build type specified, defaulting to Release.")
-ENDIF()
-STRING(TOUPPER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE)
+include (get_version)
 
-OPTION(PDC_BUILD_SHARED "Build dynamic libs for pdcurses" ON)
-OPTION(PDC_UTF8 "Force to UTF8" OFF)
-OPTION(PDC_WIDE "Unicode" OFF)
-OPTION(PDCDEBUG "Debug" OFF)
-OPTION(PDC_CHTYPE_32 "CHTYPE_32" OFF)
-OPTION(PDC_CHTYPE_16 "CHTYPE_16" OFF)
-OPTION(PDC_SDL2_BUILD "Build SDL2 Project" ON)
-OPTION(PDC_SDL2_DEPS_BUILD "Build SDL2 and dependencies" ON)
+if(MSVC)
+    set(CMAKE_DEBUG_POSTFIX d)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP")  # enable parallel builds
+endif()
 
-INCLUDE(git_label_version)
+message(STATUS "Generator .............. ${CMAKE_GENERATOR}")
+message(STATUS "Build Type ............. ${CMAKE_BUILD_TYPE}")
 
-MESSAGE(STATUS "PDC_BUILD_SHARED = ${PDC_BUILD_SHARED}")
-MESSAGE(STATUS "PDC_UTF8 = ${PDC_UTF8}")
-MESSAGE(STATUS "PDC_WIDE = ${PDC_WIDE}")
-MESSAGE(STATUS "PDCDEBUG = ${PDCDEBUG}")
-MESSAGE(STATUS "PDC_CHTYPE_32 = ${PDC_CHTYPE_32}")
-MESSAGE(STATUS "PDC_CHTYPE_16 = ${PDC_CHTYPE_16}")
-MESSAGE(STATUS "Build SDL2 Project = ${PDC_SDL2_BUILD}")
-MESSAGE(STATUS "Build SDL2 and dependencies = ${PDC_SDL2_DEPS_BUILD}")
+include(build_options)
+include(build_dependencies)
 
-IF(POLICY CMP0048)
-    CMAKE_POLICY(SET CMP0048 NEW)
-ENDIF()
+project(pdcurses VERSION "${CURSES_VERSION}" LANGUAGES C)
+message(STATUS "PDC Version ............ ${PROJECT_VERSION}")
 
-SET(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "Name suffix for debug builds")
-MARK_AS_ADVANCED(CMAKE_IMPORT_LIBRARY_SUFFIX CMAKE_DEBUG_POSTFIX)
+include(gen_config_header)
 
-# enable parallel builds
-IF(WIN32)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP")
-ENDIF()
+file(GLOB pdcurses_src_files pdcurses/*.c)
+include_directories (${CMAKE_SOURCE_DIR})
 
-INCLUDE(build_dependencies)
+if(CYGWIN)
+    message(STATUS "Windows Kit UM lib path = ${WINDOWS_KIT_LIBRARY_DIR}")
+    link_directories(${WINDOWS_KIT_LIBRARY_DIR})
+endif()
 
-PROJECT (pdcurses VERSION "${PROJECT_VERSION}" LANGUAGES C)
+if(PDC_DOS_BUILD)
+    add_subdirectory(dos)
+endif()
 
+if(PDC_SDL1_BUILD)
+    add_subdirectory(sdl1)
+endif()
 
-INCLUDE(gen_config_header)
+if(PDC_SDL2_BUILD)
+    add_subdirectory(sdl2)
+endif()
 
-IF(CYGWIN)
-    MESSAGE(STATUS "Windows Kit UM lib path = ${WINDOWS_KIT_LIBRARY_DIR}")
-    LINK_DIRECTORIES(${WINDOWS_KIT_LIBRARY_DIR})
-ENDIF()
+if(WIN32 AND NOT WATCOM)
+    add_subdirectory(win32)
+    add_subdirectory(win32a)
+endif()
 
-IF(WIN32)
-    ADD_SUBDIRECTORY(win32)
-    ADD_SUBDIRECTORY(win32a)
-ENDIF()
+add_custom_target(uninstall "${CMAKE_COMMAND}" -P "${CMAKE_SOURCE_DIR}/cmake/make_uninstall.cmake")
 
-IF(PDC_SDL2_BUILD)
-    ADD_SUBDIRECTORY(sdl2)
-ENDIF()
-
-ADD_CUSTOM_TARGET(uninstall "${CMAKE_COMMAND}" -P "${CMAKE_SOURCE_DIR}/cmake/make_uninstall.cmake")
-
-SET(CPACK_COMPONENTS_ALL applications)
+set(CPACK_COMPONENTS_ALL applications)

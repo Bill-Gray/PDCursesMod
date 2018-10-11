@@ -44,3 +44,4 @@ win32/*.def
 *.lib
 m
 .vscode
+build

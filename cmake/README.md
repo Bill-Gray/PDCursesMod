@@ -2,14 +2,14 @@
 CMake Options
 -------------
 
-    OPTION(PDC_DLL_BUILD "Build pdcurses.dll" OFF)
-    OPTION(PDC_UTF8 "Force to UTF8" OFF)
-    OPTION(PDC_WIDE "Unicode" OFF)
-    OPTION(PDCDEBUG "Debug" OFF)
-    OPTION(PDC_CHTYPE_32 "CHTYPE_32" OFF)
-    OPTION(PDC_CHTYPE_16 "CHTYPE_16" OFF)
-    OPTION(PDC_SDL2_BUILD "Build SDL2 Project" ON)
-    OPTION(PDC_SDL2_DEPS_BUILD "Build SDL2 and dependencies" ON)
+    option(PDC_BUILD_SHARED "Build dynamic libs for pdcurses" ON)
+    option(PDC_UTF8 "Force to UTF8" OFF)
+    option(PDC_WIDE "Wide - pulls in sdl-ttf" OFF)
+    option(PDCDEBUG "Debug tracing" OFF)
+    option(PDC_CHTYPE_32 "CHTYPE_32" OFF)
+    option(PDC_CHTYPE_16 "CHTYPE_16" OFF)
+    option(PDC_SDL2_BUILD "Build SDL2 Project" ON)
+    option(PDC_SDL2_DEPS_BUILD "Build SDL2 and dependencies" ON)
     
 
 To override the default option value, use the "-DBUILD_SDL2=ON" scheme.  If you set it once, CMake caches the value.
@@ -20,13 +20,24 @@ When using pre-built SDL2 bits, simply set these two variables when invoking cma
         -DSDL2_LIBRARY_DIR=/my/path/to/sdl2/lib/folder
 
 
+Appveyor
+--------
+
+Upon cmake branch check-ins, Appveyor will build the following variants:
+wide/utf8 - Release/Debug, Visual Studio 2015 - amd64_x86/amd64/amd64_arm
+wide/utf8 - Release/Debug, Visual Studio 2017 - amd64_x86/amd64/amd64_arm/amd64_arm64
+
+^There is currently a SDL2 bug preventing MinSizeRel builds:
+https://bugzilla.libsdl.org/show_bug.cgi?id=4233
+
+
 Native Windows Building
 -----------------------
 
 Win32 (pdcurses.sln)
 
     mkdir build32 & pushd build32
-	cmake -G"Visual Studio 15" -DPDC_WIDE=ON -DCMAKE_INSTALL_PREFIX=c:\tmp\pdcurses\Win32 -DCMAKE_BUILD_TYPE=DEBUG -DPDCDEBUG=ON ..
+	cmake -G"Visual Studio 15" -DPDC_WIDE=ON -DCMAKE_INSTALL_PREFIX=c:\tmp\pdcurses\Win32 -DCMAKE_BUILD_TYPE=Debug -DPDCDEBUG=ON ..
 	popd
 	cmake --build build32 --config Debug --target install
 
@@ -37,43 +48,12 @@ Win64 (pdcurses.sln)
 	popd
 	cmake --build build64 --config Debug --target install
 
-Build script example
-
-From pdcurses source root
-
-    cmake\vsvs2015_build.cmd
-
-
-Available CMake Visual Studio Generators
-
-
-    Visual Studio 15 [arch]      = Generates Visual Studio 15 project files.
-                                 Optional [arch] can be "Win64" or "ARM".
-
-    Visual Studio 14 2015 [arch] = Generates Visual Studio 2015 project files.
-                                 Optional [arch] can be "Win64" or "ARM".
-
-    Visual Studio 12 2013 [arch] = Generates Visual Studio 2013 project files.
-                                 Optional [arch] can be "Win64" or "ARM".
-
-    Visual Studio 11 2012 [arch] = Generates Visual Studio 2012 project files.
-                                 Optional [arch] can be "Win64" or "ARM".
-
-    Visual Studio 10 2010 [arch] = Generates Visual Studio 2010 project files.
-                                 Optional [arch] can be "Win64" or "IA64".
-
-    Visual Studio 9 2008 [arch]  = Generates Visual Studio 2008 project files.
-                                 Optional [arch] can be "Win64" or "IA64".
-
-    Visual Studio 8 2005 [arch]  = Generates Visual Studio 2005 project files.
-                                 Optional [arch] can be "Win64".
-
 
 Cygwin
 ------
 
     mkdir build && pushd build
-    cmake .. -G"Unix Makefiles" -DPDC_SDL2_BUILD=OFF -DCMAKE_INSTALL_PREFIX=/cygdrive/c/tmp/pdcurses/Cyg64 -DCMAKE_BUILD_TYPE=DEBUG -DPDCDEBUG=ON -DWINDOWS_KIT_LIBRARY_DIR=/cygdrive/c/Program\ Files\ \(x86\)/Windows\ Kits/10/Lib/10.0.14393.0/um/x64 ..
+    cmake .. -G"Unix Makefiles" -DPDC_SDL2_BUILD=OFF -DCMAKE_INSTALL_PREFIX=/cygdrive/c/tmp/pdcurses/Cyg64 -DCMAKE_BUILD_TYPE=Debug -DPDCDEBUG=ON -DWINDOWS_KIT_LIBRARY_DIR=/cygdrive/c/Program\ Files\ \(x86\)/Windows\ Kits/10/Lib/10.0.14393.0/um/x64 ..
     popd
 	cmake --build build --config Debug --target install
 
@@ -83,8 +63,7 @@ Note: The demo apps will all build, only version.exe works.  All other apps prin
 Linux Building
 --------------
 
-SDL2 (Only project currently supported with CMake)
+SDL2 (Currently the only project supported with CMake)
 
-    cmake .. -DPDC_WIDE=ON -DCMAKE_INSTALL_PREFIX=/home/joel/git/PDCurses/build64/out -DCMAKE_BUILD_TYPE=DEBUG
-    make install -j16
-
+    cmake .. -DPDC_WIDE=ON -DCMAKE_INSTALL_PREFIX=/home/joel/pdcurses/out -DCMAKE_BUILD_TYPE=Debug -GNinja
+    autoninja install

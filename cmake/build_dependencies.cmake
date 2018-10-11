@@ -7,11 +7,54 @@ IF (PDC_SDL2_DEPS_BUILD)
         set(FLAGS_FOR_DYNAMIC_LINK -fPIC) 
     ENDIF()
 
-    SET(SDL2_RELEASE 2.0.6)
+    if(PDC_SDL1_BUILD)
+        set(SDL1_RELEASE 1.2.15)
+        ExternalProject_Add(sdl1_ext
+            URL https://www.libsdl.org/release/SDL-${SDL1_RELEASE}.zip
+            URL_HASH "SHA256=94ad1068f0ca7fda489a83ffde9507e863657e31822f5ce236ae1a35e73e3875"
+            UPDATE_COMMAND ""
+            DOWNLOAD_DIR ${CMAKE_BINARY_DIR}
+            SOURCE_DIR ${CMAKE_BINARY_DIR}/SDL1-${SDL1_RELEASE}
+            BUILD_IN_SOURCE 0
+            CMAKE_ARGS
+                ${SDL_CMAKE_BUILD_OPTS}
+                -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}/${CMAKE_BUILD_TYPE}
+                -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                -DCMAKE_C_FLAGS=${FLAGS_FOR_DYNAMIC_LINK} ${EXTERNAL_C_FLAGS}
+            )
 
+        message(STATUS "SDL1 Installing to: ${CMAKE_INSTALL_PREFIX}/${CMAKE_BUILD_TYPE}")
+        set(SDL1_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_BUILD_TYPE}/include/SDL)
+        set(SDL1_LIBRARY_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_BUILD_TYPE}/lib)
+        if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+            if(WIN32)
+                set(SDL1_LIBRARIES "SDLmaind.lib;SDLd.lib")
+                set(SDL1_LIBRARY "SDLd.lib")
+            elseif(APPLE)
+                set(SDL1_LIBRARIES "SDLmaind;SDLd")
+                set(SDL1_LIBRARY "SDLd")
+            else()
+                set(SDL1_LIBRARIES "SDLmaind;SDL1-2.0d")
+                set(SDL1_LIBRARY "SDL1-2.0d")
+            endif()
+        else()
+            if(WIN32)
+                set(SDL1_LIBRARIES "SDLmain.lib;SDL.lib")
+                set(SDL1_LIBRARY "SDL.lib")
+            elseif(APPLE)
+                set(SDL1_LIBRARIES "SDLmain;SDL")
+                set(SDL1_LIBRARY "SDL")
+            else()
+                set(SDL1_LIBRARIES "SDLmain;SDL1-2.0")
+                set(SDL1_LIBRARY "SDL1-2.0")
+            endif()
+        endif()
+    endif()
+
+    SET(SDL2_RELEASE 2.0.8)
     ExternalProject_Add(sdl2_ext
         URL https://www.libsdl.org/release/SDL2-${SDL2_RELEASE}.zip
-        URL_HASH "SHA256=744398b8a8ad65b36e805ac1ed53acb94bd62eeeaa4683507328b9d4b76a0d3b"
+        URL_HASH "SHA256=e6a7c71154c3001e318ba7ed4b98582de72ff970aca05abc9f45f7cbdc9088cb"
         UPDATE_COMMAND ""
         DOWNLOAD_DIR ${CMAKE_BINARY_DIR}
         SOURCE_DIR ${CMAKE_BINARY_DIR}/SDL2-${SDL2_RELEASE}
@@ -26,7 +69,7 @@ IF (PDC_SDL2_DEPS_BUILD)
     MESSAGE(STATUS "SDL2 Installing to: ${CMAKE_INSTALL_PREFIX}/${CMAKE_BUILD_TYPE}")
     SET(SDL2_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_BUILD_TYPE}/include/SDL2)
     SET(SDL2_LIBRARY_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_BUILD_TYPE}/lib)
-    IF("${CMAKE_BUILD_TYPE}" STREQUAL "DEBUG")
+    IF("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
         IF(WIN32)
             set(SDL2_LIBRARIES "SDL2maind.lib;SDL2d.lib")
             set(SDL2_LIBRARY "SDL2d.lib")
@@ -62,7 +105,6 @@ IF (PDC_SDL2_DEPS_BUILD)
             CMAKE_ARGS
                 ${ZLIB_CMAKE_BUILD_OPTS}
                 -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}/${CMAKE_BUILD_TYPE}
-                -DCMAKE_CXX_FLAGS=${EXTERNAL_CXX_FLAGS}
                 -DCMAKE_C_FLAGS=${EXTERNAL_C_FLAGS}
                 -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                 -DBUILD_SHARED_LIBS=${BUILD_SHARED}
@@ -73,7 +115,7 @@ IF (PDC_SDL2_DEPS_BUILD)
         MESSAGE(STATUS "zlib Installing to: ${CMAKE_INSTALL_PREFIX}/${CMAKE_BUILD_TYPE}")
         SET(ZLIB_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_BUILD_TYPE}/include)
         SET(ZLIB_LIBRARY_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_BUILD_TYPE}/lib)
-        IF("${CMAKE_BUILD_TYPE}" STREQUAL "DEBUG")
+        IF("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
             IF(WIN32)
                 set(ZLIB_LIBRARY zlibd.lib)
             ELSE()
@@ -97,10 +139,11 @@ IF (PDC_SDL2_DEPS_BUILD)
             CMAKE_ARGS
                 ${FT2_CMAKE_BUILD_OPTS}
                 -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}/${CMAKE_BUILD_TYPE}
-                -DCMAKE_CXX_FLAGS=${EXTERNAL_CXX_FLAGS}
                 -DCMAKE_C_FLAGS=${FLAGS_FOR_DYNAMIC_LINK} ${EXTERNAL_C_FLAGS}
                 -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                 -DWITH_HarfBuzz=OFF
+                -DWITH_BZip2=OFF
+                -DWITH_PNG=OFF
                 -DWITH_ZLIB=ON
                 -DZLIB_FOUND=ON
                 -DZLIB_LIBRARY=${ZLIB_LIBRARY}
@@ -112,7 +155,7 @@ IF (PDC_SDL2_DEPS_BUILD)
         MESSAGE(STATUS "freetype2 Installing to: ${CMAKE_INSTALL_PREFIX}/${CMAKE_BUILD_TYPE}")
         SET(FT2_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_BUILD_TYPE}/include/freetype2)
         SET(FT2_LIBRARY_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_BUILD_TYPE}/lib)
-        IF("${CMAKE_BUILD_TYPE}" STREQUAL "DEBUG")
+        IF("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
             IF(WIN32)
                 set(FT2_LIBRARY freetyped.lib)
             ELSE()
@@ -141,9 +184,9 @@ IF (PDC_SDL2_DEPS_BUILD)
             CMAKE_ARGS
                 ${SDL2_TTF_CMAKE_BUILD_OPTS}
                 -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}/${CMAKE_BUILD_TYPE}
-                -DCMAKE_CXX_FLAGS=${EXTERNAL_CXX_FLAGS}
                 -DCMAKE_C_FLAGS=${EXTERNAL_C_FLAGS}
                 -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                -DSDL2_TTF_RELEASE=${SDL2_TTF_RELEASE}
                 -DZLIB_INCLUDE_DIR=${ZLIB_INCLUDE_DIR}
                 -DZLIB_LIBRARY_DIR=${ZLIB_LIB_DIR}
                 -DZLIB_LIBRARY=${ZLIB_LIBRARY}
@@ -160,7 +203,7 @@ IF (PDC_SDL2_DEPS_BUILD)
         MESSAGE(STATUS "SDL2_ttf Installing to: ${CMAKE_INSTALL_PREFIX}/${CMAKE_BUILD_TYPE}")
         SET(SDL2_TTF_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_BUILD_TYPE}/include/SDL2_ttf)
         SET(SDL2_TTF_LIBRARY_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_BUILD_TYPE}/lib)
-        IF("${CMAKE_BUILD_TYPE}" STREQUAL "DEBUG")
+        IF("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
             IF(WIN32)
                 set(SDL2_TTF_LIBRARY "SDL2_ttfd.lib")
             ELSE()
