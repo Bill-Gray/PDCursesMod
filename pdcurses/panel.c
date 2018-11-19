@@ -97,6 +97,12 @@ panel
    depth relationships between the panels in the deck. The user
    must use doupdate() to refresh the physical screen.
 
+   stack_bottom_panel() returns pointer to bottommost panel in
+   stack of panels.
+
+   stack_top_panel() returns pointer to topmost panel in stack
+   of panels.
+
 ### Return Value
 
    Each routine that returns a pointer to an object returns NULL if
@@ -630,4 +636,12 @@ void update_panels(void)
 
         pan = pan->above;
     }
+}
+
+PANEL *stack_bottom_panel(void) {
+    return _bottom_panel;
+}
+
+PANEL  *stack_top_panel(void) {
+    return _top_panel;
 }

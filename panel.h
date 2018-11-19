@@ -48,6 +48,8 @@ PDCEX int     set_panel_userptr(PANEL *pan, const void *uptr);
 PDCEX int     show_panel(PANEL *pan);
 PDCEX int     top_panel(PANEL *pan);
 PDCEX void    update_panels(void);
+PDCEX PANEL  *stack_bottom_panel(void);
+PDCEX PANEL  *stack_top_panel(void);
 
 #if defined(__cplusplus) || defined(__cplusplus__) || defined(__CPLUSPLUS)
 }
