@@ -332,8 +332,17 @@ int main(int argc, char **argv)
 
         init_pair(5, COLOR_BLUE, COLOR_WHITE);
         wattrset(win, COLOR_PAIR(5) | A_BLINK);
+#if defined (PDCURSES)
+        mvwprintw(win, height - 2, 2,
+            "PDCurses %d.%d.%d: DOS, OS/2, Windows, X11, SDL",
+            PDC_VER_MAJOR, PDC_VER_MINOR, PDC_VER_CHANGE);
+#elif defined (NCURSES_VERSION)
         mvwaddstr(win, height - 2, 2,
-            " PDCurses 3.4 - DOS, OS/2, Windows, X11, SDL");
+            "         ncurses " NCURSES_VERSION " running ozdemo         ");
+#else
+        mvwaddstr(win, height - 2, 2,
+            "         some curses running ozdemo         ");
+#endif
         wrefresh(win);
 
         /* Draw running messages */
