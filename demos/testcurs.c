@@ -10,15 +10,15 @@
 # define _XOPEN_SOURCE_EXTENDED 1
 #endif
 
-#ifdef PDC_WIDE
-   #define HAVE_WIDE 1
-   #include <wchar.h>
-   #include <curses.h>
-#endif
 #ifdef HAVE_NCURSESW
    #define HAVE_WIDE 1
    #include <wchar.h>
    #include <ncursesw/curses.h>
+#endif
+#ifdef PDC_WIDE
+   #define HAVE_WIDE 1
+   #include <wchar.h>
+   #include <curses.h>
 #endif
 
 #ifndef HAVE_WIDE
@@ -131,7 +131,9 @@ int main(int argc, char *argv[])
     setlocale(LC_ALL, "");
 
 #ifdef PDCURSES
+#ifdef PDC_VER_MAJOR   /* so far only seen in 4.0+ */
     PDC_set_resize_limits( 20, 50, 70, 200);
+#endif
 #endif
 
     if (initTest(&win, argc, argv))
@@ -154,6 +156,7 @@ int main(int argc, char *argv[])
                 case 'm': case 'M':
                     PDC_return_key_modifiers( TRUE);
                     break;
+#ifdef PDC_VER_MAJOR   /* so far only seen in 4.0+ */
                 case 'r':     /* allow user-resizable windows */
                     {
                         int min_lines, max_lines, min_cols, max_cols;
@@ -165,6 +168,7 @@ int main(int argc, char *argv[])
                                                    min_cols, max_cols);
                     }
                     break;
+#endif
 #endif
                 case 'z':
                     report_mouse_movement = TRUE;
@@ -184,7 +188,9 @@ int main(int argc, char *argv[])
         wbkgd(win, A_REVERSE);
 
 #ifdef PDCURSES
+#ifdef PDC_VER_MAJOR   /* so far only seen in 4.0+ */
     PDC_set_function_key( FUNCTION_KEY_ABORT, 3 );  /* ctrl-C aborts */
+#endif
 #endif
 
     erase();
@@ -192,10 +198,16 @@ int main(int argc, char *argv[])
 
     while (1)
     {
+        bool run_option = FALSE;
+
         noecho();
         keypad(stdscr, TRUE);
         raw();
+#ifdef PDCURSES
+        mouse_set( ALL_MOUSE_EVENTS);
+#else
         mousemask( ALL_MOUSE_EVENTS, NULL);
+#endif
 
         key = getch();
 
@@ -203,33 +215,33 @@ int main(int argc, char *argv[])
         {
         case KEY_MOUSE:
             {
-               const int tmarg = (LINES - (MAX_OPTIONS + 2)) / 2;
-               int selected_opt;
-               MEVENT mouse_event;
+                const int tmarg = (LINES - (MAX_OPTIONS + 2)) / 2;
+                int selected_opt;
+                MEVENT mouse_event;
 
-               getmouse( &mouse_event);
-
-               selected_opt = mouse_event.y - tmarg;
-               if( selected_opt >= 0 && selected_opt < MAX_OPTIONS)
-               {
-                  old_option = new_option;
-                  new_option = selected_opt;
-                  display_menu( old_option, new_option);
-               }
-               if( mouse_event.bstate & BUTTON1_DOUBLE_CLICKED)
-                  key = 10;
+                getmouse( &mouse_event);
+#if defined( BUTTON4_PRESSED) && defined( BUTTON5_PRESSED)
+                if( mouse_event.bstate & BUTTON4_PRESSED)
+                    selected_opt = new_option - 1;   /* wheel up   */
+                else if( mouse_event.bstate & BUTTON5_PRESSED)
+                    selected_opt = new_option + 1;   /* wheel down */
+                else
+#endif
+                    selected_opt = mouse_event.y - tmarg;
+                if( selected_opt >= 0 && selected_opt < MAX_OPTIONS)
+                {
+                    old_option = new_option;
+                    new_option = selected_opt;
+                    display_menu( old_option, new_option);
+                }
+                if( mouse_event.bstate & BUTTON1_DOUBLE_CLICKED)
+                    run_option = TRUE;
             }
-            if( key != 10)
-               break;
+            break;
         case 10:
         case 13:
         case KEY_ENTER:
-            old_option = -1;
-            erase();
-            refresh();
-            (*command[new_option].function)(win);
-            erase();
-            display_menu(old_option, new_option);
+            run_option = TRUE;
             break;
 
         case KEY_PPAGE:
@@ -270,6 +282,15 @@ int main(int argc, char *argv[])
         case 'Q':
         case 'q':
             quit = TRUE;
+        }
+        if( run_option)
+        {
+            old_option = -1;
+            erase();
+            refresh();
+            (*command[new_option].function)(win);
+            erase();
+            display_menu(old_option, new_option);
         }
 
         if (quit == TRUE)
@@ -357,7 +378,7 @@ void introTest(WINDOW *win)
 void scrollTest(WINDOW *win)
 {
     int i, OldY;
-#ifndef PDCURSES
+#if !defined (PDCURSES) && !defined (NCURSES_VERSION)
     int OldX;
 #endif
     werase(win);
@@ -374,7 +395,7 @@ void scrollTest(WINDOW *win)
         wrefresh(win);
     };
 
-#ifdef PDCURSES
+#if defined (PDCURSES) || defined (NCURSES_VERSION)
     OldY = getmaxy(win);
 #else
     getmaxyx(win, OldY, OldX);
@@ -447,7 +468,7 @@ void inputTest(WINDOW *win)
     wclear (win);
     mvwaddstr(win, 1, 1,
         "Press keys (or mouse buttons) to show their names");
-    mvwaddstr(win, 2, 1, "Press spacebar to finish");
+    mvwaddstr(win, 2, 1, "Press spacebar to finish, Ctrl-A to return to main menu");
     wrefresh(win);
 
     keypad(win, TRUE);
@@ -457,11 +478,13 @@ void inputTest(WINDOW *win)
     wtimeout(win, 200);
 
 
-    mousemask( ALL_MOUSE_EVENTS |
-            (report_mouse_movement ? REPORT_MOUSE_POSITION : 0), NULL);
 #ifdef PDCURSES
+    mouse_set( ALL_MOUSE_EVENTS |
+            (report_mouse_movement ? REPORT_MOUSE_POSITION : 0));
     PDC_save_key_modifiers(TRUE);
 #else
+    mousemask( ALL_MOUSE_EVENTS |
+            (report_mouse_movement ? REPORT_MOUSE_POSITION : 0), NULL);
     if( report_mouse_movement)
        printf("\033[?1003h\n");   /* used in ncurses with some X-based */
 #endif                         /* terms to enable mouse move events */
@@ -542,6 +565,8 @@ void inputTest(WINDOW *win)
                   wprintw( win, " Alt");
             if( mouse_event.bstate & BUTTON_SHIFT)
                   wprintw( win, " Shift");
+            if( mouse_event.bstate & REPORT_MOUSE_POSITION)
+                  wprintw( win, " Moved");
 #ifdef BUTTON4_RESERVED_EVENT
             for( i = 0; i < sizeof( reserved_masks) / sizeof( reserved_masks[0]); i++)
                 if( mouse_event.bstate & reserved_masks[i])
@@ -563,8 +588,13 @@ void inputTest(WINDOW *win)
             else if (BUTTON_CHANGED(5))
                 button = 5;
             if( button)
+#ifdef PDC_N_EXTENDED_MOUSE_BUTTONS
                 status = (button > 3 ? Mouse_status.xbutton[(button) - 4] :
                                        Mouse_status.button[(button) - 1]);
+#else
+                status = (button > 3 ? 0 :
+                                       Mouse_status.button[(button) - 1]);
+#endif
 
             wmove(win, line_to_use, 5);
             wclrtoeol(win);
@@ -576,10 +606,14 @@ void inputTest(WINDOW *win)
                 waddstr(win, "wheel up: ");
             else if (MOUSE_WHEEL_DOWN)
                 waddstr(win, "wheel dn: ");
+#ifdef MOUSE_WHEEL_LEFT
             else if (MOUSE_WHEEL_LEFT)
                 waddstr(win, "wheel lt: ");
+#endif
+#ifdef MOUSE_WHEEL_RIGHT
             else if (MOUSE_WHEEL_RIGHT)
                 waddstr(win, "wheel rt: ");
+#endif
             else if ((status & BUTTON_ACTION_MASK) == BUTTON_PRESSED)
                 waddstr(win, "pressed: ");
             else if ((status & BUTTON_ACTION_MASK) == BUTTON_CLICKED)
@@ -592,17 +626,16 @@ void inputTest(WINDOW *win)
                 waddstr(win, "released: ");
 
             wprintw(win, "Posn: Y: %d X: %d", MOUSE_Y_POS, MOUSE_X_POS);
-            if (button && (status & BUTTON_MODIFIER_MASK))
-            {
-                if (status & BUTTON_SHIFT)
-                    waddstr(win, " SHIFT");
+            if( !button)                 /* just to get shift/alt/ctrl status */
+                status = Mouse_status.button[0];
+            if (status & BUTTON_SHIFT)
+                waddstr(win, " SHIFT");
 
-                if (status & BUTTON_CONTROL)
-                    waddstr(win, " CONTROL");
+            if (status & BUTTON_CONTROL)
+                waddstr(win, " CONTROL");
 
-                if (status & BUTTON_ALT)
-                    waddstr(win, " ALT");
-            }
+            if (status & BUTTON_ALT)
+                waddstr(win, " ALT");
         }
         else if (PDC_get_key_modifiers())
         {
@@ -619,13 +652,15 @@ void inputTest(WINDOW *win)
             if (PDC_get_key_modifiers() & PDC_KEY_MODIFIER_NUMLOCK)
                 waddstr(win, " NUMLOCK");
 
+#ifdef PDC_KEY_MODIFIER_REPEAT
             if (PDC_get_key_modifiers() & PDC_KEY_MODIFIER_REPEAT)
                 waddstr(win, " REPEAT");
+#endif
 #endif            /* end of mouse display */
         }
         wrefresh(win);
 
-        if (c == ' ')
+        if (c == ' ' || c == 1)
             break;
         line_to_use++;
         if( line_to_use == 17)
@@ -641,8 +676,12 @@ void inputTest(WINDOW *win)
 /*  PDC_return_key_modifiers(FALSE);   */
 #endif
     wclear(win);
+    if( c == 1)
+       return;
 #ifdef PDCURSES
+#ifdef PDC_VER_MAJOR   /* so far only seen in 4.0+ */
     PDC_set_function_key( FUNCTION_KEY_ABORT, 0 );  /* un-abortable */
+#endif
 #endif
     mvwaddstr(win, 2, 1, "Press some keys for 5 seconds");
     mvwaddstr(win, 1, 1, "Pressing ^C should do nothing");
@@ -660,7 +699,9 @@ void inputTest(WINDOW *win)
     }
 
 #ifdef PDCURSES
+#ifdef PDC_VER_MAJOR   /* so far only seen in 4.0+ */
     PDC_set_function_key( FUNCTION_KEY_ABORT, 3 );  /* ctrl-C aborts */
+#endif
 #endif
 
     delwin(subWin);
@@ -1287,8 +1328,8 @@ void acsTest(WINDOW *win)
         mvaddwstr(tmarg, 7 * (COLS / 8) - 5, georgian);
         mvaddwstr(tmarg + 1, COLS / 8 - 5, fullwidth);
 
-#if(CHTYPE_LONG >= 2)       /* "non-standard" 64-bit chtypes     */
         mvaddwstr(tmarg + 1, 3 * (COLS / 8) - 5, combining_marks);
+#if(CHTYPE_LONG >= 2)       /* "non-standard" 64-bit chtypes     */
         mvaddch( tmarg + 1, 7 * (COLS / 8) - 5, (chtype)0x1d11e);
 #endif            /* U+1D11E = musical symbol G clef */
 
@@ -1303,8 +1344,12 @@ void acsTest(WINDOW *win)
 
 #if CHTYPE_LONG >= 2 || (CHTYPE_LONG == 1 && !defined( PDC_WIDE))
    #define GOT_DIM
+#ifdef A_OVERLINE
    #define GOT_OVERLINE
+#endif
+#ifdef A_STIKEOUT
    #define GOT_STRIKEOUT
+#endif
 #endif
 
 void colorTest(WINDOW *win)
@@ -1483,8 +1528,10 @@ void colorTest(WINDOW *win)
 #ifdef GOT_OVERLINE
        attrset( A_OVERLINE);
        mvaddstr( tmarg + 17, col2, "A_OVERLINE");
+#ifdef GOT_STRIKEOUT
        attrset( A_STRIKEOUT);
        mvaddstr( tmarg + 18, col2, "A_STRIKEOUT");
+#endif
        attrset( A_OVERLINE | A_UNDERLINE);
        mvaddstr( tmarg + 19, col2, "Over/underlined");
 #endif

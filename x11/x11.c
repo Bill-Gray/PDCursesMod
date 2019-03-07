@@ -127,7 +127,9 @@ static struct
  {XK_F20,       FALSE,  KEY_F(20),   KEY_F(32),    KEY_F(44),   KEY_F(56)},
  {XK_BackSpace, FALSE,  0x08,        0x08,         CTL_BKSP,    ALT_BKSP},
  {XK_Tab,       FALSE,  0x09,        KEY_BTAB,     CTL_TAB,     ALT_TAB},
+#if defined(XK_ISO_Left_Tab)
  {XK_ISO_Left_Tab, FALSE,  0x09,        KEY_BTAB,     CTL_TAB,     ALT_TAB},
+#endif
  {XK_Select,    FALSE,  KEY_SELECT,  KEY_SELECT,   KEY_SELECT,  KEY_SELECT},
  {XK_Print,     FALSE,  KEY_PRINT,   KEY_SPRINT,   KEY_PRINT,   KEY_PRINT},
  {XK_Find,      FALSE,  KEY_FIND,    KEY_SFIND,    KEY_FIND,    KEY_FIND},
@@ -663,7 +665,7 @@ static void _make_xy(int x, int y, int *xpos, int *ypos)
     /* leads to output = 85 + input * (255-85)/192.                     */
     /*    This should lead to proper handling of bold text in legacy    */
     /* apps,  where "bold" means "high intensity".                      */
-    /*   NOTE that this is basically a clone of code in win32a/pdcdisp.c. */
+    /*   NOTE that this is basically a clone of code in wingui/pdcdisp.c. */
     /* The same basic logic should eventually be used in SDL,  I think. */
 
 static Pixel intensified_color( Pixel ival)
@@ -714,7 +716,7 @@ static Pixel dimmed_color( Pixel ival)
 
    /* PDC_get_rgb_values(), extract_packed_rgb(), intensified_component(), */
    /* intensified_color(),  and dimmed_color() each exist in x11/x11.c,    */
-   /* win32a/pdcdisp.c,  and sdl2/pdcdisp.c in forms slightly modified for */
+   /* wingui/pdcdisp.c,  and sdl2/pdcdisp.c in forms slightly modified for */
    /* each platform.  But they all look pretty much alike.  */
 
             /* PDCurses stores RGBs in fifteen bits,  five bits each */
@@ -2286,7 +2288,7 @@ static void _send_key_to_curses(unsigned long key, MOUSE_STATUS *ms,
 #endif
 
 /* Note that the logic used to avoid unnecessary drawing is heavily
-borrowed from the HandleTimer function in win32a/pdcscrn.c.  The
+borrowed from the HandleTimer function in wingui/pdcscrn.c.  The
 comments there may be helpful. */
 
 static void _blink_cursor(XtPointer unused, XtIntervalId *id)
@@ -2851,7 +2853,6 @@ static void _set_color(void)
 
     if (XAllocColor(XCURSESDISPLAY, cmap, tmp))
     {
-        XFreeColors(XCURSESDISPLAY, cmap, colors + index, 1, 0);
         colors[index] = tmp->pixel;
 
         _display_screen();
@@ -3117,8 +3118,14 @@ static void _process_curses_requests(XtPointer client_data, int *fid,
             break;
 
         case CURSES_DISPLAY_CURSOR:
-            XC_LOG(("CURSES_DISPLAY_CURSOR received from child.  Vis. now: %d\n",
-                     PDC_blink_state));
+            if(PDC_blink_state)
+            {
+                XC_LOG(("CURSES_DISPLAY_CURSOR received from child.  Vis. now: 1\n"));
+            }
+            else
+            {
+                XC_LOG(("CURSES_DISPLAY_CURSOR received from child.  Vis. now: 0\n"));
+            }
             break;
 
         case CURSES_TITLE:

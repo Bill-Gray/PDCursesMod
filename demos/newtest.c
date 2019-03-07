@@ -29,6 +29,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <locale.h>
+#include <stdbool.h>
 
 int PDC_write_screen_to_file( const char *filename, WINDOW *win);
 
@@ -99,7 +100,7 @@ void text_in_a_box( const char *istr)
       /* Default is between "underline" and "invisible".  Set both states */
       /* to the same value to get an unblinking cursor.                   */
 
-#ifdef _WIN32
+#if defined( _WIN32) && !defined( __BORLANDC__)
 #define PURE_WINDOWS_VERSION  1
 #endif
 
@@ -154,9 +155,11 @@ int main( int argc, char **argv)
 #endif
 {
     int quit = 0, i,  use_slk = 1;
+    bool show_mouse_moves = false;
 #ifdef PDCURSES
     bool blink_state = FALSE;
     int fmt = 0xa;
+    const char *title_text = "NewTest: tests various PDCurses features";
 #else
     int fmt = 3;   /* for ncurses,  this is the 4-4-4 SLK format */
 #endif
@@ -216,11 +219,23 @@ int main( int argc, char **argv)
                             resize_term( n_lines, n_cols);
                     }
                     break;
+#ifdef PDCURSES
+                case 'z':
+                    traceon( );
+                    PDC_debug( "Debugging is on\n");
+                    break;
+                case 't':
+                    title_text = argv[i] + 2;
+                    break;
+#endif
 #ifdef HAVE_WIDE
                 case 'u':
                     sscanf( argv[i] + 2, "%x", &unicode_offset);
                     break;
 #endif
+                case 'm':
+                    show_mouse_moves = true;
+                    break;
                 default:
                     printf( "Option '%s' unrecognized\n", argv[i]);
                     break;
@@ -245,13 +260,13 @@ int main( int argc, char **argv)
     clear();
     refresh();
 #ifdef __PDCURSES__
-    PDC_set_title( "NewTest: tests various PDCurses features");
+    PDC_set_title( title_text);
 #endif
     keypad( stdscr, TRUE);
     init_pair( 1, COLOR_WHITE, COLOR_BLACK);
     init_pair( 2, COLOR_BLACK, COLOR_YELLOW);
 
-    mousemask( ALL_MOUSE_EVENTS, NULL);
+    mousemask( ALL_MOUSE_EVENTS | (show_mouse_moves ? REPORT_MOUSE_POSITION : 0), NULL);
     attrset( COLOR_PAIR( 1));
     while( !quit)
     {
@@ -284,6 +299,11 @@ int main( int argc, char **argv)
             attron( A_DIM);
             mvaddstr( 15, 41, "Dimmed text");
             attroff( A_DIM);
+#endif
+#ifdef A_STANDOUT
+            attron( A_STANDOUT);
+            mvaddstr( 16, 41, "Standout text");
+            attroff( A_STANDOUT);
 #endif
 #ifdef HAVE_WIDE
             mvaddwstr( 3, COL1, L"'Normal' text,  but wide");
@@ -330,24 +350,33 @@ int main( int argc, char **argv)
 
 #endif
 
+            mvaddstr( 5, 1, "   0 1 2 3 4 5 6 7 8 9 a b c d e f");
+            for( i = 0; i < 8; i++)
+                {
+                char buff[4];
+
+                sprintf( buff, "%02x",
+#ifdef HAVE_WIDE
+                                (unsigned)( i * 16 + unicode_offset) & 0xff);
+#else
+                                (unsigned)( i * 16 + 128) & 0xff);
+#endif
+                mvaddstr( 6 + i, 1, buff);
+                mvaddstr( 6 + i, 36, buff);
+                }
             for( i = 0; i < 128; i++)
             {                 /* Show extended characters: */
-                char buff[6];
 #ifdef HAVE_WIDE
-                wchar_t wbuff[3];
+                wchar_t buff[2];
 
-                sprintf( buff, "%02x ",
-                           (unsigned)( i + unicode_offset) & 0xff);
-                mvaddstr( 5 + i % 16, (i / 16) * 5, buff);
-                wbuff[0] = (wchar_t)( i + unicode_offset);
-                wbuff[1] = (wchar_t)' ';
-                wbuff[2] = (wchar_t)0;
-                addwstr( wbuff);
+                buff[0] = (wchar_t)( i + unicode_offset);
+                buff[1] = '\0';
+                mvaddwstr( 6 + i / 16, 4 + 2 * (i % 16), buff);
 #else
-
-                sprintf( buff, "%02x %c", i + 128, (char)(i + 128));
-                mvaddstr( 5 + i % 16, (i / 16) * 5, buff);
+                move( 6 + i / 16, 4 + 2 * (i % 16));
+                addch( i + 128);
 #endif
+                addch( ' ');
             }
 
 #if(CHTYPE_LONG >= 2)       /* "non-standard" 64-bit chtypes     */
@@ -391,8 +420,6 @@ int main( int argc, char **argv)
             for( i = 0; i < 6; i++)
             {
                 static const wchar_t spanish[] = L"Espa\xf1ol";
-                const int line0 = line + i / 3;
-                const int col = 5 + 25 * (i % 3);
 
                 static const wchar_t russian[] = {0x0420, 0x0443, 0x0441, 0x0441,
                    0x043a, 0x0438, 0x0439, L' ', 0x044f, 0x0437, 0x044b, 0x043a, 0};
@@ -415,12 +442,14 @@ int main( int argc, char **argv)
                 static const wchar_t *texts[6] = { spanish, russian, greek,
                                 georgian, fullwidth, combining_marks};
 
-                if( line0 < ymax && col < xmax)
-                   mvaddnwstr( line0, 5 + 25 * (i % 3), texts[i], xmax - col);
+                mvaddwstr( 15 + i / 2, 2 + 20 * (i % 2), texts[i]);
             }
+#if(CHTYPE_LONG >= 2)       /* "non-standard" 64-bit chtypes     */
+             mvaddch( line - 1, 58, (chtype)0x1d11e);
+#endif            /* U+1D11E = musical symbol G clef */
             line += 2;
 #endif
-        mvaddstr( line, 1, curses_version( ));
+        mvaddstr( 19, 1, curses_version( ));
 
 #ifdef MAYBE_TRY_THIS_SOMEWHERE_ELSE
         mvaddstr(  1, COL3, "Click on cursor descriptions to");
