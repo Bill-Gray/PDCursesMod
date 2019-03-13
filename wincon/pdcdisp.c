@@ -108,11 +108,34 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
 #endif
             ci[dst].Char.UnicodeChar = (WCHAR)char_out;
 
+#ifdef PDC_NEW_WINCON_WORKAROUND
+            sr.Left = x + src;
+            if( src < len - 1 &&
+               (srcp[src + 1] & A_CHARTEXT) == DUMMY_CHAR_NEXT_TO_FULLWIDTH)
+            {
+                 /* necessary to erase garbage */
+                ci[dst + 1].Char.UnicodeChar = (WCHAR)' ';
+                ci[dst + 1].Attributes = ci[dst].Attributes;
+                bufSize.X = 2;
+                bufSize.Y = 1;
+                sr.Right = sr.Left + 2;
+            }
+            else
+            {
+                bufSize.X = 1;
+                bufSize.Y = 1;
+                sr.Right = sr.Left + 1;
+            }
+            WriteConsoleOutput(pdc_con_out, ci, bufSize, bufPos, &sr);
+#else
             dst++;
+#endif
         }
 
+#ifndef PDC_NEW_WINCON_WORKAROUND
     bufSize.X = dst;
     bufSize.Y = 1;
 
     WriteConsoleOutput(pdc_con_out, ci, bufSize, bufPos, &sr);
+#endif
 }

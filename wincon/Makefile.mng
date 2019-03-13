@@ -86,6 +86,10 @@ ifeq ($(WIDE),Y)
 	CFLAGS += -DPDC_WIDE
 endif
 
+ifeq ($(NEW_WINCON_WORKAROUND),Y)
+	CFLAGS += -DPDC_NEW_WINCON_WORKAROUND
+endif
+
 ifeq ($(UTF8),Y)
 	CFLAGS += -DPDC_FORCE_UTF8
 endif
