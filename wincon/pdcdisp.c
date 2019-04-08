@@ -50,6 +50,8 @@ void PDC_gotoyx(int row, int col)
    int PDC_expand_combined_characters( const cchar_t c, cchar_t *added);  /* addch.c */
 #endif
 
+#define PDC_NEW_WINCON_WORKAROUND 1
+
 void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
 {
     CHAR_INFO ci[512];
