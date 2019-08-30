@@ -1,6 +1,7 @@
 /* Public Domain Curses */
 
 #include "pdcwin.h"
+#include <stdlib.h>
 
 #ifdef CHTYPE_LONG
 # define PDC_OFFSET 32

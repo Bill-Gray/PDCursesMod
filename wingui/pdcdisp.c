@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <tchar.h>
+#include <commdlg.h>
 
 /* For this 'real Windows' version,  we use all Unicode all the time,
 including for ACS characters,  and even when PDC_WIDE isn't #defined

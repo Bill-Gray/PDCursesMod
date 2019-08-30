@@ -1,6 +1,7 @@
 /* Public Domain Curses */
 
 #include "pdcwin.h"
+#include <stdlib.h>
 #include <tchar.h>
 
 /*man-start**************************************************************

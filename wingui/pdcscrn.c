@@ -1,7 +1,9 @@
 /* Public Domain Curses */
 
 #include "pdcwin.h"
+#include <shellapi.h>
 #include <tchar.h>
+#include <stdlib.h>
 #include <stdint.h>
 #include <assert.h>
 
