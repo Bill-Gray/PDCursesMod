@@ -29,9 +29,12 @@
 #include <string.h>
 #include <stdio.h>
 #include <locale.h>
-#include <stdbool.h>
 
 int PDC_write_screen_to_file( const char *filename, WINDOW *win);
+
+#ifndef A_OVERLINE
+   #define A_OVERLINE   0
+#endif
 
 static const char *labels[] = {
                "Quit", "Blink", "No labels", "431", "2134", "55",
@@ -155,7 +158,7 @@ int main( int argc, char **argv)
 #endif
 {
     int quit = 0, i,  use_slk = 1;
-    bool show_mouse_moves = false;
+    bool show_mouse_moves = FALSE;
 #ifdef PDCURSES
     bool blink_state = FALSE;
     int fmt = 0xa;
@@ -167,7 +170,7 @@ int main( int argc, char **argv)
     int cursor_y = 19, cursor_x = 51;
     int show_slk_index_line = 0;
     int redraw = 1;
-    unsigned extra_character_to_show = 0;
+    const char *extra_characters_to_show = "";
 #ifdef HAVE_WIDE
     unsigned unicode_offset = 0x80;
 #endif
@@ -187,7 +190,7 @@ int main( int argc, char **argv)
                     setlocale( LC_ALL, argv[i] + 2);
                     break;
                 case 'e':
-                    sscanf( argv[i] + 2, "%x", &extra_character_to_show);
+                    extra_characters_to_show = argv[i] + 2;
                     break;
                 case 'f':
                     sscanf( argv[i] + 2, "%x", (unsigned *)&fmt);
@@ -234,7 +237,7 @@ int main( int argc, char **argv)
                     break;
 #endif
                 case 'm':
-                    show_mouse_moves = true;
+                    show_mouse_moves = TRUE;
                     break;
                 default:
                     printf( "Option '%s' unrecognized\n", argv[i]);
@@ -312,8 +315,10 @@ int main( int argc, char **argv)
             mvaddstr( 6, 40, "Blinking");
             attron( A_BOLD);
             mvaddstr( 8, 40, "BlinkBold");
+#ifdef A_ITALIC
             attron( A_ITALIC);
             mvaddstr( 0, COL2, "BlinkBoldItalic");
+#endif
             attrset( COLOR_PAIR( 3));
             attron( A_UNDERLINE);
 #ifdef HAVE_WIDE
@@ -321,8 +326,10 @@ int main( int argc, char **argv)
             addwstr( L"WideUnder");
 #endif
             attrset( COLOR_PAIR( 1));
+#ifdef A_ITALIC
             attron( A_UNDERLINE | A_ITALIC);
             mvaddstr( 2, COL2, "UnderlinedItalic");
+#endif
             attrset( COLOR_PAIR( 2));
             attron( A_BLINK);
             mvaddstr( 4, COL1, "Black-on-yellow blinking");
@@ -331,7 +338,7 @@ int main( int argc, char **argv)
             move( 4, COL2);
             text_in_a_box( "Text in a box");
 
-#ifdef CHTYPE_LONG
+#if defined( CHTYPE_LONG) && defined( A_STRIKEOUT)
             attrset( COLOR_PAIR( 6));
             attron( A_STRIKEOUT);
             mvaddstr( 10, 40, "Strikeout");
@@ -386,7 +393,7 @@ int main( int argc, char **argv)
                 const char *output_text[3] = {
                     "Red on green to white on black   | (you can get full RGB colors when desired,",
                     "Blue on yellow to black on red | with palette coloring still being available)",
-                    "White on red to green on blue,  underlined and italic" };
+                    "White on red to green on blue,  underlined (if available)" };
                 const int len = (int)strlen( output_text[i]);
 
                 move( line, 1);
@@ -404,7 +411,7 @@ int main( int argc, char **argv)
                     {
                         output_color = A_RGB( reverse, 31, reverse,
                                reverse, 0, oval);
-                        output_color |= A_UNDERLINE | A_ITALIC;
+                        output_color |= A_UNDERLINE;
                     }
                     attrset( output_color);
                     addch( output_text[i][j]);
@@ -413,9 +420,21 @@ int main( int argc, char **argv)
 #endif         /* #if(CHTYPE_LONG >= 2) */
             redraw = 0;
             attrset( COLOR_PAIR( 1));
-            if( extra_character_to_show && ymax > 23)
-                mvaddch( 23, 63, (chtype)extra_character_to_show);
+            if( *extra_characters_to_show && ymax > 23)
+            {
+                unsigned long ival;
+                int bytes_read;
+                const char *tptr = extra_characters_to_show;
 
+                move( 23, 63);
+                while( sscanf( tptr, "%lx%n", &ival, &bytes_read) > 0)
+                {
+                    addch( (chtype)ival);
+                    tptr += bytes_read;
+                    if( *tptr)
+                        tptr++;
+                }
+            }
 #ifdef HAVE_WIDE
             for( i = 0; i < 6; i++)
             {
@@ -445,7 +464,7 @@ int main( int argc, char **argv)
                 mvaddwstr( 15 + i / 2, 2 + 20 * (i % 2), texts[i]);
             }
 #if(CHTYPE_LONG >= 2)       /* "non-standard" 64-bit chtypes     */
-             mvaddch( line - 1, 58, (chtype)0x1d11e);
+             mvaddch( line - 1, 60, (chtype)0x1d11e);
 #endif            /* U+1D11E = musical symbol G clef */
             line += 2;
 #endif
