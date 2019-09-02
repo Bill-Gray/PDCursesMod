@@ -1790,6 +1790,7 @@ PDCEX int     PDC_set_function_key( const unsigned function,
                               const int new_key);
 
 PDCEX int     PDC_set_preferred_fontface( const wchar_t* fontface);
+PDCEX void    PDC_set_color_intensify_enabled( bool enabled);
 PDCEX void    PDC_set_default_menu_visibility(int visible);
 PDCEX  WINDOW *Xinitscr(int, char **);
 
