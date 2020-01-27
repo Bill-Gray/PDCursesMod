@@ -3,8 +3,6 @@
 #include "pdcwin.h"
 #include <stdlib.h>
 
-#include <stdlib.h>
-
 /* Color component table */
 
 PDCCOLOR pdc_color[PDC_MAXCOL];
