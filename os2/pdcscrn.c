@@ -2,11 +2,7 @@
 
 #include "pdcos2.h"
 
-#ifdef CHTYPE_LONG
 # define PDC_OFFSET 32
-#else
-# define PDC_OFFSET  8
-#endif
 
 /* COLOR_PAIR to attribute encoding table. */
 
@@ -171,6 +167,8 @@ int PDC_scr_open(int argc, char **argv)
 
     SP->mouse_wait = PDC_CLICK_PERIOD;
     SP->audible = TRUE;
+
+    SP->termattrs = (SP->mono ? 0 : A_COLOR) | A_REVERSE | A_BLINK;
 
     /* This code for preserving the current screen */
 

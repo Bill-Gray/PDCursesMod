@@ -1,16 +1,12 @@
 /*
- *  ozdemo.c   -   A demo program using PDCurses. The program
- *          illustrates the use of colors for text output.
- *
- *  Hacks by jbuhler@cs.washington.edu on 12/29/96
+ *  ozdemo.c           - A demo program using PDCurses. The program
+ *  (formerly newdemo)   illustrates the use of colors for text output.
  */
 
-#include <stdio.h>
 #include <signal.h>
 #include <string.h>
 #include <curses.h>
 #include <stdlib.h>
-#include <assert.h>
 #include <time.h>
 
 int WaitForUser(void);
@@ -63,7 +59,7 @@ int WaitForUser(void)
     nocbreak();     /* Reset the halfdelay() value */
     cbreak();
 
-    return (ch == '\033') ? '\033' : 0;
+    return (ch == '\033') ? (int)ch : 0;
 }
 
 int SubWinTest(WINDOW *win)
@@ -213,26 +209,20 @@ int main(int argc, char **argv)
 {
     WINDOW *win;
     chtype save[80], ch;
-    int width, height, w, x, y, i, j, seed;
+    time_t seed;
+    int width, height, w, x, y, i, j;
     const char *versions =
             " DOS, OS/2, Windows console & GUI, X11, SDL 1/2, VT";
     const char *hit_any_key =
             "       Type a key to continue or ESC to quit       ";
-
-    assert( strlen( versions) == strlen( hit_any_key));
-#ifdef PDCURSES
-#ifdef PDC_VER_MAJOR   /* so far only seen in 4.0+ */
-    PDC_set_resize_limits( 20, 50, 70, 200);
-#endif
-#endif
 
 #ifdef XCURSES
     Xinitscr(argc, argv);
 #else
     initscr();
 #endif
-    seed = (int)time((time_t *)0);
-    srand(seed);
+    seed = time((time_t *)0);
+    srand( (unsigned)seed);
 
     start_color();
 # if defined(NCURSES_VERSION) || (defined(PDC_BUILD) && PDC_BUILD > 3000)
@@ -269,8 +259,6 @@ int main(int argc, char **argv)
 
     for (;;)
     {
-
-
         init_pair(1, COLOR_WHITE, COLOR_BLUE);
         wbkgd(win, COLOR_PAIR(1));
         werase(win);
@@ -298,7 +286,6 @@ int main(int argc, char **argv)
 
             if (getch() != ERR)
                 break;
-            napms( 1);
 
             if (i == 2000)
             {
@@ -358,22 +345,22 @@ int main(int argc, char **argv)
         for (j = 0; messages[j] != NULL; j++)
         {
             char *message = messages[j];
-            int msg_len = strlen(message);
+            int msg_len = (int)strlen(message);
             int stop = 0;
-            int xpos, start, count, n;
+            int xpos, start, count;
 
-            for (n = 0; n <= w + msg_len; n++)
+            for (i = 0; i <= w + msg_len; i++)
             {
-                if (n < w)
+                if (i < w)
                 {
-                    xpos = w - n;
+                    xpos = w - i;
                     start = 0;
-                    count = (n > msg_len) ? msg_len : n;
+                    count = (i > msg_len) ? msg_len : i;
                 }
                 else
                 {
                     xpos = 0;
-                    start = n - w;
+                    start = i - w;
                     count = (w > msg_len - start) ? msg_len - start : w;
                 }
 

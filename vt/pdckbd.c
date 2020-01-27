@@ -295,9 +295,9 @@ int PDC_get_key( void)
                   report_event |= PDC_MOUSE_MOVED;
                else if( SP->_trap_mbe & REPORT_MOUSE_POSITION)
                   report_event = PDC_MOUSE_POSITION;
-               pdc_mouse_status.changes = report_event;
+               SP->mouse_status.changes = report_event;
                for( i = 0; i < 3; i++)
-                  pdc_mouse_status.button[i] = (i == idx ? BUTTON_MOVED : 0);
+                  SP->mouse_status.button[i] = (i == idx ? BUTTON_MOVED : 0);
                idx = 3;
                }
             else if( idx == 3)         /* it's a release */
@@ -309,14 +309,14 @@ int PDC_get_key( void)
                }
             if( idx < 3)
                {
-               memset(&pdc_mouse_status, 0, sizeof(MOUSE_STATUS));
-               pdc_mouse_status.button[idx] =
+               memset(&SP->mouse_status, 0, sizeof(MOUSE_STATUS));
+               SP->mouse_status.button[idx] =
                               (release ? BUTTON_RELEASED : BUTTON_PRESSED);
                if( (c[2] & 0x60) == 0x60)    /* actually mouse wheel event */
-                  pdc_mouse_status.changes =
+                  SP->mouse_status.changes =
                         (idx ? PDC_MOUSE_WHEEL_DOWN : PDC_MOUSE_WHEEL_UP);
                else     /* "normal" mouse button */
-                  pdc_mouse_status.changes = (1 << idx);
+                  SP->mouse_status.changes = (1 << idx);
                if( !release && !(c[2] & 64))   /* wait for a possible release */
                   {
                   int n_events = 0;
@@ -337,17 +337,17 @@ int PDC_get_key( void)
                   if( !n_events)   /* just a click,  no release(s) */
                      held ^= (1 << idx);
                   else if( n_events == 1)
-                      pdc_mouse_status.button[idx] = BUTTON_CLICKED;
+                      SP->mouse_status.button[idx] = BUTTON_CLICKED;
                   else if( n_events <= 3)
-                      pdc_mouse_status.button[idx] = BUTTON_DOUBLE_CLICKED;
+                      SP->mouse_status.button[idx] = BUTTON_DOUBLE_CLICKED;
                   else if( n_events <= 5)
-                      pdc_mouse_status.button[idx] = BUTTON_TRIPLE_CLICKED;
+                      SP->mouse_status.button[idx] = BUTTON_TRIPLE_CLICKED;
                   }
                }
             for( i = 0; i < 3; i++)
-               pdc_mouse_status.button[i] |= flags;
-            pdc_mouse_status.x = (unsigned char)( c[3] - ' ' - 1);
-            pdc_mouse_status.y = (unsigned char)( c[4] - ' ' - 1);
+               SP->mouse_status.button[i] |= flags;
+            SP->mouse_status.x = (unsigned char)( c[3] - ' ' - 1);
+            SP->mouse_status.y = (unsigned char)( c[4] - ' ' - 1);
             }
          }
       else if( (rval & 0xc0) == 0xc0)      /* start of UTF-8 */
@@ -357,14 +357,21 @@ int PDC_get_key( void)
          c[0] &= 0x3f;
          if( !(rval & 0x20))      /* two-byte : U+0080 to U+07ff */
             rval = c[0] | ((rval & 0x1f) << 6);
-         else if( !(rval & 0x10))   /* three-byte : U+0800 - U+ffff */
+         else
             {
             check_key( &c[1]);
             assert( (c[1] & 0xc0) == 0x80);
             c[1] &= 0x3f;
-            rval = (c[1] | (c[0] << 6) | ((rval & 0xf) << 12));
+            if( !(rval & 0x10))   /* three-byte : U+0800 - U+ffff */
+               rval = (c[1] | (c[0] << 6) | ((rval & 0xf) << 12));
+            else              /* four-byte : U+FFFF - U+10FFFF : SMP */
+               {              /* (Supplemental Multilingual Plane) */
+               check_key( &c[2]);
+               assert( (c[2] & 0xc0) == 0x80);
+               c[2] &= 0x3f;
+               rval = (c[2] | (c[1] << 6) | (c[0] << 12) | ((rval & 0xf) << 18));
+               }
             }
-            /* Else... four-byte SMP char */
          }
       else if( rval == 127)
          rval = 8;
@@ -426,9 +433,3 @@ void PDC_set_keyboard_binary( bool on)
 {
    return;
 }
-
-unsigned long PDC_get_input_fd( void)
-{
-   return( 0);
-}
-

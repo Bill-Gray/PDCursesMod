@@ -12,7 +12,6 @@ PDCURSES_CURSPRIV_H	= $(PDCURSES_SRCDIR)\curspriv.h
 PDCURSES_HEADERS	= $(PDCURSES_CURSES_H) $(PDCURSES_CURSPRIV_H)
 
 PANEL_HEADER	= $(PDCURSES_SRCDIR)\panel.h
-TERM_HEADER	= $(PDCURSES_SRCDIR)\term.h
 
 srcdir		= $(PDCURSES_SRCDIR)\pdcurses
 osdir		= $(PDCURSES_SRCDIR)\wincon
@@ -24,7 +23,7 @@ CC		= dmc
 
 CFLAGS		= -c -o+space -Nc
 
-CPPFLAGS	= -I$(PDCURSES_SRCDIR) -DPDC_WIDE -DPDC_FORCE_UTF8 -DHAVE_NO_INFOEX
+CPPFLAGS	= -I$(PDCURSES_SRCDIR) -DPDC_WIDE -DPDC_FORCE_UTF8
 
 LINK		= dmc
 LIBEXE		= lib
@@ -33,7 +32,7 @@ LIBCURSES	= pdcurses.lib
 
 BUILD		= $(CC) $(CFLAGS) $(CPPFLAGS)
 
-DEMOS		= testcurs.exe ozdemo.exe newtest.exe xmas.exe tuidemo.exe \
+DEMOS		= testcurs.exe ozdemo.exe             xmas.exe tuidemo.exe \
 firework.exe ptest.exe rain.exe worm.exe
 
 all:    $(LIBCURSES) $(DEMOS)
@@ -46,11 +45,11 @@ clean:
 	-del advapi32.def
 
 LIBOBJS = addch.obj addchstr.obj addstr.obj attr.obj beep.obj bkgd.obj \
-border.obj clear.obj color.obj delch.obj deleteln.obj deprec.obj getch.obj \
+border.obj clear.obj color.obj delch.obj deleteln.obj getch.obj \
 getstr.obj getyx.obj inch.obj inchstr.obj initscr.obj inopts.obj \
 insch.obj insstr.obj instr.obj kernel.obj keyname.obj mouse.obj move.obj \
 outopts.obj overlay.obj pad.obj panel.obj printw.obj refresh.obj \
-scanw.obj scr_dump.obj scroll.obj slk.obj termattr.obj terminfo.obj \
+scanw.obj scr_dump.obj scroll.obj slk.obj termattr.obj \
 touch.obj util.obj window.obj debug.obj
 
 PDCOBJS = pdcclip.obj pdcdisp.obj pdcgetsc.obj pdckbd.obj pdcscrn.obj \
@@ -62,7 +61,6 @@ firework.obj ptest.obj rain.obj worm.obj
 $(LIBOBJS) $(PDCOBJS) : $(PDCURSES_HEADERS)
 $(PDCOBJS) : $(PDCURSES_WIN_H)
 panel.obj ptest.obj: $(PANEL_HEADER)
-terminfo.obj: $(TERM_HEADER)
 
 $(DEMOOBJS) : $(PDCURSES_CURSES_H)
 $(DEMOS) : $(LIBCURSES)
@@ -106,9 +104,6 @@ delch.obj: $(srcdir)\delch.c
 	$(SRCBUILD)
 
 deleteln.obj: $(srcdir)\deleteln.c
-	$(SRCBUILD)
-
-deprec.obj: $(srcdir)\deprec.c
 	$(SRCBUILD)
 
 getch.obj: $(srcdir)\getch.c
@@ -184,9 +179,6 @@ slk.obj: $(srcdir)\slk.c
 	$(SRCBUILD)
 
 termattr.obj: $(srcdir)\termattr.c
-	$(SRCBUILD)
-
-terminfo.obj: $(srcdir)\terminfo.c
 	$(SRCBUILD)
 
 touch.obj: $(srcdir)\touch.c
