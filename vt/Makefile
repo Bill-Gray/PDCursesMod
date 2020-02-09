@@ -19,9 +19,9 @@ osdir		= $(PDCURSES_SRCDIR)/vt
 SFLAGS		= -DHAVE_VSNPRINTF -DHAVE_VSSCANF
 
 ifeq ($(DEBUG),Y)
-	CFLAGS  = -g -Wall -DPDCDEBUG
+	CFLAGS  = -g -Wall -pedantic -DPDCDEBUG
 else
-	CFLAGS  = -O2 -Wall
+	CFLAGS  = -O2 -Wall -pedantic
 endif
 
 ifeq ($(DOS),Y)
@@ -92,7 +92,6 @@ $(LIBCURSES) : $(LIBOBJS) $(PDCOBJS)
 $(LIBOBJS) $(PDCOBJS) : $(PDCURSES_HEADERS)
 $(DEMOS) : $(PDCURSES_CURSES_H) $(LIBCURSES)
 tui.o tuidemo.o : $(PDCURSES_CURSES_H)
-terminfo.o: $(TERM_HEADER)
 panel.o ptest: $(PANEL_HEADER)
 
 $(LIBOBJS) : %.o: $(srcdir)/%.c

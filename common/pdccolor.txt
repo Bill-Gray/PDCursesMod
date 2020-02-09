@@ -1,0 +1,50 @@
+   The VT,  WinGUI,  and (eventually) SDL2,  SDL1,  and X11 models all
+have the ability to support 'full' RGB,  16 million colors.  ncurses
+currently supports this with the xterm-direct model,  in which you
+get 2^24 colors and can't change them.
+
+   The slight problem with this is that it breaks existing palette-based
+code.  I've found a few people complaining about this.  It's true
+that one should not blindly assume you'll have a color palette and
+can change it,  nor should you assume a particular color palette.
+There's no promise of that sort in Curses.  The can_change_color()
+function exists for good reason.  (The Linux console is a good
+example of a place where you can't change colors.)
+
+   However... I've written code that assumes you can change the color.
+I think a lot of people do.  If somebody complains that it doesn't
+work in the Linux console,  we say : "Don't do that."
+
+   I have a workaround that should allow existing code to work "as
+usual",  adds the 16-million colors,  and doesn't require much code
+or memory.
+
+   'pdccolor.c' continues to have the traditional basic 256 colors :
+8 primary colors,  8 "intensified" primary colors,  a 6x6x6=216
+color cube,  and 24 shades of gray.  This is followed by 2^24
+colors,  so COLORS = 2^24 + 2^8.  By default,  palette indices past
+256 have color components
+
+r =  (index - 256) & 0xff
+g = ((index - 256) >> 8) & 0xff
+b = ((index - 256) >> 16) & 0xff
+
+   The first 256 colors are handled "normally" : at initialization,
+the (static to that file) rgbs[] array is allocated and the palette
+filled in.  _If_ a palette entry is _set_ with an index beyond 256,
+the rgbs[] array is reallocated to a larger size.  This will probably
+not happen very often (testcurs has a 'gradients' section which does
+so),  but we can handle it when it does.
+
+   _Access_ to default palette entries beyond 256 requires no
+extra memory to be allocated.  The 'picsview' demo illustrates how this
+can be done;  color 0xdeadbe,  for example,  is at palette index
+0xdeadbe + 256 = 0xdeaebe.
+
+   The vast majority of programs which either never use color
+indices past 256,  or which decide to use them at the default values,
+will never cause rgbs[] to be reallocated.  If you decide to
+use a palette of,  say,  1024 colors,  then fine;  rgbs[] will
+be extended to consume 1024 COLOR_PAIR structures (2048 integers,
+so 8K of memory with 32-bit integers).  So this doesn't devour a
+lot of memory.

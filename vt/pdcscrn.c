@@ -10,18 +10,30 @@
 
 static struct termios orig_term;
 #endif
+
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#undef MOUSE_MOVED
+#endif
+
 #include <assert.h>
 #include "curspriv.h"
 #include "pdcvt.h"
+#include "../common/pdccolor.h"
+#include "../common/pdccolor.c"
+
+#ifdef USING_COMBINING_CHARACTER_SCHEME
+int PDC_expand_combined_characters( const cchar_t c, cchar_t *added);
+#endif
 
 #ifdef DOS
-bool PDC_is_ansi = TRUE;
+int PDC_is_ansi = TRUE;
 #else
-bool PDC_is_ansi = FALSE;
+int PDC_is_ansi = FALSE;
 #endif
 
 #ifdef _WIN32
-#include <windows.h>
 
 #ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
 #define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
@@ -93,11 +105,6 @@ chtype PDC_capabilities = 0;
 
 /* COLOR_PAIR to attribute encoding table. */
 
-static short *color_pair_indices = (short *)NULL;
-PACKED_RGB *pdc_rgbs = (PACKED_RGB *)NULL;
-
-unsigned long pdc_key_modifiers = 0L;
-
 void PDC_reset_prog_mode( void)
 {
 }
@@ -153,17 +160,10 @@ void PDC_scr_close( void)
 
 void PDC_scr_free( void)
 {
-    if (SP)
-        free(SP);
-    SP = (SCREEN *)NULL;
-
-    if (color_pair_indices)
-        free(color_pair_indices);
-    color_pair_indices = (short *)NULL;
-
-    if (pdc_rgbs)
-        free(pdc_rgbs);
-    pdc_rgbs = (PACKED_RGB *)NULL;
+    PDC_free_palette( );
+#ifdef USING_COMBINING_CHARACTER_SCHEME
+    PDC_expand_combined_characters( 0, NULL);
+#endif
 }
 
 #ifdef USE_TERMIOS
@@ -184,10 +184,12 @@ static void sigwinchHandler( int sig)
 #define MAX_LINES 1000
 #define MAX_COLUMNS 1000
 
-int PDC_scr_open(int argc, char **argv)
+bool PDC_has_rgb_color = FALSE;
+
+int PDC_scr_open(void)
 {
-    int i, r, g, b, n_colors;
     char *capabilities = getenv( "PDC_VT");
+    char *term_env = getenv( "TERM");
     const char *colorterm = getenv( "COLORTERM");
 #ifdef USE_TERMIOS
     struct sigaction sa;
@@ -198,12 +200,14 @@ int PDC_scr_open(int argc, char **argv)
 #endif
 
     PDC_LOG(("PDC_scr_open called\n"));
-    if( colorterm && !strcmp( colorterm, "truecolor"))
-       PDC_capabilities |= A_RGB_COLOR;
+    if( !strcmp( term_env, "linux"))
+       PDC_is_ansi = TRUE;
+    else if( colorterm && !strcmp( colorterm, "truecolor"))
+       PDC_has_rgb_color = TRUE;
     if( capabilities)      /* these should really come from terminfo! */
        {
        if( strstr( capabilities, "RGB"))
-          PDC_capabilities |= A_RGB_COLOR;
+          PDC_has_rgb_color = TRUE;
        if( strstr( capabilities, "UND"))
           PDC_capabilities |= A_UNDERLINE;
        if( strstr( capabilities, "BLI"))
@@ -213,37 +217,14 @@ int PDC_scr_open(int argc, char **argv)
        if( strstr( capabilities, "STA"))
           PDC_capabilities |= A_STANDOUT;
        }
-    SP = calloc(1, sizeof(SCREEN));
-    color_pair_indices = (short *)calloc( PDC_COLOR_PAIRS * 2, sizeof( short));
-    n_colors = (PDC_is_ansi ? 16 : 256);
-    pdc_rgbs = (PACKED_RGB *)calloc( n_colors, sizeof( PACKED_RGB));
-    assert( SP && color_pair_indices && pdc_rgbs);
-    if (!SP || !color_pair_indices || !pdc_rgbs)
+    COLORS = (PDC_is_ansi ? 16 : 256);
+    if( PDC_has_rgb_color)
+       COLORS = 256 + (256 * 256 * 256);
+    assert( SP);
+    if (!SP || PDC_init_palette( ))
         return ERR;
 
-    COLORS = n_colors;  /* should give this a try and see if it works! */
-    for( i = 0; i < 16 && i < n_colors; i++)
-    {
-        const int intensity = ((i & 8) ? 0xff : 0xc0);
-
-        pdc_rgbs[i] = PACK_RGB( ((i & COLOR_RED) ? intensity : 0),
-                           ((i & COLOR_GREEN) ? intensity : 0),
-                           ((i & COLOR_BLUE) ? intensity : 0));
-    }
-           /* 256-color xterm extended palette:  216 colors in a
-            6x6x6 color cube,  plus 24 (not 50) shades of gray */
-    for( r = 0; r < 6; r++)
-        for( g = 0; g < 6; g++)
-            for( b = 0; b < 6; b++)
-                if( i < n_colors)
-                    pdc_rgbs[i++] = PACK_RGB( r ? r * 40 + 55 : 0,
-                                   g ? g * 40 + 55 : 0,
-                                   b ? b * 40 + 55 : 0);
-    for( i = 0; i < 24; i++)
-        if( i + 232 < n_colors)
-            pdc_rgbs[i + 232] = PACK_RGB( i * 10 + 8, i * 10 + 8, i * 10 + 8);
     setbuf( stdin, NULL);
-    setbuf( stdout, NULL);
 #ifdef USE_TERMIOS
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = 0;
@@ -268,6 +249,9 @@ int PDC_scr_open(int argc, char **argv)
     SP->curscol = SP->cursrow = 0;
     SP->audible = TRUE;
     SP->mono = FALSE;
+    SP->orig_attr = TRUE;
+    SP->orig_fore = SP->orig_back = -1;
+    SP->termattrs = PDC_capabilities & ~A_BLINK;
 
     while( PDC_get_rows( ) < 1 && PDC_get_columns( ) < 1)
       ;     /* wait for screen to be drawn and size determined */
@@ -336,22 +320,24 @@ each line that would be affected, then draws those in between.  Often --
 perhaps usually -- this will be zero characters, i.e., no text on that
 particular line happens to have an attribute requiring redrawing. */
 
-static short get_pair( const chtype ch)
+static int get_pair( const chtype ch)
 
 {
-   return( (short)( (ch & A_COLOR) >> PDC_COLOR_SHIFT) & (COLOR_PAIRS - 1));
+   return( (int)( (ch & A_COLOR) >> PDC_COLOR_SHIFT) & (COLOR_PAIRS - 1));
 }
 
 static int color_used_for_this_char( const chtype c, const int idx)
 {
     const int color = get_pair( c);
-    const int rval = (color_pair_indices[color] == idx ||
-                     color_pair_indices[color + PDC_COLOR_PAIRS] == idx);
+    int fg, bg;
+    int rval;
 
+    extended_pair_content( color, &fg, &bg);
+    rval = (fg == idx || bg == idx);
     return( rval);
 }
 
-void PDC_show_changes( const short pair, const short idx, const chtype attr)
+void PDC_show_changes( const int pair, const int idx, const chtype attr)
 {
     if( curscr && curscr->_y)
     {
@@ -384,32 +370,14 @@ void PDC_show_changes( const short pair, const short idx, const chtype attr)
     }
 }
 
-void PDC_init_pair( short pair, short fg, short bg)
-{
-    if( color_pair_indices[pair] != fg ||
-        color_pair_indices[pair + PDC_COLOR_PAIRS] != bg)
-    {
-        color_pair_indices[pair] = fg;
-        color_pair_indices[pair + PDC_COLOR_PAIRS] = bg;
-        PDC_show_changes( pair, -1, 0);
-    }
-}
-
-int PDC_pair_content( short pair, short *fg, short *bg)
-{
-    *fg = color_pair_indices[pair];
-    *bg = color_pair_indices[pair + PDC_COLOR_PAIRS];
-    return OK;
-}
-
 bool PDC_can_change_color(void)
 {
     return TRUE;
 }
 
-int PDC_color_content( short color, short *red, short *green, short *blue)
+int PDC_color_content( int color, int *red, int *green, int *blue)
 {
-    PACKED_RGB col = pdc_rgbs[color];
+    const PACKED_RGB col = PDC_get_palette_entry( color);
 
     *red = DIVROUND( Get_RValue(col) * 1000, 255);
     *green = DIVROUND( Get_GValue(col) * 1000, 255);
@@ -418,16 +386,13 @@ int PDC_color_content( short color, short *red, short *green, short *blue)
     return OK;
 }
 
-int PDC_init_color( short color, short red, short green, short blue)
+int PDC_init_color( int color, int red, int green, int blue)
 {
     const PACKED_RGB new_rgb = PACK_RGB(DIVROUND(red * 255, 1000),
                                  DIVROUND(green * 255, 1000),
                                  DIVROUND(blue * 255, 1000));
 
-    if( pdc_rgbs[color] != new_rgb)
-    {
-        pdc_rgbs[color] = new_rgb;
+    if( !PDC_set_palette_entry( color, new_rgb))
         PDC_show_changes( -1, color, 0);
-    }
     return OK;
 }

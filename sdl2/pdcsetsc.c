@@ -1,4 +1,4 @@
-/* Public Domain Curses */
+/* PDCurses */
 
 #include "pdcsdl.h"
 
@@ -10,24 +10,28 @@ pdcsetsc
 ### Synopsis
 
     int PDC_set_blink(bool blinkon);
+    int PDC_set_bold(bool boldon);
     void PDC_set_title(const char *title);
 
 ### Description
 
-   PDC_set_blink() toggles whether the A_BLINK attribute sets an
-   actual blink mode (TRUE), or sets the background color to high
-   intensity (FALSE). The default is platform-dependent (FALSE in
-   most cases). It returns OK if it could set the state to match
-   the given parameter, ERR otherwise. Current platforms also
-   adjust the value of COLORS according to this function -- 16 for
-   FALSE, and 8 for TRUE.
+   PDC_set_blink() toggles whether the A_BLINK attribute sets an actual
+   blink mode (TRUE), or sets the background color to high intensity
+   (FALSE). The default is platform-dependent (FALSE in most cases). It
+   returns OK if it could set the state to match the given parameter,
+   ERR otherwise.
+
+   PDC_set_bold() toggles whether the A_BOLD attribute selects an actual
+   bold font (TRUE), or sets the foreground color to high intensity
+   (FALSE). It returns OK if it could set the state to match the given
+   parameter, ERR otherwise.
 
    PDC_set_title() sets the title of the window in which the curses
    program is running. This function may not do anything on some
-   platforms. (Currently it only works in Win32 and X11.)
+   platforms.
 
 ### Portability
-                             X/Open    BSD    SYS V
+                             X/Open  ncurses  NetBSD
     PDC_set_blink               -       -       -
     PDC_set_title               -       -       -
 
@@ -55,13 +59,47 @@ void PDC_set_title(const char *title)
     SDL_SetWindowTitle(pdc_window, title);
 }
 
-/* See comments in win32a/pdcsetsc.c or x11/pdcsetsc.c.  This does
-essentially the same thing. */
-
 int PDC_set_blink(bool blinkon)
 {
-    extern int PDC_really_blinking;
+    if (!SP)
+        return ERR;
 
-    PDC_really_blinking = blinkon;
+    if (SP->color_started)
+        COLORS = PDC_MAXCOL;
+
+    if (blinkon)
+    {
+        if (!(SP->termattrs & A_BLINK))
+        {
+            SP->termattrs |= A_BLINK;
+            PDC_blink_text();
+        }
+    }
+    else
+    {
+        if (SP->termattrs & A_BLINK)
+        {
+            SP->termattrs &= ~A_BLINK;
+            PDC_blink_text();
+        }
+    }
+
     return OK;
+}
+
+int PDC_set_bold(bool boldon)
+{
+    if (!SP)
+        return ERR;
+
+#ifdef PDC_WIDE
+    if (boldon)
+        SP->termattrs |= A_BOLD;
+    else
+        SP->termattrs &= ~A_BOLD;
+
+    return OK;
+#else
+    return boldon ? ERR : OK;
+#endif
 }

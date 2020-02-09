@@ -154,7 +154,8 @@ int main(int argc, char *argv[])
     const struct options *op;
     struct worm *w;
     short **ref, *ip;
-    int x, y, n, h, last, bottom, seed;
+    time_t seed;
+    int x, y, n, h, last, bottom;
 
     for (x = 1; x < argc; x++)
     {
@@ -206,8 +207,8 @@ int main(int argc, char *argv[])
 #else
     initscr();
 #endif
-    seed = (int)time((time_t *)0);
-    srand(seed);
+    seed = time((time_t *)0);
+    srand( (unsigned)seed);
 
     noecho();
     cbreak();
@@ -316,7 +317,6 @@ int main(int argc, char *argv[])
             {
 # ifdef PDCURSES
                 resize_term(0, 0);
-                erase();
 # endif
                 if (last != COLS - 1)
                 {

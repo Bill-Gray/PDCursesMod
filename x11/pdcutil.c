@@ -1,4 +1,4 @@
-/* Public Domain Curses */
+/* PDCurses */
 
 #include "pdcx11.h"
 
@@ -10,12 +10,14 @@ void PDC_beep(void)
 {
     PDC_LOG(("PDC_beep() - called\n"));
 
-    XCursesInstruct(CURSES_BELL);
+    XBell(XtDisplay(pdc_toplevel), 50);
 }
 
 void PDC_napms(int ms)
 {
     PDC_LOG(("PDC_napms() - called: ms=%d\n", ms));
+
+    XSync(XtDisplay(pdc_toplevel), False);
 
 #if defined(HAVE_USLEEP)
 
@@ -36,17 +38,4 @@ const char *PDC_sysname(void)
     return "X11";
 }
 
-PDC_version_info PDC_version = { PDC_PORT_WINGUI,
-          PDC_VER_MAJOR, PDC_VER_MINOR, PDC_VER_CHANGE,
-          sizeof( chtype),
-#ifdef PDC_WIDE
-          TRUE,
-#else
-          FALSE,
-#endif
-#ifdef PDC_FORCE_UTF8
-          TRUE,
-#else
-          FALSE,
-#endif
-          };
+enum PDC_port PDC_port_val = PDC_PORT_X11;
