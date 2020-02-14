@@ -125,6 +125,13 @@ int PDC_set_palette_entry( const int idx, const PACKED_RGB rgb)
    return( rval);
 }
 
+static bool intensify_enabled = TRUE;
+
+PDCEX void PDC_set_color_intensify_enabled( bool enabled)
+{
+    intensify_enabled = enabled;
+}
+
     /* This function 'intensifies' a color by shifting it toward white. */
     /* It used to average the input color with white.  Then it did a    */
     /* weighted average:  2/3 of the input color,  1/3 white,   for a   */
@@ -139,6 +146,11 @@ int PDC_set_palette_entry( const int idx, const PACKED_RGB rgb)
 
 static PACKED_RGB intensified_color( PACKED_RGB ival)
 {
+    if ( !intensify_enabled)
+    {
+        return ival;
+    }
+
     int rgb, i;
     PACKED_RGB oval = 0;
 
