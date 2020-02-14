@@ -1,5 +1,8 @@
 /* PDCurses */
 
+#ifndef __PDC_WINCON_WIN_H__
+#define __PDC_WINCON_WIN_H__
+
 #if defined(PDC_WIDE) && !defined(UNICODE)
 # define UNICODE
 #endif
@@ -25,3 +28,5 @@ extern short pdc_oldf, pdc_oldb, pdc_oldu;
 extern bool pdc_conemu, pdc_ansi;
 
 extern void PDC_blink_text(void);
+
+#endif
