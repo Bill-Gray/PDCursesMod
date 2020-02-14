@@ -12,7 +12,7 @@ The curses library permits manipulation of data structures called
 windows which may be thought of as two-dimensional arrays of
 characters representing all or part of a terminal's screen.  The
 windows are manipulated using a procedural interface described
-elsewhere.  The curses package maintains a record of what characters
+[elsewhere].  The curses package maintains a record of what characters
 are on the screen.  At the most basic level, manipulation is done with
 the routines move() and addch() which are used to "move" the curses
 around and add characters to the default window, stdscr, which
@@ -47,7 +47,7 @@ Windows do not have to correspond to the entire screen.  It is
 possible to create smaller windows, and also to indicate that the
 window is only partially visible on the screen.  Furthermore, large
 windows or pads, which are bigger than the actual screen size, may be
-created. 
+created.
 
 Interfaces are also defined to allow input character manipulation and
 to disable and enable many input attributes: character echo, single
@@ -93,15 +93,15 @@ The following variables are defined:
 
     LINES         number of lines on terminal screen
     COLS          number of columns on terminal screen
-    stdscr        pointer to the default screen window    
+    stdscr        pointer to the default screen window
     curscr        pointer to the current screen image
     SP            pointer to the current SCREEN struct
     Mouse_status  status of the mouse
     COLORS        number of colors available
     COLOR_PAIRS   number of color pairs available
     TABSIZE       size of one TAB block
-    acs_map[]     alternate character set map  
-    ttytype[]     terminal name/description    
+    acs_map[]     alternate character set map
+    ttytype[]     terminal name/description
 
 
 ### Constants
@@ -118,7 +118,7 @@ The following constants are defined:
 
 #### Video Attributes
 
-Normally, attributes are a property of the character. 
+Normally, attributes are a property of the character.
 
 For chtype:
 
@@ -126,13 +126,12 @@ For chtype:
     A_BLINK       bright background or blinking
     A_BOLD        bright foreground or bold
     A_DIM         half bright -- no effect in PDCurses
-    A_INVIS       invisible
+    A_INVIS       invisible -- no effect in PDCurses
     A_ITALIC      italic
-    A_LEFTLINE    line along the left edge
-    A_PROTECT     protected (?) -- PDCurses renders this as a 
-                  combination of the *LINE attributes
+    A_LEFT        line along the left edge
+    A_PROTECT     protected -- no effect in PDCurses
     A_REVERSE     reverse video
-    A_RIGHTLINE   line along the right edge
+    A_RIGHT       line along the right edge
     A_STANDOUT    terminal's best highlighting mode
     A_UNDERLINE   underline
 
@@ -140,9 +139,8 @@ For chtype:
     A_CHARTEXT    bit-mask to extract a character
     A_COLOR       bit-mask to extract a color-pair
 
-Not all attributes will work on all terminals. A_RIGHTLINE, A_LEFTLINE
-and A_ITALIC are specific to PDCurses. A_INVIS and A_ITALIC are given
-the same value in PDCurses.
+Not all attributes will work on all terminals. A_ITALIC is not standard,
+but is shared with ncurses.
 
 For attr_t:
 
@@ -151,17 +149,17 @@ For attr_t:
     WA_BOLD       same as A_BOLD
     WA_DIM        same as A_DIM
     WA_INVIS      same as A_INVIS
-    WA_LEFT       same as A_LEFTLINE
+    WA_ITALIC     same as A_ITALIC
+    WA_LEFT       same as A_LEFT
     WA_PROTECT    same as A_PROTECT
     WA_REVERSE    same as A_REVERSE
-    WA_RIGHT      same as A_RIGHTLINE
+    WA_RIGHT      same as A_RIGHT
     WA_STANDOUT   same as A_STANDOUT
     WA_UNDERLINE  same as A_UNDERLINE
 
-Note that while A_LEFTLINE and A_RIGHTLINE are PDCurses-specific,
-WA_LEFT and WA_RIGHT are standard. The following are also defined, for
-compatibility, but currently have no effect in PDCurses: WA_HORIZONTAL,
-WA_LOW, WA_TOP, WA_VERTICAL.
+The following are also defined, for compatibility, but currently have no
+effect in PDCurses: A_HORIZONTAL, A_LOW, A_TOP, A_VERTICAL and their
+WA_* equivalents.
 
 ### The Alternate Character Set
 
@@ -200,7 +198,7 @@ portability:
     ACS_RARROW    right arrow
     ACS_DARROW    down arrow
     ACS_UARROW    up arrow
-    ACS_BOARD     checkerboard -- lighter (less dense) than 
+    ACS_BOARD     checkerboard -- lighter (less dense) than
                   ACS_CKBOARD
     ACS_LANTERN   lantern symbol
     ACS_BLOCK     solid block
@@ -229,7 +227,7 @@ Box character aliases:
     ACS_SBSB      same as ACS_VLINE
     ACS_SSSS      same as ACS_PLUS
 
-For cchar_t and wide-character functions, WACS_ equivalents are also 
+For cchar_t and wide-character functions, WACS_ equivalents are also
 defined.
 
 ### Colors
@@ -245,7 +243,7 @@ For use with init_pair(), color_set(), etc.:
     COLOR_YELLOW
     COLOR_WHITE
 
-Use these instead of numeric values. The definition of the colors 
+Use these instead of numeric values. The definition of the colors
 depends on the implementation of curses.
 
 
@@ -350,7 +348,7 @@ particular terminal:
 The virtual keypad is arranged like this:
 
     A1     up     A3
-    left          B2   right
+    left   B2  right
     C1    down    C3
 
 This list is incomplete -- see curses.h for the full list, and use the
@@ -358,4 +356,4 @@ testcurs demo to see what values are actually returned. The above are
 just the keys required by X/Open. In particular, PDCurses defines many
 CTL_ and ALT_ combinations; these are not portable.
 
---------------------------------------------------------------------------
+[elsewhere]: MANUAL.md

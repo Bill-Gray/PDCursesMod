@@ -1,4 +1,231 @@
-PDCurses 4.0.4 - 2019 Jan 20
+PDCurses ?.? - 2020 Feb ?? - Bill Gray fork
+=========================
+
+   Version number/date pending until we figure out why automated
+   builds fail (will presumably be 4.1.0).  I suspect the fails
+   have something to do with the auto build system rather than
+   with the code,  but don't know enough about CMake to really
+   be sure;  perhaps there's a Real Bug in the code.
+
+New features
+------------
+
+-  Pulled in almost all of William McBrine's changes.  So we now
+   have the single-process X11 port,  common copy/paste,  partly
+   extended colors,  and others from the last few years.
+
+-  Added ncurses-style init_extended_color(), init_extended_pair(),
+   extended_color_content(),  extended_pair_content() functions.
+   VT and WinGUI versions can now access 2^20 = over a million color
+   pairs and 2^24+256 = 16777472 colors.  This should be extended
+   to SDLx and X11,  and possibly WinCon.
+
+-- As a result of all this,  A_RGB is now completely gone (and not
+   really needed anyway).
+
+-- Added 'picsview' demo,  something of a ripoff/homage to Thomas
+   E. Dickey's 'picsmap' demo for ncurses.  It has a similar purpose:
+   demonstrating the functions in the above paragraph and the new
+   ability to access lots and lots of colors.
+
+-- VT port is much faster,  mostly thanks to not writing data to
+   stdout with no buffering and with printf().
+
+Bug fixes and such
+------------------
+
+-- Valgrind found three small memory leaks in the VT port (which
+   would apply to all other ports as well).  There are still more
+   leaks in other ports,  which should be addressed.
+
+-- Double-clicking in WinGUI got you a click message followed by
+   a double-click.  This does conform to 'standard' Windows practice,
+   but was both stupid and did _not_ conform with the way VT did
+   it,  nor the way I'd want it to be on any port.  To do : enable
+   double and triple clicks on all ports,  not just VT and WinGUI.
+
+-- Handling of default background/foreground in VT was just plain
+   wrong.  Now fixed.
+
+PDCurses 3.9 - 2019-09-04
+=========================
+
+768 colors, single-process X11, copy-and-paste for all, and more.
+
+
+New features
+------------
+
+- Single-process, single-thread version of the X11 port. Much, much
+  faster than the two-process version. Needs more testing. This version
+  omits translations.
+
+- A common copy-and-paste system for all platforms, based on the
+  PDC_*clipboard() functions. (This is the first time copy-and-paste is
+  available for the SDL ports, and it replaces the old X11-specific
+  C&P.) Press and hold button 1 while selecting; paste with button 2.
+  Add Shift if mouse events are activated in curses. You can also paste
+  via Shift-Ctrl-V, and copy with Shift-Ctrl-C (although selecting
+  already sets the buffer). Note that paste is implemented via
+  ungetch(), and is currently limited to 256 characters at a time. (You
+  can get more via PDC_getclipboard().) With some ports (e.g. Wincon),
+  the existing terminal C&P mechanism may override PDCurses'. DOS and
+  SDL1 can only C&P within the same app.
+
+- A new maximum of 768 colors, for Wincon, SDL and X11. COLOR_PAIRS is
+  still limited to 256. The idea is that each pair can have a unique
+  foreground and background, without having to redefine any of the first
+  256 (predefined) colors. Colors 256-767 have no initial definitions,
+  and are intended to be set via init_color(). An example has been added
+  to testcurs (loosely based on part of newtest, by Bill Gray).
+
+- Wincon now allows redefinition of all 768 colors, and allows it even
+  under ConEmu.
+
+- True italics for ConEmu. (It seems it should also support true bold,
+  but I couldn't make that work.)
+
+- Added new functions from ncurses and/or NetBSD: has_mouse(),
+  is_keypad(), is_leaveok(), is_pad(), set_tabsize(), touchoverlap(),
+  underscore(), underend(), wunderscore(), and wunderend(). See the man
+  pages for descriptions. Partly due to Karthik Kumar Viswanathan, and
+  suggestions of Simon Sobisch.
+
+
+Bug fixes and such
+------------------
+
+- Check for standard C++ (>= 98), where native bool should exist, and use
+  that; otherwise (pre-/non-standard C++) fall back to the old behavior.
+  Satisfies clang, hopefully doesn't mess anything else up.
+
+- Recent versions of clang throw an error over "-install_name".
+
+- Most curses functions assumed a valid SP (i.e. that initscr() had
+  already been called). Now, instead, they return ERR or other
+  appropriate values. Suggestion of S.S.
+
+- Deprecated PDC_save_key_modifiers() -- there's no benefit to NOT
+  saving them.
+
+- Hold back screen updates due to palette changes until paused; always
+  do this update now (previously only in X11 and SDL, seems necessary in
+  Windows 10 1903).
+
+- SDL2 windows were freezing on moving to another screen (reported by
+  Mark Hessling). Still issues with moving between screens of different
+  scaling.
+
+- Find the X libraries in some additional locations. After M.H.
+
+- Converted default X11 icons to XPM, fixing their non-display in Ubuntu.
+
+- Made XIM standard, removed "classic" X11 compose system.
+
+- Made wide-character build the default for X11 (--disable-widec for
+  narrow).
+
+- Smoother resizing in X11, when not in scrollbar mode.
+
+- Dropped X11 options "borderWidth" (broken since at least 2.7) and
+  "cursorColor" (now set automatically for contrast).
+
+- Correctly restore Insert mode and QuickEdit mode in Wincon's
+  PDC_reset_shell_mode(). Patch by "vyv03354".
+
+- Add a WINDRES variable to wincon/Makefile for the sake of cross-
+  compilers. Patch by Marc-Andre Lureau.
+
+- Suppress cursor movement during color tests in testcurs.
+
+- Added UTF-8-demo.txt for tuidemo to browse (by default, only in forced
+  UTF-8 mode). File by Markus Kuhn.
+
+- Moved the doc files from "man" to "docs" -- the docs/man thing was too
+  confusing. Streamlined the web page into two files.
+
+- Rewrote the "Portability" sections of the man pages to reflect current
+  ncurses and NetBSD. The old charts weren't very accurate.
+
+- Document resolution of timeout() and napms(). Suggested by S.S.
+
+- Rewrote manext (again) in Awk.
+
+- Changed most dates to ISO format.
+
+See the git log for more details.
+
+------------------------------------------------------------------------
+
+PDCurses 3.8 - 2019-02-02
+=========================
+
+It's that time again.
+
+
+New features
+------------
+
+- PDC_VERSION structure and PDC_get_version() function, to provide run-
+  time information on version and compile options, in case they don't
+  match the header; along with new compile-time defines PDC_VER_MAJOR,
+  PDC_VER_MINOR and PDC_VERDOT. Suggested by Simon Sobisch, designed
+  partly after Bill Gray and partly after SDL_VERSION.
+
+- Extensive documentation revisions, now covering many previously
+  undocumented functions.
+
+- Allow building the DLL with MinGW for SDL. (This also changes the
+  non-DLL library name from libpdcurses.a to pdcurses.a.)
+
+- Consolidated Watcom makefiles for DOS, after Tee-Kiah Chia; added
+  MODEL option to Makefile.bcc for consistency.
+
+- Added another ncurses_test, "lrtest"; updated for ncurses 6.1.
+
+
+Bug fixes and such
+------------------
+
+- T.H.'s update rect clipper (a resize fix for SDL2) broke sdltest,
+  because it didn't take the offsets into account for a non-owned
+  window.
+
+- The version number is now hardwired only in curses.h and configure.ac.
+
+- Revised pdcurses.rc to correctly show all fields when checking the
+  properties on a DLL; use it with MinGW as well as MSVC.
+
+- Allow building both 32- and 64-bit SDL2 versions in MinGW without
+  editing the Makefile, by using the proper dev package.
+
+- Build SDL2 demos in "Windows" mode (i.e. no controlling terminal) with
+  MSVC, as with MinGW.
+
+- Build sdltest.exe with MSVC.
+
+- Changed sample pathname in tuidemo to always use slashes -- the
+  backslashes failed in, e.g., SDL under Linux or macOS. Patch by B.G.
+
+- Warning fix for Borland OS/2.
+
+- Minor file reorganization / renaming.
+
+- mmask_t is now used in both the classic and ncurses mouse interfaces,
+  and is defined in such a way as to keep it at 32 bits.
+
+- Dropped map_button() and getbmap().
+
+- Dropped the ability to build BBS-ready archives from the Makefiles.
+
+- Made manext.py compatible with Python 3.x.
+
+See the git log for more details.
+
+------------------------------------------------------------------------
+
+PDCurses 4.0.4 - 2019 Jan 20 - Bill Gray fork
+
 =========================
 Major new feature:
 -------------------
@@ -36,8 +263,388 @@ Bug fixes
 - some corner cases (midnight crossing, atomicity of tick count reads) in
   DOS version of napms() were not handled well
 
-PDCurses 4.0.2 - 2017 Sep 12
+------------------------------------------------------------------------
+
+PDCurses 3.7 - 2018-12-31
 =========================
+
+New features
+------------
+
+- Avoid conflict with ncurses by having apps define PDC_NCMOUSE before
+  including curses.h to invoke the ncurses-style mouse interface,
+  instead of NCURSES_MOUSE_VERSION. (The old way will also still work.)
+  After Simon Sobisch (see PR #33).
+
+- In SDL (TTF mode), the box-drawing and block ACS characters are now
+  rendered in a font-independent way, to ensure their correct alignment
+  across cells. Underlining is now handled in a similar way.
+
+- TTF fonts in SDL are now rendered in Blended mode instead of Solid.
+  Partly after Joachim de Groot.
+
+- New default fonts and font sizes for SDL/TTF.
+
+- SDL2 now builds under MSVC. Partly due to Alexandru Afrasinei.
+
+- Documentation re-org -- more Markdown internal links; moved to man/
+  dir (the doc/ dir name was too similar to docs/, which is needed for
+  GitHub Pages hosting); concatenated man page document now made
+  permanent, under the name MANUAL.md; new man build utils; merged
+  sdl.md and x11.md into their respective READMEs; changed some
+  redundant and unclear comments.
+
+- Directory re-org -- in addition to the above, created common/, to
+  unclutter the root, and eliminate a few more redundant files from
+  platform directories. (We already had "pdcurses", but that's for the
+  portable core; "common" is for files that are more platform-specific,
+  though shared by more than one platform.)
+
+- Broke out the redundant ACS tables and moved them to common/.
+
+- PDcurses' "bool" type is now based on stdbool.h, when available. There
+  should be no conflicts when including stdbool.h either before or after
+  curses.h.
+
+- The demos are no longer built by default, since they add a lot of time
+  to the build, and often aren't wanted. But you can still build them via
+  "make demos" (tweak as needed).
+
+- Makefile tweaks for cross-compiling by Simon Sobisch.
+
+
+Bug fixes and such
+------------------
+
+- Improved Windows console resizing, when reducing the vertical size.
+  After Ulf Magnusson. (See GitHub issue #26.)
+
+- Bring back ifdef'd CONSOLE_SCREEN_BUFFER_INFOEX, for the benefit of
+  older compile environments. (Not automatic -- must specify INFOEX=N on
+  the command line.) After Simon Sobisch.
+
+- Replaced COMMON_LVB_* with numbers to appease some old compilers.
+  After Simon Sobisch.
+
+- KEY_RESIZE should be key_code = TRUE. Reported by Ulf Magnusson.
+
+- SDL2 resize fixes to prevent crashes, by Tim Hentenarr.
+
+- SDL2 fixes for handling of SDL_TEXTINPUT, keys with modifiers, and
+  modifier keystrokes, by Tim Hentenarr.
+
+- Fixed cursor rendering in SDL/TTF.
+
+- SDL1 support is now dropped for Windows and macOS, and deprecated for
+  Linux. Use SDL2. The SDL1 port is likely to be dropped in the future.
+
+- The setsyx() function is now void, after ncurses, and simplified.
+
+- Warning fixes by Patrick Georgi and Stefan Reinauer.
+
+- X11 used SP->resized in a non-boolean way, so it's now a short.
+
+- Under some conditions (see issue #47), the X11 port could "free" colors
+  that it hadn't allocated. Reported by rin-kinokocan.
+
+- New scroller for ozdemo -- no memory allocation, less copying -- to
+  resolve issue #46.
+
+- Various minor Makefile tweaks.
+
+- Eliminated term.h and terminfo.c, and moved mvcur() to move.c. These
+  stub functions, done on request (with others then requesting that I
+  take them away -- can't win), were a misguided attempt to facilitate
+  using PDCurses with certain non-C languages -- which, apparently, they
+  didn't end up actually doing. They're also, regrettably, specified as
+  part of the X/Open curses standard, even though they in effect
+  describe an entirely different interface layer (one on which
+  traditional curses, but not PDCurses, is built).
+
+- Dropped support for short (16-bit) chtypes.
+
+- Finally removed deprec.c, as it promised.
+
+- Dropped the XOPEN, SYSVcurses and BSDcurses defines from curses.h, as
+  well as NULL (which is defined in stdio.h, included). TRUE, FALSE, ERR
+  and OK are now defined unconditionally.
+
+- Moved pdcurses.org hosting to GitHub -- as a result, the site is now
+  part of the repo, in the docs/ directory. (Also, it has SSL again.)
+
+See the git log for more details.
+
+------------------------------------------------------------------------
+
+PDCurses 3.6 - 2018-02-14
+=========================
+
+Tidying up some loose ends from 3.5, and trying to bring all platforms
+up to the same level, as much as possible.
+
+
+New features
+------------
+
+- 256 colors for the Windows console -- under Windows 10 or ConEmu,
+  only. This version doesn't allow init_color() or color_content() for
+  colors 16-255, just uses Windows' predefined palette (which matches
+  xterm-256color, like the default colors in X11 and SDL).
+
+- Real blinking for the Windows console (all), and for OS/2 -- done in
+  software, like the Windows version -- replacing the erraticly working
+  Vio-based version (which didn't work at all in my OS/2 4.5 VM). OS/2
+  now always has 16 colors, and bright backgrounds can combine with
+  blinking.
+
+- In DOS, OS/2 and Windows, attribute behavior now more closely matches
+  that of the more "advanced" ports (X11 and SDL) -- see the Attribute
+  test in testcurs.
+
+- All of the A_* and WA_* attributes from X/Open are now defined in
+  curses.h, although some are no-ops, pending the availablity of more
+  attribute bits. A_INVIS is now a no-op on all platforms, instead of
+  overloading A_ITALIC, and so is A_PROTECT. A_LEFT and A_RIGHT are now
+  synonyms for PDCurses' old *LINE attributes.
+
+
+Bug fixes and such
+------------------
+
+- For the X11 port, "make install" and the dynamic library build were
+  broken, since the configure move. Fixes partly after Mark Hessling.
+
+- Renamed "win32" to the more accurate/descriptive "wincon" (i.e.
+  WINdows CONsole). Makefiles for all platforms renamed to remove the
+  redundant platform names, and to allow better sorting.
+
+- In SDL2, apps that didn't explicitly handle resizing locked up. Now,
+  they can continue running, at their old size. (To Do: xmas is still a
+  basket case.)
+
+- Added "/MACHINE:$(PLATFORM)" to wincon/Makefile.vc -- Thomas Dickey
+  says this is needed to build 64-bit with Visual Studio Express 2012.
+  With 2017, it suppresses a warning.
+
+- Suppressed "Possibly incorrect assignment" warnings with BCC, which
+  also results in more readable code.
+
+- Cleaned up obsolete comments, dead code, unneeded includes, typos, and
+  outdated documentation.
+
+- Dropped support for EMXVIDEO.
+
+- Dropped color remapping for OS/2 (broken).
+
+- Dropped X11 DLL support for Cygwin (broken).
+
+- Rearranged extended color display in testcurs.
+
+- In ptest, handle resizing, and check for screens too small to run in.
+
+- Allow KEY_* codes (including KEY_RESIZE) to exit firework, as other
+  keys do.
+
+- Slightly faster Windows compilation (most noticeable in Watcom).
+
+See the git log for more details.
+
+------------------------------------------------------------------------
+
+PDCurses 3.5 - 2018-01-15
+=========================
+
+So, it's been a while, eh?
+
+This release is an attempt to bring PDCurses mostly up to date, without
+breaking too many things in the process.
+
+
+New features
+------------
+
+- SDL2 port, and TTF and Unicode support for both SDL1 and SDL2. Credit
+  for these goes mostly to Laura Michaels and Robin Gustafsson.
+
+- 256 colors for SDL and X11, by Bill Gray. Colors 16-255 are set up to
+  match xterm colors, but can be redefined, as with 0-15.
+
+- Bold and italic font options for SDL and X11. A_BOLD's behavior is
+  controlled by the new function PDC_set_bold() -- TRUE to select bold
+  font, FALSE to choose high foregound intensity (as before). Italic
+  fonts are selected by A_ITALIC (always on). X11 originally from Mark
+  Hessling.
+
+- Real blinking in SDL and X11, controlled by PDC_set_blink(). Largely
+  due to Kevin Lamonte and Bill Gray.
+
+- Support for A_UNDERLINE, A_LEFTLINE and A_RIGHTLINE in the Windows
+  console. This requires a recent version of Windows (10, maybe 8?) to
+  work with the standard console, but underlining also works with
+  ConEmu, at least as far back as XP.
+
+- User resizing (i.e. grab window edges or maximize button) for Windows
+  console -- needs recent Windows or ConEmu.
+
+- New-style color-changing code for the Windows console (using the new
+  offical API instead of undocumented functions), supporting
+  redefinition of colors 0-15 via init_color(). Works at least as far
+  back as Windows XP SP3. Patch by "Didrole".
+
+- The Windows console port now creates a separate console buffer by
+  default, making for a cleaner and more complete restoration of the
+  original buffer. The old behavior can be used by setting
+  "PDC_RESTORE_SCREEN=0". Patch by Jason Hood.
+
+- Left/right scroll wheel support for Windows console, SDL and X11. X11
+  by Mark Hessling.
+
+- testcurs now includes an additional test to show various attributes,
+  and a display of the extended colors, where applicable.
+
+
+Bug fixes and such
+------------------
+
+- termattrs() now returns something vaguely resembling the actual
+  capabilities of the specific "terminal". Specifically, A_BOLD and
+  A_BLINK reflect the availability of true bold fonts, and real
+  blinking; when not set in termattrs(), the attributes still work, but
+  control foreground and background intensity, as before. *LINE are also
+  meaningful, and even A_COLOR is set (or not).
+
+- pad size check in pnoutrefresh() was broken since 3.0. Reported by
+  Peter Hull.
+
+- In newpad(), begx and begy should be set to zero, otherwise creating a
+  subpad of the same width or height fails due to the check in subpad().
+  Patch by Raphael Assenat.
+
+- More straightforward math for subpad(), plus another off-by-one error.
+  Reported by Werner Wenzel, John Hartmann et al.
+
+- New subwindows/subpads/resized windows should copy _delayms. Patch by
+  "xaizek".
+
+- Potentially invalid saved cursor position in resize_window() --
+  another off-by-one _maxx/_maxy error. Patch after "Luke-Jr".
+
+- copywin() needs to disallow corner values equal to _maxx or _maxy, not
+  just less than. Reported by "Aleksandr".
+
+- Misaligned soft-label keys in 4-4-4 mode. Reported by Werner Wenzel.
+
+- Missing prototypes for bkgrnd() and bkgrndset().
+
+- Missing WA_NORMAL and WA_ATTRIBUTES from the X/Open spec.
+
+- keyname() and termname() now return static buffers, as documented.
+
+- In the X11 port, due to (post-PDCurses-3.4) changes in Xt,
+  XtAppMainLoop() always hung. Fixed by re-implementing it within
+  PDCurses, basically.
+
+- Fix blinking X11 cursor for clients that call move() more frequently
+  than cursorBlinkRate -- patch by Kevin Lamonte.
+
+- Improved cursor rendering for X11, by John P. Hartmann.
+
+- ALT key combos sometimes not reported in X11, per Mark Hessling et al.
+
+- Support for XK_ISO_Left_Tab in X11, by John P. Hartmann.
+
+- Support for "Super" keys in X11, by Bill Gray.
+
+- Make xcurses-config include -DPDC_WIDE when appropriate, per M.H.
+
+- The configure script and accompanying files, which were always
+  specific only to the X11 port (causing considerable confusion), have
+  been moved to the x11 directory.
+
+- In SDL, SP->key_code wasn't being set for KEY_MOUSE events. Reported
+  by Bill Gray.
+
+- SDL events need to keep pumping through non-input delays. (Really
+  messed up on current macOS before this change.)
+
+- SDL2 is outperforming SDL1 by about 10x on the platforms I've tried
+  that support both, so I've removed Makefile.mng from the SDL1 port.
+
+- Updated for the most current compilers, wherever possible; various
+  warning suppressions. All included makefiles were tested with their
+  respective compilers, shortly before release (including the POSIX
+  stuff on macOS with clang, and on Ubuntu Linux with gcc). The oldest
+  compiler I tested with was Turbo C++ 3.0, from 1992; the latest,
+  several compilers from 2017.
+
+- Dropped support for LCC-Win32 -- the official site is shut down.
+
+- Dropped support for Digital Mars -- not updated since 2014, limited
+  makefile, library missing some needed Windows APIs.
+
+- Dropped MS C for DOS, and Cset/2 for OS/2.
+
+- Dropped support for building DLLs with EMX.
+
+- Minor code and makefile reorganization; mingwin32.mak merged into
+  gccwin32.mak (i.e. you can use it with both compilers). Some
+  contributions by Bill Gray and Simon Sobisch.
+
+- Watcom makefile paths and option markers changed to Unix-friendly
+  style, after Tee-Kiah Chia.
+
+- The *.def files are no longer needed, replaced by more PDCEX
+  declarations in the include files. After Bill Gray and Simon Sobisch.
+
+- When building with DEBUG=Y, no longer strip the executables. After
+  Simon Sobisch.
+
+- Hold debug file ("trace") open after traceon(), for greater
+  performance. Set PDC_TRACE_FLUSH to make it fflush() after each write
+  (slower but safer in case of a crash). Patch by Ellie Timoney.
+
+- Since 3.2, the panel library was simply a copy of the main library.
+  This kludge is now dropped. (panel.h remains separate from curses.h.)
+
+- Removed PDCurses.spec, and the RPM-building makefile option. I think
+  this is better left to the various package/distro maintainers.
+
+- Various formatting corrections (e.g., trailing spaces stripped), and
+  variables renamed to avoid clashes. Some contributed by Stefan
+  Reinauer and Bill Gray.
+
+- Various documentation corrections and updates. All documentation
+  "converted" to Markdown format (involving few actual changes -- mainly
+  the file extension), for better rendering on GitHub, SourceForge, etc.
+  Some contributed by Anatoly Techtonik.
+
+- The "Win32" label is deprecated by Microsoft, and accordingly I've
+  replaced references in the documentation, although not yet changed the
+  filenames. The Windows console code can just as well be built for
+  64-bit (and always could be, AFAIK, although there are minor tweaks
+  to support it in this version).
+
+- The ncurses_tests can now be built under SDL as well as X11. Also, all
+  our tests (still/again) build under recent ncurses.
+
+- Put testcurs' "Output test" into real blink mode, if possible; and if
+  COLORS >= 16, use colors 0-15 directly in the color test, instead of
+  or'ing with A_BOLD to get the high-intensity colors.
+
+- Renamed the (by now rather old) "newdemo" to "ozdemo".
+
+- Moved from CVS to git; source is now on GitHub as well as SourceForge;
+  central site is now pdcurses.org.
+
+See the git log for more details.
+
+------------------------------------------------------------------------
+
+PDCurses 4.0.2 - 2017 Sep 12   (Bill Gray fork)
+=========================
+   (Note that history gets confused here;  we have things happening
+in two forks.)
+
 Major new features:
 -------------------
 
@@ -96,10 +703,9 @@ Minor new features
   `command.com` under Windows, or with Cygwin/MSYS.
   Also added a makefile for Digital Mars for the DOS version.
 
-- The "def" files that were needed before to create PDCurses on Windows
-  are removed as they are no longer necessary.
+------------------------------------------------------------------------
 
-PDCurses 3.4 - 2008/09/08
+PDCurses 3.4 - 2008-09-08
 =========================
 
 Nothing much new this time, but I've been sitting on some bug fixes for
@@ -107,12 +713,10 @@ almost a year, so it's overdue. Apart from bugs, the main changes are in
 the documentation.
 
 New features:
--------------------
 
 - setsyx() is now a function rather than a macro.
 
 Bug fixes and such:
--------------------
 
 - In x11, the xc_atrtab table size was under-calculated by half,
   resulting in crashes at (oddly) certain line counts. (It should've
@@ -164,14 +768,13 @@ Bug fixes and such:
 
 ------------------------------------------------------------------------
 
-PDCurses 3.3 - 2007/07/11
+PDCurses 3.3 - 2007-07-11
 =========================
 
 This release adds an SDL backend, refines the demos, and is faster in
 some cases.
 
 New features:
--------------------
 
 - SDL port. See INSTALL, doc/sdl.txt and sdl1/* for details.
 
@@ -204,7 +807,6 @@ New features:
   pdcurses directory that was based on platform details).
 
 Bug fixes and such:
--------------------
 
 - Implicit wrefresh() needs to be called from wgetch() when the window's
   cursor position is changed, even if there are no other changes.
@@ -252,14 +854,13 @@ Bug fixes and such:
 
 ------------------------------------------------------------------------
 
-PDCurses 3.2 - 2007/06/06
+PDCurses 3.2 - 2007-06-06
 =========================
 
 This release mainly covers changes to the build process, along with a
 few structural changes.
 
 New features:
--------------------
 
 - The panel library has been folded into the main library. What this
   means is that you no longer need to specify "-lpanel" or equivalent
@@ -281,7 +882,6 @@ New features:
 - Watcom makefiles now use the "loaddll" feature.
 
 Bug fixes and such:
--------------------
 
 - Eliminated the platform defines (DOS, WIN32, OS2, XCURSES) from
   curses.h, except for X11-specific SCREEN elements and functions.
@@ -318,13 +918,12 @@ Bug fixes and such:
 
 ------------------------------------------------------------------------
 
-PDCurses 3.1 - 2007/05/03
+PDCurses 3.1 - 2007-05-03
 =========================
 
 Primarily clipboard-related fixes, and special UTF-8 support.
 
 New features:
--------------------
 
 - "Force UTF-8" mode, a compile-time option to force the use of UTF-8
   for multibyte strings, instead of the system locale. (Mainly for
@@ -341,7 +940,6 @@ New features:
   (Corresponding macros removed.)
 
 Bug fixes and such:
--------------------
 
 - In Win32, under NT-family OSes, the scrollback buffer would be
   restored by endwin(), but would not be turned off again when resuming
@@ -391,7 +989,7 @@ Bug fixes and such:
 
 ------------------------------------------------------------------------
 
-PDCurses 3.0 - 2007/04/01
+PDCurses 3.0 - 2007-04-01
 =========================
 
 The focuses for this release are X/Open conformance, i18n, better color
@@ -401,7 +999,6 @@ This is only a brief summary of the changes. For more details, consult
 the CVS log.
 
 New features:
--------------------
 
 - An almost complete implementation of X/Open curses, including the
   wide-character and attr_t functions (but excluding terminfo). The
@@ -490,7 +1087,6 @@ New features:
   license.)
 
 Bug fixes and such:
--------------------
 
 - Most of the macros have been removed (along with the NOMACROS ifdef).
   The only remaining ones are those which have to be macros to work, and
@@ -735,7 +1331,7 @@ Bug fixes and such:
 
 ------------------------------------------------------------------------
 
-PDCurses 2.8 - 2006/04/01
+PDCurses 2.8 - 2006-04-01
 =========================
 
 As with the previous version, you should assume that apps linked against
@@ -900,7 +1496,7 @@ Bug fixes and such:
 
 ------------------------------------------------------------------------
 
-PDCurses 2.7 - 2005/12/30
+PDCurses 2.7 - 2005-12-30
 =========================
 
 INTRODUCTION:
@@ -1039,7 +1635,7 @@ and gcc under several flavors of Linux, Mac OS X, *BSD and Solaris.
 
 ------------------------------------------------------------------------
 
-PDCurses 2.6 - 2003/01/08
+PDCurses 2.6 - 2003-01-08
 =========================
 
 INTRODUCTION:
@@ -1105,7 +1701,7 @@ NEW COMPILER SUPPORT:
 
 ------------------------------------------------------------------------
 
-PDCurses 2.5 - 2001/11/26
+PDCurses 2.5 - 2001-11-26
 =========================
 
 INTRODUCTION:
@@ -1173,7 +1769,7 @@ NEW COMPILER SUPPORT:
 
 ------------------------------------------------------------------------
 
-PDCurses 2.4 - 2000/01/17
+PDCurses 2.4 - 2000-01-17
 =========================
 
 INTRODUCTION:
@@ -1251,7 +1847,7 @@ ACKNOWLEDGEMENTS: (for this release)
 
 ------------------------------------------------------------------------
 
-PDCurses 2.3 - 1998/07/09
+PDCurses 2.3 - 1998-07-09
 =========================
 
 INTRODUCTION:
@@ -1325,7 +1921,7 @@ ACKNOWLEDGEMENTS: (for this release)
 
 ------------------------------------------------------------------------
 
-PDCurses 2.2 - 1995/02/12
+PDCurses 2.2 - 1995-02-12
 =========================
 
 INTRODUCTION:
@@ -1402,7 +1998,7 @@ ACKNOWLEDGEMENTS: (for this release)
 
 ------------------------------------------------------------------------
 
-PDCurses 2.1 - 1993/06/20
+PDCurses 2.1 - 1993-06-20
 =========================
 
 INTRODUCTION:
@@ -1480,19 +2076,19 @@ OTHER NOTES:
 
  In place of...
 
-   while(!typeahead(stdin))
-    {
-      /* do something until any key is pressed... */
-    }
+       while(!typeahead(stdin))
+        {
+          /* do something until any key is pressed... */
+        }
 
  use...
 
-   /* getch() to return ERR if no key pending */
-   nodelay(stdscr,TRUE);
-   while(getch() == (ERR))
-    {
-      /* do something until any key is pressed... */
-    }
+       /* getch() to return ERR if no key pending */
+       nodelay(stdscr,TRUE);
+       while(getch() == (ERR))
+        {
+          /* do something until any key is pressed... */
+        }
 
 
 ACKNOWLEDGEMENTS: (in no particular order)
@@ -1504,7 +2100,7 @@ ACKNOWLEDGEMENTS: (in no particular order)
 
 ------------------------------------------------------------------------
 
-PDCurses 2.0 - 1992/11/23
+PDCurses 2.0 - 1992-11-23
 =========================
 
 INTRODUCTION:
@@ -1649,7 +2245,7 @@ ACKNOWLEDGEMENTS:
 
 ------------------------------------------------------------------------
 
-PDCurses 2.0Beta - 1991/12/21
+PDCurses 2.0Beta - 1991-12-21
 =============================
 
 Changed back from short to int. (int is the correct size for the default
@@ -1671,7 +2267,7 @@ Added a CONTRIB file to the environment.
 
 ------------------------------------------------------------------------
 
-PDCurses 1.5Beta - 1990/07/14
+PDCurses 1.5Beta - 1990-07-14
 =============================
 
 Added many levels of compiler support. Added mixed prototypes for all
@@ -1687,7 +2283,7 @@ specification.
 
 ------------------------------------------------------------------------
 
-PCcurses 1.4 - 1990/01/14
+PCcurses 1.4 - 1990-01-14
 =========================
 
   In PCcurses v.1.4, both portability improvements and bugfixes have
@@ -1786,7 +2382,7 @@ harmless) parameter in a function call at one place.
 
 ------------------------------------------------------------------------
 
-PCcurses 1.3 - 1988/10/05
+PCcurses 1.3 - 1988-10-05
 =========================
 
   The file 'border.c' is now included. It allows you to explicitly
@@ -1813,7 +2409,7 @@ warning messages as part of normal compilation.
 
 ------------------------------------------------------------------------
 
-PCcurses 1.2 - 1988/10/02
+PCcurses 1.2 - 1988-10-02
 =========================
 
   The changes from v.1.1 to v.1.2 are minor. The biggest change is that
@@ -1859,48 +2455,48 @@ cursesio).
 
   I would like to thank the following persons for their help:
 
-     Brandon S. Allbery (alberry@ncoast.UUCP)
-      for running comp.binaries.ibm.pc (at that time)
-      and comp.source.misc.
+       Brandon S. Allbery (alberry@ncoast.UUCP)
+               for running comp.binaries.ibm.pc (at that time)
+               and comp.source.misc.
 
-   Steve Balogh (Steve@cit5.cit.oz.AU)
-        for writing a set of manual pages and posting
-      them to the net.
+       Steve Balogh (Steve@cit5.cit.oz.AU)
+               for writing a set of manual pages and posting
+               them to the net.
 
-   Torbjorn Lindh
-      for finding bugs and suggesting raw
-      character output routines.
+       Torbjorn Lindh
+               for finding bugs and suggesting raw
+               character output routines.
 
-   Nathan Glasser (nathan@eddie.mit.edu)
-        for finding and reporting bugs.
+       Nathan Glasser (nathan@eddie.mit.edu)
+               for finding and reporting bugs.
 
-   Ingvar Olafsson (...enea!hafro!ingvar)
-        for finding and reporting bugs.
+       Ingvar Olafsson (...enea!hafro!ingvar)
+               for finding and reporting bugs.
 
-   Eric Rosco (...enea!ipmoea!ericr)
-        for finding and reporting bugs.
+       Eric Rosco (...enea!ipmoea!ericr)
+               for finding and reporting bugs.
 
-   Steve Creps (creps@silver.bacs.indiana.edu)
-        for doing a lot of work - among others
-      posting bug fixes to the net, and writing
-      the new cursesio.c module.
+       Steve Creps (creps@silver.bacs.indiana.edu)
+               for doing a lot of work - among others
+               posting bug fixes to the net, and writing
+               the new cursesio.c module.
 
-   N. Dean Pentcheff (dean@violet.berkeley.edu)
-        for finding bugs and rewriting cursesio.asm
-      for Turbo 'C' 1.5.
+       N. Dean Pentcheff (dean@violet.berkeley.edu)
+               for finding bugs and rewriting cursesio.asm
+               for Turbo 'C' 1.5.
 
   Finally, Jeff Dean (parcvax,hplabs}!cdp!jeff)
-             (jeff@ads.arpa)
-   has had a shareware version of curses deliverable since
-   about half a year before I released PCcurses 1.0 on Use-
-   Net. He is very concerned about confusion between the two
-   packages, and therefore any references on the network
-   should make clear whether they reference Dean's PCcurses
-   or Larsson's PCcurses.
+                    (jeff@ads.arpa)
+       has had a shareware version of curses deliverable since
+       about half a year before I released PCcurses 1.0 on Use-
+       Net. He is very concerned about confusion between the two
+       packages, and therefore any references on the network
+       should make clear whether they reference Dean's PCcurses
+       or Larsson's PCcurses.
 
 ------------------------------------------------------------------------
 
-PCcurses 1.1 - 1988/03/06
+PCcurses 1.1 - 1988-03-06
 =========================
 
   The changes from v.1.0 to v.1.1 are minor. There are a few bug fixes,
@@ -1921,15 +2517,15 @@ makefiles.
 
   There are three makefiles:
 
-   makefile      generic MSC 3.0 makefile
-   makefile.ms      MSC 4.0 makefile
-   makefile.tc      Turbo C 1.0 makefile
+       makefile      generic MSC 3.0 makefile
+       makefile.ms      MSC 4.0 makefile
+       makefile.tc      Turbo C 1.0 makefile
 
   To make a library with for example Turbo C, make directories to hold
 .H and .LIB files (these directories are the 'standard places'), edit
 makefile.tc for this, and type
 
-   make -f makefile.tc all
+       make -f makefile.tc all
 
 and libraries for all memory models will be created in the .LIB
 directory, while the include files will end up in the .H directory. Also
@@ -1937,7 +2533,7 @@ read what is said about installation below!
 
 ------------------------------------------------------------------------
 
-PCcurses 1.0 - 1987/08/24
+PCcurses 1.0 - 1987-08-24
 =========================
 
   This is the release notes for the PCcurses v.1.0 cursor/window control
