@@ -1941,6 +1941,8 @@ static LRESULT ALIGN_STACK CALLBACK WndProc (const HWND hwnd,
         break;
 
     case WM_CHAR:       /* _Don't_ add Shift-Tab;  it's handled elsewhere */
+        if( wParam == 3 && !SP->raw_inp)     /* Ctrl-C hit */
+            exit( 0);
         if( wParam != 9 || !(GetKeyState( VK_SHIFT) & 0x8000))
             if( !key_already_handled)
                add_key_to_queue( (int)wParam );
