@@ -179,6 +179,16 @@ static void sigwinchHandler( int sig)
          PDC_resize_occurred = TRUE;
          }
 }
+
+static void sigintHandler( int sig)
+{
+    if( !SP->raw_inp)
+    {
+        PDC_scr_close( );
+        PDC_scr_free( );
+        exit( 0);
+    }
+}
 #endif
 
 #define MAX_LINES 1000
@@ -235,6 +245,13 @@ int PDC_scr_open(void)
         return( -1);
     }
     sigwinchHandler( 0);
+
+    sa.sa_handler = sigintHandler;
+    if (sigaction(SIGINT, &sa, NULL) == -1)
+    {
+        fprintf( stderr, "Sigaction (INT) failed\n");
+        return( -1);
+    }
 #else
     {
         const char *env = getenv("PDC_LINES");
