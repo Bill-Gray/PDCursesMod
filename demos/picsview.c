@@ -107,6 +107,28 @@ static void invert_pixels( const int xsize, const int ysize, char *pixels)
       }
 }
 
+static void mirror_pixels_top_bottom( const int xsize, const int ysize, char *pixels)
+{
+   char *tbuff = (char *)malloc( xsize * 3);
+   char *tptr1 = pixels, *tptr2 = pixels + (ysize - 1) * xsize * 3;
+
+   while( tptr2 > tptr1)
+      {
+      memcpy( tbuff, tptr1, 3 * xsize);
+      memcpy( tptr1, tptr2, 3 * xsize);
+      memcpy( tptr2, tbuff, 3 * xsize);
+      tptr1 += xsize * 3;
+      tptr2 -= xsize * 3;
+      }
+   free( tbuff);
+}
+
+static void mirror_pixels_left_right( const int xsize, int ysize, char *pixels)
+{
+   mirror_pixels_top_bottom( xsize, ysize, pixels);
+   invert_pixels( xsize, ysize, pixels);
+}
+
 /* Make a reasonably interesting image with gradients,  circles,
 and hyperbolas */
 
@@ -284,10 +306,11 @@ int main( const int argc, const char *argv[])
       addstr( buff);
       if( show_help)
          {
-         mvaddstr( LINES - 7, 0, "Home key sets default view (image fit to screen)");
-         mvaddstr( LINES - 6, 0, "Click mouse to pan;  scroll wheel to zoom in/out");
-         mvaddstr( LINES - 5, 0, "Cursor keys also pan; * zooms in, / zooms out");
-         mvaddstr( LINES - 4, 0, "'r' rotates clockwise, 'R' CCW, 'i' inverts image");
+         mvaddstr( LINES - 8, 0, "Home key sets default view (image fit to screen)");
+         mvaddstr( LINES - 7, 0, "Click mouse to pan;  scroll wheel to zoom in/out");
+         mvaddstr( LINES - 6, 0, "Cursor keys also pan; * zooms in, / zooms out");
+         mvaddstr( LINES - 5, 0, "'r' rotates clockwise, 'R' CCW, 'i' inverts image");
+         mvaddstr( LINES - 4, 0, "'m' mirrors image left/right, 'f' flips top/bottom");
          mvaddstr( LINES - 3, 0, "Any other key causes this help to appear");
          show_help = FALSE;
          }
@@ -393,6 +416,14 @@ int main( const int argc, const char *argv[])
             break;
          case 'i':
             invert_pixels( xsize, ysize, pixels);
+            break;
+         case 'f':
+            mirror_pixels_top_bottom( xsize, ysize, pixels);
+            ypix = ysize - ypix;
+            break;
+         case 'm':
+            mirror_pixels_left_right( xsize, ysize, pixels);
+            xpix = xsize - xpix;
             break;
          default:
             show_help = TRUE;
