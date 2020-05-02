@@ -13,7 +13,7 @@
  *    These values are for strict IBM keyboard compatibles only         *
  ************************************************************************/
 
-static short key_table[] =
+static int key_table[] =
 {
     -1,             ALT_ESC,        -1,             0,
     -1,             -1,             -1,             -1,
@@ -81,8 +81,6 @@ void PDC_set_keyboard_binary(bool on)
     signal(SIGINT, on ? SIG_IGN : SIG_DFL);
 #endif
 }
-
-extern int PDC_font_height, PDC_font_width;
 
 /* check if a key or mouse event is waiting */
 
@@ -162,8 +160,8 @@ bool PDC_check_key(void)
 
         mouse_moved = !mouse_button && ms_regs.h.bl &&
                        ms_regs.h.bl == old_ms.h.bl &&
-                    (((ms_regs.W.cx / PDC_font_width) ^ (old_ms.W.cx / PDC_font_width)) ||
-                     ((ms_regs.W.dx / PDC_font_height) ^ (old_ms.W.dx / PDC_font_height)));
+                    (((ms_regs.W.cx / PDC_state.font_width) ^ (old_ms.W.cx / PDC_state.font_width)) ||
+                     ((ms_regs.W.dx / PDC_state.font_height) ^ (old_ms.W.dx / PDC_state.font_height)));
 
         if (mouse_scroll || mouse_button || mouse_moved)
             return TRUE;
@@ -272,8 +270,8 @@ static int _process_mouse_events(void)
         }
     }
 
-    SP->mouse_status.x = ms_regs.W.cx / PDC_font_width;
-    SP->mouse_status.y = ms_regs.W.dx / PDC_font_height;
+    SP->mouse_status.x = ms_regs.W.cx / PDC_state.font_width;
+    SP->mouse_status.y = ms_regs.W.dx / PDC_state.font_height;
 
     old_ms = ms_regs;
 

@@ -36,6 +36,12 @@
 
 #include <dos.h>
 
+# if SMALL || MEDIUM
+#  define PDC_FAR far
+# else
+#  define PDC_FAR
+# endif
+
 /* Information about the current video state */
 struct PDC_color
 {
@@ -68,6 +74,17 @@ struct PDC_video_state
     unsigned char green_pos;
     unsigned char blue_max;
     unsigned char blue_pos;
+
+    /* Font support */
+    void (*font_close)(bool bold);
+    unsigned (*font_char_width)(bool bold);
+    unsigned (*font_char_height)(bool bold);
+    const unsigned char *(*font_glyph_data)(bool bold, unsigned long pos);
+
+    bool have_bold_font;
+    unsigned font_width;     /* Width of font in pixels */
+    unsigned font_height;    /* Height of font in pixels */
+    unsigned underline;      /* Where to draw the underline */
 
     /* Cursor state */
     bool cursor_visible;
@@ -115,11 +132,6 @@ void setdosmembyte(int offs, unsigned char b);
 void setdosmemword(int offs, unsigned short w);
 void setdosmemdword(int offs, unsigned long d);
 #else
-# if SMALL || MEDIUM
-#  define PDC_FAR far
-# else
-#  define PDC_FAR
-# endif
 # define getdosmembyte(offs) \
     (*((unsigned char PDC_FAR *) (offs)))
 # define getdosmemword(offs) \

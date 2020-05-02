@@ -41,7 +41,6 @@ pdcsetsc
 int PDC_curs_set(int visibility)
 {
     int ret_vis, start, end;
-    extern int PDC_font_height;
 
     PDC_LOG(("PDC_curs_set() - called: visibility=%d\n", visibility));
 
@@ -56,7 +55,7 @@ int PDC_curs_set(int visibility)
             break;
         case 2:  /* highly visible */
             start = 0;   /* full-height block */
-            end = PDC_font_height;
+            end = PDC_state.font_height - 1;
             break;
         default:  /* normal visibility */
             start = SP->orig_cursor >> 8;

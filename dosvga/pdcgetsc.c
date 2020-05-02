@@ -12,7 +12,7 @@ int PDC_get_columns(void)
 
     PDC_LOG(("PDC_get_columns() - called\n"));
 
-    cols = PDC_state.video_width / 8;
+    cols = PDC_state.video_width / PDC_state.font_width;
 
     PDC_LOG(("PDC_get_columns() - returned: cols %d\n", cols));
 
@@ -21,12 +21,10 @@ int PDC_get_columns(void)
 
 /* get the cursor size/shape */
 
-extern int PDC_font_height;       /* see font.h */
-
 int PDC_get_cursor_mode(void)
 {
-    int start = PDC_font_height * 3 / 4;
-    int end   = PDC_font_height - 1;
+    int start = PDC_state.font_height * 3 / 4;
+    int end   = PDC_state.font_height - 1;
 
     PDC_LOG(("PDC_get_cursor_mode() - called\n"));
 
@@ -41,7 +39,7 @@ int PDC_get_rows(void)
 
     PDC_LOG(("PDC_get_rows() - called\n"));
 
-    rows = PDC_state.video_height / PDC_font_height;
+    rows = PDC_state.video_height / PDC_state.font_height;
 
     PDC_LOG(("PDC_get_rows() - returned: rows %d\n", rows));
 
