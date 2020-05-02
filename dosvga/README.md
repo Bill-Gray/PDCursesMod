@@ -33,15 +33,16 @@ Building
   (pdcurses.lib or .a, depending on your compiler) and a lot of object
   files. Add the target "demos" to build the sample programs.
 
-- By default,  a built-in 8x14 font from `font.h` is used.  But one can
-  [download VGA fonts](https://hack.org/mc/fonts/vgafonts.tar.gz) and set the `PDC_FONT` environment variable
-  to refer to a desired .vga file,  for example,
+  You can also give the optional parameter "WIDE=Y", to build the
+  library with wide-character (Unicode) support:
 
-        set PDC_FONT=c:\vgafonts\ser8x16.vga
+        wmake -f Makefile.wcc WIDE=Y
 
-  The font *must* be in the .vga format,  256*font_height bytes long,  and
-  the font height *must* be less than or equal to 16.  (The font width,
-  at least as of now,  must be 8.)
+  (WIDE=Y is untested on the Borland compiler.)
+
+The font can be set via the environment variable PDC_FONT. The font must
+be in the PSF format, version 2.
+
 
 Distribution Status
 -------------------
