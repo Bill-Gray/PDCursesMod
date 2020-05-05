@@ -600,11 +600,16 @@ static int set_mouse( const int button_index, const int button_state,
         return( -1);
     pt.x = x;
     pt.y = y;
-    if( button_index == -1)         /* mouse moved,  no button */
-        n_key_mouse_to_add = 1;
+    memset(&SP->mouse_status, 0, sizeof(MOUSE_STATUS));
+    if( button_state == BUTTON_MOVED)
+    {
+        if( button_index < 0)
+            SP->mouse_status.changes = PDC_MOUSE_POSITION;
+         else
+            SP->mouse_status.changes = PDC_MOUSE_MOVED | (1 << button_index);
+    }
     else
     {
-        memset(&SP->mouse_status, 0, sizeof(MOUSE_STATUS));
         if( button_index < PDC_MAX_MOUSE_BUTTONS)
         {
             SP->mouse_status.button[button_index] = (short)button_state;
@@ -659,8 +664,6 @@ static int set_mouse( const int button_index, const int button_state,
             pt.x = pt.y = -1;
         }
     }
-    if( button_state == BUTTON_MOVED)
-        SP->mouse_status.changes |= (button_index >= 0 ? PDC_MOUSE_MOVED : PDC_MOUSE_POSITION);
     SP->mouse_status.x = pt.x;
     SP->mouse_status.y = pt.y;
     {
@@ -1722,9 +1725,7 @@ static int add_mouse( int button, const int action, const int x, const int y)
    if( action == BUTTON_MOVED)
    {
        int i;
-#ifdef TEMP_REMOVE
        bool report_this_move = FALSE;
-#endif
 
        if( !actually_moved)     /* have to move to a new character cell, */
            return( -1);         /* not just a new pixel */
@@ -1734,16 +1735,18 @@ static int add_mouse( int button, const int action, const int x, const int y)
                button = i;
        if( button == -1 && !(SP->_trap_mbe & REPORT_MOUSE_POSITION))
            return( -1);
-#ifdef TEMP_REMOVE
-       if( (SP->_trap_mbe & REPORT_MOUSE_POSITION)
-               || (button == 1 && (SP->_trap_mbe & BUTTON1_MOVED))
+       if(        (button == 1 && (SP->_trap_mbe & BUTTON1_MOVED))
                || (button == 2 && (SP->_trap_mbe & BUTTON2_MOVED))
                || (button == 3 && (SP->_trap_mbe & BUTTON3_MOVED)))
            report_this_move = TRUE;
+       else if( SP->_trap_mbe & REPORT_MOUSE_POSITION)
+           {
+           report_this_move = TRUE;
+           button = 0;
+           }
        debug_printf( "Move button %d, (%d %d) : %d\n", button, x, y, report_this_move);
        if( !report_this_move)
            return( -1);
-#endif
    }
 
    if( !within_timeout || action == BUTTON_MOVED)
