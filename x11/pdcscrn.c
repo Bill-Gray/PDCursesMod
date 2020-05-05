@@ -434,11 +434,15 @@ static void _handle_structure_notify(Widget w, XtPointer client_data,
         /* Window has been resized, change width and height to send to
            place_text and place_graphics in next Expose. */
 
-        resize_window_width = event->xconfigure.width;
-        resize_window_height = event->xconfigure.height;
+        if( resize_window_width != event->xconfigure.width
+          || resize_window_height != event->xconfigure.height)
+        {
+            resize_window_width = event->xconfigure.width;
+            resize_window_height = event->xconfigure.height;
 
-        SP->resized = TRUE;
-        pdc_resize_now = TRUE;
+            SP->resized = TRUE;
+            pdc_resize_now = TRUE;
+        }
         break;
 
     case MapNotify:
