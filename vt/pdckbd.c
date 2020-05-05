@@ -448,7 +448,7 @@ int PDC_mouse_set( void)
 
    if( !PDC_is_ansi)
       {
-      static int curr_tracking_state = 0;
+      static int curr_tracking_state = -1;
       int tracking_state;
 
       if( SP->_trap_mbe & REPORT_MOUSE_POSITION)
@@ -459,11 +459,12 @@ int PDC_mouse_set( void)
          tracking_state = (SP->_trap_mbe ? 1000 : 0);
       if( curr_tracking_state != tracking_state)
          {
-         if( curr_tracking_state)
+         if( curr_tracking_state > 0)
             printf( "\033[?%dl", curr_tracking_state);
          if( tracking_state)
             printf( "\033[?%dh", tracking_state);
          curr_tracking_state = tracking_state;
+         PDC_doupdate( );
          }
       }
    return(  OK);
