@@ -342,7 +342,6 @@ static unsigned long _process_mouse_event( const XEvent *event)
 
     PDC_LOG(("_process_mouse_event() - called\n"));
 
-    assert( button_no >= 1 && button_no <= PDC_MAX_MOUSE_BUTTONS);
     keysym = 0; /* suppress any modifier key return */
 
     /* It appears that under X11R6 (at least on Linux), that an
@@ -432,6 +431,7 @@ static unsigned long _process_mouse_event( const XEvent *event)
         SP->mouse_status.button[button_no - 1] = BUTTON_RELEASED;
     }
 
+    assert( button_no >= 1 && button_no <= PDC_MAX_MOUSE_BUTTONS);
     /* Set up the mouse status fields in preparation for sending */
 
     SP->mouse_status.changes |= 1 << (button_no - 1);
