@@ -318,30 +318,28 @@ int PDC_get_key( void)
                y--;
                }
             if( idx & 4)
-               flags |= PDC_BUTTON_SHIFT;
+               flags |= BUTTON_SHIFT;
             if( idx & 8)
-               flags |= PDC_BUTTON_ALT;
+               flags |= BUTTON_ALT;
             if( idx & 16)
-               flags |= PDC_BUTTON_CONTROL;
+               flags |= BUTTON_CONTROL;
             if( (idx & 0x60) == 0x40)    /* mouse move */
                {
                if( x != SP->mouse_status.x || y != SP->mouse_status.y)
                   {
-                  int report_event = 0;
+                  int report_event = PDC_MOUSE_MOVED;
 
-                  if( button == 0 && (SP->_trap_mbe & BUTTON1_MOVED))
+                  if( button == 0)
                      report_event |= 1;
-                  if( button == 1 && (SP->_trap_mbe & BUTTON2_MOVED))
+                  if( button == 1)
                      report_event |= 2;
-                  if( button == 2 && (SP->_trap_mbe & BUTTON3_MOVED))
+                  if( button == 2)
                      report_event |= 4;
-                  if( report_event)
-                     report_event |= PDC_MOUSE_MOVED;
-                  else if( SP->_trap_mbe & REPORT_MOUSE_POSITION)
-                     report_event = PDC_MOUSE_POSITION;
                   SP->mouse_status.changes = report_event;
                   for( i = 0; i < 3; i++)
                      SP->mouse_status.button[i] = (i == button ? BUTTON_MOVED : 0);
+                  for( i = 0; i < 3; i++)
+                     SP->mouse_status.button[i] |= flags;
                   button = 3;
                   }
                else              /* mouse didn't actually move */
