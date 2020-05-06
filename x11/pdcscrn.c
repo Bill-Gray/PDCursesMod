@@ -431,12 +431,12 @@ static void _handle_structure_notify(Widget w, XtPointer client_data,
     case ConfigureNotify:
         PDC_LOG(("ConfigureNotify received\n"));
 
-        /* Window has been resized, change width and height to send to
-           place_text and place_graphics in next Expose. */
-
         if( resize_window_width != event->xconfigure.width
           || resize_window_height != event->xconfigure.height)
         {
+            /* Window has been resized, change width and height to send to
+               place_text and place_graphics in next Expose. */
+
             resize_window_width = event->xconfigure.width;
             resize_window_height = event->xconfigure.height;
 
@@ -684,9 +684,6 @@ int PDC_scr_open(void)
     SP->orig_attr = FALSE;
 
     atexit(PDC_scr_free);
-
-    XSync(XtDisplay(pdc_toplevel), True);
-    SP->resized = pdc_resize_now = FALSE;
 
     return OK;
 }
