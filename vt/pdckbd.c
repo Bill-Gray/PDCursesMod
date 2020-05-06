@@ -221,8 +221,19 @@ static int xlate_vt_codes( const int *c, const int count)
       {
       if( c[0] >= 'a' && c[0] <= 'z')
          rval = ALT_A + c[0] - 'a';
-      if( c[0] >= '0' && c[0] <= '9')
+      else if( c[0] >= '0' && c[0] <= '9')
          rval = ALT_0 + c[0] - '0';
+      else
+         {
+         const char *text = "',./];`\x1b\\=-\x0a\x7f";
+         const char *tptr = strchr( text, c[0]);
+         const int codes[] = { ALT_FQUOTE, ALT_COMMA, ALT_STOP, ALT_FSLASH,
+                     ALT_RBRACKET, ALT_SEMICOLON, ALT_BQUOTE, ALT_ESC,
+                     ALT_BSLASH, ALT_EQUAL, ALT_MINUS, ALT_ENTER, ALT_BKSP };
+
+         if( tptr)
+             rval = codes[tptr - text];
+         }
       }
    else if( count == 5 && c[0] == '[' && c[1] == 'M')
       rval = KEY_MOUSE;
