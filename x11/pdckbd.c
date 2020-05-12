@@ -367,7 +367,7 @@ static unsigned long _process_mouse_event( const XEvent *event)
         {
             /* Send the KEY_MOUSE to curses program */
 
-            memset(&SP->mouse_status, 0, sizeof(SP->mouse_status));
+            memset(&SP->mouse_status.button, 0, sizeof(SP->mouse_status.button));
 
             switch(button_no)
             {
@@ -383,8 +383,6 @@ static unsigned long _process_mouse_event( const XEvent *event)
                case 7:
                   SP->mouse_status.changes = PDC_MOUSE_WHEEL_RIGHT;
             }
-
-            SP->mouse_status.x = SP->mouse_status.y = -1;
 
             SP->key_code = TRUE;
             return KEY_MOUSE;

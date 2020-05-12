@@ -657,11 +657,6 @@ static int set_mouse( const int button_index, const int button_state,
                     SP->mouse_status.changes |= PDC_MOUSE_WHEEL_LEFT;
                 }
              }
-                        /* I think it may be that for wheel events,  we   */
-                        /* return x = y = -1,  rather than getting the    */
-                        /* actual mouse position.  I don't like this, but */
-                        /* I like messing up existing apps even less.     */
-            pt.x = pt.y = -1;
         }
     }
     SP->mouse_status.x = pt.x;
@@ -1847,15 +1842,19 @@ static LRESULT ALIGN_STACK CALLBACK WndProc (const HWND hwnd,
         return 0 ;
 
     case WM_MOUSEWHEEL:
-        debug_printf( "Mouse wheel: %x %lx\n", wParam, lParam);
-        modified_key_to_return = 0;
-        set_mouse( VERTICAL_WHEEL_EVENT, (short)( HIWORD(wParam)), 0, 0);
-        break;
-
     case WM_MOUSEHWHEEL:
-        debug_printf( "Mouse horiz wheel: %x %lx\n", wParam, lParam);
-        modified_key_to_return = 0;
-        set_mouse( HORIZONTAL_WHEEL_EVENT, (short)( HIWORD(wParam)), 0, 0);
+        {
+            POINT pt;
+
+            pt.x = LOWORD( lParam);
+            pt.y = HIWORD( lParam);
+            ScreenToClient( hwnd, &pt);
+            debug_printf( "Mouse wheel: %u %x %lx\n", message, wParam, lParam);
+            modified_key_to_return = 0;
+            set_mouse( (message == WM_MOUSEWHEEL)
+                      ? VERTICAL_WHEEL_EVENT : HORIZONTAL_WHEEL_EVENT,
+                      (short)( HIWORD(wParam)), pt.x / PDC_cxChar, pt.y / PDC_cyChar);
+        }
         break;
 
     case WM_MOUSEMOVE:
