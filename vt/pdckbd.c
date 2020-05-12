@@ -163,6 +163,7 @@ static int xlate_vt_codes( const int *c, const int count)
                KEY_END,  2, 'O', 'F',
                KEY_END,  2, '[', 'F',
                KEY_B2,   2, '[', 'E',
+               KEY_BTAB, 2, '[', 'Z',     /* Shift-Tab */
                KEY_IC,   3, '[', '2', '~',
                KEY_DC,   3, '[', '3', '~',
                KEY_PPAGE, 3, '[', '5', '~',
