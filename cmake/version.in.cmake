@@ -45,18 +45,6 @@ BEGIN
         VALUE "Translation", 0x400, 1200, 0x409, 1200
     END
 END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Icon
-//
-
-// Icon with lowest ID value placed first to ensure application icon
-// remains consistent on all systems.
-1                       ICON                    PRODUCT_ICON
-
-
 #endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
