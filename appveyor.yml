@@ -160,19 +160,20 @@ install:
   # Open Watcom
   - if "%TOOLCHAIN%"=="Watcom19" ( echo Installing Open Watcom 1.9 )
   - if "%TOOLCHAIN%"=="Watcom19" ( cd %APPVEYOR_BUILD_FOLDER% )
-  - if "%TOOLCHAIN%"=="Watcom19" ( set "OPEN_WATCOM_URL=https://sourceforge.net/projects/openwatcom/files/open-watcom-1.9/open-watcom-c-win32-1.9.exe" )
-  - if "%TOOLCHAIN%"=="Watcom19" ( appveyor DownloadFile "%OPEN_WATCOM_URL%" -FileName open-watcom-c-win32-1.9.exe )
+  - if "%TOOLCHAIN%"=="Watcom19" ( set "OPEN_WATCOM_NAME=open-watcom-c-win32-1.9.exe" )
+  - if "%TOOLCHAIN%"=="Watcom19" ( set "OPEN_WATCOM_URL=https://sourceforge.net/projects/openwatcom/files/open-watcom-1.9/%OPEN_WATCOM_NAME%" )
+  - if "%TOOLCHAIN%"=="Watcom19" ( appveyor DownloadFile "%OPEN_WATCOM_URL%" -FileName "%OPEN_WATCOM_NAME%" )
     # todo - check the md5 here...
-  - if "%TOOLCHAIN%"=="Watcom19" ( 7z x -y open-watcom-c-win32-1.9.exe -o"%WATCOM%" > nul )
+  - if "%TOOLCHAIN%"=="Watcom19" ( 7z x -y "%OPEN_WATCOM_NAME%" -o"%WATCOM%" > nul )
   - if "%TOOLCHAIN%"=="Watcom19" ( set "PATH=%WATCOM%\BINNT;%WATCOM%\BINW;%PATH%" )
 
   - if "%TOOLCHAIN%"=="Watcom20" ( echo Installing Open Watcom 2.0 )
   - if "%TOOLCHAIN%"=="Watcom20" ( cd %APPVEYOR_BUILD_FOLDER% )
-  - if "%TOOLCHAIN%"=="Watcom20" ( set "OPEN_WATCOM_URL=https://github.com/open-watcom/travis-ci-ow-builds/archive/master.zip" )
-  - if "%TOOLCHAIN%"=="Watcom20" ( appveyor DownloadFile "%OPEN_WATCOM_URL%" -FileName master.zip )
-  - if "%TOOLCHAIN%"=="Watcom20" ( 7z x -y master.zip -o"%WATCOM%" > nul )
+  - if "%TOOLCHAIN%"=="Watcom20" ( set "OPEN_WATCOM_NAME=open-watcom-2_0-c-win-x64.exe" )
+  - if "%TOOLCHAIN%"=="Watcom20" ( set "OPEN_WATCOM_URL=https://github.com/open-watcom/open-watcom-v2/releases/download/Current-build/%OPEN_WATCOM_NAME%" )
+  - if "%TOOLCHAIN%"=="Watcom20" ( appveyor DownloadFile "%OPEN_WATCOM_URL%" -FileName "%OPEN_WATCOM_NAME%" )
+  - if "%TOOLCHAIN%"=="Watcom20" ( 7z x -y "%OPEN_WATCOM_NAME%" -o"%WATCOM%" > nul )
     # todo - check the md5 here...
-  - if "%TOOLCHAIN%"=="Watcom20" ( set "WATCOM=%WATCOM%\travis-ci-ow-builds-master" )
   - if "%TOOLCHAIN%"=="Watcom20" ( set "PATH=%WATCOM%\BINNT64;%WATCOM%\BINNT;%PATH%" )
 
     # DOS BAT file
