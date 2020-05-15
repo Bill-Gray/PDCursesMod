@@ -125,7 +125,7 @@ void PDC_scr_free(void)
 /* open the physical screen -- allocate SP, miscellaneous intialization,
    and may save the existing screen for later restoration */
 
-int PDC_scr_open(int argc, char **argv)
+int PDC_scr_open(void)
 {
 #ifdef EMXVIDEO
     int adapter;
