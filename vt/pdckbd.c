@@ -238,10 +238,11 @@ static int xlate_vt_codes( const int *c, const int count)
          rval = ALT_0 + c[0] - '0';
       else
          {
-         const char *text = "',./];`\x1b\\=-\x0a\x7f";
+         const char *text = "',./[];`\x1b\\=-\x0a\x7f";
          const char *tptr = strchr( text, c[0]);
          const int codes[] = { ALT_FQUOTE, ALT_COMMA, ALT_STOP, ALT_FSLASH,
-                     ALT_RBRACKET, ALT_SEMICOLON, ALT_BQUOTE, ALT_ESC,
+                     ALT_LBRACKET, ALT_RBRACKET,
+                     ALT_SEMICOLON, ALT_BQUOTE, ALT_ESC,
                      ALT_BSLASH, ALT_EQUAL, ALT_MINUS, ALT_ENTER, ALT_BKSP };
 
          if( tptr)
@@ -296,9 +297,15 @@ int PDC_get_key( void)
          {
          int count = 0;
 
-         while( count < MAX_COUNT && check_key( &c[count])
-                  && (rval = xlate_vt_codes( c, count + 1)) == -1)
+         rval = -1;
+         while( rval == -1 && count < MAX_COUNT && check_key( &c[count]))
+            {
             count++;
+            rval = xlate_vt_codes( c, count);
+            if( rval == ALT_LBRACKET && check_key( NULL))
+               rval = -1;
+            }
+         count--;
          if( rval == KEY_MOUSE)
             {
             int idx, button, flags = 0, i, x, y;
