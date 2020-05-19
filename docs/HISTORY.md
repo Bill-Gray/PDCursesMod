@@ -2,7 +2,7 @@ PDCurses ?.? - 2020 Feb ?? - Bill Gray fork
 =========================
 
    Version number/date pending until we figure out why automated
-   builds fail (will presumably be 4.1.0).  I suspect the fails
+   builds fail (will presumably be 4.2.0).  I suspect the fails
    have something to do with the auto build system rather than
    with the code,  but don't know enough about CMake to really
    be sure;  perhaps there's a Real Bug in the code.
@@ -29,7 +29,12 @@ New features
    ability to access lots and lots of colors.
 
 -- VT port is much faster,  mostly thanks to not writing data to
-   stdout with no buffering and with printf().
+   stdout with no buffering and with printf().  It also will use
+   SGR mouse commands if available,  which makes things more bullet
+   proof in cases of confused mouse input,  and means windows can
+   be more than 224 columns wide.
+
+-- Added chasonr's DOSVGA port.
 
 Bug fixes and such
 ------------------
@@ -46,6 +51,15 @@ Bug fixes and such
 
 -- Handling of default background/foreground in VT was just plain
    wrong.  Now fixed.
+
+-- Mouse wheel events now report the correct mouse position,  instead
+   of always reporting (-1, -1).
+
+-- Fixed spurious resize events at startup and for window moves on
+   the X11 platform.
+
+-- raw() and noraw() now work as specified on WinGUI and VT.  (They
+   still don't work on X11,  SDLn,  or WinCon.)
 
 PDCurses 3.9 - 2019-09-04
 =========================
