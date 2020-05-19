@@ -174,11 +174,11 @@ install:
   - if "%TOOLCHAIN%"=="Watcom20" ( appveyor DownloadFile "%OPEN_WATCOM_URL%" -FileName "%OPEN_WATCOM_NAME%" )
   - if "%TOOLCHAIN%"=="Watcom20" ( 7z x -y "%OPEN_WATCOM_NAME%" -o"%WATCOM%" > nul )
     # todo - check the md5 here...
-  - if "%TOOLCHAIN%"=="Watcom20" ( set "PATH=%WATCOM%\BINNT64;%WATCOM%\BINNT;%PATH%" )
+  - if "%TOOLCHAIN%"=="Watcom20" ( set "PATH=%WATCOM%\BINNT64;%WATCOM%\BINW;%PATH%" )
 
     # DOS BAT file
   - if "%TARGET%"=="dos" ( set "EDPATH=%WATCOM%\EDDAT" )
-  - if "%TARGET%"=="dos" ( set "INCLUDE=%WATCOM%\H;%WATCOM%\H\NT" )
+  - if "%TARGET%"=="dos" ( set "INCLUDE=%WATCOM%\H" )
 
     # OS/2 CMD file
   - if "%TARGET%"=="os2" ( set "BEGINLIBPATH=%WATCOM%\BINP\DLL" )
