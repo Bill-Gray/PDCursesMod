@@ -471,14 +471,16 @@ indicator.
 -------------------------------------------------------------------------------
          color number   |        modifiers      |         character eg 'a'
 
-
    We take five more bits for the character (thus allowing Unicode values
-past 64K;  UTF-16 can go up to 0x10ffff,  requiring 21 bits total),  and
-four more bits for attributes.  Three are currently used as A_OVERLINE, A_DIM,
-and A_STRIKEOUT;  one more is reserved for future use.  On most platforms,
-bits 31-38 are used to select a color pair (can run from 0 to 255).
-Bits 39 and 40 have been added to this to get 1024 color pairs,  and
-more eventually will probably be used.
+past 64K;  the full range of Unicode goes up to 0x10ffff,  requiring 21 bits
+total),  and four more bits for attributes.  Three are currently used as
+A_OVERLINE, A_DIM, and A_STRIKEOUT;  one more is reserved for future use.
+On some platforms,  bits 33-40 are used to select a color pair (can run from
+0 to 255). Bits 41 and 42 have been added to this to get 1024 color pairs.
+On some platforms (as of 2020 May 17,  WinGUI and VT),  bits 33-52 are used,
+allowing 2^20 = 1048576 color pairs.  That should be enough for anybody, and
+leaves twelve bits for other uses.
+
 **man-end****************************************************************/
 
 /*** Video attribute macros ***/
