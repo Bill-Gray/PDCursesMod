@@ -7,10 +7,10 @@ IF (PDC_SDL2_DEPS_BUILD)
         set(FLAGS_FOR_DYNAMIC_LINK -fPIC) 
     ENDIF()
 
-    SET(SDL2_RELEASE 2.0.8)
+    SET(SDL2_RELEASE 2.0.12)
     ExternalProject_Add(sdl2_ext
         URL https://www.libsdl.org/release/SDL2-${SDL2_RELEASE}.zip
-        URL_HASH "SHA256=e6a7c71154c3001e318ba7ed4b98582de72ff970aca05abc9f45f7cbdc9088cb"
+        URL_HASH "SHA256=476e84d6fcbc499cd1f4a2d3fd05a924abc165b5d0e0d53522c9604fe5a021aa"
         UPDATE_COMMAND ""
         DOWNLOAD_DIR ${CMAKE_BINARY_DIR}
         SOURCE_DIR ${CMAKE_BINARY_DIR}/SDL2-${SDL2_RELEASE}
@@ -19,7 +19,6 @@ IF (PDC_SDL2_DEPS_BUILD)
             ${SDL_CMAKE_BUILD_OPTS}
             -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}/${CMAKE_BUILD_TYPE}
             -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-            -DCMAKE_C_FLAGS=${FLAGS_FOR_DYNAMIC_LINK} ${EXTERNAL_C_FLAGS}
         )
 
     MESSAGE(STATUS "SDL2 Installing to: ${CMAKE_INSTALL_PREFIX}/${CMAKE_BUILD_TYPE}")
@@ -54,6 +53,7 @@ IF (PDC_SDL2_DEPS_BUILD)
         ExternalProject_Add(zlib_ext
             GIT_REPOSITORY "https://github.com/madler/zlib.git"
             GIT_TAG "v1.2.11"
+            GIT_SHALLOW true
             UPDATE_COMMAND ""
             DOWNLOAD_DIR ${CMAKE_BINARY_DIR}
             SOURCE_DIR ${CMAKE_BINARY_DIR}/zlib
@@ -88,6 +88,7 @@ IF (PDC_SDL2_DEPS_BUILD)
         ExternalProject_Add(freetype2_ext
             GIT_REPOSITORY "https://git.savannah.gnu.org/git/freetype/freetype2.git"
             GIT_TAG "VER-2-8-1"
+            GIT_SHALLOW true
             UPDATE_COMMAND ""
             DOWNLOAD_DIR ${CMAKE_BINARY_DIR}
             SOURCE_DIR ${CMAKE_BINARY_DIR}/freetype2
@@ -106,7 +107,7 @@ IF (PDC_SDL2_DEPS_BUILD)
                 -DZLIB_INCLUDE_DIR=${ZLIB_INCLUDE_DIR}
                 -DZLIB_LIBRARY_DIR=${ZLIB_LIBRARY_DIR}
             )
-    
+
         ADD_DEPENDENCIES(freetype2_ext zlib_ext)
         MESSAGE(STATUS "freetype2 Installing to: ${CMAKE_INSTALL_PREFIX}/${CMAKE_BUILD_TYPE}")
         SET(FT2_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_BUILD_TYPE}/include/freetype2)
@@ -125,11 +126,11 @@ IF (PDC_SDL2_DEPS_BUILD)
             ENDIF()
         ENDIF()        
         
-        SET(SDL2_TTF_RELEASE 2.0.14)
+        SET(SDL2_TTF_RELEASE 2.0.15)
 
         ExternalProject_Add(sdl2_ttf_ext
             URL https://www.libsdl.org/projects/SDL_ttf/release/SDL2_ttf-${SDL2_TTF_RELEASE}.zip
-            URL_HASH "SHA256=ad7a7d2562c19ad2b71fa4ab2e76f9f52b3ee98096c0a7d7efbafc2617073c27"
+            URL_HASH "SHA256=cdb72b5b1c3b27795fa128af36f369fee5d3e38a96c350855da0b81880555dbc"
             PATCH_COMMAND cmake -E copy 
                 ${CMAKE_SOURCE_DIR}/cmake/sdl2_ttf/CMakeLists.txt 
                 ${CMAKE_BINARY_DIR}/sdl2_ttf/CMakeLists.txt
