@@ -44,7 +44,7 @@ set(CMAKE_C_COMPILE_OPTIONS_DLL "")
 set(CMAKE_SHARED_LIBRARY_C_FLAGS "")
 
 foreach(type EXE SHARED MODULE)
-  set(CMAKE_${type}_LINKER_FLAGS_INIT " system dos opt map")
+  set(CMAKE_${type}_LINKER_FLAGS_INIT " system dos opt map, noext")
   set(CMAKE_${type}_LINKER_FLAGS_DEBUG_INIT " debug all")
   set(CMAKE_${type}_LINKER_FLAGS_RELWITHDEBINFO_INIT " debug all")
 endforeach()
