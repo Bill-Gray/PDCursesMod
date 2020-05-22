@@ -225,7 +225,6 @@ static int xlate_vt_codes( const int *c, const int count)
                KEY_SRIGHT, 5, '[', '1', ';', '2', 'C',
                KEY_SDOWN, 5, '[', '1', ';', '2', 'B',
                KEY_SLEFT, 5, '[', '1', ';', '2', 'D',
-               27, 0,
                0 };
    int i, rval = -1;
    const int *tptr;
@@ -305,6 +304,8 @@ int PDC_get_key( void)
             if( rval == ALT_LBRACKET && check_key( NULL))
                rval = -1;
             }
+         if( !count)             /* Escape hit */
+            rval = 27;
          count--;
          if( rval == KEY_MOUSE)
             {
