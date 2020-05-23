@@ -31,10 +31,10 @@ Defined by this header:
 #define PDC_BUILD (PDC_VER_MAJOR*1000 + PDC_VER_MINOR *100 + PDC_VER_CHANGE)
 #define PDC_VER_MAJOR    4
 #define PDC_VER_MINOR    1
-#define PDC_VER_CHANGE   1
+#define PDC_VER_CHANGE   99
 #define PDC_VER_YEAR   2020
-#define PDC_VER_MONTH    01
-#define PDC_VER_DAY      12
+#define PDC_VER_MONTH    05
+#define PDC_VER_DAY      20
 
 #define PDC_STRINGIZE( x) #x
 #define PDC_stringize( x) PDC_STRINGIZE( x)
