@@ -11,18 +11,13 @@
 # define _XOPEN_SOURCE_EXTENDED 1
 #endif
 
-#ifdef PDC_WIDE
-   #define HAVE_WIDE
-   #include <wchar.h>
+#if defined (PDC_WIDE)
    #include <curses.h>
-#endif
-#ifdef HAVE_NCURSESW
    #define HAVE_WIDE
-   #include <wchar.h>
+#elif defined (HAVE_NCURSESW)
    #include <ncursesw/curses.h>
-#endif
-
-#ifndef HAVE_WIDE
+   #define HAVE_WIDE
+#else
    #include <curses.h>
 #endif
 
@@ -578,4 +573,3 @@ int main( int argc, char **argv)
 
     return 0;
 }
-
