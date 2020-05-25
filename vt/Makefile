@@ -43,10 +43,6 @@ ifdef CHTYPE_32
 	CFLAGS += -DCHTYPE_32
 endif
 
-ifdef CHTYPE_16
-	CFLAGS += -DCHTYPE_16
-endif
-
 ifdef _w64
 	PREFIX  = x86_64-w64-mingw32-
 	EXE = .exe
