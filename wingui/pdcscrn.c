@@ -1160,6 +1160,7 @@ static void adjust_font_size( const int font_size_change)
 #define WM_CHOOSE_FONT        (WM_USER + 6)
 
 static int add_resize_key = 1;
+static int resize_limits_set = 0;
 
 /*man-start**************************************************************
 
@@ -1195,6 +1196,7 @@ void PDC_set_resize_limits( const int new_min_lines, const int new_max_lines,
     max_lines = max( new_max_lines, min_lines);
     min_cols = max( new_min_cols, 2);
     max_cols = max( new_max_cols, min_cols);
+    resize_limits_set = 1;
 }
 
       /* The screen should hold the characters (PDC_cxChar * n_default_columns */
@@ -1265,15 +1267,18 @@ INLINE int get_default_sizes_from_registry( int *n_cols, int *n_rows,
         {
             extern int PDC_font_size;
             int x = -1, y = -1, bytes_read = 0;
+            int minl = 0, maxl = 0, minc = 0, maxc = 0;
 
             my_stscanf( data, _T( "%dx%d,%d,%d,%d,%d;%d,%d,%d,%d:%n"),
                              &x, &y, &PDC_font_size,
                              xloc, yloc, menu_shown,
-                             &min_lines, &max_lines,
-                             &min_cols, &max_cols,
+                             &minl, &maxl,
+                             &minc, &maxc,
                              &bytes_read);
             if( bytes_read > 0 && data[bytes_read - 1] == ':')
                my_tcscpy( PDC_font_name, data + bytes_read);
+            if ( !resize_limits_set)
+                PDC_set_resize_limits(minl, maxl, minc, maxc);
             if( n_cols)
                 *n_cols = x;
             if( n_rows)
