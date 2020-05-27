@@ -7,7 +7,6 @@ CMake Options
     option(PDC_WIDE "Wide - pulls in sdl-ttf" OFF)
     option(PDCDEBUG "Debug tracing" OFF)
     option(PDC_CHTYPE_32 "CHTYPE_32" OFF)
-    option(PDC_CHTYPE_16 "CHTYPE_16" OFF)
     option(PDC_DOS_BUILD "Build DOS Project" OFF)
     option(PDC_SDL2_BUILD "Build SDL2 Project" ON)
     option(PDC_SDL2_DEPS_BUILD "Build SDL2 and dependencies" ON)
