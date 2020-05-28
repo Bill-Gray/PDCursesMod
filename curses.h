@@ -1338,6 +1338,29 @@ PDCEX  int     init_color(short, short, short, short);
 PDCEX  int     init_extended_color(int, int, int, int);
 PDCEX  int     init_extended_pair(int, int, int);
 PDCEX  int     init_pair(short, short, short);
+
+#ifdef PDC_WIDE
+   #ifdef PDC_FORCE_UTF8
+      #ifdef CHTYPE_32
+         #define initscr initscr_u32
+      #else
+         #define initscr initscr_u64
+      #endif
+   #else
+      #ifdef CHTYPE_32
+         #define initscr initscr_w32
+      #else
+         #define initscr initscr_w64
+      #endif
+   #endif
+#else       /* 8-bit chtypes */
+   #ifdef CHTYPE_32
+      #define initscr initscr_x32
+   #else
+      #define initscr initscr_x64
+   #endif
+#endif
+
 PDCEX  WINDOW *initscr(void);
 PDCEX  int     innstr(char *, int);
 PDCEX  int     insch(chtype);
