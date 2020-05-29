@@ -138,6 +138,80 @@ jobs:
         WATCOM=${HOME}/watcom INCLUDE=${WATCOM}/h:${INCLUDE}
       os: linux
       compiler: ow20
+    # DOS 16-bit
+    - arch: dos
+      env: >
+        BUILD_TYPE=Debug CMAKE_ARGS="-DPDC_DOSVGA_BUILD=ON -DCMAKE_TOOLCHAIN_FILE=${TRAVIS_BUILD_DIR}/cmake/watcom_open_dos16_toolchain.cmake -DPDCDEBUG=ON"
+        WATCOM=${HOME}/watcom INCLUDE=${WATCOM}/h:${INCLUDE}
+      os: linux
+      compiler: ow19
+    - arch: dos
+      env: >
+        BUILD_TYPE=Debug CMAKE_ARGS="-DPDC_DOSVGA_BUILD=ON -DCMAKE_TOOLCHAIN_FILE=${TRAVIS_BUILD_DIR}/cmake/watcom_open_dos16_toolchain.cmake -DPDCDEBUG=ON"
+        WATCOM=${HOME}/watcom INCLUDE=${WATCOM}/h:${INCLUDE}
+      os: linux
+      compiler: ow20
+    - arch: dos
+      env: >
+        BUILD_TYPE=Release CMAKE_ARGS="-DPDC_DOSVGA_BUILD=ON -DCMAKE_TOOLCHAIN_FILE=${TRAVIS_BUILD_DIR}/cmake/watcom_open_dos16_toolchain.cmake"
+        WATCOM=${HOME}/watcom INCLUDE=${WATCOM}/h:${INCLUDE}
+      os: linux
+      compiler: ow19
+    - arch: dos
+      env: >
+        BUILD_TYPE=Release CMAKE_ARGS="-DPDC_DOSVGA_BUILD=ON -DCMAKE_TOOLCHAIN_FILE=${TRAVIS_BUILD_DIR}/cmake/watcom_open_dos16_toolchain.cmake"
+        WATCOM=${HOME}/watcom INCLUDE=${WATCOM}/h:${INCLUDE}
+      os: linux
+      compiler: ow20
+    - arch: dos
+      env: >
+        BUILD_TYPE=MinSizeRel CMAKE_ARGS="-DPDC_DOSVGA_BUILD=ON -DCMAKE_TOOLCHAIN_FILE=${TRAVIS_BUILD_DIR}/cmake/watcom_open_dos16_toolchain.cmake"
+        WATCOM=${HOME}/watcom INCLUDE=${WATCOM}/h:${INCLUDE}
+      os: linux
+      compiler: ow19
+    - arch: dos
+      env: >
+        BUILD_TYPE=MinSizeRel CMAKE_ARGS="-DPDC_DOSVGA_BUILD=ON -DCMAKE_TOOLCHAIN_FILE=${TRAVIS_BUILD_DIR}/cmake/watcom_open_dos16_toolchain.cmake"
+        WATCOM=${HOME}/watcom INCLUDE=${WATCOM}/h:${INCLUDE}
+      os: linux
+      compiler: ow20
+    # DOS 32-bit
+    - arch: dos32
+      env: >
+        BUILD_TYPE=Debug CMAKE_ARGS="-DPDC_DOSVGA_BUILD=ON -DCMAKE_TOOLCHAIN_FILE=${TRAVIS_BUILD_DIR}/cmake/watcom_open_dos32_toolchain.cmake -DPDCDEBUG=ON"
+        WATCOM=${HOME}/watcom INCLUDE=${WATCOM}/h:${INCLUDE}
+      os: linux
+      compiler: ow19
+    - arch: dos32
+      env: >
+        BUILD_TYPE=Debug CMAKE_ARGS="-DPDC_DOSVGA_BUILD=ON -DCMAKE_TOOLCHAIN_FILE=${TRAVIS_BUILD_DIR}/cmake/watcom_open_dos32_toolchain.cmake -DPDCDEBUG=ON"
+        WATCOM=${HOME}/watcom INCLUDE=${WATCOM}/h:${INCLUDE}
+      os: linux
+      compiler: ow20
+    - arch: dos32
+      env: >
+        BUILD_TYPE=Release CMAKE_ARGS="-DPDC_DOSVGA_BUILD=ON -DCMAKE_TOOLCHAIN_FILE=${TRAVIS_BUILD_DIR}/cmake/watcom_open_dos32_toolchain.cmake"
+        WATCOM=${HOME}/watcom INCLUDE=${WATCOM}/h:${INCLUDE}
+      os: linux
+      compiler: ow19
+    - arch: dos32
+      env: >
+        BUILD_TYPE=Release CMAKE_ARGS="-DPDC_DOSVGA_BUILD=ON -DCMAKE_TOOLCHAIN_FILE=${TRAVIS_BUILD_DIR}/cmake/watcom_open_dos32_toolchain.cmake"
+        WATCOM=${HOME}/watcom INCLUDE=${WATCOM}/h:${INCLUDE}
+      os: linux
+      compiler: ow20
+    - arch: dos32
+      env: >
+        BUILD_TYPE=MinSizeRel CMAKE_ARGS="-DPDC_DOSVGA_BUILD=ON -DCMAKE_TOOLCHAIN_FILE=${TRAVIS_BUILD_DIR}/cmake/watcom_open_dos32_toolchain.cmake"
+        WATCOM=${HOME}/watcom INCLUDE=${WATCOM}/h:${INCLUDE}
+      os: linux
+      compiler: ow19
+    - arch: dos32
+      env: >
+        BUILD_TYPE=MinSizeRel CMAKE_ARGS="-DPDC_DOSVGA_BUILD=ON -DCMAKE_TOOLCHAIN_FILE=${TRAVIS_BUILD_DIR}/cmake/watcom_open_dos32_toolchain.cmake"
+        WATCOM=${HOME}/watcom INCLUDE=${WATCOM}/h:${INCLUDE}
+      os: linux
+      compiler: ow20
 
 before_install:
   - if [[ "${TRAVIS_COMPILER}" == "ow19" ]]; then export OPEN_WATCOM_NAME=open-watcom-c-linux-1.9; fi

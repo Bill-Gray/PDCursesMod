@@ -36,6 +36,10 @@ if(PDC_DOS_BUILD) # currently requires a unique toolchain file
 
     add_subdirectory(dos)
 
+elseif(PDC_DOSVGA_BUILD) # currently requires a unique toolchain file
+
+    add_subdirectory(dosvga)
+
 elseif(PDC_OS2_BUILD) # currently requires a unique toolchain file
 
     add_subdirectory(os2)

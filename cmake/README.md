@@ -8,6 +8,7 @@ CMake Options
     option(PDCDEBUG "Debug tracing" OFF)
     option(PDC_CHTYPE_32 "CHTYPE_32" OFF)
     option(PDC_DOS_BUILD "Build DOS Project" OFF)
+    option(PDC_DOSVGA_BUILD "Build DOSVGA Project" OFF)
     option(PDC_SDL2_BUILD "Build SDL2 Project" ON)
     option(PDC_SDL2_DEPS_BUILD "Build SDL2 and dependencies" ON)
 
@@ -38,16 +39,16 @@ Native Windows Building
 Win32 (pdcurses.sln)
 
     mkdir build32 & pushd build32
-	cmake -G"Visual Studio 15" -DPDC_WIDE=ON -DCMAKE_INSTALL_PREFIX=c:\tmp\pdcurses\Win32 -DCMAKE_BUILD_TYPE=Debug -DPDCDEBUG=ON ..
-	popd
-	cmake --build build32 --config Debug --target install
+        cmake -G"Visual Studio 15" -DPDC_WIDE=ON -DCMAKE_INSTALL_PREFIX=c:\tmp\pdcurses\Win32 -DCMAKE_BUILD_TYPE=Debug -DPDCDEBUG=ON ..
+        popd
+        cmake --build build32 --config Debug --target install
 
 Win64 (pdcurses.sln)
 
     mkdir build64 & pushd build64
-	cmake -G"Visual Studio 15 Win64" -DPDC_WIDE=ON -DCMAKE_INSTALL_PREFIX=c:\tmp\pdcurses\Win64 -DCMAKE_BUILD_TYPE=Debug -DPDCDEBUG=ON ..
-	popd
-	cmake --build build64 --config Debug --target install
+        cmake -G"Visual Studio 15 Win64" -DPDC_WIDE=ON -DCMAKE_INSTALL_PREFIX=c:\tmp\pdcurses\Win64 -DCMAKE_BUILD_TYPE=Debug -DPDCDEBUG=ON ..
+        popd
+        cmake --build build64 --config Debug --target install
 
 
 Cygwin
@@ -56,7 +57,7 @@ Cygwin
     mkdir build && pushd build
     cmake .. -G"Unix Makefiles" -DPDC_SDL2_BUILD=OFF -DCMAKE_INSTALL_PREFIX=/cygdrive/c/tmp/pdcurses/Cyg64 -DCMAKE_BUILD_TYPE=Debug -DPDCDEBUG=ON -DWINDOWS_KIT_LIBRARY_DIR=/cygdrive/c/Program\ Files\ \(x86\)/Windows\ Kits/10/Lib/10.0.14393.0/um/x64 ..
     popd
-	cmake --build build --config Debug --target install
+        cmake --build build --config Debug --target install
 
 Note: The demo apps will all build, only version.exe works.  All other apps print "Redirection is not supported."
 
