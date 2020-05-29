@@ -6,6 +6,8 @@ set(CMAKE_BUILD_TYPE RelWithDebInfo)
 
 set(CMAKE_SYSTEM_NAME "Generic")
 
+set(CMAKE_C_COMPILER "wcl386")
+set(CMAKE_CXX_COMPILER "wcl386")
 set(CMAKE_ASM_COMPILER "wasm")
 
 if(CMAKE_VERBOSE_MAKEFILE)
@@ -41,7 +43,7 @@ set(CMAKE_C_COMPILE_OPTIONS_DLL "")
 set(CMAKE_SHARED_LIBRARY_C_FLAGS "")
 
 foreach(type EXE SHARED MODULE)
-  set(CMAKE_${type}_LINKER_FLAGS_INIT " system dos4g opt map")
+  set(CMAKE_${type}_LINKER_FLAGS_INIT " system dos4g opt map, noext")
   set(CMAKE_${type}_LINKER_FLAGS_DEBUG_INIT " debug all")
   set(CMAKE_${type}_LINKER_FLAGS_RELWITHDEBINFO_INIT " debug all")
 endforeach()

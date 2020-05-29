@@ -8,42 +8,180 @@ compiler:
   - gcc
   - clang
 
+arch:
+  - amd64
+
 env:
-  - BUILD_TYPE=Debug CMAKE_ARGS="-DPDC_WIDE=OFF -DPDC_UTF8=OFF -DPDCDEBUG=ON"
-  - BUILD_TYPE=Debug CMAKE_ARGS="-DPDC_WIDE=OFF -DPDC_UTF8=ON -DPDCDEBUG=ON"
-  - BUILD_TYPE=Debug CMAKE_ARGS="-DPDC_WIDE=ON -DPDC_UTF8=OFF -DPDCDEBUG=ON"
+  jobs:
+    - BUILD_TYPE=Debug CMAKE_ARGS="-DPDC_WIDE=OFF -DPDC_UTF8=OFF -DPDCDEBUG=ON"
+    - BUILD_TYPE=Debug CMAKE_ARGS="-DPDC_WIDE=OFF -DPDC_UTF8=ON -DPDCDEBUG=ON"
+    - BUILD_TYPE=Debug CMAKE_ARGS="-DPDC_WIDE=ON -DPDC_UTF8=OFF -DPDCDEBUG=ON"
   
-  - BUILD_TYPE=Release CMAKE_ARGS="-DPDC_WIDE=OFF -DPDC_UTF8=OFF"
-  - BUILD_TYPE=Release CMAKE_ARGS="-DPDC_WIDE=OFF -DPDC_UTF8=ON"
-  - BUILD_TYPE=Release CMAKE_ARGS="-DPDC_WIDE=ON -DPDC_UTF8=OFF"
+    - BUILD_TYPE=Release CMAKE_ARGS="-DPDC_WIDE=OFF -DPDC_UTF8=OFF"
+    - BUILD_TYPE=Release CMAKE_ARGS="-DPDC_WIDE=OFF -DPDC_UTF8=ON"
+    - BUILD_TYPE=Release CMAKE_ARGS="-DPDC_WIDE=ON -DPDC_UTF8=OFF"
 
-  - BUILD_TYPE=MinSizeRel CMAKE_ARGS="-DPDC_WIDE=OFF -DPDC_UTF8=OFF"
-  - BUILD_TYPE=MinSizeRel CMAKE_ARGS="-DPDC_WIDE=OFF -DPDC_UTF8=ON"
-  - BUILD_TYPE=MinSizeRel CMAKE_ARGS="-DPDC_WIDE=ON -DPDC_UTF8=OFF"
+    - BUILD_TYPE=MinSizeRel CMAKE_ARGS="-DPDC_WIDE=OFF -DPDC_UTF8=OFF"
+    - BUILD_TYPE=MinSizeRel CMAKE_ARGS="-DPDC_WIDE=OFF -DPDC_UTF8=ON"
+    - BUILD_TYPE=MinSizeRel CMAKE_ARGS="-DPDC_WIDE=ON -DPDC_UTF8=OFF"
 
-addons:
-  apt:
-    packages:
-      - libncurses5-dev
-      - libncursesw5-dev
-      - libxaw7-dev
+jobs:
+  include:
+    # OS/2
+    - arch: os2
+      env: >
+        BUILD_TYPE=Debug CMAKE_ARGS="-DPDC_OS2_BUILD=ON -DCMAKE_TOOLCHAIN_FILE=${TRAVIS_BUILD_DIR}/cmake/watcom_open_os2v2_toolchain.cmake -DPDCDEBUG=ON"
+        WATCOM=${HOME}/watcom INCLUDE=${WATCOM}/h:${WATCOM}/h/os2:${INCLUDE}
+      os: linux
+      compiler: ow19
+    - arch: os2
+      env: >
+        BUILD_TYPE=Debug CMAKE_ARGS="-DPDC_OS2_BUILD=ON -DCMAKE_TOOLCHAIN_FILE=${TRAVIS_BUILD_DIR}/cmake/watcom_open_os2v2_toolchain.cmake -DPDCDEBUG=ON"
+        WATCOM=${HOME}/watcom INCLUDE=${WATCOM}/h:${WATCOM}/h/os2:${INCLUDE}
+      os: linux
+      compiler: ow20
+    - arch: os2
+      env: >
+        BUILD_TYPE=Release CMAKE_ARGS="-DPDC_OS2_BUILD=ON -DCMAKE_TOOLCHAIN_FILE=${TRAVIS_BUILD_DIR}/cmake/watcom_open_os2v2_toolchain.cmake"
+        WATCOM=${HOME}/watcom INCLUDE=${WATCOM}/h:${WATCOM}/h/os2:${INCLUDE}
+      os: linux
+      compiler: ow19
+    - arch: os2
+      env: >
+        BUILD_TYPE=Release CMAKE_ARGS="-DPDC_OS2_BUILD=ON -DCMAKE_TOOLCHAIN_FILE=${TRAVIS_BUILD_DIR}/cmake/watcom_open_os2v2_toolchain.cmake"
+        WATCOM=${HOME}/watcom INCLUDE=${WATCOM}/h:${WATCOM}/h/os2:${INCLUDE}
+      os: linux
+      compiler: ow20
+    - arch: os2
+      env: >
+        BUILD_TYPE=MinSizeRel CMAKE_ARGS="-DPDC_OS2_BUILD=ON -DCMAKE_TOOLCHAIN_FILE=${TRAVIS_BUILD_DIR}/cmake/watcom_open_os2v2_toolchain.cmake"
+        WATCOM=${HOME}/watcom INCLUDE=${WATCOM}/h:${WATCOM}/h/os2:${INCLUDE}
+      os: linux
+      compiler: ow19
+    - arch: os2
+      env: >
+        BUILD_TYPE=MinSizeRel CMAKE_ARGS="-DPDC_OS2_BUILD=ON -DCMAKE_TOOLCHAIN_FILE=${TRAVIS_BUILD_DIR}/cmake/watcom_open_os2v2_toolchain.cmake"
+        WATCOM=${HOME}/watcom INCLUDE=${WATCOM}/h:${WATCOM}/h/os2:${INCLUDE}
+      os: linux
+      compiler: ow20
+    # DOS 16-bit
+    - arch: dos
+      env: >
+        BUILD_TYPE=Debug CMAKE_ARGS="-DPDC_DOS_BUILD=ON -DCMAKE_TOOLCHAIN_FILE=${TRAVIS_BUILD_DIR}/cmake/watcom_open_dos16_toolchain.cmake -DPDCDEBUG=ON"
+        WATCOM=${HOME}/watcom INCLUDE=${WATCOM}/h:${INCLUDE}
+      os: linux
+      compiler: ow19
+    - arch: dos
+      env: >
+        BUILD_TYPE=Debug CMAKE_ARGS="-DPDC_DOS_BUILD=ON -DCMAKE_TOOLCHAIN_FILE=${TRAVIS_BUILD_DIR}/cmake/watcom_open_dos16_toolchain.cmake -DPDCDEBUG=ON"
+        WATCOM=${HOME}/watcom INCLUDE=${WATCOM}/h:${INCLUDE}
+      os: linux
+      compiler: ow20
+    - arch: dos
+      env: >
+        BUILD_TYPE=Release CMAKE_ARGS="-DPDC_DOS_BUILD=ON -DCMAKE_TOOLCHAIN_FILE=${TRAVIS_BUILD_DIR}/cmake/watcom_open_dos16_toolchain.cmake"
+        WATCOM=${HOME}/watcom INCLUDE=${WATCOM}/h:${INCLUDE}
+      os: linux
+      compiler: ow19
+    - arch: dos
+      env: >
+        BUILD_TYPE=Release CMAKE_ARGS="-DPDC_DOS_BUILD=ON -DCMAKE_TOOLCHAIN_FILE=${TRAVIS_BUILD_DIR}/cmake/watcom_open_dos16_toolchain.cmake"
+        WATCOM=${HOME}/watcom INCLUDE=${WATCOM}/h:${INCLUDE}
+      os: linux
+      compiler: ow20
+    - arch: dos
+      env: >
+        BUILD_TYPE=MinSizeRel CMAKE_ARGS="-DPDC_DOS_BUILD=ON -DCMAKE_TOOLCHAIN_FILE=${TRAVIS_BUILD_DIR}/cmake/watcom_open_dos16_toolchain.cmake"
+        WATCOM=${HOME}/watcom INCLUDE=${WATCOM}/h:${INCLUDE}
+      os: linux
+      compiler: ow19
+    - arch: dos
+      env: >
+        BUILD_TYPE=MinSizeRel CMAKE_ARGS="-DPDC_DOS_BUILD=ON -DCMAKE_TOOLCHAIN_FILE=${TRAVIS_BUILD_DIR}/cmake/watcom_open_dos16_toolchain.cmake"
+        WATCOM=${HOME}/watcom INCLUDE=${WATCOM}/h:${INCLUDE}
+      os: linux
+      compiler: ow20
+    # DOS 32-bit
+    - arch: dos32
+      env: >
+        BUILD_TYPE=Debug CMAKE_ARGS="-DPDC_DOS_BUILD=ON -DCMAKE_TOOLCHAIN_FILE=${TRAVIS_BUILD_DIR}/cmake/watcom_open_dos32_toolchain.cmake -DPDCDEBUG=ON"
+        WATCOM=${HOME}/watcom INCLUDE=${WATCOM}/h:${INCLUDE}
+      os: linux
+      compiler: ow19
+    - arch: dos32
+      env: >
+        BUILD_TYPE=Debug CMAKE_ARGS="-DPDC_DOS_BUILD=ON -DCMAKE_TOOLCHAIN_FILE=${TRAVIS_BUILD_DIR}/cmake/watcom_open_dos32_toolchain.cmake -DPDCDEBUG=ON"
+        WATCOM=${HOME}/watcom INCLUDE=${WATCOM}/h:${INCLUDE}
+      os: linux
+      compiler: ow20
+    - arch: dos32
+      env: >
+        BUILD_TYPE=Release CMAKE_ARGS="-DPDC_DOS_BUILD=ON -DCMAKE_TOOLCHAIN_FILE=${TRAVIS_BUILD_DIR}/cmake/watcom_open_dos32_toolchain.cmake"
+        WATCOM=${HOME}/watcom INCLUDE=${WATCOM}/h:${INCLUDE}
+      os: linux
+      compiler: ow19
+    - arch: dos32
+      env: >
+        BUILD_TYPE=Release CMAKE_ARGS="-DPDC_DOS_BUILD=ON -DCMAKE_TOOLCHAIN_FILE=${TRAVIS_BUILD_DIR}/cmake/watcom_open_dos32_toolchain.cmake"
+        WATCOM=${HOME}/watcom INCLUDE=${WATCOM}/h:${INCLUDE}
+      os: linux
+      compiler: ow20
+    - arch: dos32
+      env: >
+        BUILD_TYPE=MinSizeRel CMAKE_ARGS="-DPDC_DOS_BUILD=ON -DCMAKE_TOOLCHAIN_FILE=${TRAVIS_BUILD_DIR}/cmake/watcom_open_dos32_toolchain.cmake"
+        WATCOM=${HOME}/watcom INCLUDE=${WATCOM}/h:${INCLUDE}
+      os: linux
+      compiler: ow19
+    - arch: dos32
+      env: >
+        BUILD_TYPE=MinSizeRel CMAKE_ARGS="-DPDC_DOS_BUILD=ON -DCMAKE_TOOLCHAIN_FILE=${TRAVIS_BUILD_DIR}/cmake/watcom_open_dos32_toolchain.cmake"
+        WATCOM=${HOME}/watcom INCLUDE=${WATCOM}/h:${INCLUDE}
+      os: linux
+      compiler: ow20
 
-install:
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then mkdir ${DEPS_DIR} && cd ${DEPS_DIR} && pwd; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then travis_retry wget --no-check-certificate https://cmake.org/files/v3.11/cmake-3.11.0-Linux-x86_64.tar.gz; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then echo "96d67e21f0983ebf0fffc5b106ec338c *cmake-3.11.0-Linux-x86_64.tar.gz" > cmake_md5.txt; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then md5sum -c cmake_md5.txt; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then tar -xvf cmake-3.11.0-Linux-x86_64.tar.gz > /dev/null; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then mv cmake-3.11.0-Linux-x86_64 cmake-install; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then PATH=${DEPS_DIR}/cmake-install:${DEPS_DIR}/cmake-install/bin:$PATH; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install ncurses; fi
+before_install:
+  - if [[ "${TRAVIS_COMPILER}" == "ow19" ]]; then export OPEN_WATCOM_NAME=open-watcom-c-linux-1.9; fi
+  - if [[ "${TRAVIS_COMPILER}" == "ow20" ]]; then export OPEN_WATCOM_NAME=open-watcom-2_0-c-linux-x64; fi
+  - if [[ "${TRAVIS_COMPILER}" == "ow19" ]]; 
+      then export OPEN_WATCOM_URL=https://sourceforge.net/projects/openwatcom/files/open-watcom-1.9/${OPEN_WATCOM_NAME}; fi
+  - if [[ "${TRAVIS_COMPILER}" == "ow20" ]]; 
+      then export OPEN_WATCOM_URL=https://github.com/open-watcom/open-watcom-v2/releases/download/Current-build/${OPEN_WATCOM_NAME}; fi
+
+install: 
+  - if [[ "${TRAVIS_OS_NAME}" == "linux" && "${TRAVIS_COMPILER}" != "ow19" && "${TRAVIS_COMPILER}" != "ow20" ]]; 
+      then sudo apt-get -y install libncurses5-dev libncursesw5-dev libxaw7-dev; fi
+  - if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then brew install ncurses; fi
+
+  - if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"; fi
+  - if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then mkdir ${DEPS_DIR} && cd ${DEPS_DIR} && pwd; fi
+  - if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then travis_retry wget --no-check-certificate https://cmake.org/files/v3.11/cmake-3.11.0-Linux-x86_64.tar.gz; fi
+  - if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then echo "96d67e21f0983ebf0fffc5b106ec338c *cmake-3.11.0-Linux-x86_64.tar.gz" > cmake_md5.txt; fi
+  - if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then md5sum -c cmake_md5.txt; fi
+  - if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then tar -xvf cmake-3.11.0-Linux-x86_64.tar.gz > /dev/null; fi
+  - if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then mv cmake-3.11.0-Linux-x86_64 cmake-install; fi
+  - if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then PATH=${DEPS_DIR}/cmake-install:${DEPS_DIR}/cmake-install/bin:$PATH; fi
+
+  - if [[ "${TRAVIS_COMPILER}" == "ow19" || "${TRAVIS_COMPILER}" == "ow20" ]]; then mkdir -p ${WATCOM}; fi
+  - if [[ "${TRAVIS_COMPILER}" == "ow19" || "${TRAVIS_COMPILER}" == "ow20" ]]; then travis_retry wget --no-check-certificate ${OPEN_WATCOM_URL}; fi
+  - if [[ "${TRAVIS_COMPILER}" == "ow19" || "${TRAVIS_COMPILER}" == "ow20" ]]; then unzip ${OPEN_WATCOM_NAME} -d ${WATCOM}; fi
+  - if [[ "${TRAVIS_COMPILER}" == "ow19" ]]; then chmod +x ${WATCOM}/binl/*; fi
+  - if [[ "${TRAVIS_COMPILER}" == "ow20" ]]; then chmod +x ${WATCOM}/binl64/*; fi
+  - if [[ "${TRAVIS_COMPILER}" == "ow19" ]]; then export PATH=${WATCOM}/binl:${WATCOM}/binw:$PATH; fi
+  - if [[ "${TRAVIS_COMPILER}" == "ow20" ]]; then export PATH=${WATCOM}/binl64:${WATCOM}/binw:$PATH; fi
 
 before_script:
   - cd ${TRAVIS_BUILD_DIR}
   - mkdir build && cd build
-  - cmake -DCMAKE_VERBOSE_MAKEFILE=FALSE -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
-          -DCMAKE_INSTALL_PREFIX=${TRAVIS_BUILD_DIR}/build/dist ${CMAKE_ARGS}
-          ..
+  - if [[ "${TRAVIS_COMPILER}" == "ow19" || "${TRAVIS_COMPILER}" == "ow20" ]]; then
+      cmake -G "Watcom WMake" -DCMAKE_VERBOSE_MAKEFILE=FALSE -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
+          -DPDC_BUILD_SHARED=OFF -DPDC_SDL2_BUILD=OFF -DPDC_SDL2_DEPS_BUILD=OFF
+          -DCMAKE_INSTALL_PREFIX=${TRAVIS_BUILD_DIR}/build/dist $CMAKE_ARGS
+          .. ;
+    else
+      cmake -DCMAKE_VERBOSE_MAKEFILE=FALSE -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
+          -DCMAKE_INSTALL_PREFIX=${TRAVIS_BUILD_DIR}/build/dist $CMAKE_ARGS
+          .. ;
+    fi
+
 script:
   - cmake --build . --config ${BUILD_TYPE} --target install
