@@ -393,7 +393,7 @@ static void _transform_line_8(int lineno, int x, int len, const chtype *srcp)
         unsigned long colors, fore, back;
 
         /* Get the index into the font */
-        ch = glyph & 0xFFFF;
+        ch = glyph & A_CHARTEXT;
         if ((glyph & A_ALTCHARSET) != 0 && (glyph & 0xff80) == 0)
             ch = acs_map[ch & 0x7f];
 
