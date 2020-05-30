@@ -2,11 +2,7 @@
 
 #include "pdcdos.h"
 
-#ifdef PDC_WIDE
-#define USE_UNICODE_ACS_CHARS 0
-#else
 #define USE_UNICODE_ACS_CHARS 1
-#endif
 
 #include "../common/acs_defs.h"
 
