@@ -2083,6 +2083,10 @@ the window will still be entirely on-screen.
 These functions entered the Win32 API with Windows 2000.  If
 MONITOR_DEFAULTTONEAREST isn't defined,  we shouldn't try to do this.  */
 
+#if WINVER <= 0x0500
+#undef MONITOR_DEFAULTTONEAREST
+#endif
+
 #ifdef MONITOR_DEFAULTTONEAREST
 
 static void clip_or_center_rect_to_monitor( LPRECT prc)
