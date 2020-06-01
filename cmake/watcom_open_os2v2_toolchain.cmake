@@ -84,5 +84,5 @@ set(CMAKE_C_CREATE_SHARED_MODULE ${CMAKE_CXX_CREATE_SHARED_MODULE})
 # create a C static library
 set(CMAKE_C_CREATE_STATIC_LIBRARY "wlib ${CMAKE_LIB_QUIET} -c -n -b <TARGET_QUOTED> <LINK_FLAGS> <OBJECTS> ")
 
-message(STATUS "Configured for OS/2 v2")
+message(STATUS "Configured for OS/2 (32-bit)")
 set(WATCOM_OS2V2 TRUE)
