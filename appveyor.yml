@@ -154,8 +154,8 @@ environment:
 
 init:
   - echo BUILD_NUMBER=%APPVEYOR_BUILD_NUMBER%
-  # curl defaults --keepalive-time 60 --max-time ?? about 10 minutes --connection-timeout ??
-  - set CURL_ARGS=--location --fail --show-error --keepalive-time 30 --connection-timeout 20 --max-time 300
+  # curl defaults --keepalive-time 60 --max-time ?? about 10 minutes --connect-timeout ??
+  - set CURL_ARGS=--location --fail --show-error --keepalive-time 30 --connect-timeout 20 --max-time 300
   - rem Open Watcom install artifacts information
   - if "%TOOLCHAIN%"=="Watcom19" set "ARTIFACT_NAME=open-watcom-c-win32-1.9.exe"
   - if "%TOOLCHAIN%"=="Watcom19" set "ARTIFACT_URL=https://sourceforge.net/projects/openwatcom/files/open-watcom-1.9/%ARTIFACT_NAME%"
