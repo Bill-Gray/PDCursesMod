@@ -110,7 +110,7 @@ macro (demo_app dir targ)
         set(src_files ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/${targ}.c)
     endif()
 
-    add_executable(${bin_name} ${src_files})
+    add_executable(${bin_name} ${ARGV2} ${src_files})
 
     target_link_libraries(${bin_name} ${PDCURSE_PROJ} ${EXTRA_LIBS})
 
