@@ -263,8 +263,8 @@ environment:
 init:
   - echo BUILD_NUMBER=%APPVEYOR_BUILD_NUMBER%
   # curl defaults --keepalive-time 60 --max-time ?? about 10 minutes --connect-timeout ??
-  - set CURL_ARGS=--location --fail --show-error --keepalive-time 30 --connect-timeout 20 --max-time 300
-  - rem Open Watcom install artifacts information
+  - set CURL_ARGS=--location --fail --show-error --keepalive-time 10 --connect-timeout 10 --max-time 60
+  # Open Watcom install artifacts information
   - if "%TOOLCHAIN%"=="Watcom19" set "ARTIFACT_NAME=open-watcom-c-win32-1.9.exe"
   - if "%TOOLCHAIN%"=="Watcom19" set "ARTIFACT_URL=https://sourceforge.net/projects/openwatcom/files/open-watcom-1.9/%ARTIFACT_NAME%"
   - if "%TOOLCHAIN%"=="Watcom20" set "ARTIFACT_NAME=open-watcom-2_0-c-win-x64.exe"
@@ -276,14 +276,20 @@ install:
   # Open Watcom
   - if "%TOOLCHAIN%"=="Watcom19" ( 
       echo Installing Open Watcom 1.9 &&
-      curl %CURL_ARGS% --output "%TEMP%\%ARTIFACT_NAME%" "%ARTIFACT_URL%" &&
-      7z x -y "%TEMP%\%ARTIFACT_NAME%" -o"%WATCOM%" &&
-      set "PATH=%WATCOM%\BINNT;%WATCOM%\BINW;%PATH%"
+      appveyor-retry curl %CURL_ARGS% --output "%TEMP%\%ARTIFACT_NAME%" "%ARTIFACT_URL%" &&
+      7z x -y "%TEMP%\%ARTIFACT_NAME%" -o"%WATCOM%"
     )
   - if "%TOOLCHAIN%"=="Watcom20" ( 
       echo Installing Open Watcom 2.0 &&
-      curl %CURL_ARGS% --output "%TEMP%\%ARTIFACT_NAME%" "%ARTIFACT_URL%" &&
-      7z x -y "%TEMP%\%ARTIFACT_NAME%" -o"%WATCOM%" &&
+      appveyor-retry curl %CURL_ARGS% --output "%TEMP%\%ARTIFACT_NAME%" "%ARTIFACT_URL%" &&
+      7z x -y "%TEMP%\%ARTIFACT_NAME%" -o"%WATCOM%"
+    )
+  # PATH setup must be separated from previous code block which uses appveyor-retry command
+  # Appveyor doesn't preserve PATH setup for some unknown reason
+  - if "%TOOLCHAIN%"=="Watcom19" ( 
+      set "PATH=%WATCOM%\BINNT;%WATCOM%\BINW;%PATH%"
+    )
+  - if "%TOOLCHAIN%"=="Watcom20" ( 
       set "PATH=%WATCOM%\BINNT64;%WATCOM%\BINW;%PATH%" 
     )
   - cmake --version
