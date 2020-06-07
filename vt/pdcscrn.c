@@ -141,7 +141,8 @@ void PDC_save_screen_mode(int i)
 
 void PDC_scr_close( void)
 {
-   printf( "\033[?1006l");    /* Turn off SGR mouse tracking */
+   if( !PDC_is_ansi)
+       printf( "\033[?1006l");    /* Turn off SGR mouse tracking */
    printf( "\0338");         /* restore cursor & attribs (VT100) */
    printf( "\033[m");         /* set default screen attributes */
    printf( "\033[?47l");      /* restore screen */
@@ -301,7 +302,8 @@ int PDC_scr_open(void)
     term.c_lflag &= ~(ICANON | ECHO);
     tcsetattr( STDIN, TCSANOW, &term);
 #endif
-    printf( "\033[?1006h");    /* Set SGR mouse tracking,  if available */
+    if( !PDC_is_ansi)
+        printf( "\033[?1006h");    /* Set SGR mouse tracking,  if available */
     printf( "\033[?47h");      /* Save screen */
     printf( "\0337");         /* save cursor & attribs (VT100) */
     PDC_resize_occurred = FALSE;

@@ -32,7 +32,11 @@ macro (sdl2_app dir targ)
         set(src_files ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/${targ}.c)
     endif()
 
-    add_executable(${bin_name} ${src_files})
+    if(${ARGV2})
+        add_executable(${bin_name} WIN32 ${src_files})
+    else()
+        add_executable(${bin_name} ${src_files})
+    endif()
 
     if(PDC_WIDE)
         target_link_libraries(${bin_name} ${PDCURSE_PROJ} ${EXTRA_LIBS}
