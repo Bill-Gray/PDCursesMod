@@ -65,10 +65,6 @@ sdl2_app(../demos worm)
 sdl2_app(../demos xmas)
 sdl2_app(./ sdltest)
 
-if(WIN32)
-    set_target_properties(${PROJECT_NAME}_newtest PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS")
-endif(WIN32)
-
 if(PDC_SDL2_DEPS_BUILD)
     if(PDC_WIDE)
         add_dependencies(${PDCURSE_PROJ} sdl2_ext sdl2_ttf_ext)
