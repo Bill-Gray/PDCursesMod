@@ -27,7 +27,7 @@ INSTALL (FILES SDL_ttf.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include/SDL2_ttf)
 set(SDL2_ttf_source_files SDL_ttf.c)
 
 IF(WIN32)
-    LIST(INSERT SDL2_ttf_source_files 0 Version.rc)
+    LIST(INSERT SDL2_ttf_source_files 0 version.rc)
 ENDIF()    
 
 if (APPLE)
