@@ -13,6 +13,8 @@ project(pdcurses VERSION "${CURSES_VERSION}" LANGUAGES C)
 if(MSVC)
     set(CMAKE_DEBUG_POSTFIX d)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP")  # enable parallel builds
+elseif(MINGW)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -static-libgcc")  # avoid libgcc_s_sjlj-1.dll dependency just for __udivdi3
 endif()
 
 message(STATUS "Generator .............. ${CMAKE_GENERATOR}")
