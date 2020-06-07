@@ -12,12 +12,14 @@ configuration:
 - Release
 - Debug
 
+build:
+  parallel: true
+
 environment:
   DIST_DIR: '%APPVEYOR_BUILD_FOLDER%\dist'
   WATCOM: C:\Tools\watcom
 
   matrix:
-
     - APPVEYOR_BUILD_WORKER_IMAGE: 'Visual Studio 2017'
       TOOLCHAIN: Watcom19
       TARGET: os2
@@ -263,48 +265,39 @@ environment:
 init:
   - echo BUILD_NUMBER=%APPVEYOR_BUILD_NUMBER%
   # curl defaults --keepalive-time 60 --max-time ?? about 10 minutes --connect-timeout ??
-  - set CURL_ARGS=--location --fail --show-error --keepalive-time 30 --connect-timeout 20 --max-time 300
-  - rem Open Watcom install artifacts information
-  - if "%TOOLCHAIN%"=="Watcom19" set "ARTIFACT_NAME=open-watcom-c-win32-1.9.exe"
-  - if "%TOOLCHAIN%"=="Watcom19" set "ARTIFACT_URL=https://sourceforge.net/projects/openwatcom/files/open-watcom-1.9/%ARTIFACT_NAME%"
-  - if "%TOOLCHAIN%"=="Watcom20" set "ARTIFACT_NAME=open-watcom-2_0-c-win-x64.exe"
-  - if "%TOOLCHAIN%"=="Watcom20" set "ARTIFACT_URL=https://github.com/open-watcom/open-watcom-v2/releases/download/Current-build/%ARTIFACT_NAME%"
+  - set CURL_ARGS=--location --fail --show-error --keepalive-time 10 --connect-timeout 10 --max-time 60
+  # Open Watcom install artifacts amd environment information
+  - if "%TOOLCHAIN%"=="Watcom19" (
+      set "ARTIFACT_NAME=open-watcom-c-win32-1.9.exe" &&
+      set "ARTIFACT_URL=https://sourceforge.net/projects/openwatcom/files/open-watcom-1.9" &&
+      set "PATH=%WATCOM%\BINNT;%WATCOM%\BINW;%PATH%"
+    ) else if "%TOOLCHAIN%"=="Watcom20" (
+      set "ARTIFACT_NAME=open-watcom-2_0-c-win-x64.exe" &&
+      set "ARTIFACT_URL=https://github.com/open-watcom/open-watcom-v2/releases/download/Current-build" &&
+      set "PATH=%WATCOM%\BINNT64;%WATCOM%\BINW;%PATH%" 
+    )
 
 
 install:
-
-  # Open Watcom
-  - if "%TOOLCHAIN%"=="Watcom19" ( 
-      echo Installing Open Watcom 1.9 &&
-      curl %CURL_ARGS% --output "%TEMP%\%ARTIFACT_NAME%" "%ARTIFACT_URL%" &&
-      7z x -y "%TEMP%\%ARTIFACT_NAME%" -o"%WATCOM%" &&
-      set "PATH=%WATCOM%\BINNT;%WATCOM%\BINW;%PATH%"
-    )
-  - if "%TOOLCHAIN%"=="Watcom20" ( 
-      echo Installing Open Watcom 2.0 &&
-      curl %CURL_ARGS% --output "%TEMP%\%ARTIFACT_NAME%" "%ARTIFACT_URL%" &&
-      7z x -y "%TEMP%\%ARTIFACT_NAME%" -o"%WATCOM%" &&
-      set "PATH=%WATCOM%\BINNT64;%WATCOM%\BINW;%PATH%" 
+  # Open Watcom (32bit toolset OW1.9, 64bit toolset OW2.0)
+  - if "%TOOLCHAIN:~0,6%"=="Watcom" ( 
+      echo Installing Open Watcom %TOOLCHAIN:~6,1%.%TOOLCHAIN:~7,1% &&
+      appveyor-retry curl %CURL_ARGS% --output "%TEMP%\%ARTIFACT_NAME%" "%ARTIFACT_URL%/%ARTIFACT_NAME%" &&
+      7z x -y "%TEMP%\%ARTIFACT_NAME%" -o"%WATCOM%"
     )
   - cmake --version
 
-build:
-  parallel: true
-
 before_build:
-
   - if exist "%VCVARSALL%" (
       call "%VCVARSALL%" %ARCHITECTURE%
     )
 
   - if "%TARGET%"=="dos" (
       set "INCLUDE=%WATCOM%\H;%INCLUDE%"
-    )
-  - if "%TARGET%"=="os2" (
+    ) else if "%TARGET%"=="os2" (
       set "BEGINLIBPATH=%WATCOM%\BINP\DLL" &&
       set "INCLUDE=%WATCOM%\H;%WATCOM%\H\OS2;%INCLUDE%"
-    )
-  - if "%TARGET%"=="win32" (
+    ) else if "%TARGET%"=="win32" (
       set "INCLUDE=%WATCOM%\H;%WATCOM%\H\NT;%INCLUDE%"
     )
 
@@ -315,7 +308,6 @@ before_build:
     )
 
 build_script:
-
   - cd %APPVEYOR_BUILD_FOLDER%
   - mkdir build
   - cd build
