@@ -1,16 +1,25 @@
 # Common elements for the Watcom makefiles
 
-CFLAGS += -wx -zq -i=$(PDCURSES_SRCDIR)
+CFLAGS += -bt=$(TARGET) -wx -zq -i=$(PDCURSES_SRCDIR)
 
 !ifeq DEBUG Y
 CFLAGS		+= -d2 -DPDCDEBUG
-LDFLAGS		= D W A op q sys $(TARGET)
+LDFLAGS		= D W A op q sys $(LTARGET)
 !else
 CFLAGS		+= -oneatx
-LDFLAGS		= op q sys $(TARGET)
+LDFLAGS		= op q sys $(LTARGET)
+!endif
+
+!ifeq TARGET dos
+CFLAGS += -i="$(%WATCOM)/h"
+!else ifeq TARGET os2
+CFLAGS += -i="$(%WATCOM)/h" -i="$(%WATCOM)/h/os2"
+!else ifeq TARGET nt
+CFLAGS += -i="$(%WATCOM)/h" -i="$(%WATCOM)/h/nt"
 !endif
 
 RM		= del
+
 LIBEXE		= wlib -q -n -b -c -t
 
 srcdir = $(PDCURSES_SRCDIR)/pdcurses
@@ -44,10 +53,10 @@ LINK = wlink
 all:	$(LIBCURSES)
 
 clean
-	-$(RM) *.obj
-	-$(RM) *.lib
-	-$(RM) *.exe
-	-$(RM) *.err
+	@if exist *.obj -$(RM) *.obj
+	@if exist *.lib -$(RM) *.lib
+	@if exist *.exe -$(RM) *.exe
+	@if exist *.err -$(RM) *.err
 
 demos:	$(DEMOS)
 

@@ -14,10 +14,12 @@ PDCURSES_SRCDIR	= ..
 
 osdir		= $(PDCURSES_SRCDIR)/wincon
 
-CC		= wcc386
 TARGET		= nt
 
-CFLAGS		= -bt=$(TARGET)
+CC		= wcc386
+LTARGET		= nt
+
+CFLAGS		= -mf
 
 !ifeq WIDE Y
 CFLAGS		+= -DPDC_WIDE

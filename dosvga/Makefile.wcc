@@ -17,15 +17,17 @@ PDCURSES_SRCDIR	= ..
 
 osdir		= $(PDCURSES_SRCDIR)/dosvga
 
+TARGET		= dos
+
 !ifeq MODEL f
 CC		= wcc386
-TARGET		= dos4g
+LTARGET		= dos4g
 !else
 CC		= wcc
-TARGET		= dos
+LTARGET		= dos
 !endif
 
-CFLAGS		= -bt=$(TARGET) -m$(MODEL)
+CFLAGS		= -m$(MODEL)
 
 !ifeq WIDE Y
 CFLAGS		+= -DPDC_WIDE
