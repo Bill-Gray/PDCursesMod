@@ -2256,7 +2256,7 @@ INLINE int set_up_window( void)
     SetTimer( PDC_hWnd, TIMER_ID_FOR_BLINKING, 500, NULL);
     debug_printf( "timer set\n");
 
-#ifdef MONITOR_DEFAULTTONEAREST
+#if defined( MONITOR_DEFAULTTONEAREST) && WINVER >= 0x0410
     /* if the window is off-screen, move it on screen. */
     clip_or_center_window_to_monitor( PDC_hWnd);
 #endif
