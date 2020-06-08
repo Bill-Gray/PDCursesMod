@@ -54,7 +54,7 @@ else()
         
     endif()
 
-    if(UNIX)
+    if(UNIX OR WATCOM)
         add_subdirectory(vt)
     endif()
 
