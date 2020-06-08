@@ -15,17 +15,19 @@ PDCURSES_SRCDIR   = ..
 
 osdir      = $(PDCURSES_SRCDIR)/wingui
 
-CC      = wcc386
-TARGET      = nt_win
+TARGET      = nt
 
-CFLAGS      = -ei -zq -wx -i=$(PDCURSES_SRCDIR)
+CC      = wcc386
+LTARGET     = nt_win
+
+CFLAGS      = -mf -bt=$(TARGET) -ei -zq -wx -i=$(PDCURSES_SRCDIR)
 
 !ifeq DEBUG Y
 CFLAGS      += -hd -od -d2 -dDEBUG -DPDCDEBUG
-LDFLAGS      = DEBUG ALL op q sys $(TARGET)
+LDFLAGS      = DEBUG ALL op q sys $(LTARGET)
 !else
 CFLAGS      += -oneatx
-LDFLAGS      = op q sys $(TARGET)
+LDFLAGS      = op q sys $(LTARGET)
 !endif
 
 !ifeq WIDE Y
@@ -36,6 +38,8 @@ CFLAGS      += -DPDC_WIDE
 CFLAGS      += -DPDC_FORCE_UTF8
 !endif
 
+CFLAGS      += -i"$(%WATCOM)/h" -i"$(%WATCOM)/h/nt"
+
 LIBEXE      = wlib -q -n -t
 
 !include $(PDCURSES_SRCDIR)/watcom.mif
@@ -45,7 +49,7 @@ $(LIBCURSES) : $(LIBOBJS) $(PDCOBJS)
    copy $(LIBCURSES) panel.lib
 
 PLATFORM1   = Watcom C++ WinGUI
-PLATFORM2   = Open Watcom 1.6 for WinGUI
-ARCNAME      = pdc$(VER)_wcc_w32
+PLATFORM2   = Open Watcom for WinGUI
+ARCNAME     = pdc$(VER)_wcc_w32
 
 !include $(PDCURSES_SRCDIR)/makedist.mif

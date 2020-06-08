@@ -39,10 +39,10 @@ LINK = wlink
 all:	$(LIBCURSES) $(DEMOS)
 
 clean
-	-$(DEL) *.obj
-	-$(DEL) *.lib
-	-$(DEL) *.exe
-	-$(DEL) *.err
+	@if exist *.obj -$(DEL) *.obj
+	@if exist *.lib -$(DEL) *.lib
+	@if exist *.exe -$(DEL) *.exe
+	@if exist *.err -$(DEL) *.err
 
 demos:	$(DEMOS)
 

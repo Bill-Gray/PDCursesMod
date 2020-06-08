@@ -45,43 +45,27 @@ CROSS      = Y
 !endif
 
 osdir      = $(PDCURSES_SRCDIR)/vt
-# Open Watcom README strongly recommends setting WATCOM environment variable...
-!ifeq CROSS Y
-!ifdef %WATCOM
-watcomdir   = $(%WATCOM)
-!else
-watcomdir   = "`which wcc | xargs realpath | xargs dirname`"/..
-!endif
-!endif
+
+TARGET		= dos
 
 !ifneq MODEL f
-CC      = wcc
-TARGET      = dos
+CC      	= wcc
+LTARGET		= dos
 !else
-CC      = wcc386
-TARGET      = dos4g
+CC      	= wcc386
+LTARGET		= dos4g
 !endif
 
-CFLAGS      = -bt=$(TARGET) -zq -wx -m$(MODEL) -i=$(PDCURSES_SRCDIR)
+CFLAGS      = -m$(MODEL) -bt=$(TARGET) -zq -wx -i=$(PDCURSES_SRCDIR)
 CFLAGS      += $(CHTYPE) -DDOS
-# the README also recommends setting INCLUDE; if absent, we need an extra -i=
-!ifndef %INCLUDE
-CFLAGS      += -i=$(watcomdir)/h
-!endif
+CFLAGS      += -i="$(%WATCOM)/h"
 
 !ifeq DEBUG Y
 CFLAGS     += -d2 -DPDCDEBUG
-LDFLAGS    = D W A op q sys $(TARGET)
+LDFLAGS    = D W A op q sys $(LTARGET)
 !else
 CFLAGS     += -oneatx
-LDFLAGS      = op q sys $(TARGET)
-!ifeq CROSS Y
-!ifneq MODEL f
-LDFLAGS      += libp $(watcomdir)/lib286/dos\;$(watcomdir)/lib286
-!else
-LDFLAGS      += libp $(watcomdir)/lib386/dos\;$(watcomdir)/lib386
-!endif
-!endif
+LDFLAGS      = op q sys $(LTARGET)
 !endif
 
 LIBEXE      = wlib -q -n -t
@@ -96,11 +80,11 @@ $(LIBCURSES) : $(LIBOBJS) $(PDCOBJS)
 
 !ifneq MODEL f
 PLATFORM1   = Watcom C++ 16-bit DOS/VT
-PLATFORM2   = Open Watcom 1.6 for 16-bit DOS/VT
+PLATFORM2   = Open Watcom for 16-bit DOS/VT
 ARCNAME      = pdc$(VER)16w
 !else
 PLATFORM1   = Watcom C++ 32-bit DOS/VT
-PLATFORM2   = Open Watcom 1.6 for 32-bit DOS/VT
+PLATFORM2   = Open Watcom for 32-bit DOS/VT
 ARCNAME      = pdc$(VER)32w
 !endif
 
