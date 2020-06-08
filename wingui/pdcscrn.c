@@ -1971,7 +1971,9 @@ static LRESULT ALIGN_STACK CALLBACK WndProc (const HWND hwnd,
         if( wParam != TIMER_ID_FOR_BLINKING)
         {
             KillTimer( PDC_hWnd, (int)wParam);
-//          within_timeout = FALSE;
+#if 0 /* checkme */
+            within_timeout = FALSE;
+#endif
         }
         else if( SP && curscr && curscr->_y)
         {
@@ -2031,7 +2033,9 @@ static LRESULT ALIGN_STACK CALLBACK WndProc (const HWND hwnd,
            SetCapture( hwnd);
         else
            ReleaseCapture( );
-//      SetTimer( hwnd, 0, SP->mouse_wait, NULL);
+#if 0 /* checkme */
+        SetTimer( hwnd, 0, SP->mouse_wait, NULL);
+#endif
     }
     else
        add_mouse( -1, -1, -1, -1);
