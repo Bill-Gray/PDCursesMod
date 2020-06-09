@@ -16,10 +16,10 @@ if(WATCOM)
 
     string(APPEND CMAKE_C_FLAGS " -wx")  # warning level: to maximum setting
     
-    if(WATCOM_DOS32)
-        string(APPEND CMAKE_C_FLAGS " -mf")  # memory model: options are flat (-mf), large (-ml), memdium (-mm), small (-ms)
-    else()
+    if(WATCOM_DOS16)
         string(APPEND CMAKE_C_FLAGS " -ml")  # memory model: options are large (-ml), memdium (-mm), small (-ms)
+    else()
+        string(APPEND CMAKE_C_FLAGS " -mf")  # memory model: options are flat (-mf), large (-ml), memdium (-mm), small (-ms)
     endif()
 
     string(APPEND CMAKE_C_FLAGS_RELEASE " -oneatx")

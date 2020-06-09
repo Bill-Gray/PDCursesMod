@@ -9,6 +9,17 @@ PROJECT(vt VERSION "${PROJECT_VERSION}" LANGUAGES C)
 
 INCLUDE(project_common)
 
+if(DOS)
+    string(APPEND CMAKE_C_FLAGS " -DDOS")
+endif()
+
+if(WATCOM)
+    if(WATCOM_DOS16)
+        string(APPEND CMAKE_C_FLAGS " -ml")  # memory model: options are large (-ml), memdium (-mm), small (-ms)
+    else()
+        string(APPEND CMAKE_C_FLAGS " -mf")  # memory model: options are flat (-mf), large (-ml), memdium (-mm), small (-ms)
+    endif()
+endif()
 
 demo_app(../demos firework)
 demo_app(../demos ozdemo)
