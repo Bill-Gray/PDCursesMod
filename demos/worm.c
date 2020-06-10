@@ -363,6 +363,11 @@ int main(int argc, char *argv[])
                 for (y = 0; y < LINES; y++)
                     free( ref[y]);
                 free( ref);
+                for( n = 0; n < number; n++)
+                {
+                    free( worm[n].xpos);
+                    free( worm[n].ypos);
+                }
                 cleanup();
                 return EXIT_SUCCESS;
             }
