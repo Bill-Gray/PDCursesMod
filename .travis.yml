@@ -227,38 +227,38 @@ jobs:
 install:
   # install required version of CMake
   - if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
-      ARTIFACT_NAME=cmake-3.11.0-Linux-x86_64;
-      ARTIFACT_URL=https://cmake.org/files/v3.11/${ARTIFACT_NAME}.tar.gz;
-      ARTIFACT_MD5=96d67e21f0983ebf0fffc5b106ec338c;
-      travis_retry wget --no-check-certificate -P ${TRAVIS_TMPDIR} ${ARTIFACT_URL};
-      echo "${ARTIFACT_MD5} *${TRAVIS_TMPDIR}/${ARTIFACT_NAME}.tar.gz" > ${TRAVIS_TMPDIR}/cmake_md5.txt;
-      md5sum -c ${TRAVIS_TMPDIR}/cmake_md5.txt;
-      mkdir -p ${TRAVIS_HOME}/cmake;
-      tar -xf ${TRAVIS_TMPDIR}/${ARTIFACT_NAME}.tar.gz -C ${TRAVIS_HOME}/cmake --strip-components=1 --show-transformed-names ${ARTIFACT_NAME};
+      ARTIFACT_NAME=cmake-3.11.0-Linux-x86_64 &&
+      ARTIFACT_URL=https://cmake.org/files/v3.11/${ARTIFACT_NAME}.tar.gz &&
+      ARTIFACT_MD5=96d67e21f0983ebf0fffc5b106ec338c &&
+      travis_retry wget --no-check-certificate -P ${TRAVIS_TMPDIR} ${ARTIFACT_URL} &&
+      echo "${ARTIFACT_MD5} *${TRAVIS_TMPDIR}/${ARTIFACT_NAME}.tar.gz" > ${TRAVIS_TMPDIR}/cmake_md5.txt &&
+      md5sum -c ${TRAVIS_TMPDIR}/cmake_md5.txt &&
+      mkdir -p ${TRAVIS_HOME}/cmake &&
+      tar -xf ${TRAVIS_TMPDIR}/${ARTIFACT_NAME}.tar.gz -C ${TRAVIS_HOME}/cmake --strip-components=1 --show-transformed-names ${ARTIFACT_NAME} &&
       export PATH=${TRAVIS_HOME}/cmake:${TRAVIS_HOME}/cmake/bin:$PATH;
     fi
   # install Open Watcom 1.9
   - if [[ "${TRAVIS_COMPILER}" == "ow19" ]]; then
-      ARTIFACT_NAME=open-watcom-c-linux-1.9;
-      ARTIFACT_URL=https://sourceforge.net/projects/openwatcom/files/open-watcom-1.9/${ARTIFACT_NAME};
-      OPEN_WATCOM_BIN=binl;
-      travis_retry wget --no-check-certificate -P ${TRAVIS_TMPDIR} ${ARTIFACT_URL};
-      export WATCOM=${TRAVIS_HOME}/watcom;
-      mkdir -p ${WATCOM};
-      unzip -q ${TRAVIS_TMPDIR}/${ARTIFACT_NAME} -d ${WATCOM};
-      chmod +x ${WATCOM}/${OPEN_WATCOM_BIN}/*;
+      ARTIFACT_NAME=open-watcom-c-linux-1.9 &&
+      ARTIFACT_URL=https://sourceforge.net/projects/openwatcom/files/open-watcom-1.9/${ARTIFACT_NAME} &&
+      OPEN_WATCOM_BIN=binl &&
+      travis_retry wget --no-check-certificate -P ${TRAVIS_TMPDIR} ${ARTIFACT_URL} &&
+      export WATCOM=${TRAVIS_HOME}/watcom &&
+      mkdir -p ${WATCOM} &&
+      unzip -q ${TRAVIS_TMPDIR}/${ARTIFACT_NAME} -d ${WATCOM} &&
+      chmod +x ${WATCOM}/${OPEN_WATCOM_BIN}/* &&
       export PATH=${WATCOM}/binl:${WATCOM}/binw:$PATH;
     fi
   # install Open Watcom 2.0
   - if [[ "${TRAVIS_COMPILER}" == "ow20" ]]; then
-      ARTIFACT_NAME=open-watcom-2_0-c-linux-x64;
-      ARTIFACT_URL=https://github.com/open-watcom/open-watcom-v2/releases/download/Current-build/${ARTIFACT_NAME};
-      OPEN_WATCOM_BIN=binl64;
-      travis_retry wget --no-check-certificate -P ${TRAVIS_TMPDIR} ${ARTIFACT_URL};
-      export WATCOM=${TRAVIS_HOME}/watcom;
-      mkdir -p ${WATCOM};
-      unzip -q ${TRAVIS_TMPDIR}/${ARTIFACT_NAME} -d ${WATCOM};
-      chmod +x ${WATCOM}/${OPEN_WATCOM_BIN}/*;
+      ARTIFACT_NAME=open-watcom-2_0-c-linux-x64 &&
+      ARTIFACT_URL=https://github.com/open-watcom/open-watcom-v2/releases/download/Current-build/${ARTIFACT_NAME} &&
+      OPEN_WATCOM_BIN=binl64 &&
+      travis_retry wget --no-check-certificate -P ${TRAVIS_TMPDIR} ${ARTIFACT_URL} &&
+      export WATCOM=${TRAVIS_HOME}/watcom &&
+      mkdir -p ${WATCOM} &&
+      unzip -q ${TRAVIS_TMPDIR}/${ARTIFACT_NAME} -d ${WATCOM} &&
+      chmod +x ${WATCOM}/${OPEN_WATCOM_BIN}/* &&
       export PATH=${WATCOM}/binl64:${WATCOM}/binw:$PATH;
     fi
 
@@ -271,20 +271,20 @@ install:
 
   # setup Open Watcom for cross-compilation
   - if [[ "${TRAVIS_ARCH}" == "os2" ]]; then
-      export TOOLCHAIN_FILE="-DCMAKE_TOOLCHAIN_FILE=${TRAVIS_BUILD_DIR}/cmake/watcom_open_os2v2_toolchain.cmake";
-      export INCLUDE=${WATCOM}/h:${WATCOM}/h/os2:${INCLUDE};
+      export TOOLCHAIN_FILE="-DCMAKE_TOOLCHAIN_FILE=${TRAVIS_BUILD_DIR}/cmake/watcom_open_os2v2_toolchain.cmake" &&
+      export INCLUDE=${WATCOM}/h:${WATCOM}/h/os2;
     fi
   - if [[ "${TRAVIS_ARCH}" == "dos" ]]; then
-      export TOOLCHAIN_FILE="-DCMAKE_TOOLCHAIN_FILE=${TRAVIS_BUILD_DIR}/cmake/watcom_open_dos16_toolchain.cmake";
-      export INCLUDE=${WATCOM}/h:${INCLUDE};
+      export TOOLCHAIN_FILE="-DCMAKE_TOOLCHAIN_FILE=${TRAVIS_BUILD_DIR}/cmake/watcom_open_dos16_toolchain.cmake" &&
+      export INCLUDE=${WATCOM}/h;
     fi
   - if [[ "${TRAVIS_ARCH}" == "dos32" ]]; then
-      export TOOLCHAIN_FILE="-DCMAKE_TOOLCHAIN_FILE=${TRAVIS_BUILD_DIR}/cmake/watcom_open_dos32_toolchain.cmake";
-      export INCLUDE=${WATCOM}/h:${INCLUDE};
+      export TOOLCHAIN_FILE="-DCMAKE_TOOLCHAIN_FILE=${TRAVIS_BUILD_DIR}/cmake/watcom_open_dos32_toolchain.cmake" &&
+      export INCLUDE=${WATCOM}/h;
     fi
   - if [[ "${TRAVIS_ARCH}" == "win32" ]]; then
-      export TOOLCHAIN_FILE="-DCMAKE_TOOLCHAIN_FILE=${TRAVIS_BUILD_DIR}/cmake/watcom_open_win32_toolchain.cmake";
-      export INCLUDE=${WATCOM}/h:${WATCOM}/h/nt:${INCLUDE};
+      export TOOLCHAIN_FILE="-DCMAKE_TOOLCHAIN_FILE=${TRAVIS_BUILD_DIR}/cmake/watcom_open_win32_toolchain.cmake" &&
+      export INCLUDE=${WATCOM}/h:${WATCOM}/h/nt;
     fi
   - if [[ "${BUILD_TYPE}" == "Debug" ]]; then
       export CMAKE_DEBUG_ARGS="-DPDCDEBUG=ON";
