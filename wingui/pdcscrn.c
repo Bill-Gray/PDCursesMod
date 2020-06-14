@@ -1019,7 +1019,7 @@ static void get_app_name( TCHAR *buff, const size_t buff_size, const bool includ
 }
 
 /* Ensure compatibility with old compilers that don't support 64-bit targets. */
-#ifndef MAXLONG_PTR
+#if !defined(_BASETSD_H_) && !defined(_BASETSD_H)
 #define LONG_PTR LONG
 #endif
 
