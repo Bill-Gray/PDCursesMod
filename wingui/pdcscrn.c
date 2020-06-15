@@ -6,7 +6,9 @@
 #include <assert.h>
 #include "../common/pdccolor.h"
 #ifdef WIN32_LEAN_AND_MEAN
-   #include <shellapi.h>
+   #ifdef PDC_WIDE
+      #include <shellapi.h>
+   #endif
    #include <stdlib.h>
 #endif
 
