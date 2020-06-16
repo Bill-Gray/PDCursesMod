@@ -14,22 +14,22 @@ RM = del
 PDCURSES_SRCDIR = ..
 !endif
 
-!include $(PDCURSES_SRCDIR)\common\libobjs.mif
-
 osdir		= $(PDCURSES_SRCDIR)\wincon
 common		= $(PDCURSES_SRCDIR)\common
 
+!include $(common)\libobjs.mif
+
 PDCURSES_WIN_H	= $(osdir)\pdcwin.h
 
-CC		= cl.exe -nologo
-
 !ifdef DEBUG
-CFLAGS		= -Z7 -DPDCDEBUG -W3
+CFLAGS		= -Z7 -DPDCDEBUG
 LDFLAGS		= -debug -pdb:none
 !else
-CFLAGS		= -O1 -W3
+CFLAGS		= -O1
 LDFLAGS		=
 !endif
+
+CFLAGS		= $(CFLAGS) -W3 -D_CRT_SECURE_NO_WARNINGS
 
 !ifdef WIDE
 WIDEOPT		= -DPDC_WIDE
@@ -43,9 +43,9 @@ UTF8OPT		= -DPDC_FORCE_UTF8
 INFOPT		= -DHAVE_NO_INFOEX
 !endif
 
-SHL_LD = link $(LDFLAGS) -nologo -dll -machine:$(PLATFORM) -out:pdcurses.dll
-
+CC		= cl.exe -nologo
 LINK		= link.exe -nologo
+SHL_LD		= $(LINK) $(LDFLAGS) -dll -machine:$(PLATFORM) -out:pdcurses.dll
 
 CCLIBS		= user32.lib advapi32.lib
 # may need to add msvcrt for older compilers

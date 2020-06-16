@@ -12,6 +12,7 @@
 #    MS tools cl.exe and link.exe
 
 O = obj
+E = .exe
 
 !ifndef PDCURSES_SRCDIR
 PDCURSES_SRCDIR = ..
@@ -23,11 +24,11 @@ PLATFORM=IX86
 PLATFORM=X64
 !endif
 
-!include $(PDCURSES_SRCDIR)\version.mif
-!include $(PDCURSES_SRCDIR)\libobjs.mif
-
 osdir      = $(PDCURSES_SRCDIR)\wingui
-common      = $(PDCURSES_SRCDIR)\common
+common     = $(PDCURSES_SRCDIR)\common
+
+!include $(PDCURSES_SRCDIR)\version.mif
+!include $(common)\libobjs.mif
 
 PDCURSES_WIN_H   = $(osdir)\pdcwin.h
 

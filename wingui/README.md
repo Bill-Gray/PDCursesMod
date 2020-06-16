@@ -14,7 +14,6 @@ Building
 
         Makefile.bcc  - Borland C++ 4.0.2+
         Makefile.dmc  - Digital Mars
-        Makefile.lcc  - LCC-Win32
         Makefile.mng  - MinGW, Cygnus GNU Compiler
         Makefile.vc   - Microsoft Visual C++ 2.0+ or later & Intel(R) compiler
         Makefile.wcc  - Watcom 10.6+ or OpenWATCOM

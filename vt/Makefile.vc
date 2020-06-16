@@ -12,6 +12,8 @@
 #    MS tools cl.exe and link.exe
 
 O = obj
+E = .exe
+RM = del
 
 !ifndef PDCURSES_SRCDIR
 PDCURSES_SRCDIR = ..
@@ -23,74 +25,75 @@ PLATFORM=IX86
 PLATFORM=X64
 !endif
 
+osdir		= $(PDCURSES_SRCDIR)\vt
+common		= $(PDCURSES_SRCDIR)\common
+
 !include $(PDCURSES_SRCDIR)\version.mif
-!include $(PDCURSES_SRCDIR)\libobjs.mif
+!include $(common)\libobjs.mif
 
-osdir      = $(PDCURSES_SRCDIR)\vt
-common      = $(PDCURSES_SRCDIR)\common
-
-PDCURSES_WIN_H   = $(osdir)\pdcvt.h
-
-!ifdef ICC
-CC      = icl.exe -nologo
-LINK    = xilink.exe -nologo
-!else
-CC      = cl.exe -nologo
-LINK    = link.exe -nologo
-!endif
+PDCURSES_WIN_H	= $(osdir)\pdcvt.h
 
 !ifdef DEBUG
-CFLAGS       = -Z7 -DPDCDEBUG
-LDFLAGS      = -debug -pdb:none
+CFLAGS		= -Z7 -DPDCDEBUG
+LDFLAGS		= -debug -pdb:none
 !else
-CFLAGS       = -O1
-LDFLAGS      =
+CFLAGS		= -O1
+LDFLAGS		=
 !endif
 
+CFLAGS		= $(CFLAGS) -W3 -D_CRT_SECURE_NO_WARNINGS
+
 !ifdef WIDE
-WIDEOPT      = -DPDC_WIDE
+WIDEOPT		= -DPDC_WIDE
 !endif
 
 !ifdef UTF8
-UTF8OPT      = -DPDC_FORCE_UTF8
+UTF8OPT		= -DPDC_FORCE_UTF8
 !endif
 
 !ifdef CHTYPE_32
 CHTYPE_FLAGS= -DCHTYPE_32
 !endif
 
-SHL_LD = link $(LDFLAGS) /NOLOGO /DLL /MACHINE:$(PLATFORM) /OUT:pdcurses.dll
+!ifdef ICC
+CC			= icl.exe -nologo
+LINK		= link.exe -nologo
+!else
+CC			= cl.exe -nologo
+LINK		= link.exe -nologo
+!endif
+SHL_LD		= $(LINK) $(LDFLAGS) -dll -machine:$(PLATFORM) -out:pdcurses.dll
 
-CCLIBS      = user32.lib advapi32.lib
-# may need to add msvcrt.lib for VC 2.x, VC 5.0 doesn't want it
-#CCLIBS      = msvcrt.lib user32.lib advapi32.lib
+CCLIBS		= user32.lib advapi32.lib
+# may need to add msvcrt for older compilers
+#CCLIBS		= msvcrt.lib user32.lib advapi32.lib
 
-LIBEXE      = lib -nologo
+LIBEXE		= lib -nologo
 
-LIBCURSES   = pdcurses.lib
-CURSESDLL   = pdcurses.dll
+LIBCURSES	= pdcurses.lib
+CURSESDLL	= pdcurses.dll
 
 !ifdef DLL
-DLLOPT      = -DPDC_DLL_BUILD
-PDCLIBS      = $(CURSESDLL)
+DLLOPT		= -DPDC_DLL_BUILD
+PDCLIBS		= $(CURSESDLL)
 !else
-PDCLIBS      = $(LIBCURSES)
+PDCLIBS		= $(LIBCURSES)
 !endif
 
-BUILD      = $(CC) -I$(PDCURSES_SRCDIR) -c $(CFLAGS) $(CHTYPE_FLAGS) $(DLLOPT) \
+BUILD		= $(CC) -I$(PDCURSES_SRCDIR) -c $(CFLAGS) $(CHTYPE_FLAGS) $(DLLOPT) \
 $(WIDEOPT) $(UTF8OPT)
 
-all:   $(PDCLIBS)
+all:	$(PDCLIBS)
 
 clean:
-   -del *.obj
-   -del *.lib
-   -del *.exe
-   -del *.dll
-   -del *.exp
-   -del *.res
+	-$(RM) *.obj
+	-$(RM) *.lib
+	-$(RM) *.exe
+	-$(RM) *.dll
+	-$(RM) *.exp
+	-$(RM) *.res
 
-demos:   $(DEMOS)
+demos:	$(PDCLIBS) $(DEMOS)
 
 DEMOOBJS = $(DEMOS:.exe=.obj) tui.obj
 
@@ -102,36 +105,36 @@ panel.obj : $(PANEL_HEADER)
 
 !ifndef DLL
 $(LIBCURSES) : $(LIBOBJS) $(PDCOBJS)
-   $(LIBEXE) -out:$@ $(LIBOBJS) $(PDCOBJS)
+	$(LIBEXE) -out:$@ $(LIBOBJS) $(PDCOBJS)
 !endif
 
 $(CURSESDLL) : $(LIBOBJS) $(PDCOBJS) pdcurses.obj
-   $(SHL_LD) $(LIBOBJS) $(PDCOBJS) pdcurses.obj $(CCLIBS)
+	$(SHL_LD) $(LIBOBJS) $(PDCOBJS) pdcurses.obj $(CCLIBS)
 
 pdcurses.res pdcurses.obj: $(common)\pdcurses.rc
-   rc /r /fopdcurses.res $(common)\pdcurses.rc
-   cvtres /MACHINE:$(PLATFORM) /NOLOGO /OUT:pdcurses.obj pdcurses.res
+	rc -r -fopdcurses.res $(common)\pdcurses.rc
+	cvtres -machine:$(PLATFORM) -nologo -out:pdcurses.obj pdcurses.res
 
 {$(srcdir)\}.c{}.obj::
-   $(BUILD) $<
+	$(BUILD) $<
 
 {$(osdir)\}.c{}.obj::
-   $(BUILD) $<
+	$(BUILD) $<
 
 {$(demodir)\}.c{}.obj::
-   $(BUILD) $<
+	$(BUILD) $<
 
 .obj.exe:
-   $(LINK) $(LDFLAGS) $< $(LIBCURSES) $(CCLIBS)
+	$(LINK) $(LDFLAGS) $< $(LIBCURSES) $(CCLIBS)
 
 tuidemo.exe: tuidemo.obj tui.obj
-   $(LINK) $(LDFLAGS) $*.obj tui.obj $(LIBCURSES) $(CCLIBS)
+	$(LINK) $(LDFLAGS) $*.obj tui.obj $(LIBCURSES) $(CCLIBS)
 
 tui.obj: $(demodir)\tui.c $(demodir)\tui.h
-   $(BUILD) -I$(demodir) $(demodir)\tui.c
+	$(BUILD) -I$(demodir) $(demodir)\tui.c
 
 tuidemo.obj: $(demodir)\tuidemo.c
-   $(BUILD) -I$(demodir) $(demodir)\tuidemo.c
+	$(BUILD) -I$(demodir) $(demodir)\tuidemo.c
 
 PLATFORM1 = Visual C++
 PLATFORM2 = Microsoft Visual C/C++ for Windows VT

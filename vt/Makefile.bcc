@@ -14,10 +14,11 @@ RM = del
 PDCURSES_SRCDIR = ..
 !endif
 
-!include $(PDCURSES_SRCDIR)\version.mif
-!include $(PDCURSES_SRCDIR)\libobjs.mif
-
 osdir		= $(PDCURSES_SRCDIR)\vt
+common		= $(PDCURSES_SRCDIR)\common
+
+!include $(PDCURSES_SRCDIR)\version.mif
+!include $(common)\libobjs.mif
 
 !ifdef OLD_BCC
 CC		= bcc32 -q -DNO_STDINT_H
@@ -68,7 +69,7 @@ clean:
 	-$(RM) *.tds
 	-$(RM) *.exe
 
-demos:	$(DEMOS)
+demos:	$(LIBCURSES) $(DEMOS)
 
 $(LIBCURSES) : $(LIBOBJS) $(PDCOBJS)
 	-$(RM) $@

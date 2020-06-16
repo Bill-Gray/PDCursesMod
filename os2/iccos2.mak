@@ -6,15 +6,17 @@
 # [all|demos|pdcurses.lib|testcurs.exe...]
 
 O = obj
+E = .exe
 
 !ifndef PDCURSES_SRCDIR
 PDCURSES_SRCDIR = ..
 !endif
 
-!include $(PDCURSES_SRCDIR)\version.mif
-!include $(PDCURSES_SRCDIR)\libobjs.mif
-
 osdir		= $(PDCURSES_SRCDIR)\os2
+common		= $(PDCURSES_SRCDIR)\common
+
+!include $(PDCURSES_SRCDIR)\version.mif
+!include $(common)\libobjs.mif
 
 PDCURSES_OS2_H	= $(osdir)\pdcos2.h
 

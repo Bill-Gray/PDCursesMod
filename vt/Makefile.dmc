@@ -38,7 +38,7 @@ BUILD      = $(CC) $(CFLAGS) $(CPPFLAGS)
 DEMOS      = testcurs.exe ozdemo.exe newtest.exe xmas.exe  \
 tuidemo.exe firework.exe ptest.exe rain.exe worm.exe
 
-all:    $(LIBCURSES) $(DEMOS)
+all:    $(LIBCURSES)
 
 clean:
    -del *.obj
@@ -46,6 +46,8 @@ clean:
    -del *.exe
    -del *.map
    -del advapi32.def
+
+demos:  $(LIBCURSES) $(DEMOS)
 
 LIBOBJS = addch.obj addchstr.obj addstr.obj attr.obj beep.obj bkgd.obj \
 border.obj clear.obj color.obj delch.obj deleteln.obj getch.obj \
