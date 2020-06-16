@@ -104,8 +104,11 @@ extern "C"
 #if !defined(PDC_PP98) && !defined(__bool_true_false_are_defined)
 typedef unsigned char bool;
 #endif
-
+   
 #if defined( CHTYPE_32)
+   #if defined( CHTYPE_64)
+       #error CHTYPE cannot be both CHTYPE_32 and CHTYPE_64
+   #endif
    typedef uint32_t chtype;       /* chtypes will be 32 bits */
 #else
    #define CHTYPE_64
