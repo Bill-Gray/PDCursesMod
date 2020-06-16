@@ -6,47 +6,24 @@
 # [all|demos|pdcurses.lib|testcurs.exe...]
 
 !ifdef %PDCURSES_SRCDIR
-PDCURSES_SRCDIR   = $(%PDCURSES_SRCDIR)
+PDCURSES_SRCDIR = $(%PDCURSES_SRCDIR)
 !else
-PDCURSES_SRCDIR   = ..
+PDCURSES_SRCDIR = ..
 !endif
 
 !include $(PDCURSES_SRCDIR)/version.mif
 
-osdir      = $(PDCURSES_SRCDIR)/wingui
+osdir = wingui
 
-TARGET      = nt
+TARGET = nt
 
-CC      = wcc386
-LTARGET     = nt_win
+LTARGET = nt_win
 
-CFLAGS      = -mf -bt=$(TARGET) -ei -zq -wx -i=$(PDCURSES_SRCDIR)
+CFLAGS = -ei
 
-!ifeq DEBUG Y
-CFLAGS      += -hd -od -d2 -dDEBUG -DPDCDEBUG
-LDFLAGS      = DEBUG ALL op q sys $(LTARGET)
-!else
-CFLAGS      += -oneatx
-LDFLAGS      = op q sys $(LTARGET)
-!endif
+EXTRA_LIB_CMD = -$(COPY) $(PDCNAME).lib panel.lib
 
-!ifeq WIDE Y
-CFLAGS      += -DPDC_WIDE
-!endif
-
-!ifeq UTF8 Y
-CFLAGS      += -DPDC_FORCE_UTF8
-!endif
-
-CFLAGS      += -i"$(%WATCOM)/h" -i"$(%WATCOM)/h/nt"
-
-LIBEXE      = wlib -q -n -t
-
-!include $(PDCURSES_SRCDIR)/watcom.mif
-
-$(LIBCURSES) : $(LIBOBJS) $(PDCOBJS)
-   $(LIBEXE) $@ $(LIBOBJS) $(PDCOBJS)
-   copy $(LIBCURSES) panel.lib
+!include $(PDCURSES_SRCDIR)/common/watcom.mif
 
 PLATFORM1   = Watcom C++ WinGUI
 PLATFORM2   = Open Watcom for WinGUI

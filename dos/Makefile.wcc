@@ -6,32 +6,25 @@
 # [all|demos|pdcurses.lib|testcurs.exe...]
 
 !ifndef MODEL
-MODEL		= l
+MODEL = l
 !endif
 
 !ifdef %PDCURSES_SRCDIR
-PDCURSES_SRCDIR	= $(%PDCURSES_SRCDIR)
+PDCURSES_SRCDIR = $(%PDCURSES_SRCDIR)
 !else
-PDCURSES_SRCDIR	= ..
+PDCURSES_SRCDIR = ..
 !endif
 
-osdir		= $(PDCURSES_SRCDIR)/dos
+osdir = dos
 
-TARGET		= dos
+TARGET = dos
 
 !ifeq MODEL f
-CC		= wcc386
-LTARGET		= dos4g
+LTARGET	= dos4g
 !else
-CC		= wcc
-LTARGET		= dos
+LTARGET	= dos
 !endif
 
-CFLAGS		= -m$(MODEL)
+CFLAGS =
 
 !include $(PDCURSES_SRCDIR)/common/watcom.mif
-
-$(LIBCURSES) : $(LIBOBJS) $(PDCOBJS)
-	%write wccdos.lrf $(LIBOBJS) $(PDCOBJS)
-	$(LIBEXE) $@ @wccdos.lrf
-	-$(RM) wccdos.lrf

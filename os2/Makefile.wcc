@@ -6,42 +6,27 @@
 # [all|demos|pdcurses.lib|testcurs.exe...]
 
 !ifdef %PDCURSES_SRCDIR
-PDCURSES_SRCDIR	= $(%PDCURSES_SRCDIR)
+PDCURSES_SRCDIR = $(%PDCURSES_SRCDIR)
 !else
-PDCURSES_SRCDIR	= ..
+PDCURSES_SRCDIR = ..
 !endif
 
-!include $(PDCURSES_SRCDIR)\version.mif
+!include $(PDCURSES_SRCDIR)/version.mif
 
-osdir		= $(PDCURSES_SRCDIR)\os2
+osdir = os2
 
-TARGET		= os2
+TARGET = os2
 
-CC		= wcc386
-LTARGET		= os2v2
+LTARGET = os2v2
 
-CFLAGS		= /mf /bt=$(TARGET) /wx /s /zq /i=$(PDCURSES_SRCDIR)
+CFLAGS =
 
-!ifeq DEBUG Y
-CFLAGS  	+= /d2 /DPDCDEBUG
-LDFLAGS 	= D A op q sys $(LTARGET)
-!else
-CFLAGS  	+= /oneatx
-LDFLAGS 	= op q sys $(LTARGET)
-!endif
+EXTRA_LIB_CMD = -$(COPY) $(PDCNAME).lib panel.lib
 
-CFLAGS  	+= /i="$(%WATCOM)/h" /i="$(%WATCOM)/h/os2"
+!include $(PDCURSES_SRCDIR)/common/watcom.mif
 
-LIBEXE		= wlib /q /n /b /c /t
+PLATFORM1   = Watcom C++ OS/2
+PLATFORM2   = Open Watcom for OS/2
+ARCNAME     = pdc$(VER)_wcc_os2
 
-!include $(PDCURSES_SRCDIR)\watcom.mif
-
-$(LIBCURSES) : $(LIBOBJS) $(PDCOBJS)
-	$(LIBEXE) $@ $(LIBOBJS) $(PDCOBJS)
-	-copy $(LIBCURSES) panel.lib
-
-PLATFORM1	= Watcom C++ OS/2
-PLATFORM2	= Open Watcom for OS/2
-ARCNAME		= pdc$(VER)_wcc_os2
-
-!include $(PDCURSES_SRCDIR)\makedist.mif
+!include $(PDCURSES_SRCDIR)/makedist.mif
