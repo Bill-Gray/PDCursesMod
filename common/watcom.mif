@@ -126,7 +126,7 @@ all:	$(PDCNAME).lib
 !else ifeq TARGET linux
     @set INCLUDE=$(%WATCOM)/lh
 !endif
-    $(CC) $(CFLAGS) $(DLL_CFLAGS_IMP) $(DLL_CFLAGS_$(build_dll_$^&)) -fo=$@ $<
+    $(CC) $(CFLAGS) $(DLL_CFLAGS_$(build_dll_$^&)) -fo=$@ $<
 
 !ifeq TARGET linux
 .obj.:
