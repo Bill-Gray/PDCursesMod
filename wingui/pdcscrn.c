@@ -6,7 +6,9 @@
 #include <assert.h>
 #include "../common/pdccolor.h"
 #ifdef WIN32_LEAN_AND_MEAN
-   #include <shellapi.h>
+   #ifdef PDC_WIDE
+      #include <shellapi.h>
+   #endif
    #include <stdlib.h>
 #endif
 
@@ -1019,20 +1021,26 @@ static void get_app_name( TCHAR *buff, const size_t buff_size, const bool includ
     my_tcslwr( buff + 1);
 }
 
+/* Ensure compatibility with old compilers that don't support 64-bit targets. */
+#if !defined(_BASETSD_H_) && !defined(_BASETSD_H)
+#define LONG_PTR LONG
+#endif
+
+static BOOL CALLBACK get_app_icon_callback(HMODULE hModule, LPCTSTR lpszType,
+                                           LPTSTR lpszName, LONG_PTR lParam)
+{
+    *((HICON *) lParam) = LoadIcon(hModule, lpszName);
+    return FALSE; /* stop enumeration after first icon */
+}
+
 /* This function extracts the first icon from the executable that is
 executing this DLL */
 
-INLINE HICON get_app_icon( )
+INLINE HICON get_app_icon( HANDLE hModule)
 {
-#ifdef PDC_WIDE
-    wchar_t filename[MAX_PATH];
-#else
-    char filename[MAX_PATH];
-#endif
-
     HICON icon = NULL;
-    if ( GetModuleFileName( NULL, filename, sizeof(filename) ) != 0 )
-       icon = ExtractIcon( 0, filename, 0 );
+    EnumResourceNames(hModule, RT_GROUP_ICON,
+                      get_app_icon_callback, (LONG_PTR) &icon);
     return icon;
 }
 
@@ -1926,10 +1934,7 @@ static LRESULT ALIGN_STACK CALLBACK WndProc (const HWND hwnd,
       /* refresh.c.  I'm not entirely sure that this is what ought to be  */
       /* done,  though it does appear to work correctly.                  */
     case WM_PAINT:
-        if( hwnd && curscr )
-        {
-            HandlePaint( hwnd );
-        }
+        HandlePaint( hwnd );
         break;
 
     case WM_KEYUP:
@@ -2145,7 +2150,7 @@ INLINE int set_up_window( void)
     /* create the dialog window  */
     WNDCLASS   wndclass ;
     HMENU hMenu;
-    HANDLE hInstance = GetModuleHandleA( NULL);
+    HANDLE hInstance = GetModuleHandle( NULL);
     int n_default_columns = 80;
     int n_default_rows = 25;
     int xsize, ysize, window_style;
@@ -2161,7 +2166,7 @@ INLINE int set_up_window( void)
     originally_focussed_window = GetForegroundWindow( );
     debug_printf( "hInstance %x\nOriginal window %x\n", hInstance, originally_focussed_window);
     /* set the window icon from the icon in the process */
-    icon = get_app_icon();
+    icon = get_app_icon(hInstance);
     if( !icon )
        icon = LoadIcon( NULL, IDI_APPLICATION);
     if( !wndclass_has_been_registered)
@@ -2250,7 +2255,6 @@ INLINE int set_up_window( void)
     ShowWindow (PDC_hWnd,
                     (n_default_columns == -1) ? SW_SHOWMAXIMIZED : SW_SHOWNORMAL);
     debug_printf( "window shown\n");
-    ValidateRect( PDC_hWnd, NULL);       /* don't try repainting */
     UpdateWindow (PDC_hWnd) ;
     debug_printf( "window updated\n");
     SetTimer( PDC_hWnd, TIMER_ID_FOR_BLINKING, 500, NULL);
