@@ -1026,8 +1026,8 @@ static void get_app_name( TCHAR *buff, const size_t buff_size, const bool includ
 #define LONG_PTR LONG
 #endif
 
-BOOL CALLBACK get_app_icon_callback(HMODULE hModule, LPCTSTR lpszType,
-                                    LPTSTR lpszName, LONG_PTR lParam)
+static BOOL CALLBACK get_app_icon_callback(HMODULE hModule, LPCTSTR lpszType,
+                                           LPTSTR lpszName, LONG_PTR lParam)
 {
     *((HICON *) lParam) = LoadIcon(hModule, lpszName);
     return FALSE; /* stop enumeration after first icon */
