@@ -2163,8 +2163,8 @@ struct PDC_WININFO {
     TCHAR WindowTitle[MAX_PATH];
 };
 
-const TCHAR *AppName = _T( "Curses_App");
-HANDLE winthr_ready;
+static const TCHAR *AppName = _T( "Curses_App");
+static HANDLE winthr_ready;
 
 /* Thread that creates and manages the WinGUI window.
    The return type (and declared type of winthr_id) is uint32_t instead of
