@@ -2476,8 +2476,8 @@ int PDC_resize_screen( int nlines, int ncols)
 
         if( new_width != client_rect.right || new_height != client_rect.bottom)
         {                    /* check to make sure size actually changed */
-            add_resize_key = 0;
             DWORD thr_id = GetCurrentThreadId();
+            add_resize_key = 0;
 
             if (thr_id != winthr_id)
                 LeaveCriticalSection(&PDC_cs);
