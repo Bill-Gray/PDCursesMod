@@ -1870,7 +1870,8 @@ static LRESULT ALIGN_STACK CALLBACK WndProc (const HWND hwnd,
                       ? VERTICAL_WHEEL_EVENT : HORIZONTAL_WHEEL_EVENT,
                       (short)( HIWORD(wParam)), pt.x / PDC_cxChar, pt.y / PDC_cyChar);
         }
-        break;
+        LeaveCriticalSection(&PDC_cs);
+        return 0;
 
     case WM_MOUSEMOVE:
         EnterCriticalSection(&PDC_cs);
@@ -1947,7 +1948,8 @@ static LRESULT ALIGN_STACK CALLBACK WndProc (const HWND hwnd,
     case WM_PAINT:
         EnterCriticalSection(&PDC_cs);
         HandlePaint( hwnd );
-        break;
+        LeaveCriticalSection(&PDC_cs);
+        return 0;
 
     case WM_KEYUP:
     case WM_SYSKEYUP:
@@ -1962,8 +1964,11 @@ static LRESULT ALIGN_STACK CALLBACK WndProc (const HWND hwnd,
         {
             add_key_to_queue( modified_key_to_return );
             modified_key_to_return = 0;
+            LeaveCriticalSection(&PDC_cs);
+            return 0;
         }
-        break;
+        LeaveCriticalSection(&PDC_cs);
+        return DefWindowProc(hwnd, message, wParam, lParam);
 
     case WM_CHAR:       /* _Don't_ add Shift-Tab;  it's handled elsewhere */
         EnterCriticalSection(&PDC_cs);
@@ -1973,7 +1978,8 @@ static LRESULT ALIGN_STACK CALLBACK WndProc (const HWND hwnd,
             if( !key_already_handled)
                add_key_to_queue( (int)wParam );
         key_already_handled = FALSE;
-        break;
+        LeaveCriticalSection(&PDC_cs);
+        return 0;
 
     case WM_KEYDOWN:
     case WM_SYSKEYDOWN:
@@ -1982,8 +1988,9 @@ static LRESULT ALIGN_STACK CALLBACK WndProc (const HWND hwnd,
             EnterCriticalSection(&PDC_cs);
             HandleSyskeyDown( wParam, lParam, &modified_key_to_return );
             LeaveCriticalSection(&PDC_cs);
+            return 0;
         }
-        return 0 ;
+        return DefWindowProc(hwnd, message, wParam, lParam);
 
     case WM_SYSCHAR:
         return 0 ;
@@ -2020,21 +2027,23 @@ static LRESULT ALIGN_STACK CALLBACK WndProc (const HWND hwnd,
 
     case WM_COMMAND:
     case WM_SYSCOMMAND:
-        EnterCriticalSection(&PDC_cs);
         if( wParam == WM_EXIT_GRACELESSLY)
         {
+            EnterCriticalSection(&PDC_cs);
             final_cleanup( );
             /*PDC_bDone = TRUE;*/
             exit( 0);
         }
         else if( wParam == WM_ENLARGE_FONT || wParam == WM_SHRINK_FONT)
         {
+            EnterCriticalSection(&PDC_cs);
             adjust_font_size( (wParam == WM_ENLARGE_FONT) ? 1 : -1);
             LeaveCriticalSection(&PDC_cs);
             return( 0);
         }
         else if( wParam == WM_CHOOSE_FONT)
         {
+            EnterCriticalSection(&PDC_cs);
             if( PDC_choose_a_new_font( ))
                 adjust_font_size( 0);
             LeaveCriticalSection(&PDC_cs);
@@ -2042,9 +2051,12 @@ static LRESULT ALIGN_STACK CALLBACK WndProc (const HWND hwnd,
         }
         else if( wParam == WM_TOGGLE_MENU)
         {
+            EnterCriticalSection(&PDC_cs);
             HandleMenuToggle( &ignore_resize);
+            LeaveCriticalSection(&PDC_cs);
+            return 0;
         }
-        break;
+        return DefWindowProc(hwnd, message, wParam, lParam);
 
     case WM_DESTROY:
         EnterCriticalSection(&PDC_cs);
@@ -2055,8 +2067,10 @@ static LRESULT ALIGN_STACK CALLBACK WndProc (const HWND hwnd,
         return 0 ;
 
     default:
-        EnterCriticalSection(&PDC_cs);
+        return DefWindowProc( hwnd, message, wParam, lParam) ;
     }
+
+    /* mouse handling code */
     if( button != -1)
     {
         add_mouse( button, action, LOWORD( lParam) / PDC_cxChar, HIWORD( lParam) / PDC_cyChar);
@@ -2072,7 +2086,7 @@ static LRESULT ALIGN_STACK CALLBACK WndProc (const HWND hwnd,
        add_mouse( -1, -1, -1, -1);
 
     LeaveCriticalSection(&PDC_cs);
-    return DefWindowProc( hwnd, message, wParam, lParam) ;
+    return 0;
 }
 
       /* Default behaviour is that,  when one clicks on the 'close' button, */
