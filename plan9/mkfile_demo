@@ -3,9 +3,12 @@ APE=/sys/src/ape
 
 TARG=\
 	firework\
+	newtest\
 	ozdemo\
+	picsview\
 	ptest\
 	rain\
+	speed\
 	testcurs\
 	tuidemo\
 	worm\
@@ -25,7 +28,10 @@ UPDATE=\
 
 CFLAGS= -c -D_POSIX_SOURCE -D_BSD_EXTENSION #-DPDCDEBUG
 
-$O.tuidemo:V: tui.$O tuidemo.$O
+%.$O: ../demos/%.c
+	$CC $CFLAGS ../demos/$stem.c
+
+$O.tuidemo:V: ../demos/tui.$O ../demos/tuidemo.$O
 	$LD -o $target $prereq
 
 $O.out:	/$objtype/lib/ape/libcurses.a
