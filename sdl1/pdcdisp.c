@@ -6,11 +6,21 @@
 #include <string.h>
 
 #ifdef PDC_WIDE
+<<<<<<< HEAD
 # include "../common/acsgr.h"
 #else
 # include "../common/acs437.h"
 #endif
 
+=======
+   #define USE_UNICODE_ACS_CHARS 1
+#else
+   #define USE_UNICODE_ACS_CHARS 0
+#endif
+
+#include "../common/acs_defs.h"
+
+>>>>>>> win32a/master
 #define MAXRECT 200     /* maximum number of rects to queue up before
                            an update is forced; the number was chosen
                            arbitrarily */
@@ -18,7 +28,11 @@
 static SDL_Rect uprect[MAXRECT];       /* table of rects to update */
 static chtype oldch = (chtype)(-1);    /* current attribute */
 static int rectcount = 0;              /* index into uprect */
+<<<<<<< HEAD
 static short foregr = -2, backgr = -2; /* current foreground, background */
+=======
+static int foregr = -2, backgr = -2;   /* current foreground, background */
+>>>>>>> win32a/master
 static bool blinked_off = FALSE;
 
 /* do the real updates on a delay */
@@ -57,12 +71,16 @@ static void _set_attr(chtype ch)
 
     if (oldch != ch)
     {
-        short newfg, newbg;
+        int newfg, newbg;
 
         if (SP->mono)
             return;
 
+<<<<<<< HEAD
         pair_content(PAIR_NUMBER(ch), &newfg, &newbg);
+=======
+        extended_pair_content(PAIR_NUMBER(ch), &newfg, &newbg);
+>>>>>>> win32a/master
 
         if ((ch & A_BOLD) && !(sysattrs & A_BOLD))
             newfg |= 8;
@@ -71,7 +89,7 @@ static void _set_attr(chtype ch)
 
         if (ch & A_REVERSE)
         {
-            short tmp = newfg;
+            int tmp = newfg;
             newfg = newbg;
             newbg = tmp;
         }
@@ -309,7 +327,11 @@ void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
     Uint16 chstr[2] = {0, 0};
 #endif
     attr_t sysattrs = SP->termattrs;
+<<<<<<< HEAD
     short hcol = SP->line_color;
+=======
+    int hcol = SP->line_color;
+>>>>>>> win32a/master
     bool blink = blinked_off && (attr & A_BLINK) && (sysattrs & A_BLINK);
 
     if (rectcount == MAXRECT)

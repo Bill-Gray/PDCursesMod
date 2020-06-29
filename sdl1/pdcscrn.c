@@ -342,7 +342,7 @@ bool PDC_can_change_color(void)
     return TRUE;
 }
 
-int PDC_color_content(short color, short *red, short *green, short *blue)
+int PDC_color_content(int color, int *red, int *green, int *blue)
 {
     *red = DIVROUND(pdc_color[color].r * 1000, 255);
     *green = DIVROUND(pdc_color[color].g * 1000, 255);
@@ -351,7 +351,7 @@ int PDC_color_content(short color, short *red, short *green, short *blue)
     return OK;
 }
 
-int PDC_init_color(short color, short red, short green, short blue)
+int PDC_init_color(int color, int red, int green, int blue)
 {
     pdc_color[color].r = DIVROUND(red * 255, 1000);
     pdc_color[color].g = DIVROUND(green * 255, 1000);

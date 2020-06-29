@@ -37,6 +37,9 @@ Uint32 pdc_mapped[PDC_MAXCOL];
 int pdc_fheight, pdc_fwidth, pdc_fthick, pdc_flastc;
 bool pdc_own_window;
 
+/* special purpose function keys */
+static int PDC_shutdown_key[PDC_MAX_FUNCTION_KEYS] = { 0, 0, 0, 0, 0 };
+
 static void _clean(void)
 {
 #ifdef PDC_WIDE
@@ -407,7 +410,7 @@ bool PDC_can_change_color(void)
     return TRUE;
 }
 
-int PDC_color_content(short color, short *red, short *green, short *blue)
+int PDC_color_content(int color, int *red, int *green, int *blue)
 {
     *red = DIVROUND(pdc_color[color].r * 1000, 255);
     *green = DIVROUND(pdc_color[color].g * 1000, 255);
@@ -416,7 +419,7 @@ int PDC_color_content(short color, short *red, short *green, short *blue)
     return OK;
 }
 
-int PDC_init_color(short color, short red, short green, short blue)
+int PDC_init_color(int color, int red, int green, int blue)
 {
     pdc_color[color].r = DIVROUND(red * 255, 1000);
     pdc_color[color].g = DIVROUND(green * 255, 1000);
@@ -426,4 +429,26 @@ int PDC_init_color(short color, short red, short green, short blue)
                                    pdc_color[color].g, pdc_color[color].b);
 
     return OK;
+}
+
+/* Does nothing in the SDL flavors of PDCurses.  That may change,  eventually,
+allowing one to limit the range of user-resizable windows.  See X11 or Win32a
+versions of this function for details. */
+
+void PDC_set_resize_limits( const int new_min_lines, const int new_max_lines,
+                  const int new_min_cols, const int new_max_cols)
+{
+}
+
+/* PDC_set_function_key() does nothing on this platform */
+int PDC_set_function_key( const unsigned function, const int new_key)
+{
+    int old_key = -1;
+
+    if( function < PDC_MAX_FUNCTION_KEYS)
+    {
+         old_key = PDC_shutdown_key[function];
+         PDC_shutdown_key[function] = new_key;
+    }
+    return( old_key);
 }

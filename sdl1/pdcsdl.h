@@ -1,4 +1,5 @@
 /* PDCurses */
+<<<<<<< HEAD
 
 #include <SDL.h>
 #ifdef PDC_WIDE
@@ -7,6 +8,20 @@
 
 #include <curspriv.h>
 
+=======
+
+#include <SDL.h>
+#ifdef PDC_WIDE
+#include <SDL_ttf.h>
+#endif
+
+#include <curspriv.h>
+
+#if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_DEPRECATE)
+# define _CRT_SECURE_NO_DEPRECATE 1   /* kill nonsense warnings */
+#endif
+
+>>>>>>> win32a/master
 #ifdef PDC_WIDE
 PDCEX  TTF_Font *pdc_ttffont;
 PDCEX  int pdc_font_size;

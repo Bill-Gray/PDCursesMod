@@ -1,6 +1,7 @@
 /* PDCurses */
 
 #include <curspriv.h>
+#include <assert.h>
 
 /*man-start**************************************************************
 
@@ -53,6 +54,18 @@ slk
    2 lines used
    55      5-5 format (pdcurses format)
 
+   In PDCurses,  one can alternatively set fmt as a series of hex
+   digits specifying the format.  For example,  0x414 would result
+   in 4-1-4 format; 0x21b3 would result in 2-1-11-3 format;  and
+   so on.  Also,  negating fmt results in the index line being added.
+
+   Also,  in PDCurses,  one can call slk_init() at any time
+   _after_ initscr(),  to reset the label format.  If you do this,
+   you'll need to reset the label text and call slk_refresh().  However,
+   you can't toggle the index line or turn SLK on or off after initscr()
+   has been called.  Doing so would add/remove a line or two from the
+   useable screen,  which would be difficult to handle correctly.
+
    slk_refresh(), slk_noutrefresh() and slk_touch() are analogous to
    refresh(), noutrefresh() and touch().
 
@@ -86,71 +99,75 @@ slk
 
 #include <stdlib.h>
 
-enum { LABEL_NORMAL = 8, LABEL_EXTENDED = 10, LABEL_NCURSES_EXTENDED = 12 };
-
 static int label_length = 0;
 static int labels = 0;
 static int label_fmt = 0;
 static int label_line = 0;
 static bool hidden = FALSE;
 
+#define MAX_LABEL_LENGTH 32
+
 static struct SLK {
-    chtype label[32];
+    chtype label[MAX_LABEL_LENGTH];
     int len;
     int format;
     int start_col;
 } *slk = (struct SLK *)NULL;
 
-/* slk_init() is the slk initialization routine.
-   This must be called before initscr().
-
-   label_fmt = 0, 1 or 55.
-       0 = 3-2-3 format
-       1 = 4 - 4 format
-       2 = 4-4-4 format (ncurses extension for PC 12 function keys)
-       3 = 4-4-4 format (ncurses extension for PC 12 function keys -
-    with index line)
-      55 = 5 - 5 format (extended for PC, 10 function keys) */
+/* See comments above on this function.   */
 
 int slk_init(int fmt)
 {
-    PDC_LOG(("slk_init() - called\n"));
+    int i;
 
-    if (SP)
-        return ERR;
+    PDC_LOG(("slk_init() - called\n"));
 
     switch (fmt)
     {
     case 0:  /* 3 - 2 - 3 */
-        labels = LABEL_NORMAL;
+        label_fmt = 0x323;
         break;
 
     case 1:   /* 4 - 4 */
-        labels = LABEL_NORMAL;
+        label_fmt = 0x44;
         break;
 
     case 2:   /* 4 4 4 */
-        labels = LABEL_NCURSES_EXTENDED;
+        label_fmt = 0x444;
         break;
 
     case 3:   /* 4 4 4  with index */
-        labels = LABEL_NCURSES_EXTENDED;
+        label_fmt = -0x444;
         break;
 
     case 55:  /* 5 - 5 */
-        labels = LABEL_EXTENDED;
+        label_fmt = 0x55;
         break;
 
     default:
-        return ERR;
+        label_fmt = fmt;
+        break;
     }
 
-    label_fmt = fmt;
+    labels = 0;
+    for( i = abs( label_fmt); i; i /= 16)
+       labels += i % 16;
 
+    PDC_LOG(("slk_init: fmt %d, %d labels, %p\n",
+               fmt, labels, slk));
+    if( slk)
+        free( slk);
     slk = calloc(labels, sizeof(struct SLK));
+    PDC_LOG(( "New slk: %p; SP = %p\n", slk, SP));
 
     if (!slk)
         labels = 0;
+    if( SP)
+        {
+        if( SP->slk_winptr)
+            wclear( SP->slk_winptr);
+        PDC_slk_initialize( );
+        }
 
     return slk ? OK : ERR;
 }
@@ -183,6 +200,8 @@ static void _drawone(int num)
         col = label_length - slen;
     }
 
+    if( col < 0)  /* Ensure start of label is visible */
+        col = 0;
     wmove(SP->slk_winptr, label_line, slk[num].start_col);
 
     for (i = 0; i < label_length; ++i)
@@ -196,8 +215,24 @@ static void _redraw(void)
 {
     int i;
 
-    for (i = 0; i < labels; ++i)
-        _drawone(i);
+    if( !hidden)
+    {
+        for (i = 0; i < labels; ++i)
+            _drawone(i);
+        if (label_fmt < 0)
+        {
+            const chtype save_attr = SP->slk_winptr->_attrs;
+
+            wattrset(SP->slk_winptr, A_NORMAL);
+            wmove(SP->slk_winptr, 0, 0);
+            whline(SP->slk_winptr, 0, COLS);
+
+            for (i = 0; i < labels; i++)
+                mvwprintw(SP->slk_winptr, 0, slk[i].start_col, "F%d", i + 1);
+
+            SP->slk_winptr->_attrs = save_attr;
+        }
+    }
 }
 
 /* slk_set() Used to set a slk label to a string.
@@ -209,9 +244,9 @@ static void _redraw(void)
 int slk_set(int labnum, const char *label, int justify)
 {
 #ifdef PDC_WIDE
-    wchar_t wlabel[32];
+    wchar_t wlabel[MAX_LABEL_LENGTH];
 
-    PDC_mbstowcs(wlabel, label, 31);
+    PDC_mbstowcs(wlabel, label, MAX_LABEL_LENGTH - 1);
     return slk_wset(labnum, wlabel, justify);
 #else
     PDC_LOG(("slk_set() - called\n"));
@@ -231,28 +266,21 @@ int slk_set(int labnum, const char *label, int justify)
     }
     else
     {
-        int i, j = 0;
+        int i;
 
         /* Skip leading spaces */
 
-        while (label[j] == ' ')
-            j++;
+        while( *label == ' ')
+            label++;
 
         /* Copy it */
 
-        for (i = 0; i < label_length; i++)
-        {
-            chtype ch = label[i + j];
-
-            slk[labnum].label[i] = ch;
-
-            if (!ch)
-                break;
-        }
+        for (i = 0; label[i] && i < MAX_LABEL_LENGTH - 1; i++)
+            slk[labnum].label[i] = label[i];
 
         /* Drop trailing spaces */
 
-        while ((i + j) && (label[i + j - 1] == ' '))
+        while( i && label[i - 1] == ' ')
             i--;
 
         slk[labnum].label[i] = 0;
@@ -277,6 +305,7 @@ int slk_noutrefresh(void)
 {
     PDC_LOG(("slk_noutrefresh() - called\n"));
 
+    assert( SP);
     if (!SP)
         return ERR;
 
@@ -285,11 +314,11 @@ int slk_noutrefresh(void)
 
 char *slk_label(int labnum)
 {
-    static char temp[33];
+    static char temp[MAX_LABEL_LENGTH + 1];
 #ifdef PDC_WIDE
     wchar_t *wtemp = slk_wlabel(labnum);
 
-    PDC_wcstombs(temp, wtemp, 32);
+    PDC_wcstombs(temp, wtemp, MAX_LABEL_LENGTH);
 #else
     chtype *p;
     int i;
@@ -300,7 +329,7 @@ char *slk_label(int labnum)
         return (char *)0;
 
     for (i = 0, p = slk[labnum - 1].label; *p; i++)
-        temp[i] = *p++;
+        temp[i] = (char)*p++;
 
     temp[i] = '\0';
 #endif
@@ -311,6 +340,7 @@ int slk_clear(void)
 {
     PDC_LOG(("slk_clear() - called\n"));
 
+    assert( SP);
     if (!SP)
         return ERR;
 
@@ -323,6 +353,7 @@ int slk_restore(void)
 {
     PDC_LOG(("slk_restore() - called\n"));
 
+    assert( SP);
     if (!SP)
         return ERR;
 
@@ -335,6 +366,7 @@ int slk_touch(void)
 {
     PDC_LOG(("slk_touch() - called\n"));
 
+    assert( SP);
     if (!SP)
         return ERR;
 
@@ -347,6 +379,7 @@ int slk_attron(const chtype attrs)
 
     PDC_LOG(("slk_attron() - called\n"));
 
+    assert( SP);
     if (!SP)
         return ERR;
 
@@ -369,6 +402,7 @@ int slk_attroff(const chtype attrs)
 
     PDC_LOG(("slk_attroff() - called\n"));
 
+    assert( SP);
     if (!SP)
         return ERR;
 
@@ -391,6 +425,7 @@ int slk_attrset(const chtype attrs)
 
     PDC_LOG(("slk_attrset() - called\n"));
 
+    assert( SP);
     if (!SP)
         return ERR;
 
@@ -406,6 +441,7 @@ int slk_color(short color_pair)
 
     PDC_LOG(("slk_color() - called\n"));
 
+    assert( SP);
     if (!SP)
         return ERR;
 
@@ -424,86 +460,29 @@ int slk_attr_set(const attr_t attrs, short color_pair, void *opts)
 
 static void _slk_calc(void)
 {
-    int i, center, col = 0;
+    int i, j, idx, remaining_space;
+    int n_groups = 0, group_size[10];
+
     label_length = COLS / labels;
-
-    if (label_length > 31)
-        label_length = 31;
-
-    switch (label_fmt)
+    if (label_length > MAX_LABEL_LENGTH)
+        label_length = MAX_LABEL_LENGTH;
+    remaining_space = COLS - label_length * labels + 1;
+    for( i = abs( label_fmt); i; i /= 16)
+        group_size[n_groups++] = i % 16;
+               /* We really want at least two spaces between groups: */
+    while( label_length > 1 && remaining_space < n_groups - 1)
     {
-    case 0:     /* 3 - 2 - 3 F-Key layout */
-
-        --label_length;
-
-        slk[0].start_col = col;
-        slk[1].start_col = (col += label_length);
-        slk[2].start_col = (col += label_length);
-
-        center = COLS / 2;
-
-        slk[3].start_col = center - label_length + 1;
-        slk[4].start_col = center + 1;
-
-        col = COLS - (label_length * 3) + 1;
-
-        slk[5].start_col = col;
-        slk[6].start_col = (col += label_length);
-        slk[7].start_col = (col += label_length);
-        break;
-
-    case 1:     /* 4 - 4 F-Key layout */
-
-        for (i = 0; i < 8; i++)
-        {
-            slk[i].start_col = col;
-            col += label_length;
-
-            if (i == 3)
-                col = COLS - (label_length * 4) + 1;
-        }
-
-        break;
-
-    case 2:     /* 4 4 4 F-Key layout */
-    case 3:     /* 4 4 4 F-Key layout with index */
-
-        for (i = 0; i < 4; i++)
-        {
-            slk[i].start_col = col;
-            col += label_length;
-        }
-
-        center = COLS / 2;
-
-        slk[4].start_col = center - (label_length * 2) + 1;
-        slk[5].start_col = center - label_length + 1;
-        slk[6].start_col = center + 1;
-        slk[7].start_col = center + label_length + 1;
-
-        col = COLS - (label_length * 4) + 1;
-
-        for (i = 8; i < 12; i++)
-        {
-            slk[i].start_col = col;
-            col += label_length;
-        }
-
-        break;
-
-    default:    /* 5 - 5 F-Key layout */
-
-        for (i = 0; i < 10; i++)
-        {
-            slk[i].start_col = col;
-            col += label_length;
-
-            if (i == 4)
-                col = COLS - (label_length * 5) + 1;
-        }
+        label_length--;
+        remaining_space += labels;
     }
 
-    --label_length;
+    for( i = idx = 0; i < n_groups; i++)
+        for( j = 0; j < group_size[i]; j++, idx++)
+            slk[idx].start_col = label_length * idx
+                     + (i ? (i * remaining_space) / (n_groups - 1) : 0);
+
+    if( label_length)
+       --label_length;
 
     /* make sure labels are all in window */
 
@@ -514,7 +493,8 @@ void PDC_slk_initialize(void)
 {
     if (slk)
     {
-        if (label_fmt == 3)
+        assert( SP);
+        if (label_fmt < 0)
         {
             SP->slklines = 2;
             label_line = 1;
@@ -533,24 +513,6 @@ void PDC_slk_initialize(void)
         }
 
         _slk_calc();
-
-        /* if we have an index line, display it now */
-
-        if (label_fmt == 3)
-        {
-            chtype save_attr;
-            int i;
-
-            save_attr = SP->slk_winptr->_attrs;
-            wattrset(SP->slk_winptr, A_NORMAL);
-            wmove(SP->slk_winptr, 0, 0);
-            whline(SP->slk_winptr, 0, COLS);
-
-            for (i = 0; i < labels; i++)
-                mvwprintw(SP->slk_winptr, 0, slk[i].start_col, "F%d", i + 1);
-
-            SP->slk_winptr->_attrs = save_attr;
-        }
 
         touchwin(SP->slk_winptr);
     }
@@ -584,9 +546,11 @@ int PDC_mouse_in_slk(int y, int x)
     PDC_LOG(("PDC_mouse_in_slk() - called: y->%d x->%d\n", y, x));
 
     /* If the line on which the mouse was clicked is NOT the last line
-       of the screen, we are not interested in it. */
+       of the screen, or the SLKs are hidden,  we are not interested in it. */
 
-    if (!slk || !SP->slk_winptr || (y != SP->slk_winptr->_begy + label_line))
+    assert( SP);
+    if (!slk || hidden || !SP->slk_winptr
+                        || (y != SP->slk_winptr->_begy + label_line))
         return 0;
 
     for (i = 0; i < labels; i++)
@@ -616,28 +580,21 @@ int slk_wset(int labnum, const wchar_t *label, int justify)
     }
     else
     {
-        int i, j = 0;
+        int i;
 
         /* Skip leading spaces */
 
-        while (label[j] == L' ')
-            j++;
+        while( *label == L' ')
+            label++;
 
         /* Copy it */
 
-        for (i = 0; i < label_length; i++)
-        {
-            chtype ch = label[i + j];
-
-            slk[labnum].label[i] = ch;
-
-            if (!ch)
-                break;
-        }
+        for (i = 0; label[i] && i < MAX_LABEL_LENGTH - 1; i++)
+            slk[labnum].label[i] = label[i];
 
         /* Drop trailing spaces */
 
-        while ((i + j) && (label[i + j - 1] == L' '))
+        while( i && label[i - 1] == L' ')
             i--;
 
         slk[labnum].label[i] = 0;
@@ -652,7 +609,7 @@ int slk_wset(int labnum, const wchar_t *label, int justify)
 
 wchar_t *slk_wlabel(int labnum)
 {
-    static wchar_t temp[33];
+    static wchar_t temp[MAX_LABEL_LENGTH + 1];
     chtype *p;
     int i;
 
@@ -662,7 +619,7 @@ wchar_t *slk_wlabel(int labnum)
         return (wchar_t *)0;
 
     for (i = 0, p = slk[labnum - 1].label; *p; i++)
-        temp[i] = *p++;
+        temp[i] = (wchar_t)*p++;
 
     temp[i] = '\0';
 

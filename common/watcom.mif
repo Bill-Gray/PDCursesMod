@@ -1,38 +1,110 @@
 # Common elements for the Watcom makefiles
 
-CFLAGS += -wx -zq -i=$(PDCURSES_SRCDIR)
-
-!ifeq DEBUG Y
-CFLAGS		+= -d2 -DPDCDEBUG
-LDFLAGS		= D W A op q sys $(TARGET)
-!else
-CFLAGS		+= -oneatx
-LDFLAGS		= op q sys $(TARGET)
+!ifeq TARGET dos
+!ifneq MODEL f
+TARGET16 = 1
+!endif
 !endif
 
-RM		= del
-LIBEXE		= wlib -q -n -b -c -t
+!ifdef __UNIX__
+DEL	= rm -f
+COPY	= cp
+!else
+DEL	= del
+COPY	= copy
+!endif
+
+!ifeq TARGET linux
+!else
+E = .exe
+!endif
+
+.EXTENSIONS :
+!ifeq TARGET linux
+.EXTENSIONS : . .lib .obj .h .c
+!else
+.EXTENSIONS : $(E) .dll .lib .res .obj .rc .h .c
+!endif
+
+!ifdef TARGET16
+CC = *wcc
+!else
+CC = *wcc386
+MODEL = f
+!endif
+
+LIBEXE = *wlib -q -n -b -c -t -pa
+
+LINK = *wlink
+
+RC = *wrc
+
+!ifdef DLL
+cflags_dll_nt      = -bd
+cflags_dll_os2     = -bd -DPDC_DLL_BUILD
+cflags_dll_imp_nt  = -DPDC_DLL_BUILD
+!endif
+
+CFLAGS += -bt=$(TARGET) -m$(MODEL) -wx -zq -i=$(PDCURSES_SRCDIR)
+!ifeq DEBUG Y
+CFLAGS += -d2 -DDEBUG -DPDCDEBUG
+!ifdef TARGET16
+CFLAGS += -hw
+!else
+CFLAGS += -hd
+!endif
+!else
+CFLAGS += -s -oneatx -DNDEBUG
+!endif
+!ifdef CHTYPE_32
+CFLAGS += -DCHTYPE_32
+!endif
+!ifeq WIDE Y
+CFLAGS += -DPDC_WIDE
+!endif
+!ifeq UTF8 Y
+CFLAGS += -DPDC_FORCE_UTF8
+!endif
+!ifeq TARGET dos
+CFLAGS += -DDOS
+!endif
+!ifdef cflags_dll_$(TARGET)
+CFLAGS += $(cflags_dll_imp_$(TARGET))
+DLL_CFLAGS_ = $(cflags_dll_$(TARGET))
+!endif
+
+!ifdef DLL
+ltarget_dll_nt    = nt_dll
+ltarget_dll_os2   = os2v2_dll
+!endif
+
+LDFLAGS = op q, noext
+!ifeq DEBUG Y
+!ifdef TARGET16
+LDFLAGS += debug watcom all
+!else
+LDFLAGS += debug dwarf all
+!endif
+!endif
 
 srcdir = $(PDCURSES_SRCDIR)/pdcurses
 demodir = $(PDCURSES_SRCDIR)/demos
 
 LIBOBJS = addch.obj addchstr.obj addstr.obj attr.obj beep.obj bkgd.obj &
-border.obj clear.obj color.obj delch.obj deleteln.obj &
-getch.obj getstr.obj getyx.obj inch.obj inchstr.obj initscr.obj inopts.obj &
-insch.obj insstr.obj instr.obj kernel.obj keyname.obj mouse.obj move.obj &
-outopts.obj overlay.obj pad.obj panel.obj printw.obj refresh.obj &
-scanw.obj scr_dump.obj scroll.obj slk.obj termattr.obj &
-touch.obj util.obj window.obj debug.obj
+    border.obj clear.obj color.obj delch.obj deleteln.obj &
+    getch.obj getstr.obj getyx.obj inch.obj inchstr.obj initscr.obj inopts.obj &
+    insch.obj insstr.obj instr.obj kernel.obj keyname.obj mouse.obj move.obj &
+    outopts.obj overlay.obj pad.obj panel.obj printw.obj refresh.obj &
+    scanw.obj scr_dump.obj scroll.obj slk.obj termattr.obj &
+    touch.obj util.obj window.obj debug.obj
 
 PDCOBJS = pdcclip.obj pdcdisp.obj pdcgetsc.obj pdckbd.obj pdcscrn.obj &
-pdcsetsc.obj pdcutil.obj
+    pdcsetsc.obj pdcutil.obj
 
-DEMOS = testcurs.exe ozdemo.exe xmas.exe tuidemo.exe firework.exe &
-ptest.exe rain.exe worm.exe
+DEMOS = testcurs$(E) ozdemo$(E) xmas$(E) tuidemo$(E) firework$(E) &
+    newtest$(E) ptest$(E) rain$(E) worm$(E)
 
-LIBCURSES = pdcurses.lib
-
-LINK = wlink
+PDCNAME = pdcurses
 
 !ifdef __LOADDLL__
 ! loaddll wcc    wccd
@@ -41,32 +113,88 @@ LINK = wlink
 ! loaddll wlib   wlibd
 !endif
 
-all:	$(LIBCURSES)
+all:	$(PDCNAME).lib
 
-clean
-	-$(RM) *.obj
-	-$(RM) *.lib
-	-$(RM) *.exe
-	-$(RM) *.err
-
-demos:	$(DEMOS)
-
-.c: $(srcdir);$(osdir);$(demodir)
+.c: $(srcdir);$(PDCURSES_SRCDIR)/$(osdir);$(demodir)
 .c.obj: .autodepend
-	$(CC) $(CFLAGS) $<
+!ifeq TARGET dos
+    @set INCLUDE=$(%WATCOM)/h
+!else ifeq TARGET os2
+    @set INCLUDE=$(%WATCOM)/h;$(%WATCOM)/h/os2
+!else ifeq TARGET nt
+    @set INCLUDE=$(%WATCOM)/h;$(%WATCOM)/h/nt
+!else ifeq TARGET linux
+    @set INCLUDE=$(%WATCOM)/lh
+!endif
+    $(CC) $(CFLAGS) $(DLL_CFLAGS_$(build_dll_$^&)) -fo=$@ $<
 
-.obj.exe:
-	$(LINK) $(LDFLAGS) n $@ f $*.obj l $(LIBCURSES)
+!ifeq TARGET linux
+.obj.:
+!else
+.obj$(E):
+!endif
+    $(LINK) $(LDFLAGS) name $@ sys $(LTARGET) file $*.obj lib $(PDCNAME).lib
 
-testcurs.exe:	testcurs.obj $(LIBCURSES)
-ozdemo.exe:	ozdemo.obj $(LIBCURSES)
-xmas.exe:	xmas.obj $(LIBCURSES)
-firework.exe:	firework.obj $(LIBCURSES)
-rain.exe:	rain.obj $(LIBCURSES)
-worm.exe:	worm.obj $(LIBCURSES)
-ptest.exe:	ptest.obj $(LIBCURSES)
+build_dll_testcurs	= no
+build_dll_ozdemo	= no
+build_dll_newtest	= no
+build_dll_xmas		= no
+build_dll_firework	= no
+build_dll_rain		= no
+build_dll_worm		= no
+build_dll_ptest		= no
+build_dll_tuidemo	= no
+build_dll_tui		= no
 
-tuidemo.exe:	tuidemo.obj tui.obj $(LIBCURSES)
-	$(LINK) $(LDFLAGS) n $@ f tuidemo.obj f tui.obj l $(LIBCURSES)
+testcurs$(E):	testcurs.obj $(PDCNAME).lib
+ozdemo$(E):	ozdemo.obj $(PDCNAME).lib
+newtest$(E):	newtest.obj $(PDCNAME).lib
+xmas$(E):	xmas.obj $(PDCNAME).lib
+firework$(E):	firework.obj $(PDCNAME).lib
+rain$(E):	rain.obj $(PDCNAME).lib
+worm$(E):	worm.obj $(PDCNAME).lib
+ptest$(E):	ptest.obj $(PDCNAME).lib
+
+tuidemo$(E):	tuidemo.obj tui.obj $(PDCNAME).lib
+    $(LINK) $(LDFLAGS) name $@ sys $(LTARGET) file {tuidemo.obj tui.obj} lib $(PDCNAME).lib
+
+!ifdef ltarget_dll_$(TARGET)
+version_res_nt = $(PDCNAME).res
+
+.rc: $(PDCURSES_SRCDIR)/common
+.rc.res:
+!ifeq TARGET nt
+    @set INCLUDE=$(%WATCOM)/h;$(%WATCOM)/h/nt
+!endif
+    $(RC) -r -bt=$(TARGET) $< -fo=$@
+!endif
+
+$(PDCNAME).lbc : $(LIBOBJS) $(PDCOBJS) $(version_res_$(TARGET))
+!ifdef ltarget_dll_$(TARGET)
+    $(LINK) $(LDFLAGS) name $(PDCNAME).dll sys $(ltarget_dll_$(TARGET)) opt impfile=$@ file {$(LIBOBJS) $(PDCOBJS)}
+!ifdef version_res_$(TARGET)
+    $(RC) -k -bt=$(TARGET) $(version_res_$(TARGET)) $(PDCNAME).dll
+!endif
+!else
+    %write $@ $(LIBOBJS) $(PDCOBJS)
+!endif
+
+$(PDCNAME).lib : $(PDCNAME).lbc
+    $(LIBEXE) $@ @$<
+!ifdef EXTRA_LIB_CMD
+    $(EXTRA_LIB_CMD)
+!endif
+
+demos: $(DEMOS)
 
 dist: .symbolic
+
+clean: .symbolic
+    @if exist *.obj -$(DEL) *.obj
+    @if exist *.lib -$(DEL) *.lib
+    @if exist *.dll -$(DEL) *.dll
+    @for %f in ($(DEMOS)) do @if exist %f -$(DEL) %f
+    @if exist *.err -$(DEL) *.err
+    @if exist *.map -$(DEL) *.map
+    @if exist *.res -$(DEL) *.res
+    @if exist *.lbc -$(DEL) *.lbc

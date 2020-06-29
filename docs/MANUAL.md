@@ -3,21 +3,21 @@ Definitions and Variables (curses.h)
 
 Define before inclusion (only those needed):
 
-    XCURSES         True if compiling for X11.
-    PDC_RGB         True if you want to use RGB color definitions
-                    (Red = 1, Green = 2, Blue = 4) instead of BGR.
-    PDC_WIDE        True if building wide-character support.
-    PDC_DLL_BUILD   True if building a Windows DLL.
-    PDC_NCMOUSE     Use the ncurses mouse API instead
-                    of PDCurses' traditional mouse API.
+    XCURSES         if building / built for X11
+    PDC_RGB         if you want to use RGB color definitions
+                    (Red = 1, Green = 2, Blue = 4) instead of BGR
+    PDC_WIDE        if building / built with wide-character support
+    PDC_DLL_BUILD   if building / built as a Windows DLL
+    PDC_NCMOUSE     to use the ncurses mouse API instead
+                    of PDCurses' traditional mouse API
 
 Defined by this header:
 
-    PDCURSES        Enables access to PDCurses-only routines.
-    PDC_BUILD       Defines API build version.
-    PDC_VER_MAJOR   Major version number
-    PDC_VER_MINOR   Minor version number
-    PDC_VERDOT      Version string
+    PDCURSES        PDCurses-only features are available
+    PDC_BUILD       API build version
+    PDC_VER_MAJOR   major version number
+    PDC_VER_MINOR   minor version number
+    PDC_VERDOT      version string
 
 
 
@@ -27,7 +27,7 @@ Defined by this header:
 Text Attributes
 ===============
 
-PDCurses uses a 32-bit integer for its chtype:
+If CHTYPE_32 is #defined,  PDCurses uses a 32-bit integer for its chtype:
 
     +--------------------------------------------------------------------+
     |31|30|29|28|27|26|25|24|23|22|21|20|19|18|17|16|15|14|13|..| 2| 1| 0|
@@ -38,6 +38,23 @@ There are 256 color pairs (8 bits), 8 bits for modifiers, and 16 bits
 for character data. The modifiers are bold, underline, right-line,
 left-line, italic, reverse and blink, plus the alternate character set
 indicator.
+
+   By default,  a 64-bit chtype is used :
+
+-------------------------------------------------------------------------------
+|63|62|61|60|59|..|34|33|32|31|30|29|28|..|22|21|20|19|18|17|16|..| 3| 2| 1| 0|
+-------------------------------------------------------------------------------
+         color number   |        modifiers      |         character eg 'a'
+
+   We take five more bits for the character (thus allowing Unicode values
+past 64K;  the full range of Unicode goes up to 0x10ffff,  requiring 21 bits
+total),  and four more bits for attributes.  Three are currently used as
+A_OVERLINE, A_DIM, and A_STRIKEOUT;  one more is reserved for future use.
+On some platforms,  bits 33-40 are used to select a color pair (can run from
+0 to 255). Bits 41 and 42 have been added to this to get 1024 color pairs.
+On some platforms (as of 2020 May 17,  WinGUI and VT),  bits 33-52 are used,
+allowing 2^20 = 1048576 color pairs.  That should be enough for anybody, and
+leaves twelve bits for other uses.
 
 
 
@@ -659,9 +676,13 @@ color
     int start_color(void);
     int init_pair(short pair, short fg, short bg);
     int pair_content(short pair, short *fg, short *bg);
+    int init_extended_pair(int pair, int fg, int bg);
+    int extended_pair_content(int pair, int *fg, int *bg);
     bool can_change_color(void);
     int init_color(short color, short red, short green, short blue);
     int color_content(short color, short *red, short *green, short *blue);
+    int init_extended_color(int color, int red, int green, int blue);
+    int extended_color_content(int color, int *red, int *green, int *blue);
 
     int assume_default_colors(int f, int b);
     int use_default_colors(void);
@@ -694,6 +715,11 @@ color
    pair_content() is used to determine what the colors of a given color-
    pair consist of.
 
+   init_extended_pair() and extended_pair_content() use ints for the
+   color pair index and the color values.  These allow a larger number
+   of colors and color pairs to be supported,  eliminating the 32767
+   color and color pair limits.
+
    can_change_color() indicates if the terminal has the capability to
    change the definition of its colors.
 
@@ -703,6 +729,9 @@ color
 
    color_content() reports the current definition of a color in the same
    format as used by init_color().
+
+   init_extended_color() and extended_color_content() use integers for
+   the color index.  This enables us to have more than 32767 colors.
 
    assume_default_colors() and use_default_colors() emulate the ncurses
    extensions of the same names. assume_default_colors(f, b) is
@@ -1194,7 +1223,7 @@ initscr
 ### Synopsis
 
     WINDOW *initscr(void);
-    WINDOW *Xinitscr(int argc, char *argv[]);
+    WINDOW *Xinitscr(int argc, char **argv);
     int endwin(void);
     bool isendwin(void);
     SCREEN *newterm(const char *type, FILE *outfd, FILE *infd);
@@ -2463,6 +2492,18 @@ slk
    2 lines used
    55      5-5 format (pdcurses format)
 
+   In PDCurses,  one can alternatively set fmt as a series of hex
+   digits specifying the format.  For example,  0x414 would result
+   in 4-1-4 format; 0x21b3 would result in 2-1-11-3 format;  and
+   so on.  Also,  negating fmt results in the index line being added.
+
+   Also,  in PDCurses,  one can call slk_init() at any time
+   _after_ initscr(),  to reset the label format.  If you do this,
+   you'll need to reset the label text and call slk_refresh().  However,
+   you can't toggle the index line or turn SLK on or off after initscr()
+   has been called.  Doing so would add/remove a line or two from the
+   useable screen,  which would be difficult to handle correctly.
+
    slk_refresh(), slk_noutrefresh() and slk_touch() are analogous to
    refresh(), noutrefresh() and touch().
 
@@ -2867,6 +2908,75 @@ clipboard
     PDC_setclipboard            -       -       -
     PDC_freeclipboard           -       -       -
     PDC_clearclipboard          -       -       -
+
+
+
+--------------------------------------------------------------------------
+
+
+Function keys
+-------------
+
+### Synopsis
+
+   int PDC_set_function_key( const unsigned function, const int new_key);
+
+### Description
+
+   Allows one to set a 'shut down' key,  and reassign hotkeys used for
+   pasting from the clipboard and enlarging and decreasing the font size,
+   and for using the font selection dialog (on platforms where these
+   things are possible and implemented).  For example, calling
+
+   PDC_set_function_key( FUNCTION_KEY_SHUT_DOWN, ALT_Q);
+
+   would reset PDCurses such that,  if the user clicks on the 'close' box,
+   Alt-Q would be added to the key queue.  This would give the app the
+   opportunity to shut things down gracefully,  perhaps asking "are you
+   sure",  and/or "save changes or discard or cancel",  rather than just
+   having the window close (the default behavior).
+
+   Similarly,  one can set FUNCTION_KEY_ABORT to a key which,  when pressed,
+   will cause the program to abort gracelessly (no key returned to the
+   application).  One would normally use this to enable/disable Ctrl-C or
+   Ctrl-Break.
+
+### Return Value
+
+   Returns key code previously set for that function,  or -1 if the
+   function does not actually exist.
+
+### Portability
+
+   PDCurses-only function.
+
+
+
+--------------------------------------------------------------------------
+
+
+Resize limits
+-------------
+
+### Synopsis
+
+    void PDC_set_resize_limits( const int new_min_lines,
+                                const int new_max_lines,
+                                const int new_min_cols,
+                                const int new_max_cols);
+
+### Description
+
+   For platforms supporting resizable windows (SDLx, WinGUI, X11).  Some
+   programs may be unprepared for a resize event;  for these,  calling
+   this function with the max and min limits equal ensures that no
+   user resizing can be done.  Other programs may require at least a
+   certain number,  and/or no more than a certain number,  of columns
+   and/or lines.
+
+### Portability
+
+   PDCurses-only function.
 
 
 

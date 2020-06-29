@@ -24,3 +24,5 @@ const char *PDC_sysname(void)
 {
     return "Windows";
 }
+
+enum PDC_port PDC_port_val = PDC_PORT_WINCON;

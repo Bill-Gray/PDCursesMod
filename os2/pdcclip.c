@@ -1,4 +1,4 @@
-/* PDCurses */
+/* Public Domain Curses */
 
 #include "pdcos2.h"
 
@@ -17,10 +17,11 @@ clipboard
 ### Description
 
    PDC_getclipboard() gets the textual contents of the system's
-   clipboard. This function returns the contents of the clipboard in the
-   contents argument. It is the responsibility of the caller to free the
-   memory returned, via PDC_freeclipboard(). The length of the clipboard
-   contents is returned in the length argument.
+   clipboard. This function returns the contents of the clipboard
+   in the contents argument. It is the responsibilitiy of the
+   caller to free the memory returned, via PDC_freeclipboard().
+   The length of the clipboard contents is returned in the length
+   argument.
 
    PDC_setclipboard copies the supplied text into the system's
    clipboard, emptying the clipboard prior to the copy.
@@ -37,7 +38,7 @@ clipboard
     PDC_CLIP_ACCESS_ERROR   no clipboard support
 
 ### Portability
-                             X/Open  ncurses  NetBSD
+                             X/Open    BSD    SYS V
     PDC_getclipboard            -       -       -
     PDC_setclipboard            -       -       -
     PDC_freeclipboard           -       -       -
@@ -47,6 +48,7 @@ clipboard
 
 int PDC_getclipboard(char **contents, long *length)
 {
+#ifndef EMXVIDEO
     HMQ hmq;
     HAB hab;
     PTIB ptib;
@@ -54,9 +56,10 @@ int PDC_getclipboard(char **contents, long *length)
     ULONG ulRet;
     long len;
     int rc;
-
+#endif
     PDC_LOG(("PDC_getclipboard() - called\n"));
 
+#ifndef EMXVIDEO
     DosGetInfoBlocks(&ptib, &ppib);
     ppib->pib_ultype = 3;
     hab = WinInitialize(0);
@@ -93,19 +96,24 @@ int PDC_getclipboard(char **contents, long *length)
     WinTerminate(hab);
 
     return rc;
+#else
+    return PDC_CLIP_ACCESS_ERROR;
+#endif
 }
 
 int PDC_setclipboard(const char *contents, long length)
 {
+#ifndef EMXVIDEO
     HAB hab;
     PTIB ptib;
     PPIB ppib;
     ULONG ulRC;
     PSZ szTextOut = NULL;
     int rc;
-
+#endif
     PDC_LOG(("PDC_setclipboard() - called\n"));
 
+#ifndef EMXVIDEO
     DosGetInfoBlocks(&ptib, &ppib);
     ppib->pib_ultype = 3;
     hab = WinInitialize(0);
@@ -139,6 +147,9 @@ int PDC_setclipboard(const char *contents, long length)
     WinTerminate(hab);
 
     return rc;
+#else
+    return PDC_CLIP_ACCESS_ERROR;
+#endif
 }
 
 int PDC_freeclipboard(char *contents)
@@ -153,12 +164,14 @@ int PDC_freeclipboard(char *contents)
 
 int PDC_clearclipboard(void)
 {
+#ifndef EMXVIDEO
     HAB hab;
     PTIB ptib;
     PPIB ppib;
-
+#endif
     PDC_LOG(("PDC_clearclipboard() - called\n"));
 
+#ifndef EMXVIDEO
     DosGetInfoBlocks(&ptib, &ppib);
     ppib->pib_ultype = 3;
     hab = WinInitialize(0);
@@ -169,4 +182,7 @@ int PDC_clearclipboard(void)
     WinTerminate(hab);
 
     return PDC_CLIP_SUCCESS;
+#else
+    return PDC_CLIP_ACCESS_ERROR;
+#endif
 }

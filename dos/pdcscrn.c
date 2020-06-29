@@ -31,6 +31,9 @@ static int saved_cols = 0;
 static int saved_scrnmode[3];
 static int saved_font[3];
 
+/* special purpose function keys */
+static int PDC_shutdown_key[PDC_MAX_FUNCTION_KEYS] = { 0, 0, 0, 0, 0 };
+
 /* Thanks to Jeff Duntemann, K16RA for providing the impetus
    (through the Dr. Dobbs Journal, March 1989 issue) for getting
    the routines below merged into Bjorn Larsson's PDCurses 1.3...
@@ -507,6 +510,9 @@ int PDC_scr_open(void)
     pdc_scrnmode = _get_scrn_mode();
     pdc_font = _get_font();
 
+    SP->lines = PDC_get_rows();
+    SP->cols = PDC_get_columns();
+
     SP->mouse_wait = PDC_CLICK_PERIOD;
     SP->audible = TRUE;
 
@@ -643,7 +649,7 @@ bool PDC_can_change_color(void)
 
 /* These are only valid when pdc_adapter == _VGACOLOR */
 
-int PDC_color_content(short color, short *red, short *green, short *blue)
+int PDC_color_content(int color, int *red, int *green, int *blue)
 {
     PDCREGS regs;
 
@@ -663,7 +669,7 @@ int PDC_color_content(short color, short *red, short *green, short *blue)
     return OK;
 }
 
-int PDC_init_color(short color, short red, short green, short blue)
+int PDC_init_color(int color, int red, int green, int blue)
 {
     PDCREGS regs;
 
@@ -681,4 +687,26 @@ int PDC_init_color(short color, short red, short green, short blue)
     PDCINT(0x10, regs);
 
     return OK;
+}
+
+ /* Does nothing in the DOS (or OS/2 or Win32 console) flavors of PDCurses,
+which lack user resizing.  See X11 or Win32a versions of this function for
+details of what it does on platforms that do support user resizing. */
+
+void PDC_set_resize_limits( const int new_min_lines, const int new_max_lines,
+                  const int new_min_cols, const int new_max_cols)
+{
+}
+
+/* PDC_set_function_key() does nothing on this platform */
+int PDC_set_function_key( const unsigned function, const int new_key)
+{
+    int old_key = -1;
+
+    if( function < PDC_MAX_FUNCTION_KEYS)
+    {
+         old_key = PDC_shutdown_key[function];
+         PDC_shutdown_key[function] = new_key;
+    }
+    return( old_key);
 }

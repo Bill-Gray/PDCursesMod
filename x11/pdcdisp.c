@@ -5,45 +5,12 @@
 #include <string.h>
 
 #ifdef PDC_WIDE
-# include "../common/acsuni.h"
+   #define USE_UNICODE_ACS_CHARS 1
 #else
-
-chtype acs_map[128] =
-{
-    PDC_ACS(0), PDC_ACS(1), PDC_ACS(2), PDC_ACS(3), PDC_ACS(4),
-    PDC_ACS(5), PDC_ACS(6), PDC_ACS(7), PDC_ACS(8), PDC_ACS(9),
-    PDC_ACS(10), PDC_ACS(11), PDC_ACS(12), PDC_ACS(13), PDC_ACS(14),
-    PDC_ACS(15), PDC_ACS(16), PDC_ACS(17), PDC_ACS(18), PDC_ACS(19),
-    PDC_ACS(20), PDC_ACS(21), PDC_ACS(22), PDC_ACS(23), PDC_ACS(24),
-    PDC_ACS(25), PDC_ACS(26), PDC_ACS(27), PDC_ACS(28), PDC_ACS(29),
-    PDC_ACS(30), PDC_ACS(31), ' ', '!', '"', '#', '$', '%', '&', '\'',
-    '(', ')', '*',
-
-    '>', '<', '^', 'v',
-
-    '/',
-
-    PDC_ACS(0),
-
-    '1', '2', '3', '4', '5', '6', '7', '8', '9', ':', ';', '<', '=',
-    '>', '?', '@', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
-    'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W',
-    'X', 'Y', 'Z', '[', '\\', ']', '^', '_',
-
-    PDC_ACS(1), PDC_ACS(2),
-
-    'b', 'c', 'd', 'e',
-
-    PDC_ACS(7), PDC_ACS(8), '#', 0xa4, PDC_ACS(11), PDC_ACS(12),
-    PDC_ACS(13), PDC_ACS(14), PDC_ACS(15), PDC_ACS(16), PDC_ACS(17),
-    PDC_ACS(18), PDC_ACS(19), PDC_ACS(20), PDC_ACS(21), PDC_ACS(22),
-    PDC_ACS(23), PDC_ACS(24), PDC_ACS(25), PDC_ACS(26), PDC_ACS(27),
-    PDC_ACS(28), PDC_ACS(29), PDC_ACS(30), 0xb7,
-
-    PDC_ACS(127)
-};
-
+   #define USE_ISO8859_CHARSET
 #endif
+
+#include "../common/acs_defs.h"
 
 bool pdc_blinked_off;
 bool pdc_visible_cursor = FALSE;
@@ -58,16 +25,17 @@ static void _make_xy(int x, int y, int *xpos, int *ypos)
     *ypos = pdc_app_data.normalFont->ascent + (y * pdc_fheight);
 }
 
-static void _set_cursor_color(chtype *ch, short *fore, short *back)
+static void _set_cursor_color(chtype *ch, int *fore, int *back)
 {
     int attr;
-    short f, b;
 
     attr = PAIR_NUMBER(*ch);
 
     if (attr)
     {
-        pair_content(attr, &f, &b);
+        int f, b;
+
+        extended_pair_content(attr, &f, &b);
         *fore = 7 - (f % 8);
         *back = 7 - (b % 8);
     }
@@ -90,7 +58,7 @@ static void _display_cursor(int old_row, int old_x, int new_row, int new_x)
 {
     int xpos, ypos, i;
     chtype *ch;
-    short fore = 0, back = 0;
+    int fore = 0, back = 0;
 
     PDC_LOG(("_display_cursor() - draw char at row: %d col %d\n",
              old_row, old_x));
@@ -276,11 +244,11 @@ static int _new_packet(chtype attr, int len, int col, int row,
     XRectangle bounds;
     GC gc;
     int xpos, ypos;
-    short fore, back;
+    int fore, back;
     attr_t sysattrs;
     bool rev;
 
-    pair_content(PAIR_NUMBER(attr), &fore, &back);
+    extended_pair_content(PAIR_NUMBER(attr), &fore, &back);
 
     /* Specify the color table offsets */
 

@@ -118,6 +118,9 @@ ozdemo$(E): $(demodir)/ozdemo.c
 ptest$(E): $(demodir)/ptest.c
 	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
 
+newtest$(E): $(demodir)/newtest.c
+	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
+
 rain$(E): $(demodir)/rain.c
 	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
 

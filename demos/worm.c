@@ -147,6 +147,9 @@ static void cleanup(void)
     refresh();
     curs_set(1);
     endwin();
+#ifdef PDCURSES
+    delscreen( SP);
+#endif
 }
 
 int main(int argc, char *argv[])
@@ -208,7 +211,7 @@ int main(int argc, char *argv[])
     initscr();
 #endif
     seed = time((time_t *)0);
-    srand(seed);
+    srand( (unsigned)seed);
 
     noecho();
     cbreak();
@@ -357,6 +360,14 @@ int main(int argc, char *argv[])
 
             if (ch == 'q')
             {
+                for (y = 0; y < LINES; y++)
+                    free( ref[y]);
+                free( ref);
+                for( n = 0; n < number; n++)
+                {
+                    free( worm[n].xpos);
+                    free( worm[n].ypos);
+                }
                 cleanup();
                 return EXIT_SUCCESS;
             }
@@ -409,6 +420,9 @@ int main(int argc, char *argv[])
             switch (op->nopts)
             {
             case 0:
+                for (y = 0; y < LINES; y++)
+                    free( ref[y]);
+                free( ref);
                 cleanup();
                 return EXIT_SUCCESS;
             case 1:

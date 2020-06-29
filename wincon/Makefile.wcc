@@ -7,31 +7,21 @@
 # [all|demos|pdcurses.lib|testcurs.exe...]
 
 !ifdef %PDCURSES_SRCDIR
-PDCURSES_SRCDIR	= $(%PDCURSES_SRCDIR)
+PDCURSES_SRCDIR = $(%PDCURSES_SRCDIR)
 !else
-PDCURSES_SRCDIR	= ..
+PDCURSES_SRCDIR = ..
 !endif
 
-osdir		= $(PDCURSES_SRCDIR)/wincon
+osdir = wincon
 
-CC		= wcc386
-TARGET		= nt
+TARGET = nt
 
-CFLAGS		= -bt=$(TARGET)
+LTARGET = nt
 
-!ifeq WIDE Y
-CFLAGS		+= -DPDC_WIDE
-!endif
-
-!ifeq UTF8 Y
-CFLAGS		+= -DPDC_FORCE_UTF8
-!endif
+CFLAGS =
 
 !ifeq INFOEX N
-CFLAGS		+= -DHAVE_NO_INFOEX
+CFLAGS += -DHAVE_NO_INFOEX
 !endif
 
 !include $(PDCURSES_SRCDIR)/common/watcom.mif
-
-$(LIBCURSES) : $(LIBOBJS) $(PDCOBJS)
-	$(LIBEXE) $@ $(LIBOBJS) $(PDCOBJS)

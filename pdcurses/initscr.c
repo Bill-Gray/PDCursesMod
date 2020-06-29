@@ -1,6 +1,7 @@
 /* PDCurses */
 
 #include <curspriv.h>
+#include <assert.h>
 
 /*man-start**************************************************************
 
@@ -124,8 +125,8 @@ WINDOW *initscr(void)
 
     if (SP && SP->alive)
         return NULL;
-
     SP = calloc(1, sizeof(SCREEN));
+    assert( SP);
     if (!SP)
         return NULL;
 
@@ -226,10 +227,8 @@ WINDOW *initscr(void)
     else
         curscr->_clear = TRUE;
 
-    SP->atrtab = calloc(PDC_COLOR_PAIRS, sizeof(PDC_PAIR));
-    if (!SP->atrtab)
+    if( PDC_init_atrtab())   /* set up default colors */
         return NULL;
-    PDC_init_atrtab();  /* set up default colors */
 
     MOUSE_X_POS = MOUSE_Y_POS = -1;
     BUTTON_STATUS(1) = BUTTON_RELEASED;
@@ -277,6 +276,7 @@ int endwin(void)
     def_prog_mode();
     PDC_scr_close();
 
+    assert( SP);
     SP->alive = FALSE;
 
     return OK;
@@ -309,6 +309,7 @@ void delscreen(SCREEN *sp)
 {
     PDC_LOG(("delscreen() - called\n"));
 
+    assert( SP);
     if (!SP || sp != SP)
         return;
 
@@ -390,6 +391,8 @@ const char *curses_version(void)
 
 void PDC_get_version(PDC_VERSION *ver)
 {
+    extern enum PDC_port PDC_port_val;
+
     if (!ver)
         return;
 
@@ -414,8 +417,10 @@ void PDC_get_version(PDC_VERSION *ver)
     ver->build = PDC_BUILD;
     ver->major = PDC_VER_MAJOR;
     ver->minor = PDC_VER_MINOR;
+    ver->change = PDC_VER_CHANGE;
     ver->csize = sizeof(chtype);
     ver->bsize = sizeof(bool);
+    ver->port = PDC_port_val;
 }
 
 int set_tabsize(int tabsize)

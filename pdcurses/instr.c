@@ -73,7 +73,7 @@ int winnstr(WINDOW *win, char *str, int n)
     if (winnwstr(win, wstr, n) == ERR)
         return ERR;
 
-    return PDC_wcstombs(str, wstr, n);
+    return (int)PDC_wcstombs(str, wstr, n);
 #else
     chtype *src;
     int i;
@@ -89,7 +89,7 @@ int winnstr(WINDOW *win, char *str, int n)
     src = win->_y[win->_cury] + win->_curx;
 
     for (i = 0; i < n; i++)
-        str[i] = src[i] & A_CHARTEXT;
+        str[i] = (char)( src[i] & A_CHARTEXT);
 
     str[i] = '\0';
 
@@ -175,7 +175,7 @@ int winnwstr(WINDOW *win, wchar_t *wstr, int n)
     src = win->_y[win->_cury] + win->_curx;
 
     for (i = 0; i < n; i++)
-        wstr[i] = src[i] & A_CHARTEXT;
+        wstr[i] = (wchar_t)src[i] & A_CHARTEXT;
 
     wstr[i] = L'\0';
 

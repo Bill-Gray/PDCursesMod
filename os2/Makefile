@@ -1,27 +1,40 @@
-# GNU Makefile for PDCurses - OS/2
+# GNU MAKE Makefile for PDCurses library - OS/2 emx 0.9c+
 #
-# Usage: make [-f path\Makefile] [DEBUG=Y] [target]
+# Usage: make -f [path\]Makefile [DEBUG=Y] [EMXVIDEO=Y] [DLL=Y] [target]
 #
 # where target can be any of:
 # [all|demos|pdcurses.a|testcurs.exe...]
+#
+# The EMXVIDEO option compiles with the emx video library, which
+# enables a PDCurses program to run under OS/2 and DOS.
 
 O = o
 E = .exe
-RM = del
 
 ifndef PDCURSES_SRCDIR
 	PDCURSES_SRCDIR = ..
 endif
 
-include $(PDCURSES_SRCDIR)/common/libobjs.mif
-
 osdir		= $(PDCURSES_SRCDIR)/os2
+common		= $(PDCURSES_SRCDIR)/common
+
+include $(PDCURSES_SRCDIR)/version.mif
+include $(common)/libobjs.mif
 
 PDCURSES_OS2_H	= $(osdir)/pdcos2.h
 
 CC		= gcc
 
-CFLAGS = -c -I$(PDCURSES_SRCDIR) -Ic:/emx/include -Wall
+CFLAGS = -I$(PDCURSES_SRCDIR) -c -Wall
+
+ifeq ($(EMXVIDEO),Y)
+	CFLAGS += -DEMXVIDEO
+	CCLIBS = -lvideo
+	BINDFLAGS = -acm
+else
+	CCLIBS =
+	BINDFLAGS =
+endif
 
 ifeq ($(DEBUG),Y)
 	CFLAGS  += -g -DPDCDEBUG
@@ -31,6 +44,9 @@ else
 	LDFLAGS =
 endif
 
+DLLTARGET	= pdcurses.dll
+DLLFLAGS 	= -Zdll -Zcrtdll -Zomf
+
 LINK		= gcc
 EMXBIND		= emxbind
 EMXOMF		= emxomf
@@ -38,23 +54,34 @@ EMXOMF		= emxomf
 LIBEXE		= ar
 LIBFLAGS	= rcv
 
-LIBCURSES = pdcurses.a
-LIBDEPS = $(LIBOBJS) $(PDCOBJS)
-PDCLIBS = $(LIBCURSES)
-EXEPOST = $(EMXBIND) $*
-TUIPOST = $(EMXBIND) tuidemo
-CLEAN = *.a testcurs ozdemo xmas tuidemo firework ptest rain worm
+ifeq ($(DLL),Y)
+	CFLAGS += -Zdll -Zcrtdll -Zomf
+	LDFLAGS += -Zlinker /PM:VIO -Zomf -Zcrtdll
+	LIBCURSES = pdcurses.lib
+	LIBDEPS = $(LIBOBJS) $(PDCOBJS)
+	PDCLIBS = $(DLLTARGET)
+	EXEPOST =
+	TUIPOST =
+	CLEAN = *.dll *.lib
+else
+	LIBCURSES = pdcurses.a
+	LIBDEPS = $(LIBOBJS) $(PDCOBJS)
+	PDCLIBS = $(LIBCURSES)
+	EXEPOST = $(EMXBIND) $* $(BINDFLAGS)
+	TUIPOST = $(EMXBIND) tuidemo $(BINDFLAGS)
+	CLEAN = *.a testcurs ozdemo xmas tuidemo firework ptest rain worm
+endif
 
 .PHONY: all libs clean demos dist
 
-all:	libs
+all:	libs demos
 
 libs:	$(PDCLIBS)
 
 clean:
-	-$(RM) *.o
-	-$(RM) *.exe
-	-$(RM) $(CLEAN)
+	-del *.o
+	-del *.exe
+	-del $(CLEAN)
 
 demos:	$(DEMOS)
 
@@ -63,6 +90,11 @@ ptest.o rain.o worm.o
 
 $(LIBCURSES) : $(LIBDEPS)
 	$(LIBEXE) $(LIBFLAGS) $@ $?
+	-copy $(LIBCURSES) panel.a
+
+$(DLLTARGET) : $(LIBDEPS)
+	$(LINK) $(DLLFLAGS) -o $(DLLTARGET) $?
+#	lxlite $(DLLTARGET)
 
 $(LIBOBJS) $(PDCOBJS) $(DEMOOBJS) : $(PDCURSES_HEADERS)
 $(PDCOBJS) : $(PDCURSES_OS2_H)
@@ -70,18 +102,18 @@ $(DEMOS) : $(LIBCURSES)
 panel.o ptest.o: $(PANEL_HEADER)
 
 $(LIBOBJS) : %.o: $(srcdir)/%.c
-	$(CC) $(CFLAGS) -o$@ $<
+	$(CC) -c $(CFLAGS) -o$@ $<
 
 $(PDCOBJS) : %.o: $(osdir)/%.c
-	$(CC) $(CFLAGS) -o$@ $<
+	$(CC) -c $(CFLAGS) -o$@ $<
 
 firework.exe ozdemo.exe rain.exe testcurs.exe worm.exe xmas.exe \
 ptest.exe: %.exe: %.o
-	$(LINK) $(LDFLAGS) -o $* $< $(LIBCURSES)
+	$(LINK) $(LDFLAGS) -o $* $< $(LIBCURSES) $(CCLIBS)
 	$(EXEPOST)
 
 tuidemo.exe:	tuidemo.o tui.o
-	$(LINK) $(LDFLAGS) -o tuidemo tuidemo.o tui.o $(LIBCURSES)
+	$(LINK) $(LDFLAGS) -o tuidemo tuidemo.o tui.o $(LIBCURSES) $(CCLIBS)
 	$(TUIPOST)
 
 firework.o ozdemo.o ptest.o rain.o testcurs.o worm.o xmas.o: %.o: \
@@ -93,3 +125,9 @@ tui.o: $(demodir)\tui.c $(demodir)\tui.h
 
 tuidemo.o: $(demodir)\tuidemo.c
 	$(CC) $(CFLAGS) -I$(demodir) -o $@ $<
+
+PLATFORM1 = EMX OS/2
+PLATFORM2 = EMX 0.9d for OS/2
+ARCNAME = pdc$(VER)_emx_os2
+
+include $(PDCURSES_SRCDIR)/makedist.mif

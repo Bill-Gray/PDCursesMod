@@ -14,6 +14,9 @@ HANDLE pdc_con_in = INVALID_HANDLE_VALUE;
 
 DWORD pdc_quick_edit;
 
+/* special purpose function keys */
+static int PDC_shutdown_key[PDC_MAX_FUNCTION_KEYS] = { 0, 0, 0, 0, 0 };
+
 static short realtocurs[16] =
 {
     COLOR_BLACK, COLOR_BLUE, COLOR_GREEN, COLOR_CYAN, COLOR_RED,
@@ -616,7 +619,7 @@ bool PDC_can_change_color(void)
     return is_nt;
 }
 
-int PDC_color_content(short color, short *red, short *green, short *blue)
+int PDC_color_content(int color, int *red, int *green, int *blue)
 {
     if (color < 16 && !pdc_conemu)
     {
@@ -649,7 +652,7 @@ int PDC_color_content(short color, short *red, short *green, short *blue)
     return OK;
 }
 
-int PDC_init_color(short color, short red, short green, short blue)
+int PDC_init_color(int color, int red, int green, int blue)
 {
     if (red == -1 && green == -1 && blue == -1)
     {
@@ -682,4 +685,25 @@ int PDC_init_color(short color, short red, short green, short blue)
     }
 
     return OK;
+}
+
+/* Does nothing in the Win32 flavor of PDCurses.  Included solely because
+without this,  we get an unresolved external... */
+
+void PDC_set_resize_limits( const int new_min_lines, const int new_max_lines,
+                  const int new_min_cols, const int new_max_cols)
+{
+}
+
+/* PDC_set_function_key() does nothing on this platform */
+int PDC_set_function_key( const unsigned function, const int new_key)
+{
+    int old_key = -1;
+
+    if( function < PDC_MAX_FUNCTION_KEYS)
+    {
+         old_key = PDC_shutdown_key[function];
+         PDC_shutdown_key[function] = new_key;
+    }
+    return( old_key);
 }

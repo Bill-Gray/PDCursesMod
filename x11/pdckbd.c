@@ -3,6 +3,7 @@
 #include "pdcx11.h"
 
 #include <keysym.h>
+#include <assert.h>
 
 #ifdef HAVE_DECKEYSYM_H
 # include <DECkeysym.h>
@@ -334,16 +335,14 @@ static unsigned long _process_key_event(XEvent *event)
     return -1;
 }
 
-static unsigned long _process_mouse_event(XEvent *event)
+static unsigned long _process_mouse_event( const XEvent *event)
 {
-    int button_no;
+    int button_no = event->xbutton.button;
     static int last_button_no = 0;
 
     PDC_LOG(("_process_mouse_event() - called\n"));
 
     keysym = 0; /* suppress any modifier key return */
-
-    button_no = event->xbutton.button;
 
     /* It appears that under X11R6 (at least on Linux), that an
        event_type of ButtonMotion does not include the mouse button in
@@ -368,7 +367,7 @@ static unsigned long _process_mouse_event(XEvent *event)
         {
             /* Send the KEY_MOUSE to curses program */
 
-            memset(&SP->mouse_status, 0, sizeof(SP->mouse_status));
+            memset(&SP->mouse_status.button, 0, sizeof(SP->mouse_status.button));
 
             switch(button_no)
             {
@@ -384,8 +383,6 @@ static unsigned long _process_mouse_event(XEvent *event)
                case 7:
                   SP->mouse_status.changes = PDC_MOUSE_WHEEL_RIGHT;
             }
-
-            SP->mouse_status.x = SP->mouse_status.y = -1;
 
             SP->key_code = TRUE;
             return KEY_MOUSE;
@@ -432,6 +429,7 @@ static unsigned long _process_mouse_event(XEvent *event)
         SP->mouse_status.button[button_no - 1] = BUTTON_RELEASED;
     }
 
+    assert( button_no >= 1 && button_no <= PDC_MAX_MOUSE_BUTTONS);
     /* Set up the mouse status fields in preparation for sending */
 
     SP->mouse_status.changes |= 1 << (button_no - 1);

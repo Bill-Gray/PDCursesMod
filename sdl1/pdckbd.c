@@ -217,13 +217,19 @@ static int _process_mouse_event(void)
     if (keymods & KMOD_ALT)
         shift_flags |= BUTTON_ALT;
 
+    SP->mouse_status.x = (event.motion.x - pdc_xoffset) / pdc_fwidth;
+    SP->mouse_status.y = (event.motion.y - pdc_yoffset) / pdc_fheight;
+
     if (event.type == SDL_MOUSEMOTION)
     {
         int i;
 
+<<<<<<< HEAD
         SP->mouse_status.x = (event.motion.x - pdc_xoffset) / pdc_fwidth;
         SP->mouse_status.y = (event.motion.y - pdc_yoffset) / pdc_fheight;
 
+=======
+>>>>>>> win32a/master
         if (!event.motion.state ||
            (SP->mouse_status.x == old_mouse_status.x &&
             SP->mouse_status.y == old_mouse_status.y))
@@ -250,8 +256,11 @@ static int _process_mouse_event(void)
 
         if ((btn >= 4 && btn <= 7) && action == BUTTON_RELEASED)
         {
+<<<<<<< HEAD
             SP->mouse_status.x = SP->mouse_status.y = -1;
 
+=======
+>>>>>>> win32a/master
             switch (btn)
             {
             case 4:
@@ -291,9 +300,12 @@ static int _process_mouse_event(void)
             }
         }
 
+<<<<<<< HEAD
         SP->mouse_status.x = (event.button.x - pdc_xoffset) / pdc_fwidth;
         SP->mouse_status.y = (event.button.y - pdc_yoffset) / pdc_fheight;
 
+=======
+>>>>>>> win32a/master
         btn--;
 
         SP->mouse_status.button[btn] = action | shift_flags;

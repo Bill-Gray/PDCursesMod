@@ -1,0 +1,32 @@
+# Watcom WMAKE Makefile for PDCurses library - Win32 Watcom C/C++ 10.6+
+#
+# Usage: wmake -f [wingui/]Makefile.wcc [DEBUG=Y] [WIDE=Y] [UTF8=Y] [target]
+#
+# where target can be any of:
+# [all|demos|pdcurses.lib|testcurs.exe...]
+
+!ifdef %PDCURSES_SRCDIR
+PDCURSES_SRCDIR = $(%PDCURSES_SRCDIR)
+!else
+PDCURSES_SRCDIR = ..
+!endif
+
+!include $(PDCURSES_SRCDIR)/version.mif
+
+osdir = wingui
+
+TARGET = nt
+
+LTARGET = nt_win
+
+CFLAGS = -ei
+
+EXTRA_LIB_CMD = -$(COPY) $(PDCNAME).lib panel.lib
+
+!include $(PDCURSES_SRCDIR)/common/watcom.mif
+
+PLATFORM1   = Watcom C++ WinGUI
+PLATFORM2   = Open Watcom for WinGUI
+ARCNAME     = pdc$(VER)_wcc_w32
+
+!include $(PDCURSES_SRCDIR)/makedist.mif

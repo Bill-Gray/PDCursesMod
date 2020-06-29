@@ -25,3 +25,5 @@ const char *PDC_sysname(void)
 {
     return "SDL2";
 }
+
+enum PDC_port PDC_port_val = PDC_PORT_SDL2;

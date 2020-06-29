@@ -48,7 +48,7 @@ typedef struct           /* structure for ripped off lines */
 
 void    PDC_beep(void);
 bool    PDC_can_change_color(void);
-int     PDC_color_content(short, short *, short *, short *);
+int     PDC_color_content(int, int *, int *, int *);
 bool    PDC_check_key(void);
 int     PDC_curs_set(int);
 void    PDC_doupdate(void);
@@ -59,7 +59,7 @@ int     PDC_get_key(void);
 int     PDC_get_rows(void);
 void    PDC_gotoyx(int, int);
 bool    PDC_has_mouse(void);
-int     PDC_init_color(short, short, short, short);
+int     PDC_init_color(int, int, int, int);
 int     PDC_modifiers_set(void);
 int     PDC_mouse_set(void);
 void    PDC_napms(int);
@@ -80,7 +80,7 @@ const char *PDC_sysname(void);
 
 /* Internal cross-module functions */
 
-void    PDC_init_atrtab(void);
+int     PDC_init_atrtab(void);
 WINDOW *PDC_makelines(WINDOW *);
 WINDOW *PDC_makenew(int, int, int, int);
 int     PDC_mouse_in_slk(int, int);

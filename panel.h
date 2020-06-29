@@ -1,3 +1,5 @@
+/* Public Domain Curses */
+
 /*----------------------------------------------------------------------*
  *                         Panels for PDCurses                          *
  *----------------------------------------------------------------------*/
@@ -7,7 +9,7 @@
 
 #include <curses.h>
 
-#ifdef __cplusplus
+#if defined(__cplusplus) || defined(__cplusplus__) || defined(__CPLUSPLUS)
 extern "C"
 {
 #endif
@@ -31,23 +33,23 @@ typedef struct panel
     struct panelobs *obscure;
 } PANEL;
 
-PDCEX  int     bottom_panel(PANEL *pan);
-PDCEX  int     del_panel(PANEL *pan);
-PDCEX  int     hide_panel(PANEL *pan);
-PDCEX  int     move_panel(PANEL *pan, int starty, int startx);
-PDCEX  PANEL  *new_panel(WINDOW *win);
-PDCEX  PANEL  *panel_above(const PANEL *pan);
-PDCEX  PANEL  *panel_below(const PANEL *pan);
-PDCEX  int     panel_hidden(const PANEL *pan);
-PDCEX  const void *panel_userptr(const PANEL *pan);
-PDCEX  WINDOW *panel_window(const PANEL *pan);
-PDCEX  int     replace_panel(PANEL *pan, WINDOW *win);
-PDCEX  int     set_panel_userptr(PANEL *pan, const void *uptr);
-PDCEX  int     show_panel(PANEL *pan);
-PDCEX  int     top_panel(PANEL *pan);
-PDCEX  void    update_panels(void);
+PDCEX int     bottom_panel(PANEL *pan);
+PDCEX int     del_panel(PANEL *pan);
+PDCEX int     hide_panel(PANEL *pan);
+PDCEX int     move_panel(PANEL *pan, int starty, int startx);
+PDCEX PANEL  *new_panel(WINDOW *win);
+PDCEX PANEL  *panel_above(const PANEL *pan);
+PDCEX PANEL  *panel_below(const PANEL *pan);
+PDCEX int     panel_hidden(const PANEL *pan);
+PDCEX const void *panel_userptr(const PANEL *pan);
+PDCEX WINDOW *panel_window(const PANEL *pan);
+PDCEX int     replace_panel(PANEL *pan, WINDOW *win);
+PDCEX int     set_panel_userptr(PANEL *pan, const void *uptr);
+PDCEX int     show_panel(PANEL *pan);
+PDCEX int     top_panel(PANEL *pan);
+PDCEX void    update_panels(void);
 
-#ifdef __cplusplus
+#if defined(__cplusplus) || defined(__cplusplus__) || defined(__CPLUSPLUS)
 }
 #endif
 

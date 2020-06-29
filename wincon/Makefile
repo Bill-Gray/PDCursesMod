@@ -26,11 +26,18 @@ include $(common)/libobjs.mif
 
 PDCURSES_WIN_H	= $(osdir)/pdcwin.h
 
-CC		= gcc
+ifdef _w64
+	PREFIX=x86_64-w64-mingw32-
+endif
+ifdef _w32
+	PREFIX=i686-w64-mingw32-
+endif
+
+CC		= $(PREFIX)gcc
 AR		= ar
 STRIP		= strip
-LINK		= gcc
-WINDRES		= windres
+LINK		= $(PREFIX)gcc
+WINDRES		= $(PREFIX)windres
 
 ifeq ($(DEBUG),Y)
 	CFLAGS  = -g -Wall -DPDCDEBUG
@@ -58,7 +65,7 @@ ifeq ($(DLL),Y)
 	CLEAN = $(LIBCURSES) *.a
 	RESOURCE = pdcurses.o
 else
-	LIBEXE = $(AR)
+	LIBEXE = $(PREFIX)$(AR)
 	LIBFLAGS = rcv
 	LIBCURSES = pdcurses.a
 	CLEAN = *.a

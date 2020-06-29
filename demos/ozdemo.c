@@ -59,7 +59,7 @@ int WaitForUser(void)
     nocbreak();     /* Reset the halfdelay() value */
     cbreak();
 
-    return (ch == '\033') ? ch : 0;
+    return (ch == '\033') ? (int)ch : 0;
 }
 
 int SubWinTest(WINDOW *win)
@@ -211,6 +211,10 @@ int main(int argc, char **argv)
     chtype save[80], ch;
     time_t seed;
     int width, height, w, x, y, i, j;
+    const char *versions =
+            " DOS, OS/2, Windows console & GUI, X11, SDL 1/2, VT";
+    const char *hit_any_key =
+            "       Type a key to continue or ESC to quit       ";
 
 #ifdef XCURSES
     Xinitscr(argc, argv);
@@ -218,7 +222,7 @@ int main(int argc, char **argv)
     initscr();
 #endif
     seed = time((time_t *)0);
-    srand(seed);
+    srand( (unsigned)seed);
 
     start_color();
 # if defined(NCURSES_VERSION) || (defined(PDC_BUILD) && PDC_BUILD > 3000)
@@ -241,8 +245,8 @@ int main(int argc, char **argv)
 
     /* Create a drawing window */
 
-    width  = 48;
-    height = 15;
+    width  = strlen( versions) + 4;
+    height = 18;
 
     win = newwin(height, width, (LINES - height) / 2, (COLS - width) / 2);
 
@@ -324,13 +328,9 @@ int main(int argc, char **argv)
 
         init_pair(5, COLOR_BLUE, COLOR_WHITE);
         wattrset(win, COLOR_PAIR(5) | A_BLINK);
-        mvwaddstr(win, height - 2,
-#ifdef PDC_VERDOT
-            2, " PDCurses " PDC_VERDOT
-#else
-            3, " PDCurses"
-#endif
-            " - DOS, OS/2, Windows, X11, SDL");
+        mvwaddstr( win, height - 4, 2, longname( ));
+        mvwaddstr( win, height - 3, 2, curses_version( ));
+        mvwaddstr( win, height - 2, 2, versions);
         wrefresh(win);
 
         /* Draw running messages */
@@ -345,7 +345,7 @@ int main(int argc, char **argv)
         for (j = 0; messages[j] != NULL; j++)
         {
             char *message = messages[j];
-            int msg_len = strlen(message);
+            int msg_len = (int)strlen(message);
             int stop = 0;
             int xpos, start, count;
 
@@ -405,8 +405,7 @@ int main(int argc, char **argv)
 
         i = height - 2;
         wattrset(win, COLOR_PAIR(5));
-        mvwaddstr(win, i, 2,
-            "    Type a key to continue or ESC to quit   ");
+        mvwaddstr(win, i, 2, hit_any_key);
         wrefresh(win);
 
         if (WaitForUser() == '\033')

@@ -261,7 +261,7 @@ int wattr_get(WINDOW *win, attr_t *attrs, short *color_pair, void *opts)
         *attrs = win->_attrs & (A_ATTRIBUTES & ~A_COLOR);
 
     if (color_pair)
-        *color_pair = PAIR_NUMBER(win->_attrs);
+        *color_pair = (short)PAIR_NUMBER(win->_attrs);
 
     return OK;
 }

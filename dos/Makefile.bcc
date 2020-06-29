@@ -29,7 +29,12 @@ CFLAGS		= -O
 
 CPPFLAGS	= -I$(PDCURSES_SRCDIR)
 
+!ifdef OLD_BCC
+BUILD		= $(CC) -DNO_STDINT_H -K -G -rd -d -w-eff -w-par -c \
+           $(CFLAGS) $(CPPFLAGS)
+!else
 BUILD		= $(CC) -1- -G -d -w-par -c -m$(MODEL) $(CFLAGS) $(CPPFLAGS)
+!endif
 
 LIBEXE		= tlib /C /E
 
