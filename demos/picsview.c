@@ -8,6 +8,9 @@
     #define CONVERT_IMAGES
     #include <unistd.h>
 #endif
+#if defined(Plan9)
+	#include <unistd.h>
+#endif
 
 /* This is inspired by,  but not really based on,  Thomas E. Dickey's
 'picsmap' program for ncurses.  Its real purpose is to demonstrate the

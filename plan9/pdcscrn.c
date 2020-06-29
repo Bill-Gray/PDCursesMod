@@ -10,7 +10,7 @@ bool PDC_can_change_color(void)
 }
 
 
-int PDC_color_content(short color, short *red, short *green, short *blue)
+int PDC_color_content(int color, int *red, int *green, int *blue)
 {
 	PDC_LOG(("PDC_color_content() - called.\n"));
 
@@ -18,7 +18,7 @@ int PDC_color_content(short color, short *red, short *green, short *blue)
 }
 
 
-int PDC_init_color(short color, short red, short green, short blue)
+int PDC_init_color(int color, int red, int green, int blue)
 {
 	PDC_LOG(("PDC_init_color() - called. Lines: %d Cols: %d\n", color,
 		 red, green, blue));
