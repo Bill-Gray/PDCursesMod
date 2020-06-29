@@ -1877,53 +1877,47 @@ static LRESULT ALIGN_STACK CALLBACK WndProc (const HWND hwnd,
         EnterCriticalSection(&PDC_cs);
         if( HandleMouseMove( wParam, lParam))
             modified_key_to_return = 0;
-        break;
+        add_mouse( -1, -1, -1, -1);
+        LeaveCriticalSection(&PDC_cs);
+        return 0;
 
     case WM_LBUTTONDOWN:
-        EnterCriticalSection(&PDC_cs);
         button = 1;
         action = BUTTON_PRESSED;
         break;
 
     case WM_LBUTTONUP:
-        EnterCriticalSection(&PDC_cs);
         button = 1;
         action = BUTTON_RELEASED;
         break;
 
     case WM_RBUTTONDOWN:
-        EnterCriticalSection(&PDC_cs);
         button = 3;
         action = BUTTON_PRESSED;
         break;
 
     case WM_RBUTTONUP:
-        EnterCriticalSection(&PDC_cs);
         button = 3;
         action = BUTTON_RELEASED;
         break;
 
     case WM_MBUTTONDOWN:
-        EnterCriticalSection(&PDC_cs);
         button = 2;
         action = BUTTON_PRESSED;
         break;
 
     case WM_MBUTTONUP:
-        EnterCriticalSection(&PDC_cs);
         button = 2;
         action = BUTTON_RELEASED;
         break;
 
     case WM_XBUTTONDOWN:
-        EnterCriticalSection(&PDC_cs);
         button = ((wParam & MK_XBUTTON1) ? 3 : 4);
         action = BUTTON_PRESSED;
         xbutton_pressed = button;
         break;
 
     case WM_XBUTTONUP:
-        EnterCriticalSection(&PDC_cs);
 #ifdef WRONG_WAY
           /* You'd think we'd use the following line,  wouldn't you?      */
           /* But we can't,  because an XBUTTONUP message doesn't actually */
@@ -2009,7 +2003,9 @@ static LRESULT ALIGN_STACK CALLBACK WndProc (const HWND hwnd,
             /* blink the blinking text */
             HandleTimer( wParam );
         }
-        break;
+        add_mouse( -1, -1, -1, -1);
+        LeaveCriticalSection(&PDC_cs);
+        return 0;
 
     case WM_CLOSE:
         EnterCriticalSection(&PDC_cs);
@@ -2070,20 +2066,18 @@ static LRESULT ALIGN_STACK CALLBACK WndProc (const HWND hwnd,
         return DefWindowProc( hwnd, message, wParam, lParam) ;
     }
 
-    /* mouse handling code */
-    if( button != -1)
-    {
-        add_mouse( button, action, LOWORD( lParam) / PDC_cxChar, HIWORD( lParam) / PDC_cyChar);
-        if( action == BUTTON_PRESSED)
-           SetCapture( hwnd);
-        else
-           ReleaseCapture( );
-#if 0 /* checkme */
-        SetTimer( hwnd, 0, SP->mouse_wait, NULL);
-#endif
-    }
+    /* mouse button handling code */
+    assert( button != -1);
+    EnterCriticalSection(&PDC_cs);
+
+    add_mouse( button, action, LOWORD( lParam) / PDC_cxChar, HIWORD( lParam) / PDC_cyChar);
+    if( action == BUTTON_PRESSED)
+       SetCapture( hwnd);
     else
-       add_mouse( -1, -1, -1, -1);
+       ReleaseCapture( );
+#if 0 /* checkme */
+    SetTimer( hwnd, 0, SP->mouse_wait, NULL);
+#endif
 
     LeaveCriticalSection(&PDC_cs);
     return 0;
