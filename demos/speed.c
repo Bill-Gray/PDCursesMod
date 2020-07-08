@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <wchar.h>
 #include <curses.h>
 
 /* ftime() is consided obsolete.  But it's all we have for
