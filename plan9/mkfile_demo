@@ -26,7 +26,7 @@ UPDATE=\
 
 </sys/src/cmd/mkmany
 
-CFLAGS= -c -D_POSIX_SOURCE -D_BSD_EXTENSION -D_SUSV2_SOURCE -DPlan9 #-DPDC_WIDE 
+CFLAGS= -c -D_POSIX_SOURCE -D_BSD_EXTENSION -D_SUSV2_SOURCE -DPlan9
 
 %.$O: ../demos/%.c
 	$CC $CFLAGS ../demos/$stem.c
