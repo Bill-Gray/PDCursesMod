@@ -51,8 +51,7 @@ OFILES=\
 	pdckbd.$O\
 	pdcscrn.$O\
 	pdcsetsc.$O\
-	pdcutil.$O\
-	pdcplan9.$O\
+	pdcutil.$O
 
 HFILES=\
 	/sys/include/ape/curses.h\
