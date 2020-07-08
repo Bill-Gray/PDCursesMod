@@ -8,7 +8,7 @@ TARG=\
 	picsview\
 	ptest\
 	rain\
-#	speed\
+	speed\
 	testcurs\
 	tuidemo\
 	worm\

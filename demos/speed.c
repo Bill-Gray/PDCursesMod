@@ -1,5 +1,7 @@
 #include <stdio.h>
+#ifndef Plan9
 #include <wchar.h>
+#endif
 #include <curses.h>
 
 /* ftime() is consided obsolete.  But it's all we have for
