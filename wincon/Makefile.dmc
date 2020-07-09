@@ -58,6 +58,8 @@ pdcsetsc.obj pdcutil.obj
 DEMOOBJS = testcurs.obj ozdemo.obj newtest.obj xmas.obj tuidemo.obj tui.obj \
 firework.obj ptest.obj rain.obj worm.obj
 
+LIBS = winmm.lib
+
 $(LIBOBJS) $(PDCOBJS) : $(PDCURSES_HEADERS)
 $(PDCOBJS) : $(PDCURSES_WIN_H)
 panel.obj ptest.obj: $(PANEL_HEADER)
