@@ -34,7 +34,7 @@ This software is provided AS IS with NO WARRANTY whatsoever.
 Ports
 -----
 
-PDCurses has been ported to DOS, OS/2, Win32, X11 and SDL1 and SDL2,
+PDCurses has been ported to DOS, OS/2, Plan9, Win32, X11 and SDL1 and SDL2,
 and this version adds a Windows graphical and VT-like console
 flavor. A directory containing the port-specific source files exists
 for each of these platforms.
@@ -43,6 +43,7 @@ Build instructions are in the README file for each platform:
 
 -  [DOS](dos/README.md) for use on DOS
 -  [OS/2](os2/README.md) for use on OS/2
+-  [Plan9](plan9/README.md) for use on Plan9 (APE)
 -  [SDL 1.x](sdl1/README.md) for use as separate SDL version 1 window
 -  [SDL 2.x](sdl2/README.md) for use as separate SDL version 2 window
 -  [wincon](wincon/README.md) (formerly win32) for use on Windows Console
