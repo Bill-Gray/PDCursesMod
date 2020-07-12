@@ -1215,8 +1215,8 @@ void PDC_set_resize_limits( const int new_min_lines, const int new_max_lines,
       /* one on each side.  Vertically,  we need two frame heights,  plus room */
       /* for the application title and the menu.  */
 
-static void adjust_window_size( int *xpixels, int *ypixels, int window_style,
-               const int menu_shown)
+static void adjust_window_size( int *xpixels, int *ypixels, DWORD window_style,
+               const int menu_shown, DWORD window_ex_style)
 {
     RECT rect;
 
@@ -1224,7 +1224,7 @@ static void adjust_window_size( int *xpixels, int *ypixels, int window_style,
     rect.right = *xpixels;
     rect.bottom = *ypixels;
 /*  printf( "Adjusting to %d, %d\n", *xpixels, *ypixels); */
-    AdjustWindowRect( &rect, window_style, menu_shown);
+    AdjustWindowRectEx( &rect, window_style, menu_shown, window_ex_style);
     *xpixels = rect.right - rect.left;
     *ypixels = rect.bottom - rect.top;
 }
@@ -1413,7 +1413,8 @@ static void HandleSize( const WPARAM wParam, const LPARAM lParam)
         int new_ypixels = PDC_cyChar * PDC_n_rows;
 
         adjust_window_size( &new_xpixels, &new_ypixels,
-                            GetWindowLong( PDC_hWnd, GWL_STYLE), menu_shown);
+                            GetWindowLong( PDC_hWnd, GWL_STYLE), menu_shown,
+                            GetWindowLong( PDC_hWnd, GWL_EXSTYLE));
         debug_printf( "Irregular size\n");
         SetWindowPos( PDC_hWnd, 0, 0, 0,
                       new_xpixels, new_ypixels,
@@ -1671,9 +1672,8 @@ INLINE void HandleMenuToggle( bool *ptr_ignore_resize)
     if( !menu_shown)
     {
         hMenu = GetMenu( PDC_hWnd);   /* destroy existing menu */
+        SetMenu( PDC_hWnd, NULL);
         DestroyMenu( hMenu);
-        hMenu = CreateMenu( );        /* then set an empty menu */
-        SetMenu( PDC_hWnd, hMenu);
     }
     else
     {
@@ -2165,7 +2165,8 @@ struct PDC_WININFO {
     HANDLE hInstance;
     int xsize;
     int ysize;
-    int window_style;
+    DWORD window_style;
+    DWORD window_ex_style;
     int xloc;
     int yloc;
     TCHAR WindowTitle[MAX_PATH];
@@ -2185,7 +2186,8 @@ static uint32_t WINAPI window_thread(LPVOID lpParameter)
     struct PDC_WININFO *winfo = (struct PDC_WININFO *) lpParameter;
     BOOL rval;
 
-    PDC_hWnd = CreateWindow( AppName, winfo->WindowTitle, winfo->window_style,
+    PDC_hWnd = CreateWindowEx(winfo->window_ex_style, AppName,
+                    winfo->WindowTitle, winfo->window_style,
                     winfo->xloc, winfo->yloc,
                     winfo->xsize, winfo->ysize,
                     NULL, (menu_shown ? set_menu( ) : NULL),
@@ -2334,6 +2336,8 @@ INLINE int set_up_window( void)
     else  /* fixed-size window:  looks "normal",  but w/o a maximize box */
         winfo.window_style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
 
+    winfo.window_ex_style = WS_EX_CLIENTEDGE;
+
     if( n_default_columns == -1)
         winfo.xsize = winfo.ysize = CW_USEDEFAULT;
     else
@@ -2341,7 +2345,8 @@ INLINE int set_up_window( void)
         keep_size_within_bounds( &n_default_rows, &n_default_columns);
         winfo.xsize = PDC_cxChar * n_default_columns;
         winfo.ysize = PDC_cyChar * n_default_rows;
-        adjust_window_size( &winfo.xsize, &winfo.ysize, winfo.window_style, menu_shown);
+        adjust_window_size( &winfo.xsize, &winfo.ysize, winfo.window_style,
+                            menu_shown, winfo.window_ex_style);
     }
 
     InitializeCriticalSection(&PDC_cs);
