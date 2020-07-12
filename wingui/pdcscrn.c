@@ -610,8 +610,11 @@ static int set_mouse( const int button_index, const int button_state,
     {
         if( button_index < 0)
             SP->mouse_status.changes = PDC_MOUSE_POSITION;
-         else
+        else
+        {
             SP->mouse_status.changes = PDC_MOUSE_MOVED | (1 << button_index);
+            SP->mouse_status.button[button_index] = BUTTON_MOVED;
+        }
     }
     else
     {
@@ -1736,7 +1739,6 @@ static int add_mouse( int button, const int action, const int x, const int y)
    if( action == BUTTON_MOVED)
    {
        int i;
-       bool report_this_move = FALSE;
 
        if( !actually_moved)     /* have to move to a new character cell, */
            return( -1);         /* not just a new pixel */
@@ -1745,18 +1747,6 @@ static int add_mouse( int button, const int action, const int x, const int y)
            if( (mouse_state >> i) & 1)
                button = i;
        if( button == -1 && !(SP->_trap_mbe & REPORT_MOUSE_POSITION))
-           return( -1);
-       if(        (button == 1 && (SP->_trap_mbe & BUTTON1_MOVED))
-               || (button == 2 && (SP->_trap_mbe & BUTTON2_MOVED))
-               || (button == 3 && (SP->_trap_mbe & BUTTON3_MOVED)))
-           report_this_move = TRUE;
-       else if( SP->_trap_mbe & REPORT_MOUSE_POSITION)
-           {
-           report_this_move = TRUE;
-           button = 0;
-           }
-       debug_printf( "Move button %d, (%d %d) : %d\n", button, x, y, report_this_move);
-       if( !report_this_move)
            return( -1);
    }
 
