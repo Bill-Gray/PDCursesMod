@@ -362,3 +362,16 @@ int PDC_init_color(int color, int red, int green, int blue)
 
     return OK;
 }
+
+int PDC_set_function_key( const unsigned function, const int new_key)
+{
+   return( 0);
+}
+
+void PDC_set_resize_limits( const int new_min_lines,
+                            const int new_max_lines,
+                            const int new_min_cols,
+                            const int new_max_cols)
+{
+   return;
+}
