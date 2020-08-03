@@ -72,7 +72,13 @@ $(PDCOBJS) : %.o: $(osdir)/%.c
 firework: $(demodir)/firework.c
 	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
 
+newtest: $(demodir)/newtest.c
+	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
+
 ozdemo: $(demodir)/ozdemo.c
+	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
+
+picsview: $(demodir)/picsview.c
 	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
 
 ptest: $(demodir)/ptest.c
@@ -81,7 +87,13 @@ ptest: $(demodir)/ptest.c
 rain: $(demodir)/rain.c
 	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
 
+speed: $(demodir)/speed.c
+	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
+
 testcurs: $(demodir)/testcurs.c
+	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
+
+test_pan: $(demodir)/test_pan.c
 	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
 
 tuidemo: tuidemo.o tui.o
