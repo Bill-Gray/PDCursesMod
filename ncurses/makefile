@@ -7,15 +7,15 @@
 
 ifeq ($(WIDE),Y)
  CFLAGS = -Wall -O3 -D_XOPEN_SOURCE_EXTENDED -DHAVE_NCURSESW
- LIBCURSES = -lncursesw
+ LIBCURSES = -lpanelw -lncursesw
 else
  CFLAGS = -Wall -O3 -D_XOPEN_SOURCE_EXTENDED
- LIBCURSES = -lncurses
+ LIBCURSES = -lpanel -lncurses
 endif
 
 demodir = ../demos
 
-DEMOS    = firework ozdemo newtest rain testcurs worm xmas speed
+DEMOS    = firework ozdemo newtest rain speed testcurs test_pan worm xmas
 
 all: $(DEMOS) tuidemo
 

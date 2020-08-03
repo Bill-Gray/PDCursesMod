@@ -20,5 +20,5 @@ slk.$(O) termattr.$(O) touch.$(O) util.$(O) window.$(O) debug.$(O)
 PDCOBJS = pdcclip.$(O) pdcdisp.$(O) pdcgetsc.$(O) pdckbd.$(O) pdcscrn.$(O) \
 pdcsetsc.$(O) pdcutil.$(O)
 
-DEMOS = testcurs$(E) ozdemo$(E) xmas$(E) tuidemo$(E) firework$(E) \
-newtest$(E) ptest$(E) rain$(E) worm$(E)
+DEMOS =     firework$(E) newtest$(E) ozdemo$(E) picsview$(E) ptest$(E) \
+rain$(E) speed$(E) test_pan$(E) testcurs$(E) tuidemo$(E) worm$(E) xmas$(E)
