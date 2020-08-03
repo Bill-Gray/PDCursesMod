@@ -1,6 +1,7 @@
 /* PDCurses */
 
 #include <curspriv.h>
+#include <panel.h>
 #include <assert.h>
 
 /*man-start**************************************************************
@@ -336,6 +337,8 @@ void delscreen(SCREEN *sp)
 
 int resize_term(int nlines, int ncols)
 {
+    PANEL *panel_ptr = NULL;
+
     PDC_LOG(("resize_term() - called: nlines %d\n", nlines));
 
     if (!stdscr || PDC_resize_screen(nlines, ncols) == ERR)
@@ -374,6 +377,11 @@ int resize_term(int nlines, int ncols)
     touchwin(stdscr);
     wnoutrefresh(stdscr);
 
+    while( (panel_ptr = panel_above( panel_ptr)) != NULL)
+    {
+        touchwin(panel_window(panel_ptr));
+        wnoutrefresh(panel_window(panel_ptr));
+    }
     return OK;
 }
 
