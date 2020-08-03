@@ -452,7 +452,7 @@ int hide_panel(PANEL *pan)
 int move_panel(PANEL *pan, int starty, int startx)
 {
     WINDOW *win;
-    int maxy, maxx;
+    int maxy, maxx, rval;
 
     if (!pan)
         return ERR;
@@ -462,18 +462,19 @@ int move_panel(PANEL *pan, int starty, int startx)
 
     win = pan->win;
 
-    if (mvwin(win, starty, startx) == ERR)
-        return ERR;
-
-    getbegyx(win, pan->wstarty, pan->wstartx);
-    getmaxyx(win, maxy, maxx);
-    pan->wendy = pan->wstarty + maxy;
-    pan->wendx = pan->wstartx + maxx;
+    rval = mvwin(win, starty, startx);
+    if( rval != ERR)
+    {
+        getbegyx(win, pan->wstarty, pan->wstartx);
+        getmaxyx(win, maxy, maxx);
+        pan->wendy = pan->wstarty + maxy;
+        pan->wendx = pan->wstartx + maxx;
+    }
 
     if (_panel_is_linked(pan))
         _calculate_obscure();
 
-    return OK;
+    return rval;
 }
 
 PANEL *new_panel(WINDOW *win)
