@@ -11,9 +11,17 @@ common		= $(PDCURSES_SRCDIR)/common
 
 include $(common)/libobjs.mif
 
+ifdef _w64
+	PREFIX=x86_64-w64-mingw32-
+	E = .exe
+endif
+ifdef _w32
+	PREFIX=i686-w64-mingw32-
+	E = .exe
+endif
+
 ifeq ($(OS),Windows_NT)
 	E = .exe
-	CC = gcc
 	RM = cmd /c del
 
 	include $(osdir)/versions.mif
@@ -35,6 +43,8 @@ else
 
 	TLIBS = -lSDL2_ttf
 endif
+
+CC		= $(PREFIX)gcc
 
 PDCURSES_SDL_H	= $(osdir)/pdcsdl.h
 
@@ -101,7 +111,7 @@ $(LIBOBJS) $(PDCOBJS) : $(PDCURSES_HEADERS)
 $(PDCOBJS) : $(PDCURSES_SDL_H)
 $(DEMOS) : $(PDCURSES_CURSES_H) $(LIBCURSES)
 tui.o tuidemo.o : $(PDCURSES_CURSES_H)
-panel.o ptest$(E): $(PANEL_HEADER)
+panel.o ptest$(E) test_pan$(E): $(PANEL_HEADER)
 
 $(LIBOBJS) : %.o: $(srcdir)/%.c
 	$(BUILD) -c $<
@@ -115,6 +125,9 @@ firework$(E): $(demodir)/firework.c
 ozdemo$(E): $(demodir)/ozdemo.c
 	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
 
+picsview$(E): $(demodir)/picsview.c
+	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
+
 ptest$(E): $(demodir)/ptest.c
 	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
 
@@ -124,7 +137,13 @@ newtest$(E): $(demodir)/newtest.c
 rain$(E): $(demodir)/rain.c
 	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
 
+speed$(E): $(demodir)/speed.c
+	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
+
 testcurs$(E): $(demodir)/testcurs.c
+	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
+
+test_pan$(E): $(demodir)/test_pan.c
 	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
 
 tuidemo$(E): tuidemo.o tui.o
