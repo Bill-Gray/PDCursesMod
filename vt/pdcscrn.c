@@ -212,7 +212,7 @@ int PDC_scr_open(void)
 #endif
 
     PDC_LOG(("PDC_scr_open called\n"));
-    if( !strcmp( term_env, "linux"))
+    if( term_env && !strcmp( term_env, "linux"))
        PDC_is_ansi = TRUE;
     else if( colorterm && !strcmp( colorterm, "truecolor"))
        PDC_has_rgb_color = TRUE;
