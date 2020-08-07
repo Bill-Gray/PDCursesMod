@@ -102,11 +102,28 @@ int PDC_rows = -1, PDC_cols = -1;
 bool PDC_resize_occurred = FALSE;
 const int STDIN = 0;
 chtype PDC_capabilities = 0;
+static mmask_t _stored_trap_mbe;
 
 /* COLOR_PAIR to attribute encoding table. */
 
 void PDC_reset_prog_mode( void)
 {
+#ifdef USE_TERMIOS
+    struct termios term;
+
+    tcgetattr( STDIN, &orig_term);
+    memcpy( &term, &orig_term, sizeof( term));
+    term.c_lflag &= ~(ICANON | ECHO);
+    tcsetattr( STDIN, TCSANOW, &term);
+#endif
+    if( !PDC_is_ansi)
+        printf( "\033[?1006h");    /* Set SGR mouse tracking,  if available */
+    printf( "\033[?47h");      /* Save screen */
+    printf( "\0337");         /* save cursor & attribs (VT100) */
+
+    SP->_trap_mbe = _stored_trap_mbe;
+    PDC_mouse_set( );          /* clear any mouse event captures */
+    PDC_resize_occurred = FALSE;
 }
 
 void PDC_reset_shell_mode( void)
@@ -148,6 +165,7 @@ void PDC_scr_close( void)
    printf( "\033[?47l");      /* restore screen */
    PDC_curs_set( 2);          /* blinking block cursor */
    PDC_gotoyx( PDC_cols - 1, 0);
+   _stored_trap_mbe = SP->_trap_mbe;
    SP->_trap_mbe = 0;
    PDC_mouse_set( );          /* clear any mouse event captures */
 #ifdef _WIN32
@@ -205,7 +223,6 @@ int PDC_scr_open(void)
     const char *colorterm = getenv( "COLORTERM");
 #ifdef USE_TERMIOS
     struct sigaction sa;
-    struct termios term;
 #endif
 #ifdef _WIN32
     set_win10_for_vt_codes( TRUE);
@@ -296,19 +313,8 @@ int PDC_scr_open(void)
         return ERR;
     }
 
-#ifdef USE_TERMIOS
-    tcgetattr( STDIN, &orig_term);
-    memcpy( &term, &orig_term, sizeof( term));
-    term.c_lflag &= ~(ICANON | ECHO);
-    tcsetattr( STDIN, TCSANOW, &term);
-#endif
-    if( !PDC_is_ansi)
-        printf( "\033[?1006h");    /* Set SGR mouse tracking,  if available */
-    printf( "\033[?47h");      /* Save screen */
-    printf( "\0337");         /* save cursor & attribs (VT100) */
-    PDC_resize_occurred = FALSE;
+    PDC_reset_prog_mode();
     PDC_LOG(("PDC_scr_open exit\n"));
-/*  PDC_reset_prog_mode();   doesn't do anything anyway */
     return( 0);
 }
 
