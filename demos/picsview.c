@@ -9,7 +9,7 @@
     #include <unistd.h>
 #endif
 #if defined(Plan9)
-	#include <unistd.h>
+   #include <unistd.h>
 #endif
 
 /* This is inspired by,  but not really based on,  Thomas E. Dickey's
@@ -58,7 +58,7 @@ image consumes exactly width * height * 3 bytes. */
    #define ACS_BBLOCK 0x2584
 #endif
 
-static int get_rgb_value( char *iptr)
+static int get_rgb_value( const char *iptr)
 {
    unsigned char red = (unsigned char)iptr[0];
    unsigned char grn = (unsigned char)iptr[1];
@@ -263,12 +263,13 @@ int main( const int argc, const char *argv[])
          ypix = (double)ysize / 2.;
          }
       for( i = 0; i < COLS; i++)
-         xloc[i] = (int)floor( xpix + ((double)(i - COLS / 2) * scale));
+         xloc[i] = (int)( xpix + (double)i * scale) - (int)( COLS * scale) / 2;
       erase( );
       for( j = 0; j < LINES * 2; j++)
          {
-         int yloc = (int)floor( ypix + ((double)(j - LINES) * scale * aspect));
-         char *pptr = pixels + yloc * 3 * xsize;
+         const int yloc = (int)( ypix + (double)j * scale * aspect)
+                        - (int)( LINES * scale * aspect);
+         const char *pptr = pixels + yloc * 3 * xsize;
 
          if( yloc < 0 || yloc >= ysize)
             pptr = NULL;
