@@ -3,6 +3,7 @@
 #include "pdcx11.h"
 
 #include <string.h>
+#include <assert.h>
 
 /*man-start**************************************************************
 
@@ -79,21 +80,28 @@ int PDC_set_blink(bool blinkon)
                             PDC_blink_text, NULL);
         }
     }
-    else
+    else if (SP->termattrs & A_BLINK)
+    {
+        curscr->_clear = TRUE;
         SP->termattrs &= ~A_BLINK;
-
+     }
     return OK;
 }
 
 int PDC_set_bold(bool boldon)
 {
+    int old_attrs;
+
+    assert( SP);
     if (!SP)
         return ERR;
 
+    old_attrs = SP->termattrs;
     if (boldon)
         SP->termattrs |= A_BOLD;
     else
         SP->termattrs &= ~A_BOLD;
-
+    if( old_attrs != SP->termattrs)
+        curscr->_clear = TRUE;
     return OK;
 }

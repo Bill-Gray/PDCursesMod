@@ -1564,74 +1564,33 @@ static void HandleSyskeyDown( const WPARAM wParam, const LPARAM lParam,
         SP->key_modifiers |= PDC_KEY_MODIFIER_REPEAT;
 }
 
-/* Blinking text is supposed to blink twice a second.  Therefore,
-HandleTimer( ) is called every .5 seconds.
-
-   In truth,  it's not so much 'blinking' as 'changing certain types of
-text' that happens.  If text is really blinking (i.e.,  PDC_set_blink(TRUE)
-has been called),  we need to flip that text.  Or if text _was_ blinking
-and we've just called PDC_set_blink(FALSE),  all that text has to be
-redrawn in 'standout' mode.  Also,  if PDC_set_line_color() has been
-called,  all text with left/right/under/over/strikeout lines needs to
-be redrawn.
-
-   Also,  if we've switched from rendering bold text using a bold
-font to showing it in intensified color,  or vice versa,  then all
-bold text needs to be redrawn.
-
-   So.  After determining which attributes require redrawing (if any),
-we run through all of 'curscr' and look for text with those attributes
-set.  If we find such text,  we run it through PDC_transform_line.
-(To speed matters up slightly,  we skip over text at the start and end
-of each line that lacks the desired attributes. We could conceivably
-get more clever;  as it stands,  if the very first and very last
-characters are blinking,  we redraw the entire line,  even though
-everything in between may not require it.  But it would probably be a
-lot of code for little benefit.)
-
-   Note that by default,  we'll usually find that the line color hasn't
-changed and the 'blink mode' is still FALSE.  In that case,  attr_to_seek
-will be zero and the only thing we'll do here is to blink the cursor. */
-
 static void HandleTimer( const WPARAM wParam )
 {
     int i;           /* see WndProc() notes */
-    static attr_t prev_termattrs;
-    static int prev_line_color = -1;
-    chtype attr_to_seek = 0;
 
-    if( prev_line_color != SP->line_color)
-        attr_to_seek = A_ALL_LINES;
-    if( (SP->termattrs | prev_termattrs) & A_BLINK)
-        attr_to_seek |= A_BLINK;
-    if( (SP->termattrs ^ prev_termattrs) & A_BOLD)
-        attr_to_seek |= A_BOLD;
-    prev_line_color = SP->line_color;
-    prev_termattrs = SP->termattrs;
     PDC_blink_state ^= 1;
-    if( attr_to_seek)
+    if( SP->termattrs & A_BLINK)
     {
         for( i = 0; i < SP->lines; i++)
         {
             if( curscr->_y[i])
             {
-                int j = 0, n_chars;
+                int j = 0;
                 chtype *line = curscr->_y[i];
 
                 /* skip over starting text that isn't blinking: */
-                while( j < SP->cols && !(*line & attr_to_seek))
+                while( j < SP->cols)
                 {
-                    j++;
-                    line++;
+                    int k;
+
+                    while( j < SP->cols && !(line[j] & A_BLINK))
+                        j++;
+                    k = j;
+                    while( j < SP->cols && (line[j] & A_BLINK))
+                        j++;
+                    if( k != j)
+                        PDC_transform_line( i, k, j - k, line + k);
                 }
-                n_chars = SP->cols - j;
-                /* then skip over text at the end that's not blinking: */
-                while( n_chars && !(line[n_chars - 1] & attr_to_seek))
-                {
-                    n_chars--;
-                }
-                if( n_chars)
-                    PDC_transform_line( i, j, n_chars, line);
             }
 /*          else
                 MessageBox( 0, "NULL _y[] found\n", "PDCurses", MB_OK);  */
@@ -2521,17 +2480,6 @@ void PDC_save_screen_mode(int i)
 {
 }
 
-/* NOTE:  as with PDC_init_color() (see below),  this function has to
-redraw all text with color attribute 'pair' to match the newly-set
-foreground and background colors.  The loops to go through every character
-in curscr,  looking for those that need to be redrawn and ignoring
-those at the front and start of each line,  are very similar. */
-
-static int get_pair( const chtype ch)
-{
-   return( (int)( (ch & A_COLOR) >> PDC_COLOR_SHIFT));
-}
-
 bool PDC_can_change_color(void)
 {
     return TRUE;
@@ -2548,63 +2496,12 @@ int PDC_color_content( int color, int *red, int *green, int *blue)
     return OK;
 }
 
-/* We have an odd problem when changing colors with PDC_init_color().  On
-palette-based systems,  you just change the palette and the hardware takes
-care of the rest.  Here,  though,  we actually need to redraw any text that's
-drawn in the specified color.  So we gotta look at each character and see if
-either the foreground or background matches the index that we're changing.
-Then, that text gets redrawn.  For speed/simplicity,  the code looks for the
-first and last character in each line that would be affected, then draws those
-in between (frequently,  this will be zero characters, i.e., no text on that
-particular line happens to use the color index in question.)  See similar code
-above for PDC_init_pair(),  to handle basically the same problem. */
-
-static int color_used_for_this_char( const chtype c, const int idx)
-{
-    const int color = get_pair( c);
-    int fg, bg;
-    int rval;
-
-    extended_pair_content( color, &fg, &bg);
-    rval = (fg == idx || bg == idx);
-    return( rval);
-}
-
 int PDC_init_color( int color, int red, int green, int blue)
 {
     const COLORREF new_rgb = RGB(DIVROUND(red * 255, 1000),
                                  DIVROUND(green * 255, 1000),
                                  DIVROUND(blue * 255, 1000));
 
-    if( !PDC_set_palette_entry( color, new_rgb))
-    {
-        /* Possibly go through curscr and redraw everything with that color! */
-        if( curscr && curscr->_y)
-        {
-            int i;
-
-            for( i = 0; i < SP->lines; i++)
-                if( curscr->_y[i])
-                {
-                    int j = 0, n_chars;
-                    chtype *line = curscr->_y[i];
-
-             /* skip over starting text that isn't of the desired color: */
-                    while( j < SP->cols
-                                 && !color_used_for_this_char( *line, color))
-                    {
-                        j++;
-                        line++;
-                    }
-                    n_chars = SP->cols - j;
-            /* then skip over text at the end that's not the right color: */
-                    while( n_chars &&
-                         !color_used_for_this_char( line[n_chars - 1], color))
-                        n_chars--;
-                    if( n_chars)
-                        PDC_transform_line( i, j, n_chars, line);
-                }
-        }
-    }
+    PDC_set_palette_entry( color, new_rgb);
     return OK;
 }

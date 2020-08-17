@@ -101,9 +101,6 @@ int PDC_curs_set( int visibility)
     return ret_vis;
 }
 
-
-void PDC_show_changes( const int pair, const int idx, const chtype attr);
-
 static int reset_attr( const attr_t attr, const bool attron)
 {
     attr_t prev_termattrs;
@@ -116,10 +113,7 @@ static int reset_attr( const attr_t attr, const bool attron)
     else
         SP->termattrs &= ~attr;
     if( prev_termattrs != SP->termattrs)
-    {
-       PDC_transform_line( 0, 0, 0, NULL);
-       PDC_show_changes( -1, -1, attr);
-    }
+       curscr->_clear = TRUE;
     return OK;
 }
 
