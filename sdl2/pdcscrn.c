@@ -271,11 +271,19 @@ int PDC_scr_open(void)
 
     if (pdc_own_window)
     {
-        const char *env = getenv("PDC_LINES");
-        pdc_sheight = (env ? atoi(env) : 25) * pdc_fheight;
+        if( !pdc_sheight)
+        {
+            const char *env = getenv("PDC_LINES");
+            pdc_sheight = (env ? atoi(env) : 25);
+        }
+        pdc_sheight *= pdc_fheight;
 
-        env = getenv("PDC_COLS");
-        pdc_swidth = (env ? atoi(env) : 80) * pdc_fwidth;
+        if( !pdc_swidth)
+        {
+            const char *env = getenv("PDC_COLS");
+            pdc_swidth = (env ? atoi(env) : 80);
+        }
+        pdc_swidth *= pdc_fwidth;
 
         pdc_window = SDL_CreateWindow("PDCurses",
             SDL_WINDOWPOS_CENTERED_DISPLAY(displaynum),
@@ -351,6 +359,13 @@ int PDC_scr_open(void)
 
 int PDC_resize_screen(int nlines, int ncols)
 {
+    if( !stdscr)     /* Specifying the  initial screen size */
+    {                /* before calling initscr().           */
+        pdc_sheight = nlines;
+        pdc_swidth = ncols;
+        return OK;
+    }
+
     if (!pdc_own_window)
         return ERR;
 

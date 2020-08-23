@@ -63,6 +63,11 @@ int PDC_resize_screen(int nlines, int ncols)
 	PDC_LOG(("PDC_resize_screen() - called. Lines: %d Cols: %d\n",
 		 nlines, ncols));
 
+	if( !stdscr)     /* We're trying to specify an initial screen size */
+	{                /* before calling initscr().  This works on some  */
+		return OK;   /* some platforms,  but not this one.             */
+	}
+
 	if (nlines == 0 && ncols == 0)
 		return OK;
 

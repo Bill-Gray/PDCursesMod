@@ -287,6 +287,7 @@ bool isendwin(void)
 {
     PDC_LOG(("isendwin() - called\n"));
 
+    assert( SP);
     return SP ? !(SP->alive) : FALSE;
 }
 
@@ -341,8 +342,11 @@ int resize_term(int nlines, int ncols)
 
     PDC_LOG(("resize_term() - called: nlines %d\n", nlines));
 
-    if (!stdscr || PDC_resize_screen(nlines, ncols) == ERR)
+    if( PDC_resize_screen(nlines, ncols) == ERR)
         return ERR;
+
+    if( !stdscr)
+        return OK;
 
     SP->resized = FALSE;
 
@@ -401,6 +405,7 @@ void PDC_get_version(PDC_VERSION *ver)
 {
     extern enum PDC_port PDC_port_val;
 
+    assert( ver);
     if (!ver)
         return;
 

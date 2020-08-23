@@ -198,6 +198,11 @@ int PDC_resize_screen(int nlines, int ncols)
     PDC_LOG(("PDC_resize_screen() - called. Lines: %d Cols: %d\n",
              nlines, ncols));
 
+    if( !stdscr)     /* We're trying to specify an initial screen size */
+    {                /* before calling initscr().  This works on some  */
+        return OK;   /* some platforms,  but not this one.             */
+    }
+
     _set_scrn_mode(_find_video_mode(nlines, ncols));
     _load_palette();
     SP->orig_cursor = PDC_get_cursor_mode();
@@ -1719,4 +1724,12 @@ static const unsigned char *_psf_font_do_glyph_data(
             bitmap = fdata->glyphs[pos];
     }
     return bitmap;
+}
+
+/* PDC_set_resize_limits( ) has no effect in DOSVGA,
+and probably never will.         */
+
+void PDC_set_resize_limits( const int new_min_lines, const int new_max_lines,
+                  const int new_min_cols, const int new_max_cols)
+{
 }

@@ -162,6 +162,8 @@ static String class_name = "XCurses";
 static int resize_window_width = 0, resize_window_height = 0;
 static int received_map_notify = 0;
 static bool exposed = FALSE;
+static int _override_lines = 0;
+static int _override_cols = 0;
 
 static Pixmap icon_pixmap, icon_pixmap_mask;
 
@@ -556,8 +558,16 @@ int PDC_scr_open(void)
 
     /* Calculate size of display window */
 
-    COLS = pdc_app_data.cols;
-    LINES = pdc_app_data.lines;
+    if( _override_lines && _override_cols)
+    {
+        COLS = _override_cols;
+        LINES = _override_lines;
+    }
+    else
+    {
+        COLS = pdc_app_data.cols;
+        LINES = pdc_app_data.lines;
+    }
 
     if (-1 == COLS)
     {
@@ -694,6 +704,13 @@ int PDC_resize_screen(int nlines, int ncols)
 {
     PDC_LOG(("PDC_resize_screen() - called. Lines: %d Cols: %d\n",
              nlines, ncols));
+
+    if( !stdscr)        /* screen hasn't been created yet;  we're */
+    {                   /* specifying its size before initscr()   */
+        _override_lines = nlines;
+        _override_cols = ncols;
+        return OK;
+    }
 
     if (nlines || ncols || !SP->resized)
         return ERR;
