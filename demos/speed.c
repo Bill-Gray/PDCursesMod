@@ -1,33 +1,6 @@
 #include <stdio.h>
 #include <curses.h>
 
-/* ftime() is consided obsolete.  But it's all we have for
-millisecond precision on older compilers/systems.  We'll
-use gettimeofday() when available.        */
-
-#if defined(__TURBOC__) || defined(__EMX__) || defined(__DJGPP__) || \
-    defined( __DMC__) || defined(__WATCOMC__)
-#include <sys/timeb.h>
-
-static int millisec_clock( )
-{
-    struct timeb t;
-
-    ftime( &t);
-    return( t.time * 1000 + t.millitm);
-}
-#else
-#include <sys/time.h>
-
-static int millisec_clock( )
-{
-    struct timeval t;
-
-    gettimeofday( &t, NULL);
-    return( t.tv_sec * 1000 + t.tv_usec / 1000);
-}
-#endif
-
 /* PDCurses/ncurses speed test.  Initializes *curses,  displays
 semi-random numbers on the screen for 3000 milliseconds = 3 seconds,
 and then tells you how many frames per second you got (i.e.,  how
@@ -57,12 +30,39 @@ would account for why the first load is a little slower.
 tested it under "real" Windows.
 */
 
+/* ftime() is consided obsolete.  But it's all we have for
+millisecond precision on older compilers/systems.  We'll
+use gettimeofday() when available.        */
+
+#if defined(__TURBOC__) || defined(__EMX__) || defined(__DJGPP__) || \
+    defined( __DMC__) || defined(__WATCOMC__)
+#include <sys/timeb.h>
+
+static int millisec_clock( )
+{
+    struct timeb t;
+
+    ftime( &t);
+    return( t.time * 1000 + t.millitm);
+}
+#else
+#include <sys/time.h>
+
+static int millisec_clock( )
+{
+    struct timeval t;
+
+    gettimeofday( &t, NULL);
+    return( t.tv_sec * 1000 + t.tv_usec / 1000);
+}
+#endif
+
 int main( const int argc, const char **argv)
 {
     unsigned n_frames = 0;
     int t0;
 
-//  setvbuf( stdout, NULL, _IONBF, 0);
+    resize_term( 30, 90);
     initscr();
     cbreak( );
     noecho();
