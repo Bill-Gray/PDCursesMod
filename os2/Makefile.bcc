@@ -15,7 +15,7 @@ PDCURSES_SRCDIR = ..
 osdir		= $(PDCURSES_SRCDIR)\os2
 common		= $(PDCURSES_SRCDIR)\common
 
-!include $(PDCURSES_SRCDIR)\version.mif
+!include $(common)\version.mif
 !include $(common)\libobjs.mif
 
 CC		= bcc
@@ -89,4 +89,4 @@ PLATFORM1 = Borland C++ OS/2 1.0
 PLATFORM2 = Borland C/C++ OS/2 1.0
 ARCNAME = pdc$(VER)bcos2
 
-!include $(PDCURSES_SRCDIR)\makedist.mif
+!include $(common)\makedist.mif

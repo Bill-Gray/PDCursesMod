@@ -28,7 +28,7 @@ PLATFORM=X64
 osdir		= $(PDCURSES_SRCDIR)\vt
 common		= $(PDCURSES_SRCDIR)\common
 
-!include $(PDCURSES_SRCDIR)\version.mif
+!include $(common)\version.mif
 !include $(common)\libobjs.mif
 
 PDCURSES_WIN_H	= $(osdir)\pdcvt.h
@@ -140,4 +140,4 @@ PLATFORM1 = Visual C++
 PLATFORM2 = Microsoft Visual C/C++ for Windows VT
 ARCNAME = pdc$(VER)_vc_vt
 
-!include $(PDCURSES_SRCDIR)\makedist.mif
+!include $(common)\makedist.mif

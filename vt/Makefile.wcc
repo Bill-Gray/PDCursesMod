@@ -22,9 +22,10 @@ PDCURSES_SRCDIR = $(%PDCURSES_SRCDIR)
 PDCURSES_SRCDIR = ..
 !endif
 
-!include $(PDCURSES_SRCDIR)/version.mif
+!include $(common)/version.mif
 
 osdir = vt
+common		= $(PDCURSES_SRCDIR)/common
 
 TARGET = dos
 
@@ -38,7 +39,7 @@ CFLAGS =
 
 EXTRA_LIB_CMD = -$(COPY) $(PDCNAME).lib panel.lib
 
-!include $(PDCURSES_SRCDIR)/common/watcom.mif
+!include $(common)/watcom.mif
 
 !ifneq MODEL f
 PLATFORM1   = Watcom C++ 16-bit DOS/VT
@@ -50,4 +51,4 @@ PLATFORM2   = Open Watcom for 32-bit DOS/VT
 ARCNAME     = pdc$(VER)32w
 !endif
 
-!include $(PDCURSES_SRCDIR)/makedist.mif
+!include $(common)/makedist.mif

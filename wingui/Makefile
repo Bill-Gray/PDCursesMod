@@ -12,8 +12,10 @@ ifndef PDCURSES_SRCDIR
 	PDCURSES_SRCDIR = ..
 endif
 
-include $(PDCURSES_SRCDIR)/version.mif
-include $(PDCURSES_SRCDIR)/common/libobjs.mif
+common     = $(PDCURSES_SRCDIR)/common
+
+include $(common)/version.mif
+include $(common)/libobjs.mif
 
 uname_S := $(shell uname -s 2>/dev/null)
 
@@ -165,4 +167,4 @@ PLATFORM1 = MinGW Win32
 PLATFORM2 = MinGW for Win32
 ARCNAME = pdc$(VER)_ming_w32
 
-include $(PDCURSES_SRCDIR)/makedist.mif
+include $(common)/makedist.mif

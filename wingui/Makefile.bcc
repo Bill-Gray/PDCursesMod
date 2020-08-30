@@ -15,7 +15,7 @@ PDCURSES_SRCDIR = ..
 osdir		= $(PDCURSES_SRCDIR)\wingui
 common		= $(PDCURSES_SRCDIR)\common
 
-!include $(PDCURSES_SRCDIR)\version.mif
+!include $(common)\version.mif
 !include $(common)\libobjs.mif
 
 CC		= bcc32 -q
@@ -84,4 +84,4 @@ PLATFORM1 = Borland C++ Win32
 PLATFORM2 = Borland C/C++ 5.5 for Win32
 ARCNAME = pdc$(VER)_bcc_w32
 
-!include $(PDCURSES_SRCDIR)\makedist.mif
+!include $(common)\makedist.mif

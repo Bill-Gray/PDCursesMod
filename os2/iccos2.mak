@@ -15,7 +15,7 @@ PDCURSES_SRCDIR = ..
 osdir		= $(PDCURSES_SRCDIR)\os2
 common		= $(PDCURSES_SRCDIR)\common
 
-!include $(PDCURSES_SRCDIR)\version.mif
+!include $(common)\version.mif
 !include $(common)\libobjs.mif
 
 PDCURSES_OS2_H	= $(osdir)\pdcos2.h
@@ -249,4 +249,4 @@ PLATFORM1 = C Set/2 OS/2
 PLATFORM2 = C Set/2 for OS/2
 ARCNAME = pdc$(VER)_icc_os2
 
-!include $(PDCURSES_SRCDIR)\makedist.mif
+!include $(common)\makedist.mif
