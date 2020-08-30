@@ -64,7 +64,10 @@ osdir	   = $(PDCURSES_SRCDIR)/wincon
 
 PDCURSES_WIN_H	= $(osdir)/pdcwin.h
 
-CC	   = $(PREFIX)gcc
+CC	= $(PREFIX)gcc
+
+AR	= ar
+STRIP	= strip
 
 ifeq ($(DEBUG),Y)
 	CFLAGS  = -g -Wall -DPDCDEBUG
@@ -92,11 +95,11 @@ ifeq ($(INFOEX),N)
 	PDCCFLAGS += -DHAVE_NO_INFOEX
 endif
 
-LINK	   = $(PREFIX)gcc
+LINK	   = $(CC)
 
 ifeq ($(DLL),Y)
 	CFLAGS += -DPDC_DLL_BUILD
-	LIBEXE = $(PREFIX)gcc
+	LIBEXE = $(CC)
 	LIBFLAGS = -Wl,--out-implib,pdcurses.a -shared -o
 	LIBCURSES = pdcurses.dll
 	LIBDEPS = $(LIBOBJS) $(PDCOBJS)
@@ -104,7 +107,7 @@ ifeq ($(DLL),Y)
 	EXELIBS =
 	CLEAN = $(LIBCURSES) *.a
 else
-	LIBEXE = $(PREFIX)ar
+	LIBEXE = $(AR)
 ifeq ($(PREFIX),)
 	LIBFLAGS = rcv
 else
@@ -131,7 +134,7 @@ clean:
 
 demos:	$(DEMOS)
 ifneq ($(DEBUG),Y)
-	strip *.exe
+	$(STRIP) *.exe
 endif
 
 $(LIBCURSES) : $(LIBDEPS)
@@ -149,7 +152,8 @@ $(LIBOBJS) : %.o: $(srcdir)/%.c
 $(PDCOBJS) : %.o: $(osdir)/%.c
 	$(CC) -c $(CFLAGS) $(PDCCFLAGS) $<
 
-firework.exe newdemo.exe newtest.exe ptest.exe rain.exe testcurs.exe  \
+firework.exe newtest.exe ozdemo.exe picsview.exe \
+ptest.exe rain.exe speed.exe testcurs.exe test_pan.exe \
 version.exe worm.exe xmas.exe: %.exe: $(demodir)/%.c
 	$(CC) $(CFLAGS) -o$@ $< $(LIBCURSES) $(EXELIBS)
 
