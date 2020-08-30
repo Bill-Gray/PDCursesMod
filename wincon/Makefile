@@ -1,53 +1,87 @@
-# GNU Makefile for PDCurses - Windows console
+# GNU MAKE Makefile for PDCurses library - WIN32 MinGW GCC
 #
-# Usage: make [-f path\Makefile] [DEBUG=Y] [DLL=Y] [WIDE=Y] [UTF8=Y]
+# Usage: make -f [path\]Makefile.mng [DEBUG=Y] [DLL=Y] [WIDE=Y] [UTF8=Y]
 #        [INFOEX=N] [tgt]
 #
-# where tgt can be any of:
+# where target can be any of:
 # [all|demos|pdcurses.a|testcurs.exe...]
 
 O = o
 E = .exe
 
-ifeq ($(OS),Windows_NT)
-	RM = cmd /c del
-else
-	RM = rm -f
-endif
-
 ifndef PDCURSES_SRCDIR
 	PDCURSES_SRCDIR = ..
 endif
 
-osdir		= $(PDCURSES_SRCDIR)/wincon
-common		= $(PDCURSES_SRCDIR)/common
+include $(PDCURSES_SRCDIR)/version.mif
+include $(PDCURSES_SRCDIR)/common/libobjs.mif
 
-include $(common)/libobjs.mif
+uname_S := $(shell uname -s 2>/dev/null)
+
+CAT = cat
+PREFIX =
+PATH_SEP = /
+CP = cp
+DELETE = rm -f
+
+# It appears we have three cases:  we're running in Cygwin/MSYS;  or we're
+# running in command.com on Windows with MinGW;  or we're on Linux or BSD
+# or similar system,  cross-compiling with MinGW.
+
+ifneq (,$(findstring CYGWIN,$(uname_S)))
+	#  Insert Cygwin-specific changes here
+	ON_WINDOWS = 1
+endif
+ifneq (,$(findstring MINGW32_NT,$(uname_S)))
+	#  Insert MINGW32-specific changes here
+	ON_WINDOWS = 1
+endif
+ifneq (,$(findstring MINGW64_NT,$(uname_S)))
+	#  Insert MINGW64-specific changes here
+	ON_WINDOWS = 1
+endif
+
+ifeq ($(uname_S),)
+	CAT = type
+	PATH_SEP = \\
+	CP = -copy
+	DELETE = -del
+	ON_WINDOWS = 1
+endif
+
+# If we aren't on Windows,  assume MinGW on a Linux-like host
+# Only decision is:  are we doing a 64-bit compile (_w64 defined)?
+
+ifndef ON_WINDOWS
+	ifdef _w64
+	   PREFIX  = x86_64-w64-mingw32-
+	else
+	   PREFIX  = i686-w64-mingw32-
+	endif
+endif
+
+osdir	   = $(PDCURSES_SRCDIR)/wincon
 
 PDCURSES_WIN_H	= $(osdir)/pdcwin.h
 
-ifdef _w64
-	PREFIX=x86_64-w64-mingw32-
-endif
-ifdef _w32
-	PREFIX=i686-w64-mingw32-
-endif
+CC	= $(PREFIX)gcc
 
-CC		= $(PREFIX)gcc
-AR		= ar
-STRIP		= strip
-LINK		= $(PREFIX)gcc
-WINDRES		= $(PREFIX)windres
+AR	= ar
+STRIP	= strip
 
 ifeq ($(DEBUG),Y)
 	CFLAGS  = -g -Wall -DPDCDEBUG
 	LDFLAGS = -g
 else
-	CFLAGS  = -O2 -Wall
+	CFLAGS  = -O4 -Wall -pedantic
 	LDFLAGS =
 endif
 
 CFLAGS += -I$(PDCURSES_SRCDIR)
+
+ifdef CHTYPE_32
+	CFLAGS += -DCHTYPE_32
+endif
 
 ifeq ($(WIDE),Y)
 	CFLAGS += -DPDC_WIDE
@@ -57,45 +91,55 @@ ifeq ($(UTF8),Y)
 	CFLAGS += -DPDC_FORCE_UTF8
 endif
 
+ifeq ($(INFOEX),N)
+	PDCCFLAGS += -DHAVE_NO_INFOEX
+endif
+
+LINK	   = $(CC)
+
 ifeq ($(DLL),Y)
 	CFLAGS += -DPDC_DLL_BUILD
 	LIBEXE = $(CC)
 	LIBFLAGS = -Wl,--out-implib,pdcurses.a -shared -o
 	LIBCURSES = pdcurses.dll
+	LIBDEPS = $(LIBOBJS) $(PDCOBJS)
+	LIBSADDED =
+	EXELIBS =
 	CLEAN = $(LIBCURSES) *.a
-	RESOURCE = pdcurses.o
 else
-	LIBEXE = $(PREFIX)$(AR)
+	LIBEXE = $(AR)
+ifeq ($(PREFIX),)
 	LIBFLAGS = rcv
-	LIBCURSES = pdcurses.a
-	CLEAN = *.a
+else
+	LIBFLAGS	= rv
 endif
-
-ifeq ($(INFOEX),N)
-	CFLAGS += -DHAVE_NO_INFOEX
+	LIBCURSES = pdcurses.a
+	LIBDEPS = $(LIBOBJS) $(PDCOBJS)
+	LIBSADDED =
+	EXELIBS =
+	CLEAN = *.a
 endif
 
 .PHONY: all libs clean demos dist
 
-all:	libs
+all:	libs demos
 
 libs:	$(LIBCURSES)
 
 clean:
-	-$(RM) *.o
-	-$(RM) *.exe
-	-$(RM) $(CLEAN)
+	$(DELETE) *.o
+	$(DELETE) *.exe
+	$(DELETE) *.dll
+	$(DELETE) $(CLEAN)
 
 demos:	$(DEMOS)
 ifneq ($(DEBUG),Y)
 	$(STRIP) *.exe
 endif
 
-$(LIBCURSES) : $(LIBOBJS) $(PDCOBJS) $(RESOURCE)
-	$(LIBEXE) $(LIBFLAGS) $@ $?
-
-pdcurses.o: $(common)/pdcurses.rc
-	$(WINDRES) -i $(common)/pdcurses.rc pdcurses.o
+$(LIBCURSES) : $(LIBDEPS)
+	$(LIBEXE) $(LIBFLAGS) $@ $? $(LIBSADDED)
+	$(CP) pdcurses.a panel.a
 
 $(LIBOBJS) $(PDCOBJS) : $(PDCURSES_HEADERS)
 $(PDCOBJS) : $(PDCURSES_WIN_H)
@@ -106,11 +150,12 @@ $(LIBOBJS) : %.o: $(srcdir)/%.c
 	$(CC) -c $(CFLAGS) $<
 
 $(PDCOBJS) : %.o: $(osdir)/%.c
-	$(CC) -c $(CFLAGS) $<
+	$(CC) -c $(CFLAGS) $(PDCCFLAGS) $<
 
-firework.exe ozdemo.exe rain.exe testcurs.exe worm.exe xmas.exe \
-ptest.exe: %.exe: $(demodir)/%.c
-	$(CC) $(CFLAGS) -o$@ $< $(LIBCURSES)
+firework.exe newtest.exe ozdemo.exe picsview.exe \
+ptest.exe rain.exe speed.exe testcurs.exe test_pan.exe \
+version.exe worm.exe xmas.exe: %.exe: $(demodir)/%.c
+	$(CC) $(CFLAGS) -o$@ $< $(LIBCURSES) $(EXELIBS)
 
 tuidemo.exe: tuidemo.o tui.o
 	$(LINK) $(LDFLAGS) -o$@ tuidemo.o tui.o $(LIBCURSES)
@@ -120,3 +165,8 @@ tui.o: $(demodir)/tui.c $(demodir)/tui.h $(PDCURSES_CURSES_H)
 
 tuidemo.o: $(demodir)/tuidemo.c $(PDCURSES_CURSES_H)
 	$(CC) -c $(CFLAGS) -I$(demodir) -o$@ $<
+
+PLATFORM1 = MinGW WinCon
+PLATFORM2 = MinGW for WinCon
+ARCNAME = pdc$(VER)_ming_wcon
+
