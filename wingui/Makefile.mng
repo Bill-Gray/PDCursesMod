@@ -65,8 +65,8 @@ PDCURSES_WIN_H	= $(osdir)/pdcwin.h
 
 CC	= $(PREFIX)gcc
 
-AR	= $(PREFIX)ar
-STRIP	= $(PREFIX)strip
+AR	= ar
+STRIP	= strip
 
 ifeq ($(DEBUG),Y)
 	CFLAGS  = -g -Wall -DPDCDEBUG
@@ -147,8 +147,8 @@ $(LIBOBJS) : %.o: $(srcdir)/%.c
 $(PDCOBJS) : %.o: $(osdir)/%.c
 	$(CC) -c $(CFLAGS) $<
 
-firework.exe ozdemo.exe newtest.exe picsview.exe \
-ptest.exe rain.exe speed.exe te.exe testcurs.exe test_pan.exe \
+firework.exe newtest.exe ozdemo.exe picsview.exe \
+ptest.exe rain.exe speed.exe testcurs.exe test_pan.exe \
 version.exe worm.exe xmas.exe: %.exe: $(demodir)/%.c
 	$(CC) $(CFLAGS) -mwindows -o$@ $< $(LIBCURSES) $(EXELIBS)
 
