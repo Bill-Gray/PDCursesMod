@@ -18,18 +18,22 @@ void trap(int);
 
 char *AusMap[17] =
 {
-    "                       A ",
-    "           AA         AA ",
-    "    N.T. AAAAA       AAAA ",
-    "     AAAAAAAAAAA  AAAAAAAA ",
-    "   AAAAAAAAAAAAAAAAAAAAAAAAA Qld.",
-    " AAAAAAAAAAAAAAAAAAAAAAAAAAAA ",
-    " AAAAAAAAAAAAAAAAAAAAAAAAAAAAA ",
-    " AAAAAAAAAAAAAAAAAAAAAAAAAAAA ",
-    "   AAAAAAAAAAAAAAAAAAAAAAAAA N.S.W.",
-    "W.A. AAAAAAAAA      AAAAAA Vic.",
-    "       AAA   S.A.     AA",
-    "                       A  Tas.",
+    "                 _,__        .:",
+    "         Darwin <*  /        | \\",
+    "            .-./     |.     :  :,",
+    "           /    |      '-._/     \\_",
+    "          /     |   N.T. | '       \\",
+    "        .'      |        |   Qld.  *: Brisbane",
+    "     .-'        |        |           ;",
+    "     |   W.A.   |----------|         |",
+    "     \\          |          |--------/",
+    "      |         |   S.A.   | N.S.W./",
+    "Perth  *        |__.--._   |-,_   *  Sydney",
+    "        \\     _.'       \\:.|Vic'-,|",
+    "        >__,-'   Adelaide  \\_/*_.-'",
+    "                              Melbourne",
+    "                             :--,",
+    "                        Tas.  '* Hobart",
     ""
 };
 
@@ -210,11 +214,14 @@ int main(int argc, char **argv)
     WINDOW *win;
     chtype save[80], ch;
     time_t seed;
-    int width, height, w, x, y, i, j;
-    const char *versions =
-            " DOS, DOSVGA, OS/2, Plan 9, SDL 1/2, VT, Windows console & GUI, X11";
+    const int width = 52, height = 22, msg_line = 9;
+    int w, x, y, i, j;
+    const char *versions_1 =
+            " DOS, DOSVGA, OS/2, Plan 9, SDL 1/2,";
+    const char *versions_2 =
+            " VT, Windows console & GUI, X11";
     const char *hit_any_key =
-            "       Type a key to continue or ESC to quit       ";
+            "       Type a key to continue or ESC to quit     ";
 
 #ifdef XCURSES
     Xinitscr(argc, argv);
@@ -244,9 +251,6 @@ int main(int argc, char **argv)
     refresh();
 
     /* Create a drawing window */
-
-    width  = strlen( versions) + 4;
-    height = 18;
 
     win = newwin(height, width, (LINES - height) / 2, (COLS - width) / 2);
 
@@ -320,7 +324,7 @@ int main(int argc, char **argv)
 
         while (*AusMap[i])
         {
-            mvwaddstr(win, i + 1, 8, AusMap[i]);
+            mvwaddstr(win, i + 1, 3, AusMap[i]);
             wrefresh(win);
             napms(100);
             ++i;
@@ -328,9 +332,10 @@ int main(int argc, char **argv)
 
         init_pair(5, COLOR_BLUE, COLOR_WHITE);
         wattrset(win, COLOR_PAIR(5) | A_BLINK);
-        mvwaddstr( win, height - 4, 2, longname( ));
-        mvwaddstr( win, height - 3, 2, curses_version( ));
-        mvwaddstr( win, height - 2, 2, versions);
+        mvwaddstr( win, height - 5, 2, longname( ));
+        mvwaddstr( win, height - 4, 2, curses_version( ));
+        mvwaddstr( win, height - 3, 2, versions_1);
+        mvwaddstr( win, height - 2, 2, versions_2);
         wrefresh(win);
 
         /* Draw running messages */
@@ -340,7 +345,7 @@ int main(int argc, char **argv)
         w = width - 2;
         nodelay(win, TRUE);
 
-        mvwhline(win, height / 2, 1, ' ', w);
+        mvwhline(win, msg_line, 1, ' ', w);
 
         for (j = 0; messages[j] != NULL; j++)
         {
@@ -364,7 +369,7 @@ int main(int argc, char **argv)
                     count = (w > msg_len - start) ? msg_len - start : w;
                 }
 
-                mvwaddnstr(win, height / 2, xpos + 1, message + start, count);
+                mvwaddnstr(win, msg_line, xpos + 1, message + start, count);
                 if (xpos + count < w)
                     waddstr(win, " ");
 
@@ -403,9 +408,8 @@ int main(int argc, char **argv)
 
         /* Put a message up; wait for a key */
 
-        i = height - 2;
         wattrset(win, COLOR_PAIR(5));
-        mvwaddstr(win, i, 2, hit_any_key);
+        mvwaddstr(win, msg_line, 2, hit_any_key);
         wrefresh(win);
 
         if (WaitForUser() == '\033')
