@@ -212,7 +212,7 @@ int main(int argc, char **argv)
     time_t seed;
     int width, height, w, x, y, i, j;
     const char *versions =
-            " DOS, OS/2, Windows console & GUI, X11, SDL 1/2, VT";
+            " DOS, DOSVGA, OS/2, Plan 9, SDL 1/2, VT, Windows console & GUI, X11";
     const char *hit_any_key =
             "       Type a key to continue or ESC to quit       ";
 
