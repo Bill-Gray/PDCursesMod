@@ -13,8 +13,10 @@ ifndef PDCURSES_SRCDIR
 	PDCURSES_SRCDIR = ..
 endif
 
-include $(PDCURSES_SRCDIR)/version.mif
-include $(PDCURSES_SRCDIR)/common/libobjs.mif
+common		= $(PDCURSES_SRCDIR)/common
+
+include $(common)/version.mif
+include $(common)/libobjs.mif
 
 uname_S := $(shell uname -s 2>/dev/null)
 
@@ -122,7 +124,7 @@ endif
 
 .PHONY: all libs clean demos dist
 
-all:	libs demos
+all:	libs
 
 libs:	$(LIBCURSES)
 

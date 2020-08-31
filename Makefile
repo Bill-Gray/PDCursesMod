@@ -1,6 +1,6 @@
 # Make archives for distribution
 
-include version.mif
+include common/version.mif
 
 PDC_DIR=PDCurses-$(VERDOT)
 
