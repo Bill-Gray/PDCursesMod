@@ -47,9 +47,9 @@ CC		= cl.exe -nologo
 LINK		= link.exe -nologo
 SHL_LD		= $(LINK) $(LDFLAGS) -dll -machine:$(PLATFORM) -out:pdcurses.dll
 
-CCLIBS		= user32.lib advapi32.lib
+CCLIBS		= user32.lib advapi32.lib winmm.lib
 # may need to add msvcrt for older compilers
-#CCLIBS		= msvcrt.lib user32.lib advapi32.lib
+#CCLIBS		= msvcrt.lib user32.lib advapi32.lib winmm.lib
 
 LIBEXE		= lib -nologo
 

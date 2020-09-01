@@ -62,9 +62,11 @@ CHTYPE_FLAGS= -DCHTYPE_32
 
 SHL_LD = link $(LDFLAGS) /NOLOGO /DLL /MACHINE:$(PLATFORM) /OUT:pdcurses.dll
 
-CCLIBS      = user32.lib gdi32.lib advapi32.lib shell32.lib comdlg32.lib
+CCLIBS      = user32.lib gdi32.lib advapi32.lib shell32.lib comdlg32.lib \
+winmm.lib
 # may need to add msvcrt.lib for VC 2.x, VC 5.0 doesn't want it
-#CCLIBS      = msvcrt.lib user32.lib gdi32.lib advapi32.lib comdlg32.lib
+#CCLIBS      = msvcrt.lib user32.lib gdi32.lib advapi32.lib shell32.lib \
+#comdlg32.lib winmm.lib
 
 LIBEXE      = lib -nologo
 

@@ -105,7 +105,7 @@ ifeq ($(DLL),Y)
 	LIBFLAGS = -Wl,--out-implib,pdcurses.a -shared -o
 	LIBCURSES = pdcurses.dll
 	LIBDEPS = $(LIBOBJS) $(PDCOBJS)
-	LIBSADDED =
+	LIBSADDED = -lwinmm
 	EXELIBS =
 	CLEAN = $(LIBCURSES) *.a
 else
@@ -117,7 +117,7 @@ else
 endif
 	LIBCURSES = pdcurses.a
 	LIBDEPS = $(LIBOBJS) $(PDCOBJS)
-	LIBSADDED =
+	LIBSADDED = -lwinmm
 	EXELIBS =
 	CLEAN = *.a
 endif
@@ -160,7 +160,7 @@ version.exe worm.exe xmas.exe: %.exe: $(demodir)/%.c
 	$(CC) $(CFLAGS) -o$@ $< $(LIBCURSES) $(EXELIBS)
 
 tuidemo.exe: tuidemo.o tui.o
-	$(LINK) $(LDFLAGS) -o$@ tuidemo.o tui.o $(LIBCURSES)
+	$(LINK) $(LDFLAGS) -o$@ tuidemo.o tui.o $(LIBCURSES) $(EXELIBS)
 
 tui.o: $(demodir)/tui.c $(demodir)/tui.h $(PDCURSES_CURSES_H)
 	$(CC) -c $(CFLAGS) -I$(demodir) -o$@ $<

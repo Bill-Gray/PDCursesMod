@@ -100,7 +100,7 @@ ifeq ($(DLL),Y)
 	LIBFLAGS = -Wl,--out-implib,pdcurses.a -static-libgcc -shared -o
 	LIBCURSES = pdcurses.dll
 	LIBDEPS = $(LIBOBJS) $(PDCOBJS)
-	LIBSADDED = -lgdi32 -lcomdlg32
+	LIBSADDED = -lgdi32 -lcomdlg32 -lwinmm
 	EXELIBS =
 	CLEAN = $(LIBCURSES) *.a
 else
@@ -113,7 +113,7 @@ endif
 	LIBCURSES = pdcurses.a
 	LIBDEPS = $(LIBOBJS) $(PDCOBJS)
 	LIBSADDED =
-	EXELIBS = -lgdi32 -lcomdlg32
+	EXELIBS = -lgdi32 -lcomdlg32 -lwinmm
 	CLEAN = *.a
 endif
 
