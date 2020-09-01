@@ -59,7 +59,7 @@ pdcsetsc.obj pdcutil.obj
 DEMOOBJS = testcurs.obj ozdemo.obj newtest.obj xmas.obj tuidemo.obj tui.obj \
 firework.obj ptest.obj rain.obj worm.obj
 
-LIBS = advapi32.lib gdi32.lib user32.lib shell32.lib comdlg32.lib
+LIBS = advapi32.lib gdi32.lib user32.lib shell32.lib comdlg32.lib winmm.lib
 
 $(LIBOBJS) $(PDCOBJS) : $(PDCURSES_HEADERS)
 $(PDCOBJS) : $(PDCURSES_WIN_H)
