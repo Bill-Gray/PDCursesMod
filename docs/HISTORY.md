@@ -4,13 +4,15 @@ PDCursesMod 4.2 - 2020 Sep ?? - Bill Gray fork (currently beta)
 Major new features
 ------------------
 
--  Pulled in almost all of William McBrine's changes.  That added
-   the single-process X11 port (much simpler and less prone to bugs),
-   common copy/paste,  some extended colors,  and much other good
-   work from wmcbrine over the last few years.  See wmcbrine's
-   version 3.8 and 3.9 history for details.
+-  Pulled in almost all of William McBrine's 3.8 and 3.9 changes.
+   These include the single-process X11 port (much simpler and
+   less prone to bugs),  common copy/paste,  some extended colors,
+   and much other good work from wmcbrine over the last few years.
 
--  Added chasonr's DOSVGA port and staalmannen's Plan 9 port.
+-  See history entries for versions 3.8 and 3.9 below for details.
+
+-  Added chasonr's DOSVGA port and Federico G. Benavento and Jens
+   Staal's Plan 9 port.
 
 -  Automated builds again work and have been extended to new platforms.
 
@@ -34,6 +36,10 @@ Major new features
    E. Dickey's 'picsmap' demo for ncurses.  It has a similar purpose:
    demonstrating the functions in the above paragraph and the new
    ability to access lots and lots of colors.
+
+-  HISTORY.md brought up to date for 4.2 (which meant bringing in
+   changes for 3.8 and 3.9).  Also,  4.1.0 was almost completely
+   undocumented.
 
 Minor new features
 ------------------
