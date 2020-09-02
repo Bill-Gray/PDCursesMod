@@ -23,6 +23,8 @@ LTARGET = nt_win
 
 CFLAGS = -ei
 
+ADDED_LIBS = lib winmm.lib
+
 EXTRA_LIB_CMD = -$(COPY) $(PDCNAME).lib panel.lib
 
 !include $(common)/watcom.mif

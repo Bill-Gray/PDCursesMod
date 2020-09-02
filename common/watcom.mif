@@ -133,7 +133,7 @@ all:	$(PDCNAME).lib
 !else
 .obj$(E):
 !endif
-    $(LINK) $(LDFLAGS) name $@ sys $(LTARGET) file $*.obj lib $(PDCNAME).lib
+    $(LINK) $(LDFLAGS) name $@ sys $(LTARGET) file $*.obj lib $(PDCNAME).lib $(ADDED_LIBS)
 
 build_dll_testcurs	= no
 build_dll_ozdemo	= no
@@ -156,7 +156,7 @@ worm$(E):	worm.obj $(PDCNAME).lib
 ptest$(E):	ptest.obj $(PDCNAME).lib
 
 tuidemo$(E):	tuidemo.obj tui.obj $(PDCNAME).lib
-    $(LINK) $(LDFLAGS) name $@ sys $(LTARGET) file {tuidemo.obj tui.obj} lib $(PDCNAME).lib
+    $(LINK) $(LDFLAGS) name $@ sys $(LTARGET) file {tuidemo.obj tui.obj} lib $(PDCNAME).lib $(ADDED_LIBS)
 
 !ifdef ltarget_dll_$(TARGET)
 version_res_nt = $(PDCNAME).res
