@@ -132,7 +132,7 @@ include pdcsdl.h, or just add the declarations you need in your code:
 
     PDCEX SDL_Window *pdc_window;
     PDCEX SDL_Surface *pdc_screen, *pdc_font, *pdc_icon, *pdc_back;
-    PDCEX int pdc_sheight, pdc_swidth, pdc_yoffset, pdc_xoffset;
+    PDCEX int pdc_sheight, pdc_swidth, pdc_yoffset, pdc_xoffset, pdc_font_render_fast;
 
     PDCEX void PDC_update_rects(void);
     PDCEX void PDC_retile(void);
@@ -155,6 +155,10 @@ pdc_font (in 8-bit mode), pdc_icon, and pdc_back are the SDL_surfaces
 for the font, icon, and background, respectively. You can set any or all
 of them before initscr(), and thus override any of the other ways to set
 them. But note that pdc_icon will be ignored if pdc_screen is preset.
+
+pdc_font_render_fast (in 16-bit mode) will render text using 
+TTF_RenderUNICODE_Solid instead of TTF_RenderUNICODE_Blended, which is the 
+default.
 
 pdc_sheight and pdc_swidth are the dimensions of the area of pdc_screen
 to be used by PDCurses. You can preset them before initscr(); if either
