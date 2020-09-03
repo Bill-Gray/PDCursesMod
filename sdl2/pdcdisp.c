@@ -300,8 +300,16 @@ void PDC_gotoyx(int row, int col)
 
         chstr[0] = ch & A_CHARTEXT;
 
+        if (pdc_font_render_fast)
+        {
+            pdc_font = TTF_RenderUNICODE_Solid(pdc_ttffont, chstr,
+                                               pdc_color[foregr]);
+        }
+        else
+        {
         pdc_font = TTF_RenderUNICODE_Blended(pdc_ttffont, chstr,
                                              pdc_color[foregr]);
+        }
         if (pdc_font)
         {
             int center = pdc_fwidth > pdc_font->w ?
@@ -423,8 +431,16 @@ void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
                 if (pdc_font)
                     SDL_FreeSurface(pdc_font);
 
+                if (pdc_font_render_fast)
+                {
+                    pdc_font = TTF_RenderUNICODE_Solid(pdc_ttffont, chstr,
+                                                         pdc_color[foregr]);
+                }
+                else
+                {
                 pdc_font = TTF_RenderUNICODE_Blended(pdc_ttffont, chstr,
                                                      pdc_color[foregr]);
+                }
             }
 
             if (pdc_font)
@@ -515,7 +531,7 @@ static Uint32 _blink_timer(Uint32 interval, void *param)
 
     event.type = SDL_USEREVENT;
     SDL_PushEvent(&event);
-    return(interval);
+    return (interval);
 }
 
 void PDC_blink_text(void)
