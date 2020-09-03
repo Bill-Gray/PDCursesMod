@@ -531,7 +531,7 @@ static Uint32 _blink_timer(Uint32 interval, void *param)
 
     event.type = SDL_USEREVENT;
     SDL_PushEvent(&event);
-    return (interval);
+    return(interval);
 }
 
 void PDC_blink_text(void)
