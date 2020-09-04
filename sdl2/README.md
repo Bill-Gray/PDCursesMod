@@ -156,17 +156,17 @@ for the font, icon, and background, respectively. You can set any or all
 of them before initscr(), and thus override any of the other ways to set
 them. But note that pdc_icon will be ignored if pdc_screen is preset.
 
-pdc_ttf_render_mode (in 16-bit mode) can be set to `PDC_TTF_RENDER_SOLID`, 
-`PDC_TTF_RENDER_SHADED` or `PDC_TTF_RENDER_BLENDED`. This determines which SDL TTF
+pdc_sdl_render_mode (in 16-bit mode) can be set to `PDC_SDL_RENDER_SOLID`, 
+`PDC_SDL_RENDER_SHADED` or `PDC_SDL_RENDER_BLENDED`. This determines which SDL TTF
 render mode will be used for rendering text: `TTF_RenderUNICODE_Solid()`, 
 `TTF_RenderUNICODE_Shaded()` or `TTF_RenderUNICODE_Blended()` respectively. 
-This will default to `PDC_TTF_RENDER_BLENDED`. If you wish to use this feature 
+This will default to `PDC_SDL_RENDER_BLENDED`. If you wish to use this feature 
 without including `pdcsdl.h`, you must define the following constants:
 
 ```
-#define PDC_TTF_RENDER_SOLID 0x01
-#define PDC_TTF_RENDER_SHADED 0x02
-#define PDC_TTF_RENDER_BLENDED 0x03
+#define PDC_SDL_RENDER_SOLID 1
+#define PDC_SDL_RENDER_SHADED 2
+#define PDC_SDL_RENDER_BLENDED 3
 ```
 
 pdc_sheight and pdc_swidth are the dimensions of the area of pdc_screen

@@ -14,11 +14,11 @@
 #ifdef PDC_WIDE
 PDCEX  TTF_Font *pdc_ttffont;
 PDCEX  int pdc_font_size;
-#define PDC_TTF_RENDER_SOLID 0x01
-#define PDC_TTF_RENDER_SHADED 0x02
-#define PDC_TTF_RENDER_BLENDED 0x03
+#define PDC_SDL_RENDER_SOLID 1
+#define PDC_SDL_RENDER_SHADED 2
+#define PDC_SDL_RENDER_BLENDED 3
 
-PDCEX int pdc_ttf_render_mode;
+PDCEX int pdc_sdl_render_mode;
 #endif
 PDCEX  SDL_Window *pdc_window;
 PDCEX  SDL_Surface *pdc_screen, *pdc_font, *pdc_icon, *pdc_back;

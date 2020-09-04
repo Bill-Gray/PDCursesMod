@@ -299,13 +299,13 @@ void PDC_gotoyx(int row, int col)
 
         chstr[0] = ch & A_CHARTEXT;
 
-        switch (pdc_ttf_render_mode)
+        switch (pdc_sdl_render_mode)
         {
-        case PDC_TTF_RENDER_SOLID:
+        case PDC_SDL_RENDER_SOLID:
             pdc_font = TTF_RenderUNICODE_Solid(pdc_ttffont, chstr,
                                                pdc_color[foregr]);
             break;
-        case PDC_TTF_RENDER_SHADED:
+        case PDC_SDL_RENDER_SHADED:
             pdc_font = TTF_RenderUNICODE_Shaded(pdc_ttffont, chstr,
                                                 pdc_color[foregr], pdc_color[backgr]);
             break;
@@ -435,13 +435,13 @@ void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
                 if (pdc_font)
                     SDL_FreeSurface(pdc_font);
 
-                switch (pdc_ttf_render_mode)
+                switch (pdc_sdl_render_mode)
                 {
-                case PDC_TTF_RENDER_SOLID:
+                case PDC_SDL_RENDER_SOLID:
                     pdc_font = TTF_RenderUNICODE_Solid(pdc_ttffont, chstr,
                                                        pdc_color[foregr]);
                     break;
-                case PDC_TTF_RENDER_SHADED:
+                case PDC_SDL_RENDER_SHADED:
                     pdc_font = TTF_RenderUNICODE_Shaded(pdc_ttffont, chstr,
                                                         pdc_color[foregr], pdc_color[backgr]);
                     break;
