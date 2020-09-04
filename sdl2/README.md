@@ -132,7 +132,7 @@ include pdcsdl.h, or just add the declarations you need in your code:
 
     PDCEX SDL_Window *pdc_window;
     PDCEX SDL_Surface *pdc_screen, *pdc_font, *pdc_icon, *pdc_back;
-    PDCEX int pdc_sheight, pdc_swidth, pdc_yoffset, pdc_xoffset, pdc_font_render_mode;
+    PDCEX int pdc_sheight, pdc_swidth, pdc_yoffset, pdc_xoffset, pdc_sdl_render_mode;
 
     PDCEX void PDC_update_rects(void);
     PDCEX void PDC_retile(void);
