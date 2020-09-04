@@ -25,7 +25,7 @@ int pdc_font_size =
 # else
  17;
 # endif
-int pdc_font_render_fast = false;
+int pdc_ttf_render_mode = PDC_TTF_RENDER_BLENDED;
 #endif
 
 SDL_Window *pdc_window = NULL;
