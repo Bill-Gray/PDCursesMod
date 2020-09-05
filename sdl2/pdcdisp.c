@@ -22,7 +22,6 @@ static chtype oldch = (chtype)(-1);    /* current attribute */
 static int rectcount = 0;              /* index into uprect */
 static int foregr = -2, backgr = -2; /* current foreground, background */
 static bool blinked_off = FALSE;
-
 /* do the real updates on a delay */
 
 void PDC_update_rects(void)
@@ -139,8 +138,8 @@ static void _set_attr(chtype ch)
     }
 }
 
-#ifdef PDC_WIDE
 
+#ifdef PDC_WIDE
 /* Draw some of the ACS_* "graphics" */
 
 bool _grprint(chtype ch, SDL_Rect dest)
@@ -300,8 +299,21 @@ void PDC_gotoyx(int row, int col)
 
         chstr[0] = ch & A_CHARTEXT;
 
-        pdc_font = TTF_RenderUNICODE_Blended(pdc_ttffont, chstr,
-                                             pdc_color[foregr]);
+        switch (pdc_sdl_render_mode)
+        {
+        case PDC_SDL_RENDER_SOLID:
+            pdc_font = TTF_RenderUNICODE_Solid(pdc_ttffont, chstr,
+                                               pdc_color[foregr]);
+            break;
+        case PDC_SDL_RENDER_SHADED:
+            pdc_font = TTF_RenderUNICODE_Shaded(pdc_ttffont, chstr,
+                                                pdc_color[foregr], pdc_color[backgr]);
+            break;
+        default:
+            pdc_font = TTF_RenderUNICODE_Blended(pdc_ttffont, chstr,
+                                                 pdc_color[foregr]);
+        }
+
         if (pdc_font)
         {
             int center = pdc_fwidth > pdc_font->w ?
@@ -423,8 +435,20 @@ void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
                 if (pdc_font)
                     SDL_FreeSurface(pdc_font);
 
-                pdc_font = TTF_RenderUNICODE_Blended(pdc_ttffont, chstr,
-                                                     pdc_color[foregr]);
+                switch (pdc_sdl_render_mode)
+                {
+                case PDC_SDL_RENDER_SOLID:
+                    pdc_font = TTF_RenderUNICODE_Solid(pdc_ttffont, chstr,
+                                                       pdc_color[foregr]);
+                    break;
+                case PDC_SDL_RENDER_SHADED:
+                    pdc_font = TTF_RenderUNICODE_Shaded(pdc_ttffont, chstr,
+                                                        pdc_color[foregr], pdc_color[backgr]);
+                    break;
+                default:
+                    pdc_font = TTF_RenderUNICODE_Blended(pdc_ttffont, chstr,
+                                                         pdc_color[foregr]);
+                }
             }
 
             if (pdc_font)

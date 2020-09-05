@@ -119,7 +119,7 @@ external variables and functions specific to the SDL ports; you could
 include pdcsdl.h, or just add the declarations you need in your code:
 
     PDCEX SDL_Surface *pdc_screen, *pdc_font, *pdc_icon, *pdc_back;
-    PDCEX int pdc_sheight, pdc_swidth, pdc_yoffset, pdc_xoffset;
+    PDCEX int pdc_sheight, pdc_swidth, pdc_yoffset, pdc_xoffset, pdc_sdl_render_mode;
 
     PDCEX void PDC_update_rects(void);
     PDCEX void PDC_retile(void);
@@ -141,6 +141,19 @@ pdc_font (in 8-bit mode), pdc_icon, and pdc_back are the SDL_surfaces
 for the font, icon, and background, respectively. You can set any or all
 of them before initscr(), and thus override any of the other ways to set
 them. But note that pdc_icon will be ignored if pdc_screen is preset.
+
+pdc_sdl_render_mode (in 16-bit mode) can be set to `PDC_SDL_RENDER_SOLID`, 
+`PDC_SDL_RENDER_SHADED` or `PDC_SDL_RENDER_BLENDED`. This determines which SDL TTF
+render mode will be used for rendering text: `TTF_RenderUNICODE_Solid()`, 
+`TTF_RenderUNICODE_Shaded()` or `TTF_RenderUNICODE_Blended()` respectively. 
+This will default to `PDC_SDL_RENDER_BLENDED`. If you wish to use this feature 
+without including `pdcsdl.h`, you must define the following constants:
+
+```
+#define PDC_SDL_RENDER_SOLID 1
+#define PDC_SDL_RENDER_SHADED 2
+#define PDC_SDL_RENDER_BLENDED 3
+```
 
 pdc_sheight and pdc_swidth are the dimensions of the area of pdc_screen
 to be used by PDCurses. You can preset them before initscr(); if either

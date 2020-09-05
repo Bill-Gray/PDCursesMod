@@ -67,6 +67,9 @@ Minor new features
 -  'test_pan' allows one to move panels around the screen and adjust
    the panel depth.
 
+-  Added ability to change SDL1/SDL2 font rendering mode by setting
+   pdc_sdl_render_mode 
+
 Bug fixes and such
 ------------------
 
