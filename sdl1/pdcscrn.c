@@ -14,6 +14,7 @@
 # endif
 TTF_Font *pdc_ttffont = NULL;
 int pdc_font_size = 17;
+int pdc_sdl_render_mode = PDC_SDL_RENDER_BLENDED;
 #endif
 
 SDL_Surface *pdc_screen = NULL, *pdc_font = NULL, *pdc_icon = NULL,
