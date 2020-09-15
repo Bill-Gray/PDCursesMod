@@ -117,8 +117,8 @@ else
 endif
 	LIBCURSES = pdcurses.a
 	LIBDEPS = $(LIBOBJS) $(PDCOBJS)
-	LIBSADDED = -lwinmm
-	EXELIBS =
+	LIBSADDED =
+	EXELIBS = -lwinmm
 	CLEAN = *.a
 endif
 
