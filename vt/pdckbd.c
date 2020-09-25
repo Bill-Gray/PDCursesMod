@@ -162,6 +162,7 @@ static int xlate_vt_codes( const int *c, const int count)
                KEY_HOME, 2, '[', 'H',
                KEY_END,  2, 'O', 'F',
                KEY_END,  2, '[', 'F',
+               KEY_END,  3, '[', '8', '~',   /* rxvt */
                KEY_B2,   2, '[', 'E',
                KEY_BTAB, 2, '[', 'Z',     /* Shift-Tab */
                KEY_IC,   3, '[', '2', '~',
@@ -184,6 +185,7 @@ static int xlate_vt_codes( const int *c, const int count)
                KEY_F(5), 3, '[', '[', 'E',
                KEY_END,  3, '[', '4', '~',
                KEY_HOME, 3, '[', '1', '~',
+               KEY_HOME, 3, '[', '7', '~',    /* rxvt */
 
                KEY_F(1), 2, 'O', 'P',
                KEY_F(1), 4, '[', '1', '1', '~',
@@ -213,6 +215,18 @@ static int xlate_vt_codes( const int *c, const int count)
                KEY_F(22), 6, '[', '2', '1', ';', '2', '~',
                KEY_F(23), 6, '[', '2', '3', ';', '2', '~',  /* shift-f11 */
                KEY_F(24), 6, '[', '2', '4', ';', '2', '~',
+
+               KEY_F(15), 4, '[', '2', '5', '~',    /* shift-f3 on rxvt */
+               KEY_F(16), 4, '[', '2', '6', '~',    /* shift-f4 on rxvt */
+               KEY_F(17), 4, '[', '2', '8', '~',    /* shift-f5 on rxvt */
+               KEY_F(18), 4, '[', '2', '9', '~',    /* shift-f6 on rxvt */
+               KEY_F(19), 4, '[', '3', '1', '~',    /* shift-f7 on rxvt */
+               KEY_F(20), 4, '[', '3', '2', '~',    /* shift-f8 on rxvt */
+               KEY_F(21), 4, '[', '3', '3', '~',    /* shift-f9 on rxvt */
+               KEY_F(22), 4, '[', '3', '4', '~',    /* shift-f10 on rxvt */
+               KEY_F(23), 4, '[', '2', '3', '$',    /* shift-f11 on rxvt */
+               KEY_F(24), 4, '[', '2', '4', '$',    /* shift-f12 on rxvt */
+
                ALT_UP, 5, '[', '1', ';', '3', 'A',
                ALT_RIGHT, 5, '[', '1', ';', '3', 'C',
                ALT_DOWN, 5, '[', '1', ';', '3', 'B',
