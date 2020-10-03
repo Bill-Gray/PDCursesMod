@@ -30,11 +30,11 @@ Defined by this header:
 #define PDCURSES        1
 #define PDC_BUILD (PDC_VER_MAJOR*1000 + PDC_VER_MINOR *100 + PDC_VER_CHANGE)
 #define PDC_VER_MAJOR    4
-#define PDC_VER_MINOR    1
-#define PDC_VER_CHANGE   99
+#define PDC_VER_MINOR    2
+#define PDC_VER_CHANGE    0
 #define PDC_VER_YEAR   2020
-#define PDC_VER_MONTH    05
-#define PDC_VER_DAY      20
+#define PDC_VER_MONTH    10
+#define PDC_VER_DAY      03
 
 #define PDC_STRINGIZE( x) #x
 #define PDC_stringize( x) PDC_STRINGIZE( x)
@@ -104,7 +104,7 @@ extern "C"
 #if !defined(PDC_PP98) && !defined(__bool_true_false_are_defined)
 typedef unsigned char bool;
 #endif
-   
+
 #if defined( CHTYPE_32)
    #if defined( CHTYPE_64)
        #error CHTYPE cannot be both CHTYPE_32 and CHTYPE_64
@@ -141,7 +141,7 @@ enum PDC_port
     PDC_PORT_SDL2 = 6,
     PDC_PORT_VT = 7,
     PDC_PORT_DOSVGA = 8,
-	PDC_PORT_PLAN9 = 9
+   PDC_PORT_PLAN9 = 9
 };
 
 /* Use this structure with PDC_get_version() for run-time info about the
