@@ -31,7 +31,7 @@ Defined by this header:
 #define PDC_BUILD (PDC_VER_MAJOR*1000 + PDC_VER_MINOR *100 + PDC_VER_CHANGE)
 #define PDC_VER_MAJOR    4
 #define PDC_VER_MINOR    2
-#define PDC_VER_CHANGE    0
+#define PDC_VER_CHANGE   0
 #define PDC_VER_YEAR   2020
 #define PDC_VER_MONTH    10
 #define PDC_VER_DAY      03
