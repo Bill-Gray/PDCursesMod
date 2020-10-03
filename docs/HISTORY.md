@@ -1,4 +1,4 @@
-PDCursesMod 4.2 - 2020 Sep ?? - Bill Gray fork (currently beta)
+PDCursesMod 4.2 - 2020 Oct 03
 =========================
 
 Major new features
@@ -68,7 +68,7 @@ Minor new features
    the panel depth.
 
 -  Added ability to change SDL1/SDL2 font rendering mode by setting
-   pdc_sdl_render_mode 
+   pdc_sdl_render_mode
 
 Bug fixes and such
 ------------------
