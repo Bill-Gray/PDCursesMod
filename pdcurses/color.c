@@ -333,18 +333,15 @@ int PDC_set_line_color(short color)
 
 int PDC_init_atrtab(void)
 {
-    int i;
-
     assert( SP);
     if( !SP->atrtab)
     {
-       atrtab_size_alloced = PDC_COLOR_PAIRS;
+       atrtab_size_alloced = 1;
        SP->atrtab = calloc( atrtab_size_alloced, sizeof(PDC_PAIR));
        if( !SP->atrtab)
            return -1;
     }
-    for (i = 0; i < atrtab_size_alloced; i++)
-       _init_pair_core( i, UNSET_COLOR_PAIR, UNSET_COLOR_PAIR);
+    _init_pair_core( 0, UNSET_COLOR_PAIR, UNSET_COLOR_PAIR);
     return( 0);
 }
 
