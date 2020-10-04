@@ -77,6 +77,7 @@ int wnoutrefresh(WINDOW *win)
 
     PDC_LOG(("wnoutrefresh() - called: win=%p\n", win));
 
+    assert( win);
     if ( !win || (win->_flags & (_PAD|_SUBPAD)) )
         return ERR;
 
@@ -247,6 +248,7 @@ int wrefresh(WINDOW *win)
 
     PDC_LOG(("wrefresh() - called\n"));
 
+    assert( win);
     if ( !win || (win->_flags & (_PAD|_SUBPAD)) )
         return ERR;
 
@@ -277,6 +279,7 @@ int wredrawln(WINDOW *win, int start, int num)
     PDC_LOG(("wredrawln() - called: win=%p start=%d num=%d\n",
         win, start, num));
 
+    assert( win);
     if (!win || start > win->_maxy || start + num > win->_maxy)
         return ERR;
 
@@ -293,6 +296,7 @@ int redrawwin(WINDOW *win)
 {
     PDC_LOG(("redrawwin() - called: win=%p\n", win));
 
+    assert( win);
     if (!win)
         return ERR;
 

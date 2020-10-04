@@ -1,6 +1,7 @@
 /* PDCurses */
 
 #include <curspriv.h>
+#include <assert.h>
 
 /*man-start**************************************************************
 
@@ -198,6 +199,8 @@ static void Touchline(PANEL *pan, int start, int count)
 
 static bool _panels_overlapped(PANEL *pan1, PANEL *pan2)
 {
+    assert( pan1);
+    assert( pan2);
     if (!pan1 || !pan2)
         return FALSE;
 
@@ -412,6 +415,7 @@ static void _panel_unlink(PANEL *pan)
 
 int bottom_panel(PANEL *pan)
 {
+    assert( pan);
     if (!pan)
         return ERR;
 
@@ -428,6 +432,7 @@ int bottom_panel(PANEL *pan)
 
 int del_panel(PANEL *pan)
 {
+    assert( pan);
     if (pan)
     {
         if (_panel_is_linked(pan))
@@ -442,6 +447,7 @@ int del_panel(PANEL *pan)
 
 int hide_panel(PANEL *pan)
 {
+    assert( pan);
     if (!pan)
         return ERR;
 
@@ -462,6 +468,7 @@ int move_panel(PANEL *pan, int starty, int startx)
     WINDOW *win;
     int maxy, maxx, rval;
 
+    assert( pan);
     if (!pan)
         return ERR;
 
@@ -489,6 +496,7 @@ PANEL *new_panel(WINDOW *win)
 {
     PANEL *pan;
 
+    assert( win);
     if (!win)
         return (PANEL *)NULL;
 
@@ -550,6 +558,7 @@ PANEL *ground_panel( SCREEN *sp)
 
 int panel_hidden(const PANEL *pan)
 {
+    assert( pan);
     if (!pan)
         return ERR;
 
@@ -558,6 +567,7 @@ int panel_hidden(const PANEL *pan)
 
 const void *panel_userptr(const PANEL *pan)
 {
+    assert( pan);
     return pan ? pan->user : NULL;
 }
 
@@ -565,6 +575,7 @@ WINDOW *panel_window(const PANEL *pan)
 {
     PDC_LOG(("panel_window() - called\n"));
 
+    assert( pan);
     if (!pan)
         return (WINDOW *)NULL;
 
@@ -575,6 +586,8 @@ int replace_panel(PANEL *pan, WINDOW *win)
 {
     int maxy, maxx;
 
+    assert( pan);
+    assert( win);
     if (!pan)
         return ERR;
 
@@ -595,6 +608,7 @@ int replace_panel(PANEL *pan, WINDOW *win)
 
 int set_panel_userptr(PANEL *pan, const void *uptr)
 {
+    assert( pan);
     if (!pan)
         return ERR;
 
@@ -604,6 +618,7 @@ int set_panel_userptr(PANEL *pan, const void *uptr)
 
 int show_panel(PANEL *pan)
 {
+    assert( pan);
     if (!pan)
         return ERR;
 
@@ -620,6 +635,7 @@ int show_panel(PANEL *pan)
 
 int top_panel(PANEL *pan)
 {
+    assert( pan);
     return show_panel(pan);
 }
 
