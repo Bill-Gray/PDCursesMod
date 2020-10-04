@@ -475,6 +475,12 @@ int main( int argc, char **argv)
             redraw = 1;
             resize_term( 0, 0);
         }
+        else if( c == 'z')    /* test ability to briefly show original scr */
+        {
+            endwin( );
+            getchar( );
+            refresh( );
+        }
         else if( c == KEY_F(1) || c == 27)
             quit = 1;
         else if( c == KEY_F(2))   /* toggle SLKs */
