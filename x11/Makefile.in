@@ -48,9 +48,10 @@ LIB_DEPS        = -L$(PDCURSES_SRCDIR)/x11 -lXCurses
 
 PDCLIBS		= $(LIBCURSES) @SHL_TARGETS@
 
-DEMOS		= firework ozdemo ptest rain testcurs tuidemo worm xmas
-DEMOOBJS	= firework.o ozdemo.o ptest.o rain.o testcurs.o tui.o \
-tuidemo.o worm.o xmas.o
+DEMOS		= firework newtest ozdemo picsview ptest \
+rain speed testcurs test_pan tuidemo worm xmas
+DEMOOBJS	= firework.o newtest.o ozdemo.o picsview.o ptest.o   \
+rain.o speed.o testcurs.o test_pan.o tui.o tuidemo.o worm.o xmas.o
 
 SHLFILE		= XCurses
 
@@ -457,8 +458,14 @@ sb.sho: $(osdir)/sb.c
 firework: firework.o
 	$(LINK) firework.o -o $@ $(LDFLAGS)
 
+newtest: newtest.o
+	$(LINK) newtest.o -o $@ $(LDFLAGS)
+
 ozdemo: ozdemo.o
 	$(LINK) ozdemo.o -o $@ $(LDFLAGS)
+
+picsview: picsview.o
+	$(LINK) picsview.o -o $@ $(LDFLAGS)
 
 ptest: ptest.o
 	$(LINK) ptest.o -o $@ $(LDFLAGS)
@@ -466,8 +473,14 @@ ptest: ptest.o
 rain: rain.o
 	$(LINK) rain.o -o $@ $(LDFLAGS)
 
+speed: speed.o
+	$(LINK) speed.o -o $@ $(LDFLAGS)
+
 testcurs: testcurs.o
 	$(LINK) testcurs.o -o $@ $(LDFLAGS)
+
+test_pan: test_pan.o
+	$(LINK) test_pan.o -o $@ $(LDFLAGS)
 
 tuidemo: tuidemo.o tui.o
 	$(LINK) tui.o tuidemo.o -o $@ $(LDFLAGS)
@@ -481,8 +494,14 @@ xmas: xmas.o
 firework.o: $(demodir)/firework.c
 	$(BUILD) $(demodir)/firework.c
 
+newtest.o: $(demodir)/newtest.c
+	$(BUILD) $(demodir)/newtest.c
+
 ozdemo.o: $(demodir)/ozdemo.c
 	$(BUILD) $(demodir)/ozdemo.c
+
+picsview.o: $(demodir)/picsview.c
+	$(BUILD) $(demodir)/picsview.c
 
 ptest.o: $(demodir)/ptest.c $(PDCURSES_SRCDIR)/panel.h
 	$(BUILD) $(demodir)/ptest.c
@@ -490,8 +509,14 @@ ptest.o: $(demodir)/ptest.c $(PDCURSES_SRCDIR)/panel.h
 rain.o: $(demodir)/rain.c
 	$(BUILD) $(demodir)/rain.c
 
+speed.o: $(demodir)/speed.c
+	$(BUILD) $(demodir)/speed.c
+
 testcurs.o: $(demodir)/testcurs.c
 	$(BUILD) $(demodir)/testcurs.c
+
+test_pan.o: $(demodir)/test_pan.c $(PDCURSES_SRCDIR)/panel.h
+	$(BUILD) $(demodir)/test_pan.c
 
 tui.o: $(demodir)/tui.c $(demodir)/tui.h
 	$(BUILD) $(demodir)/tui.c
