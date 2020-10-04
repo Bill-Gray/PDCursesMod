@@ -30,12 +30,14 @@ int main(int argc, char **argv)
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
         exit(1);
 
+#ifdef PDC_WIDE
     if( argc > 1)
     {
          extern int pdc_sdl_render_mode;
 
          pdc_sdl_render_mode = atoi( argv[1]);
     }
+#endif
 
     atexit(SDL_Quit);
 
