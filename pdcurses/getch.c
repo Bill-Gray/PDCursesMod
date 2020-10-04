@@ -407,7 +407,9 @@ int wgetch(WINDOW *win)
 
         /* copy or paste? */
 
+#ifndef _WIN32
         if (SP->key_modifiers & PDC_KEY_MODIFIER_SHIFT)
+#endif
         {
             if (0x03 == key)
             {
@@ -553,6 +555,7 @@ int wget_wch(WINDOW *win, wint_t *wch)
 
     PDC_LOG(("wget_wch() - called\n"));
 
+    assert( wch);
     if (!wch)
         return ERR;
 
