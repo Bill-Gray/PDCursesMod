@@ -384,7 +384,7 @@ int wgetch(WINDOW *win)
     {
         /* is there a keystroke ready? */
 
-        if (!PDC_check_key())
+        while( !PDC_check_key())
         {
             /* if not, handle timeout() and halfdelay() */
             int nap_time = 50;
@@ -398,7 +398,6 @@ int wgetch(WINDOW *win)
                 remaining_millisecs -= nap_time;
             }
             napms( nap_time);
-            continue;   /* then check again */
         }
 
         /* if there is, fetch it */
