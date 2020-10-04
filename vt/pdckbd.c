@@ -151,97 +151,104 @@ on some terminals).
    "Correct" mouse handling will require that we detect a button-down,
 then hold off for SP->mouse_wait to see if we get a release event.  */
 
+typedef struct
+{
+   int key_code;
+   const char *xlation;
+} xlate_t;
+
 static int xlate_vt_codes( const int *c, const int count)
 {
-   static const int tbl[] =  {
-               KEY_UP,   2, '[', 'A',
-               KEY_DOWN, 2, '[', 'B',
-               KEY_LEFT, 2, '[', 'D',
-               KEY_RIGHT,2, '[', 'C',
-               KEY_HOME, 2, 'O', 'H',
-               KEY_HOME, 2, '[', 'H',
-               KEY_END,  2, 'O', 'F',
-               KEY_END,  2, '[', 'F',
-               KEY_END,  3, '[', '8', '~',   /* rxvt */
-               KEY_B2,   2, '[', 'E',
-               KEY_BTAB, 2, '[', 'Z',     /* Shift-Tab */
-               KEY_IC,   3, '[', '2', '~',
-               KEY_DC,   3, '[', '3', '~',
-               KEY_PPAGE, 3, '[', '5', '~',
-               KEY_NPAGE, 3, '[', '6', '~',
+   static const xlate_t xlates[] =  {
+             { KEY_UP,     "[A"   },
+             { KEY_DOWN,   "[B"   },
+             { KEY_LEFT,   "[D"   },
+             { KEY_RIGHT,  "[C"   },
+             { KEY_HOME,   "OH"   },
+             { KEY_HOME,   "[H"   },
+             { KEY_END,    "OF"   },
+             { KEY_END,    "[F"   },
+             { KEY_END,    "[8~"  },         /* rxvt */
+             { KEY_B2,     "[E"   },
 
-               CTL_LEFT,  5, '[', '1', ';', '5', 'D',
-               CTL_RIGHT, 5, '[', '1', ';', '5', 'C',
-               CTL_UP,    5, '[', '1', ';', '5', 'A',
-               CTL_DOWN,  5, '[', '1', ';', '5', 'B',
+             { KEY_BTAB,   "[Z"   },           /* Shift-Tab */
+             { KEY_IC,     "[2~"  },
+             { KEY_DC,     "[3~"  },
+             { KEY_PPAGE,  "[5~"  },
+             { KEY_NPAGE,  "[6~"  },
 
-               ALT_PGUP, 5, '[', '5', ';', '3', '~',
-               ALT_PGDN, 5, '[', '6', ';', '3', '~',
+             { CTL_LEFT,   "[1;5D"  },
+             { CTL_RIGHT,  "[1;5C"  },
+             { CTL_UP,     "[1;5A"  },
+             { CTL_DOWN,   "[1;5B"  },
 
-               KEY_F(1), 3, '[', '[', 'A',      /* Linux console */
-               KEY_F(2), 3, '[', '[', 'B',
-               KEY_F(3), 3, '[', '[', 'C',
-               KEY_F(4), 3, '[', '[', 'D',
-               KEY_F(5), 3, '[', '[', 'E',
-               KEY_END,  3, '[', '4', '~',
-               KEY_HOME, 3, '[', '1', '~',
-               KEY_HOME, 3, '[', '7', '~',    /* rxvt */
+             { ALT_PGUP,   "[5;3~"  },
+             { ALT_PGDN,   "[6;3~"  },
 
-               KEY_F(1), 2, 'O', 'P',
-               KEY_F(1), 4, '[', '1', '1', '~',
-               KEY_F(2), 2, 'O', 'Q',
-               KEY_F(2), 4, '[', '1', '2', '~',
-               KEY_F(3), 2, 'O', 'R',
-               KEY_F(3), 4, '[', '1', '3', '~',
-               KEY_F(4), 2, 'O', 'S',
-               KEY_F(4), 4, '[', '1', '4', '~',
-               KEY_F(5), 4, '[', '1', '5', '~',
-               KEY_F(6), 4, '[', '1', '7', '~',
-               KEY_F(7), 4, '[', '1', '8', '~',
-               KEY_F(8), 4, '[', '1', '9', '~',
-               KEY_F(9), 4, '[', '2', '0', '~',
-               KEY_F(10), 4, '[', '2', '1', '~',
-               KEY_F(11), 4, '[', '2', '3', '~',
-               KEY_F(12), 4, '[', '2', '4', '~',
-               KEY_F(13), 5, '[', '1', ';', '2', 'P',      /* shift-f1 */
-               KEY_F(14), 5, '[', '1', ';', '2', 'Q',
-               KEY_F(15), 5, '[', '1', ';', '2', 'R',
-               KEY_F(16), 5, '[', '1', ';', '2', 'S',
-               KEY_F(17), 6, '[', '1', '5', ';', '2', '~',  /* shift-f5 */
-               KEY_F(18), 6, '[', '1', '7', ';', '2', '~',
-               KEY_F(19), 6, '[', '1', '8', ';', '2', '~',
-               KEY_F(20), 6, '[', '1', '9', ';', '2', '~',
-               KEY_F(21), 6, '[', '2', '0', ';', '2', '~',
-               KEY_F(22), 6, '[', '2', '1', ';', '2', '~',
-               KEY_F(23), 6, '[', '2', '3', ';', '2', '~',  /* shift-f11 */
-               KEY_F(24), 6, '[', '2', '4', ';', '2', '~',
+             { KEY_F(1),    "[[A"   },      /* Linux console */
+             { KEY_F(2),    "[[B"   },
+             { KEY_F(3),    "[[C"   },
+             { KEY_F(4),    "[[D"   },
+             { KEY_F(5),    "[[E"   },
+             { KEY_END,     "[4~"   },
+             { KEY_HOME,    "[1~"   },
+             { KEY_HOME,    "[7~"   },    /* rxvt */
 
-               KEY_F(15), 4, '[', '2', '5', '~',    /* shift-f3 on rxvt */
-               KEY_F(16), 4, '[', '2', '6', '~',    /* shift-f4 on rxvt */
-               KEY_F(17), 4, '[', '2', '8', '~',    /* shift-f5 on rxvt */
-               KEY_F(18), 4, '[', '2', '9', '~',    /* shift-f6 on rxvt */
-               KEY_F(19), 4, '[', '3', '1', '~',    /* shift-f7 on rxvt */
-               KEY_F(20), 4, '[', '3', '2', '~',    /* shift-f8 on rxvt */
-               KEY_F(21), 4, '[', '3', '3', '~',    /* shift-f9 on rxvt */
-               KEY_F(22), 4, '[', '3', '4', '~',    /* shift-f10 on rxvt */
-               KEY_F(23), 4, '[', '2', '3', '$',    /* shift-f11 on rxvt */
-               KEY_F(24), 4, '[', '2', '4', '$',    /* shift-f12 on rxvt */
+             { KEY_F(1),    "OP"      },
+             { KEY_F(1),    "[11~"    },
+             { KEY_F(2),    "OQ"      },
+             { KEY_F(2),    "[12~"    },
+             { KEY_F(3),    "OR"      },
+             { KEY_F(3),    "[13~"    },
+             { KEY_F(4),    "OS"      },
+             { KEY_F(4),    "[14~"    },
+             { KEY_F(5),    "[15~"    },
+             { KEY_F(6),    "[17~"    },
+             { KEY_F(7),    "[18~"    },
+             { KEY_F(8),    "[19~"    },
+             { KEY_F(9),    "[20~"    },
+             { KEY_F(10),   "[21~"   },
+             { KEY_F(11),   "[23~"   },
+             { KEY_F(12),   "[24~"   },
+             { KEY_F(13),   "[1;2P"  },      /* shift-f1 */
+             { KEY_F(14),   "[1;2Q"  },
+             { KEY_F(15),   "[1;2R"  },
+             { KEY_F(16),   "[1;2S"  },
+             { KEY_F(17),   "[15;2~"   },  /* shift-f5 */
+             { KEY_F(18),   "[17;2~"   },
+             { KEY_F(19),   "[18;2~"   },
+             { KEY_F(20),   "[19;2~"   },
+             { KEY_F(21),   "[20;2~"   },
+             { KEY_F(22),   "[21;2~"   },
+             { KEY_F(23),   "[23;2~"   },  /* shift-f11 */
+             { KEY_F(24),   "[24;2~"   },
 
-               ALT_UP, 5, '[', '1', ';', '3', 'A',
-               ALT_RIGHT, 5, '[', '1', ';', '3', 'C',
-               ALT_DOWN, 5, '[', '1', ';', '3', 'B',
-               ALT_LEFT, 5, '[', '1', ';', '3', 'D',
-               CTL_UP, 5, '[', '1', ';', '5', 'A',
-               CTL_RIGHT, 5, '[', '1', ';', '5', 'C',
-               CTL_DOWN, 5, '[', '1', ';', '5', 'B',
-               CTL_LEFT, 5, '[', '1', ';', '5', 'D',
-               KEY_SUP, 5, '[', '1', ';', '2', 'A',
-               KEY_SRIGHT, 5, '[', '1', ';', '2', 'C',
-               KEY_SDOWN, 5, '[', '1', ';', '2', 'B',
-               KEY_SLEFT, 5, '[', '1', ';', '2', 'D',
-               0 };
-   int i, rval = -1;
-   const int *tptr;
+             { KEY_F(15),   "[25~"   },    /* shift-f3 on rxvt */
+             { KEY_F(16),   "[26~"   },    /* shift-f4 on rxvt */
+             { KEY_F(17),   "[28~"   },    /* shift-f5 on rxvt */
+             { KEY_F(18),   "[29~"   },    /* shift-f6 on rxvt */
+             { KEY_F(19),   "[31~"   },    /* shift-f7 on rxvt */
+             { KEY_F(20),   "[32~"   },    /* shift-f8 on rxvt */
+             { KEY_F(21),   "[33~"   },    /* shift-f9 on rxvt */
+             { KEY_F(22),   "[34~"   },    /* shift-f10 on rxvt */
+             { KEY_F(23),   "[23$"   },    /* shift-f11 on rxvt */
+             { KEY_F(24),   "[24$"   },    /* shift-f12 on rxvt */
+
+             { ALT_UP,      "[1;3A"   },
+             { ALT_RIGHT,   "[1;3C"   },
+             { ALT_DOWN,    "[1;3B"   },
+             { ALT_LEFT,    "[1;3D"   },
+             { CTL_UP,      "[1;5A"   },
+             { CTL_RIGHT,   "[1;5C"   },
+             { CTL_DOWN,    "[1;5B"   },
+             { CTL_LEFT,    "[1;5D"   },
+             { KEY_SUP,     "[1;2A"   },
+             { KEY_SRIGHT,  "[1;2C"   },
+             { KEY_SDOWN,   "[1;2B"   },
+             { KEY_SLEFT,   "[1;2D"   }  };
+   const size_t n_keycodes = sizeof( xlates) / sizeof( xlates[0]);
+   size_t i;
+   int rval = -1;
 
    if( count == 1)
       {
@@ -267,14 +274,16 @@ static int xlate_vt_codes( const int *c, const int count)
    else if( count > 6 && c[0] == '[' && c[1] == '<'
                              && (c[count - 1] == 'M' || c[count - 1] == 'm'))
       rval = KEY_MOUSE;    /* SGR mouse mode */
-   for( tptr = tbl; rval == -1 && *tptr; tptr += 2 + tptr[1])
-      if( count == tptr[1])
+   if( count >= 2)
+      for( i = 0; rval == -1 && i < n_keycodes; i++)
          {
-         i = 0;
-         while( i < count && tptr[i + 2] == c[i])
-            i++;
-         if( i == count)
-            rval = tptr[0];
+         size_t j = 0;
+
+         while( j < count && xlates[i].xlation[j]
+                               && xlates[i].xlation[j] == c[j])
+            j++;
+         if( j == count && !xlates[i].xlation[j])
+            rval = xlates[i].key_code;
          }
    return( rval);
 }
