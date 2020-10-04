@@ -30,6 +30,13 @@ int main(int argc, char **argv)
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
         exit(1);
 
+    if( argc > 1)
+    {
+         extern int pdc_sdl_render_mode;
+
+         pdc_sdl_render_mode = atoi( argv[1]);
+    }
+
     atexit(SDL_Quit);
 
     pdc_window = SDL_CreateWindow("PDCurses for SDL", SDL_WINDOWPOS_UNDEFINED,
