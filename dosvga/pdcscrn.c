@@ -176,7 +176,7 @@ int PDC_scr_open(void)
     PDC_state.font_width = PDC_state.font_char_width(FALSE);
     PDC_state.font_height = PDC_state.font_char_height(FALSE);
     _set_underline();
-    PDC_resize_screen( default_cols, default_lines);
+    PDC_resize_screen( default_lines, default_cols);
 
     SP->orig_attr = FALSE;
 
@@ -198,9 +198,11 @@ int PDC_resize_screen(int nlines, int ncols)
     PDC_LOG(("PDC_resize_screen() - called. Lines: %d Cols: %d\n",
              nlines, ncols));
 
-    if( !stdscr)     /* We're trying to specify an initial screen size */
-    {                /* before calling initscr().  This works on some  */
-        return OK;   /* some platforms,  but not this one.             */
+    if( !PDC_state.font_width)
+    {                                  /* Specifying an initial screen   */
+        default_lines = nlines;        /* size before calling initscr(). */
+        default_cols = ncols;
+        return OK;
     }
 
     _set_scrn_mode(_find_video_mode(nlines, ncols));
