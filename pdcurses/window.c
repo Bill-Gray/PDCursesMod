@@ -188,7 +188,7 @@ WINDOW *PDC_makenew(int nlines, int ncols, int begy, int begx)
 
 WINDOW *PDC_makelines(WINDOW *win)
 {
-    int i, j, nlines, ncols;
+    int i, nlines, ncols;
 
     PDC_LOG(("PDC_makelines() - called\n"));
 
@@ -199,23 +199,19 @@ WINDOW *PDC_makelines(WINDOW *win)
     nlines = win->_maxy;
     ncols = win->_maxx;
 
-    for (i = 0; i < nlines; i++)
+    win->_y[0] = malloc(ncols * nlines * sizeof(chtype));
+    if (!win->_y[0])
     {
-        win->_y[i] = malloc(ncols * sizeof(chtype));
-        if (!win->_y[i])
-        {
-            /* if error, free all the data */
+        /* if error, free all the data */
 
-            for (j = 0; j < i; j++)
-                free(win->_y[j]);
+        free(win->_firstch);
+        free(win->_y);
+        free(win);
 
-            free(win->_firstch);
-            free(win->_y);
-            free(win);
-
-            return (WINDOW *)NULL;
-        }
+        return (WINDOW *)NULL;
     }
+    for (i = 1; i < nlines; i++)
+        win->_y[i] = win->_y[i - 1] + ncols;
 
     return win;
 }
@@ -258,8 +254,6 @@ WINDOW *newwin(int nlines, int ncols, int begy, int begx)
 
 int delwin(WINDOW *win)
 {
-    int i;
-
     PDC_LOG(("delwin() - called\n"));
 
     assert( win);
@@ -269,9 +263,8 @@ int delwin(WINDOW *win)
     /* subwindows use parents' lines */
 
     if (!(win->_flags & (_SUBWIN|_SUBPAD)))
-        for (i = 0; i < win->_maxy && win->_y[i]; i++)
-            if (win->_y[i])
-                free(win->_y[i]);
+        if (win->_y[0])
+           free(win->_y[0]);
 
     free(win->_firstch);
     free(win->_y);
@@ -440,7 +433,7 @@ WINDOW *dupwin(WINDOW *win)
 WINDOW *resize_window(WINDOW *win, int nlines, int ncols)
 {
     WINDOW *new;
-    int i, save_cury, save_curx, new_begy, new_begx;
+    int save_cury, save_curx, new_begy, new_begx;
 
     PDC_LOG(("resize_window() - called: nlines %d ncols %d\n",
              nlines, ncols));
@@ -494,9 +487,8 @@ WINDOW *resize_window(WINDOW *win, int nlines, int ncols)
         copywin(win, new, 0, 0, 0, 0, min(win->_maxy, new->_maxy) - 1,
                 min(win->_maxx, new->_maxx) - 1, FALSE);
 
-        for (i = 0; i < win->_maxy && win->_y[i]; i++)
-            if (win->_y[i])
-                free(win->_y[i]);
+        if (win->_y[0])
+            free(win->_y[0]);
     }
 
     new->_flags = win->_flags;
