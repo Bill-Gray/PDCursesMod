@@ -103,7 +103,38 @@ initscr
 
 char ttytype[128];
 
-const char *_curses_notice = "PDCurses " PDC_VERDOT " - " __DATE__;
+#if PDC_VER_MONTH == 1
+   #define PDC_VER_MONTH_STR "Jan"
+#elif PDC_VER_MONTH == 2
+   #define PDC_VER_MONTH_STR "Feb"
+#elif PDC_VER_MONTH == 3
+   #define PDC_VER_MONTH_STR "Mar"
+#elif PDC_VER_MONTH == 4
+   #define PDC_VER_MONTH_STR "Apr"
+#elif PDC_VER_MONTH == 5
+   #define PDC_VER_MONTH_STR "May"
+#elif PDC_VER_MONTH == 6
+   #define PDC_VER_MONTH_STR "Jun"
+#elif PDC_VER_MONTH == 7
+   #define PDC_VER_MONTH_STR "Jul"
+#elif PDC_VER_MONTH == 8
+   #define PDC_VER_MONTH_STR "Aug"
+#elif PDC_VER_MONTH == 9
+   #define PDC_VER_MONTH_STR "Sep"
+#elif PDC_VER_MONTH == 10
+   #define PDC_VER_MONTH_STR "Oct"
+#elif PDC_VER_MONTH == 11
+   #define PDC_VER_MONTH_STR "Nov"
+#elif PDC_VER_MONTH == 12
+   #define PDC_VER_MONTH_STR "Dec"
+#else
+   #define PDC_VER_MONTH_STR "!!!"
+#endif
+
+const char *_curses_notice = "PDCurses " PDC_VERDOT " - "\
+                    PDC_stringize( PDC_VER_YEAR) "-" \
+                    PDC_VER_MONTH_STR "-" \
+                    PDC_stringize( PDC_VER_DAY);
 
 SCREEN *SP = (SCREEN*)NULL;           /* curses variables */
 WINDOW *curscr = (WINDOW *)NULL;      /* the current screen image */

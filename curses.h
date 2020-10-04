@@ -43,6 +43,10 @@ Defined by this header:
                    PDC_stringize( PDC_VER_MINOR) "." \
                    PDC_stringize( PDC_VER_CHANGE)
 
+#define PDC_VER_YMD PDC_stringize( PDC_VER_YEAR) "-" \
+                    PDC_stringize( PDC_VER_MONTH) "-" \
+                    PDC_stringize( PDC_VER_DAY)
+
 #define CHTYPE_LONG     1      /* chtype >= 32 bits */
 
 #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
