@@ -271,7 +271,11 @@ int main( const int argc, const char *argv[])
       }
    fclose( ifile);
    if( temp_image_name)
+#ifdef _MSC_VER
+      _unlink( temp_image_name);
+#else
       unlink( temp_image_name);
+#endif
    if( bytes_per_pixel == 1)     /* expand grayscale to RGB */
       for( i = xsize * ysize - 1; i >= 0; i--)
          pixels[i * 3] = pixels[i * 3 + 1] = pixels[i * 3 + 2] = pixels[i];
