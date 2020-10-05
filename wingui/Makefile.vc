@@ -41,10 +41,10 @@ LINK    = link.exe -nologo
 !endif
 
 !ifdef DEBUG
-CFLAGS       = -Z7 -DPDCDEBUG -MT
+CFLAGS       = -Z7 -DPDCDEBUG -MT -D_CRT_SECURE_NO_WARNINGS
 LDFLAGS      = -debug -pdb:none
 !else
-CFLAGS       = -Ox -MT -W3
+CFLAGS       = -Ox -MT -W3 -D_CRT_SECURE_NO_WARNINGS
 LDFLAGS      =
 !endif
 
