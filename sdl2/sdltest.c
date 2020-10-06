@@ -20,9 +20,9 @@ PDCEX int pdc_yoffset;
 int main(int argc, char **argv)
 {
     char inp[60];
-    int i, j, seed;
+    int i, j;
+    const unsigned seed = (unsigned)time((time_t *)0);
 
-    seed = time((time_t *)0);
     srand(seed);
 
     /* Initialize SDL */
