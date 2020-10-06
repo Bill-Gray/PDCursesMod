@@ -24,6 +24,10 @@ CFLAGS =
 CFLAGS += -DHAVE_NO_INFOEX
 !endif
 
+!ifeq DLL Y
+ADDED_LIBS_FOR_DLL=lib winmm.lib
+!else
 ADDED_LIBS=lib winmm.lib
+!endif
 
 !include $(PDCURSES_SRCDIR)/common/watcom.mif

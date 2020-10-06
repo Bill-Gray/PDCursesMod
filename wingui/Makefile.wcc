@@ -23,7 +23,11 @@ LTARGET = nt_win
 
 CFLAGS = -ei
 
+!ifeq DLL Y
+ADDED_LIBS_FOR_DLL = lib winmm.lib
+!else
 ADDED_LIBS = lib winmm.lib
+!endif
 
 EXTRA_LIB_CMD = -$(COPY) $(PDCNAME).lib panel.lib
 

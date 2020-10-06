@@ -175,7 +175,7 @@ version_res_nt = $(PDCNAME).res
 
 $(PDCNAME).lbc : $(LIBOBJS) $(PDCOBJS) $(version_res_$(TARGET))
 !ifdef ltarget_dll_$(TARGET)
-    $(LINK) $(LDFLAGS) name $(PDCNAME).dll sys $(ltarget_dll_$(TARGET)) opt impfile=$@ file {$(LIBOBJS) $(PDCOBJS)}
+    $(LINK) $(LDFLAGS) name $(PDCNAME).dll sys $(ltarget_dll_$(TARGET)) opt impfile=$@ file {$(LIBOBJS) $(PDCOBJS)} $(ADDED_LIBS_FOR_DLL)
 !ifdef version_res_$(TARGET)
     $(RC) -k -bt=$(TARGET) $(version_res_$(TARGET)) $(PDCNAME).dll
 !endif
