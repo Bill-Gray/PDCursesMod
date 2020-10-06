@@ -73,7 +73,7 @@ $(LIBCURSES) : $(LIBOBJS) $(PDCOBJS)
 
 SRCBUILD = $(BUILD) $(srcdir)\$*.c
 OSBUILD = $(BUILD) $(osdir)\$*.c
-DEMOBUILD = $(LINK) $(CPPFLAGS) -o+space $@ $**
+DEMOBUILD = $(LINK) $(CPPFLAGS) -o+space $@ $** $(LIBS)
 
 addch.obj: $(srcdir)\addch.c
 	$(SRCBUILD)
