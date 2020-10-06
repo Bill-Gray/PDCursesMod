@@ -270,6 +270,7 @@ before_build:
       set "CMAKE_ARGS=-DCMAKE_TOOLCHAIN_FILE=..\cmake\watcom_open_os2v2_toolchain.cmake %CMAKE_ARGS%" &&
       set "INCLUDE=%WATCOM%\H;%WATCOM%\H\OS2;%INCLUDE%"
     ) else if "%TARGET%"=="win32" (
+      set "CMAKE_ARGS=-DCMAKE_TOOLCHAIN_FILE=..\cmake\watcom_open_win32_toolchain.cmake %CMAKE_ARGS%" &&
       set "INCLUDE=%WATCOM%\H;%WATCOM%\H\NT;%INCLUDE%"
     )
 

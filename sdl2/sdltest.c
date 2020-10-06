@@ -10,12 +10,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-/* You could #include pdcsdl.h, or just add the relevant declarations
-   here: */
-
-PDCEX SDL_Window *pdc_window;
-PDCEX SDL_Surface *pdc_screen;
-PDCEX int pdc_yoffset;
+#include "pdcsdl.h"
 
 int main(int argc, char **argv)
 {
@@ -33,8 +28,6 @@ int main(int argc, char **argv)
 #ifdef PDC_WIDE
     if( argc > 1)
     {
-         extern int pdc_sdl_render_mode;
-
          pdc_sdl_render_mode = atoi( argv[1]);
     }
 #endif
