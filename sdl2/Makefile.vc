@@ -28,6 +28,10 @@ PDCURSES_WIN_H	= $(osdir)\pdcsdl.h
 
 CC		= cl.exe -nologo
 
+!ifndef PLATFORM
+PLATFORM 	= $(VSCMD_ARG_TGT_ARCH)
+!endif
+
 !ifdef DEBUG
 CFLAGS		= -Z7 -DPDCDEBUG
 LDFLAGS		= -debug -pdb:none
@@ -116,7 +120,7 @@ pdcurses.res pdcurses.obj: $(common)\pdcurses.rc
 .obj.exe:
 	$(LINK) $(LDFLAGS) $< $(LIBCURSES) $(CCLIBS)
 
-tuidemo.exe: tuidemo.obj tui.obj
+tuidemo.exe: tuidemo.obj tui.obj pdcurses.lib
 	$(LINK) $(LDFLAGS) $*.obj tui.obj $(LIBCURSES) $(CCLIBS)
 
 tui.obj: $(demodir)\tui.c $(demodir)\tui.h
@@ -125,5 +129,5 @@ tui.obj: $(demodir)\tui.c $(demodir)\tui.h
 tuidemo.obj: $(demodir)\tuidemo.c
 	$(BUILD) -Dmain=SDL_main -I$(demodir) $(demodir)\tuidemo.c
 
-sdltest.exe: sdltest.obj
+sdltest.exe: sdltest.obj pdcurses.obj pdcurses.lib
 	$(LINK) $(LDFLAGS) $*.obj $(LIBCURSES) $(LIBLIBS) $(CCLIBS)
