@@ -151,15 +151,24 @@ int start_color(void)
     return OK;
 }
 
+static int _default_foreground_idx = COLOR_WHITE;
+static int _default_background_idx = COLOR_BLACK;
+
+void PDC_set_default_colors( const int fg_idx, const int bg_idx)
+{
+   _default_foreground_idx = fg_idx;
+   _default_background_idx = bg_idx;
+}
+
 static void _normalize(int *fg, int *bg)
 {
     const bool using_defaults = (SP->orig_attr && (default_colors || !SP->color_started));
 
     if (*fg == -1 || *fg == UNSET_COLOR_PAIR)
-        *fg = using_defaults ? SP->orig_fore : COLOR_WHITE;
+        *fg = using_defaults ? SP->orig_fore : _default_foreground_idx;
 
     if (*bg == -1 || *bg == UNSET_COLOR_PAIR)
-        *bg = using_defaults ? SP->orig_back : COLOR_BLACK;
+        *bg = using_defaults ? SP->orig_back : _default_background_idx;
 }
 
 static void _init_pair_core(int pair, int fg, int bg)
