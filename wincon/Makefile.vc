@@ -1,7 +1,7 @@
 # Visual C++ Makefile for PDCurses - Windows console
 #
 # Usage: nmake -f [path\]Makefile.vc [DEBUG=Y] [DLL=Y] [WIDE=Y] [UTF8=Y]
-#        [INFOEX=N] [target]
+#        [CHTYPE_32=] [INFOEX=N] [target]
 #
 # where target can be any of:
 # [all|demos|pdcurses.lib|testcurs.exe...]
@@ -39,6 +39,10 @@ WIDEOPT		= -DPDC_WIDE
 UTF8OPT		= -DPDC_FORCE_UTF8
 !endif
 
+!ifdef CHTYPE_32
+CHTYPE_FLAGS= -DCHTYPE_32
+!endif
+
 !ifdef INFOEX
 INFOPT		= -DHAVE_NO_INFOEX
 !endif
@@ -63,7 +67,7 @@ PDCLIBS		= $(CURSESDLL)
 PDCLIBS		= $(LIBCURSES)
 !endif
 
-BUILD		= $(CC) -I$(PDCURSES_SRCDIR) -c $(CFLAGS) $(DLLOPT) \
+BUILD		= $(CC) -I$(PDCURSES_SRCDIR) -c $(CFLAGS) $(CHTYPE_FLAGS) $(DLLOPT) \
 $(WIDEOPT) $(UTF8OPT) $(INFOPT)
 
 all:	$(PDCLIBS)
