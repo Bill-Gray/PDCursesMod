@@ -120,7 +120,7 @@ int PDC_setclipboard_raw( const char *contents, long length,
     if (!OpenClipboard(NULL))
         return PDC_CLIP_ACCESS_ERROR;
 
-    handle = GlobalAlloc(GMEM_MOVEABLE|GMEM_DDESHARE,
+    handle = GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE,
         (length + 1) * sizeof(TCHAR));
 
     if (!handle)

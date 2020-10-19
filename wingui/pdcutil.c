@@ -12,7 +12,7 @@ void PDC_beep(void)
     PDC_LOG(("PDC_beep() - called\n"));
 
     LeaveCriticalSection(&PDC_cs);
-    if (!PlaySound((LPCTSTR) SND_ALIAS_SYSTEMDEFAULT, NULL, SND_ALIAS_ID))
+    if (!PlaySound((LPCTSTR) SND_ALIAS_SYSTEMDEFAULT, NULL, SND_ALIAS_ID | SND_ASYNC))
         Beep(800, 200);
     EnterCriticalSection(&PDC_cs);
 }
