@@ -1,0 +1,34 @@
+name: Build
+
+on: [push, pull_request]
+
+jobs:
+  buildUbuntu:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@master
+    - name: make
+      cd vt
+      run: make demos
+
+  buildOSX:
+    runs-on: macOS-latest
+
+    steps:
+    - uses: actions/checkout@master
+    - name: make
+      cd vt
+      run: make CLANG=Y demos
+
+  buildWindows:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@master
+    - name: make
+      run: |
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
+        cd wingui
+        nmake -f WIDE=Y UTF8=Y DLL=Y Makefile.vc
+      shell: cmd
