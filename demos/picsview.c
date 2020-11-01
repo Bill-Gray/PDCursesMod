@@ -7,12 +7,9 @@
 #include "curses.h"
 #include <math.h>
 #include <assert.h>
-#if defined( __linux)
+#ifndef _WIN32
     #define CONVERT_IMAGES
     #include <unistd.h>
-#endif
-#if defined(Plan9)
-   #include <unistd.h>
 #endif
 
 /* This is inspired by,  but not really based on,  Thomas E. Dickey's
@@ -271,7 +268,7 @@ int main( const int argc, const char *argv[])
       }
    fclose( ifile);
    if( temp_image_name)
-#ifdef _MSC_VER
+#ifdef _WIN32
       _unlink( temp_image_name);
 #else
       unlink( temp_image_name);
