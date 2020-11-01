@@ -32,5 +32,5 @@ jobs:
       run: |
         call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
         cd wingui
-        nmake -f WIDE=Y UTF8=Y DLL=Y Makefile.vc
+        nmake WIDE=Y UTF8=Y DLL=Y -f Makefile.vc
       shell: cmd
