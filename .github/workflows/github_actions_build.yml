@@ -9,8 +9,9 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - name: make
-      cd vt
-      run: make demos
+      run: |
+         cd vt
+         make demos
 
   buildOSX:
     runs-on: macOS-latest
@@ -18,8 +19,9 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - name: make
-      cd vt
-      run: make CLANG=Y demos
+      run: |
+         cd vt
+         make CLANG=Y demos
 
   buildWindows:
     runs-on: windows-latest
