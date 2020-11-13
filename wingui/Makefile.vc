@@ -93,7 +93,7 @@ clean:
    -del *.exp
    -del *.res
 
-demos:   $(DEMOS)
+demos:   $(PDCLIBS) $(DEMOS)
 
 DEMOOBJS = $(DEMOS:.exe=.obj) tui.obj
 
