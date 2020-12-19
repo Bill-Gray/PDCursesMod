@@ -197,6 +197,8 @@ static void sigwinchHandler( int sig)
          PDC_rows = ws.ws_row;
          PDC_cols = ws.ws_col;
          PDC_resize_occurred = TRUE;
+         if (SP)
+            SP->resized = TRUE;
          }
 }
 
