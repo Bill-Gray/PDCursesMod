@@ -182,6 +182,8 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
        int ch = (int)( *srcp & A_CHARTEXT), count = 1;
        chtype changes = *srcp ^ prev_ch;
        char attrib_text[180];
+       size_t bytes_out;
+       char obuff[OBUFF_SIZE];
 
        if( (*srcp & A_ALTCHARSET) && ch < 0x80)
           ch = (int)acs_map[ch & 0x7f];
@@ -211,19 +213,24 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
            while( (root = PDC_expand_combined_characters( root,
                               &newchar)) > MAX_UNICODE)
                ;
-           printf( "%lc", (wchar_t)root);
+           bytes_out = PDC_wc_to_utf8( obuff, (wchar_t)root);
            root = ch;
            while( (root = PDC_expand_combined_characters( root,
                               &newchar)) > MAX_UNICODE)
-               printf( "%lc", (wchar_t)newchar);
-           printf( "%lc", (wchar_t)newchar);
+               {
+               bytes_out += PDC_wc_to_utf8( obuff + bytes_out, (wchar_t)newchar);
+               if( bytes_out + 10 > OBUFF_SIZE)
+                  {
+                  put_to_stdout( obuff, bytes_out);
+                  bytes_out = 0;
+                  }
+               }
+           bytes_out += PDC_wc_to_utf8( obuff + bytes_out, (wchar_t)newchar);
+           put_to_stdout( obuff, bytes_out);
        }
        else if( ch < (int)MAX_UNICODE)
 #endif
        {
-           size_t bytes_out;
-           char obuff[OBUFF_SIZE];
-
            bytes_out = PDC_wc_to_utf8( obuff, (wchar_t)ch);
            while( count < len && !((srcp[0] ^ srcp[count]) & ~A_CHARTEXT)
                         && (ch = (srcp[count] & A_CHARTEXT)) < MAX_UNICODE)
