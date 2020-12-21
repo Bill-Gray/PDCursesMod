@@ -141,15 +141,23 @@ static void reset_color( char *obuff, const chtype ch)
 
 int PDC_wc_to_utf8( char *dest, const int32_t code);
 
-      /* We can output runs up to RUN_LEN wide chars.  Each may become
-         four bytes in UTF8,  so we set OBUFF_SIZE = 4 * RUN_LEN.   */
-#define RUN_LEN      20
-#define OBUFF_SIZE   80
+#define OBUFF_SIZE   180
+
+static void check_buff( const char *obuff, size_t *bytes_out)
+{
+    if( *bytes_out >= OBUFF_SIZE - 20)
+    {
+        put_to_stdout( obuff, *bytes_out);
+        *bytes_out = 0;
+    }
+}
 
 void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
 {
     static chtype prev_ch = 0;
     static bool force_reset_all_attribs = TRUE;
+    size_t bytes_out = 0;
+    char obuff[OBUFF_SIZE];
 
     if( !srcp)
     {
@@ -158,13 +166,6 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
         force_reset_all_attribs = TRUE;
         put_to_stdout( reset_all, strlen( reset_all));
         return;
-    }
-    while( len > RUN_LEN)     /* break input into RUN_LEN character blocks */
-    {
-        PDC_transform_line( lineno, x, RUN_LEN, srcp);
-        len -= RUN_LEN;
-        x += RUN_LEN;
-        srcp += RUN_LEN;
     }
     assert( x >= 0);
     assert( len <= SP->cols - x);
@@ -178,32 +179,33 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
         prev_ch = ~*srcp;
     }
     while( len)
-       {
+    {
        int ch = (int)( *srcp & A_CHARTEXT), count = 1;
        chtype changes = *srcp ^ prev_ch;
-       char attrib_text[180];
-       size_t bytes_out;
-       char obuff[OBUFF_SIZE];
 
        if( (*srcp & A_ALTCHARSET) && ch < 0x80)
           ch = (int)acs_map[ch & 0x7f];
        if( ch < (int)' ' || (ch >= 0x80 && ch <= 0x9f))
           ch = ' ';
-       *attrib_text = '\0';
+       check_buff( obuff, &bytes_out);
+       obuff[bytes_out] = '\0';
        if( SP->termattrs & changes & A_BOLD)
-          strcpy( attrib_text, (*srcp & A_BOLD) ? BOLD_ON : BOLD_OFF);
+          strcpy( obuff + bytes_out, (*srcp & A_BOLD) ? BOLD_ON : BOLD_OFF);
        if( changes & A_UNDERLINE)
-          strcat( attrib_text, (*srcp & A_UNDERLINE) ? UNDERLINE_ON : UNDERLINE_OFF);
+          strcat( obuff + bytes_out, (*srcp & A_UNDERLINE) ? UNDERLINE_ON : UNDERLINE_OFF);
        if( changes & A_ITALIC)
-          strcat( attrib_text, (*srcp & A_ITALIC) ? ITALIC_ON : ITALIC_OFF);
+          strcat( obuff + bytes_out, (*srcp & A_ITALIC) ? ITALIC_ON : ITALIC_OFF);
        if( changes & A_REVERSE)
-          strcat( attrib_text, (*srcp & A_REVERSE) ? REVERSE_ON : REVERSE_OFF);
+          strcat( obuff + bytes_out, (*srcp & A_REVERSE) ? REVERSE_ON : REVERSE_OFF);
        if( SP->termattrs & changes & A_BLINK)
-          strcat( attrib_text, (*srcp & A_BLINK) ? BLINK_ON : BLINK_OFF);
+          strcat( obuff + bytes_out, (*srcp & A_BLINK) ? BLINK_ON : BLINK_OFF);
+       bytes_out += strlen( obuff + bytes_out);
+       check_buff( obuff, &bytes_out);
        if( changes & (A_COLOR | A_STANDOUT | A_BLINK))
-          reset_color( attrib_text + strlen( attrib_text), *srcp & ~A_REVERSE);
-       if( *attrib_text)
-          put_to_stdout( attrib_text, strlen( attrib_text));
+       {
+          reset_color( obuff + bytes_out, *srcp & ~A_REVERSE);
+          bytes_out += strlen( obuff + bytes_out);
+       }
 #ifdef USING_COMBINING_CHARACTER_SCHEME
        if( ch > (int)MAX_UNICODE)      /* chars & fullwidth supported */
        {
@@ -213,25 +215,20 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
            while( (root = PDC_expand_combined_characters( root,
                               &newchar)) > MAX_UNICODE)
                ;
-           bytes_out = PDC_wc_to_utf8( obuff, (wchar_t)root);
+           bytes_out += PDC_wc_to_utf8( obuff + bytes_out, (wchar_t)root);
            root = ch;
            while( (root = PDC_expand_combined_characters( root,
                               &newchar)) > MAX_UNICODE)
                {
                bytes_out += PDC_wc_to_utf8( obuff + bytes_out, (wchar_t)newchar);
-               if( bytes_out + 10 > OBUFF_SIZE)
-                  {
-                  put_to_stdout( obuff, bytes_out);
-                  bytes_out = 0;
-                  }
+               check_buff( obuff, &bytes_out);
                }
            bytes_out += PDC_wc_to_utf8( obuff + bytes_out, (wchar_t)newchar);
-           put_to_stdout( obuff, bytes_out);
        }
        else if( ch < (int)MAX_UNICODE)
 #endif
        {
-           bytes_out = PDC_wc_to_utf8( obuff, (wchar_t)ch);
+           bytes_out += PDC_wc_to_utf8( obuff + bytes_out, (wchar_t)ch);
            while( count < len && !((srcp[0] ^ srcp[count]) & ~A_CHARTEXT)
                         && (ch = (srcp[count] & A_CHARTEXT)) < MAX_UNICODE)
            {
@@ -240,15 +237,15 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
                if( ch < (int)' ' || (ch >= 0x80 && ch <= 0x9f))
                   ch = ' ';
                bytes_out += PDC_wc_to_utf8( obuff + bytes_out, (wchar_t)ch);
-               assert( bytes_out <= OBUFF_SIZE);
+               check_buff( obuff, &bytes_out);
                count++;
            }
-           put_to_stdout( obuff, bytes_out);
        }
        prev_ch = *srcp;
        srcp += count;
        len -= count;
-       }
+   }
+   put_to_stdout( obuff, bytes_out);
 }
 
 void PDC_doupdate(void)
