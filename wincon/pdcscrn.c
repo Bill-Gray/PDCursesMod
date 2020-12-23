@@ -107,7 +107,15 @@ static LPTOP_LEVEL_EXCEPTION_FILTER xcpt_filter;
 
 static DWORD old_console_mode = 0;
 
-static bool is_nt;
+/* MSVC++ 7.1 was the last version to support Win95/98/ME.  If we're
+on any MSVC after that (_MSC_VER > 1310),  is_nt is going to be true
+no matter what.  */
+
+#if defined(_MSC_VER) && _MSC_VER > 1310
+   const bool is_nt = TRUE;
+#else
+   static bool is_nt;
+#endif
 
 static void _reset_old_colors(void)
 {
@@ -402,7 +410,9 @@ int PDC_scr_open(void)
         exit(1);
     }
 
+#if !defined(_MSC_VER) || _MSC_VER <= 1310
     is_nt = !(GetVersion() & 0x80000000);
+#endif
 
     str = getenv("ConEmuANSI");
     pdc_conemu = !!str;
