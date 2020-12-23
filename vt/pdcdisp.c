@@ -30,6 +30,11 @@ static void put_to_stdout( const char *buff, size_t bytes_out)
     }
 }
 
+void PDC_puts_to_stdout( const char *buff)
+{
+   put_to_stdout( buff, strlen( buff));
+}
+
 void PDC_gotoyx(int y, int x)
 {
    printf( "\033[%d;%dH", y + 1, x + 1);
@@ -142,11 +147,15 @@ static void reset_color( char *obuff, const chtype ch)
 int PDC_wc_to_utf8( char *dest, const int32_t code);
 
 #define OBUFF_SIZE   180
+#define OBUFF_TOLERANCE 40
+      /* above means "if we're closer than 40 bytes to the end of
+      the buffer,  flush it."  Color strings can come to 38 bytes. */
 
 static void check_buff( const char *obuff, size_t *bytes_out)
 {
-    if( *bytes_out >= OBUFF_SIZE - 20)
+    if( *bytes_out >= OBUFF_SIZE - OBUFF_TOLERANCE)
     {
+        assert( *bytes_out < OBUFF_SIZE);
         put_to_stdout( obuff, *bytes_out);
         *bytes_out = 0;
     }
@@ -164,7 +173,7 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
         const char *reset_all = BLINK_OFF BOLD_OFF UNDERLINE_OFF ITALIC_OFF REVERSE_OFF;
         prev_ch = 0;
         force_reset_all_attribs = TRUE;
-        put_to_stdout( reset_all, strlen( reset_all));
+        PDC_puts_to_stdout( reset_all);
         return;
     }
     assert( x >= 0);
@@ -245,6 +254,7 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
        srcp += count;
        len -= count;
    }
+   assert( bytes_out < OBUFF_SIZE);
    put_to_stdout( obuff, bytes_out);
 }
 
