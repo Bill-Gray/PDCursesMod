@@ -9,6 +9,7 @@
    #include <unistd.h>
 #endif
 #include "curspriv.h"
+#include "pdcvt.h"
 
 #if defined( __BORLANDC__) || defined( DOS)
    #define WINDOWS_VERSION_OF_KBHIT kbhit
@@ -497,8 +498,6 @@ sort of filtering at a higher level for a reason.  */
 
 int PDC_mouse_set( void)
 {
-   extern bool PDC_is_ansi;
-
    if( !PDC_is_ansi)
       {
       static int curr_tracking_state = -1;
@@ -512,10 +511,18 @@ int PDC_mouse_set( void)
          tracking_state = (SP->_trap_mbe ? 1000 : 0);
       if( curr_tracking_state != tracking_state)
          {
+         char tbuff[80];
+
          if( curr_tracking_state > 0)
-            printf( "\033[?%dl", curr_tracking_state);
+            {
+            snprintf( tbuff, sizeof( tbuff), "\033[?%dl", curr_tracking_state);
+            PDC_puts_to_stdout( tbuff);
+            }
          if( tracking_state)
-            printf( "\033[?%dh", tracking_state);
+            {
+            snprintf( tbuff, sizeof( tbuff), "\033[?%dh", tracking_state);
+            PDC_puts_to_stdout( tbuff);
+            }
          curr_tracking_state = tracking_state;
          PDC_doupdate( );
          }

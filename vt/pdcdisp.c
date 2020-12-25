@@ -6,6 +6,9 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
+#ifndef _WIN32
+    #include <unistd.h>
+#endif
 
 #define USE_UNICODE_ACS_CHARS 1
 
@@ -17,16 +20,50 @@
                    /* Rarely,  writes to stdout fail if a signal handler is
                       called.  In which case we just try to write out the
                       remainder of the buffer until success happens.     */
-static void put_to_stdout( const char *buff, size_t bytes_out)
-{
-    while( bytes_out)
-    {
-        const size_t bytes_written = fwrite( buff, 1, bytes_out, stdout);
 
-        buff += bytes_written;
-        bytes_out -= bytes_written;
-        if( bytes_out)
-            assert( errno == EINTR);
+#define TBUFF_SIZE 512
+
+static void put_to_stdout( const char *buff, ssize_t bytes_out)
+{
+    static char *tbuff = NULL;
+    static ssize_t bytes_cached;
+    const int stdout_fd = 1;
+
+
+    if( !buff && !tbuff)
+        return;
+
+    if( !buff && bytes_out == -1)        /* release memory at shutdown */
+    {
+        free( tbuff);
+        tbuff = NULL;
+        bytes_cached = 0;
+    }
+
+    if( buff && !tbuff)
+        tbuff = (char *)malloc( TBUFF_SIZE);
+    while( bytes_out || (!buff && bytes_cached))
+    {
+        if( buff)
+        {
+            ssize_t n_copy = bytes_out;
+
+            if( n_copy > TBUFF_SIZE - bytes_cached)
+                n_copy = TBUFF_SIZE - bytes_cached;
+            memcpy( tbuff + bytes_cached, buff, n_copy);
+            buff += n_copy;
+            bytes_out -= n_copy;
+            bytes_cached += n_copy;
+        }
+        if( bytes_cached == TBUFF_SIZE || !buff)
+            while( bytes_cached)
+            {
+                const ssize_t bytes_written = write( stdout_fd, tbuff, bytes_cached);
+
+                bytes_cached -= bytes_written;
+                if( bytes_cached)
+                    memmove( tbuff, tbuff + bytes_written, bytes_cached);
+            }
     }
 }
 
@@ -37,7 +74,10 @@ void PDC_puts_to_stdout( const char *buff)
 
 void PDC_gotoyx(int y, int x)
 {
-   printf( "\033[%d;%dH", y + 1, x + 1);
+   char tbuff[50];
+
+   snprintf( tbuff, sizeof( tbuff), "\033[%d;%dH", y + 1, x + 1);
+   PDC_puts_to_stdout( tbuff);
 }
 
 #define ITALIC_ON     "\033[3m"
@@ -146,26 +186,12 @@ static void reset_color( char *obuff, const chtype ch)
 
 int PDC_wc_to_utf8( char *dest, const int32_t code);
 
-#define OBUFF_SIZE   180
-#define OBUFF_TOLERANCE 40
-      /* above means "if we're closer than 40 bytes to the end of
-      the buffer,  flush it."  Color strings can come to 38 bytes. */
-
-static void check_buff( const char *obuff, size_t *bytes_out)
-{
-    if( *bytes_out >= OBUFF_SIZE - OBUFF_TOLERANCE)
-    {
-        assert( *bytes_out < OBUFF_SIZE);
-        put_to_stdout( obuff, *bytes_out);
-        *bytes_out = 0;
-    }
-}
+#define OBUFF_SIZE 100
 
 void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
 {
     static chtype prev_ch = 0;
     static bool force_reset_all_attribs = TRUE;
-    size_t bytes_out = 0;
     char obuff[OBUFF_SIZE];
 
     if( !srcp)
@@ -191,30 +217,27 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
     {
        int ch = (int)( *srcp & A_CHARTEXT), count = 1;
        chtype changes = *srcp ^ prev_ch;
+       ssize_t bytes_out = 0;
 
        if( (*srcp & A_ALTCHARSET) && ch < 0x80)
           ch = (int)acs_map[ch & 0x7f];
        if( ch < (int)' ' || (ch >= 0x80 && ch <= 0x9f))
           ch = ' ';
-       check_buff( obuff, &bytes_out);
-       obuff[bytes_out] = '\0';
        if( SP->termattrs & changes & A_BOLD)
-          strcpy( obuff + bytes_out, (*srcp & A_BOLD) ? BOLD_ON : BOLD_OFF);
+          strcpy( obuff, (*srcp & A_BOLD) ? BOLD_ON : BOLD_OFF);
+       else
+          *obuff = '\0';
        if( changes & A_UNDERLINE)
-          strcat( obuff + bytes_out, (*srcp & A_UNDERLINE) ? UNDERLINE_ON : UNDERLINE_OFF);
+          strcat( obuff, (*srcp & A_UNDERLINE) ? UNDERLINE_ON : UNDERLINE_OFF);
        if( changes & A_ITALIC)
-          strcat( obuff + bytes_out, (*srcp & A_ITALIC) ? ITALIC_ON : ITALIC_OFF);
+          strcat( obuff, (*srcp & A_ITALIC) ? ITALIC_ON : ITALIC_OFF);
        if( changes & A_REVERSE)
-          strcat( obuff + bytes_out, (*srcp & A_REVERSE) ? REVERSE_ON : REVERSE_OFF);
+          strcat( obuff, (*srcp & A_REVERSE) ? REVERSE_ON : REVERSE_OFF);
        if( SP->termattrs & changes & A_BLINK)
-          strcat( obuff + bytes_out, (*srcp & A_BLINK) ? BLINK_ON : BLINK_OFF);
-       bytes_out += strlen( obuff + bytes_out);
-       check_buff( obuff, &bytes_out);
+          strcat( obuff, (*srcp & A_BLINK) ? BLINK_ON : BLINK_OFF);
        if( changes & (A_COLOR | A_STANDOUT | A_BLINK))
-       {
-          reset_color( obuff + bytes_out, *srcp & ~A_REVERSE);
-          bytes_out += strlen( obuff + bytes_out);
-       }
+          reset_color( obuff + strlen( obuff), *srcp & ~A_REVERSE);
+       PDC_puts_to_stdout( obuff);
 #ifdef USING_COMBINING_CHARACTER_SCHEME
        if( ch > (int)MAX_UNICODE)      /* chars & fullwidth supported */
        {
@@ -224,20 +247,24 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
            while( (root = PDC_expand_combined_characters( root,
                               &newchar)) > MAX_UNICODE)
                ;
-           bytes_out += PDC_wc_to_utf8( obuff + bytes_out, (wchar_t)root);
+           bytes_out = PDC_wc_to_utf8( obuff, (wchar_t)root);
            root = ch;
            while( (root = PDC_expand_combined_characters( root,
                               &newchar)) > MAX_UNICODE)
                {
                bytes_out += PDC_wc_to_utf8( obuff + bytes_out, (wchar_t)newchar);
-               check_buff( obuff, &bytes_out);
+               if( bytes_out > OBUFF_SIZE - 6)
+                  {
+                  put_to_stdout( obuff, bytes_out);
+                  bytes_out = 0;
+                  }
                }
            bytes_out += PDC_wc_to_utf8( obuff + bytes_out, (wchar_t)newchar);
        }
        else if( ch < (int)MAX_UNICODE)
 #endif
        {
-           bytes_out += PDC_wc_to_utf8( obuff + bytes_out, (wchar_t)ch);
+           bytes_out = PDC_wc_to_utf8( obuff, (wchar_t)ch);
            while( count < len && !((srcp[0] ^ srcp[count]) & ~A_CHARTEXT)
                         && (ch = (srcp[count] & A_CHARTEXT)) < MAX_UNICODE)
            {
@@ -246,19 +273,23 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
                if( ch < (int)' ' || (ch >= 0x80 && ch <= 0x9f))
                   ch = ' ';
                bytes_out += PDC_wc_to_utf8( obuff + bytes_out, (wchar_t)ch);
-               check_buff( obuff, &bytes_out);
+               if( bytes_out > OBUFF_SIZE - 6)
+                  {
+                  put_to_stdout( obuff, bytes_out);
+                  bytes_out = 0;
+                  }
                count++;
            }
        }
+       put_to_stdout( obuff, bytes_out);
+       bytes_out = 0;
        prev_ch = *srcp;
        srcp += count;
        len -= count;
    }
-   assert( bytes_out < OBUFF_SIZE);
-   put_to_stdout( obuff, bytes_out);
 }
 
 void PDC_doupdate(void)
 {
-    fflush( stdout);
+    put_to_stdout( NULL, 0);
 }

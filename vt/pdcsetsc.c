@@ -48,6 +48,8 @@ pdcsetsc
 #define CURSOR_ON           "\033[?25h"
 #define CURSOR_OFF          "\033[?25l"
 
+void PDC_puts_to_stdout( const char *buff);
+
 int PDC_curs_set( int visibility)
 {
     int ret_vis;
@@ -57,9 +59,9 @@ int PDC_curs_set( int visibility)
     ret_vis = SP->visibility;
 
     if( !SP->visibility && visibility)    /* turn cursor back on */
-        printf( CURSOR_ON);
+        PDC_puts_to_stdout( CURSOR_ON);
     else if( SP->visibility && !visibility)
-        printf( CURSOR_OFF);
+        PDC_puts_to_stdout( CURSOR_OFF);
     SP->visibility = visibility;
     if( !PDC_is_ansi)
     {
@@ -96,7 +98,7 @@ int PDC_curs_set( int visibility)
                     break;
             }
 
-        printf( "%s", command);
+        PDC_puts_to_stdout( command);
     }
     return ret_vis;
 }
@@ -133,6 +135,10 @@ void PDC_set_title( const char *title)
 
 #ifndef DOS
     if( !PDC_is_ansi)
-        printf( "\033]2;%s\a", title);
+    {
+        PDC_puts_to_stdout( "\033]2;");
+        PDC_puts_to_stdout( title);
+        PDC_puts_to_stdout( "\a");
+    }
 #endif
 }
