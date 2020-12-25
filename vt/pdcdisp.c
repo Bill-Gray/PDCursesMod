@@ -6,7 +6,9 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
-#ifndef _WIN32
+#ifdef _WIN32
+    #include <io.h>
+#else
     #include <unistd.h>
 #endif
 
@@ -29,7 +31,6 @@ static void put_to_stdout( const char *buff, ssize_t bytes_out)
     static ssize_t bytes_cached;
     const int stdout_fd = 1;
 
-
     if( !buff && !tbuff)
         return;
 
@@ -38,6 +39,7 @@ static void put_to_stdout( const char *buff, ssize_t bytes_out)
         free( tbuff);
         tbuff = NULL;
         bytes_cached = 0;
+        return;
     }
 
     if( buff && !tbuff)
@@ -69,7 +71,7 @@ static void put_to_stdout( const char *buff, ssize_t bytes_out)
 
 void PDC_puts_to_stdout( const char *buff)
 {
-   put_to_stdout( buff, strlen( buff));
+   put_to_stdout( buff, (buff ? strlen( buff) : -1));
 }
 
 void PDC_gotoyx(int y, int x)

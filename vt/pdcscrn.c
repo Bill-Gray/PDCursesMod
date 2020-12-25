@@ -179,6 +179,7 @@ void PDC_scr_close( void)
    #endif
 #endif
    PDC_doupdate( );
+   PDC_puts_to_stdout( NULL);      /* free internal cache */
    return;
 }
 
