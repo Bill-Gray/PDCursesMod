@@ -25,16 +25,16 @@
 
 #define TBUFF_SIZE 512
 
-static void put_to_stdout( const char *buff, ssize_t bytes_out)
+static void put_to_stdout( const char *buff, size_t bytes_out)
 {
     static char *tbuff = NULL;
-    static ssize_t bytes_cached;
+    static size_t bytes_cached;
     const int stdout_fd = 1;
 
     if( !buff && !tbuff)
         return;
 
-    if( !buff && bytes_out == -1)        /* release memory at shutdown */
+    if( !buff && bytes_out == 1)        /* release memory at shutdown */
     {
         free( tbuff);
         tbuff = NULL;
@@ -48,7 +48,7 @@ static void put_to_stdout( const char *buff, ssize_t bytes_out)
     {
         if( buff)
         {
-            ssize_t n_copy = bytes_out;
+            size_t n_copy = bytes_out;
 
             if( n_copy > TBUFF_SIZE - bytes_cached)
                 n_copy = TBUFF_SIZE - bytes_cached;
@@ -60,7 +60,7 @@ static void put_to_stdout( const char *buff, ssize_t bytes_out)
         if( bytes_cached == TBUFF_SIZE || !buff)
             while( bytes_cached)
             {
-                const ssize_t bytes_written = write( stdout_fd, tbuff, bytes_cached);
+                const size_t bytes_written = write( stdout_fd, tbuff, bytes_cached);
 
                 bytes_cached -= bytes_written;
                 if( bytes_cached)
@@ -71,7 +71,7 @@ static void put_to_stdout( const char *buff, ssize_t bytes_out)
 
 void PDC_puts_to_stdout( const char *buff)
 {
-   put_to_stdout( buff, (buff ? strlen( buff) : -1));
+   put_to_stdout( buff, (buff ? strlen( buff) : 1));
 }
 
 void PDC_gotoyx(int y, int x)
@@ -219,7 +219,7 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
     {
        int ch = (int)( *srcp & A_CHARTEXT), count = 1;
        chtype changes = *srcp ^ prev_ch;
-       ssize_t bytes_out = 0;
+       size_t bytes_out = 0;
 
        if( (*srcp & A_ALTCHARSET) && ch < 0x80)
           ch = (int)acs_map[ch & 0x7f];
