@@ -118,6 +118,7 @@ void filter(void)
 
 void use_env(bool x)
 {
+    INTENTIONALLY_UNUSED_PARAMETER( x);
     PDC_LOG(("use_env() - called: x %d\n", x));
 }
 
@@ -166,6 +167,7 @@ int PDC_wc_to_utf8( char *dest, const int32_t code)
 int getcchar(const cchar_t *wcval, wchar_t *wch, attr_t *attrs,
              short *color_pair, void *opts)
 {
+    INTENTIONALLY_UNUSED_PARAMETER( opts);
     assert( wcval);
     if (!wcval)
         return ERR;
@@ -193,6 +195,7 @@ int getcchar(const cchar_t *wcval, wchar_t *wch, attr_t *attrs,
 int setcchar(cchar_t *wcval, const wchar_t *wch, const attr_t attrs,
              short color_pair, const void *opts)
 {
+    INTENTIONALLY_UNUSED_PARAMETER( opts);
     assert( wcval);
     assert( wch);
     if (!wcval || !wch)
@@ -239,7 +242,7 @@ wchar_t *wunctrl(cchar_t *wc)
 int PDC_mbtowc(wchar_t *pwc, const char *s, size_t n)
 {
 # ifdef PDC_FORCE_UTF8
-    wchar_t key;
+    uint32_t key;
     int i = -1;
     const unsigned char *string;
 
@@ -284,7 +287,7 @@ int PDC_mbtowc(wchar_t *pwc, const char *s, size_t n)
     else             /* 'ordinary' 7-bit ASCII */
         i = 1;
 
-    *pwc = key;
+    *pwc = (wchar_t)key;
 
     return i;
 # else

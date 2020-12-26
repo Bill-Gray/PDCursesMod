@@ -112,6 +112,7 @@ static int xlate_vt_codes_for_dos( const int key1, const int key2)
       0, 0 };
    int i, rval = 0;
 
+   INTENTIONALLY_UNUSED_PARAMETER( key1);
    for( i = 0; tbl[i] && !rval; i += 2)
       if( key2 == tbl[i + 1])
          rval = tbl[i];
@@ -278,7 +279,7 @@ static int xlate_vt_codes( const int *c, const int count)
    if( count >= 2)
       for( i = 0; rval == -1 && i < n_keycodes; i++)
          {
-         size_t j = 0;
+         int j = 0;
 
          while( j < count && xlates[i].xlation[j]
                                && xlates[i].xlation[j] == c[j])
@@ -532,5 +533,6 @@ int PDC_mouse_set( void)
 
 void PDC_set_keyboard_binary( bool on)
 {
+   INTENTIONALLY_UNUSED_PARAMETER( on);
    return;
 }

@@ -177,6 +177,7 @@ int scr_init(const char *filename)
 {
     PDC_LOG(("scr_init() - called: filename %s\n", filename));
 
+    INTENTIONALLY_UNUSED_PARAMETER( filename);
     return OK;
 }
 

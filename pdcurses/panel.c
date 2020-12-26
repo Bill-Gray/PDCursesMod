@@ -548,11 +548,13 @@ PANEL *panel_below(const PANEL *pan)
 
 PANEL *ceiling_panel( SCREEN *sp)
 {
+   INTENTIONALLY_UNUSED_PARAMETER( sp);
    return( panel_below( NULL));
 }
 
 PANEL *ground_panel( SCREEN *sp)
 {
+   INTENTIONALLY_UNUSED_PARAMETER( sp);
    return( panel_above( NULL));
 }
 

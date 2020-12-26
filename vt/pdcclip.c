@@ -52,16 +52,21 @@ int PDC_clearclipboard( void)
 
 int PDC_freeclipboard( char *contents)
 {
+   INTENTIONALLY_UNUSED_PARAMETER( contents);
    return( 0);
 }
 
 int PDC_getclipboard( char **contents, long *length)
 {
+   INTENTIONALLY_UNUSED_PARAMETER( contents);
+   INTENTIONALLY_UNUSED_PARAMETER( length);
    return( 0);
 }
 
 int PDC_setclipboard( const char *contents, long length)
 {
+   INTENTIONALLY_UNUSED_PARAMETER( contents);
+   INTENTIONALLY_UNUSED_PARAMETER( length);
    return( 0);
 }
 

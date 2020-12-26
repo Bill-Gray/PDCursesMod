@@ -153,10 +153,12 @@ int PDC_resize_screen(int nlines, int ncols)
 
 void PDC_restore_screen_mode(int i)
 {
+    INTENTIONALLY_UNUSED_PARAMETER( i);
 }
 
 void PDC_save_screen_mode(int i)
 {
+    INTENTIONALLY_UNUSED_PARAMETER( i);
 }
 
 void PDC_scr_close( void)
@@ -196,6 +198,7 @@ static void sigwinchHandler( int sig)
 {
    struct winsize ws;
 
+   INTENTIONALLY_UNUSED_PARAMETER( sig);
    if (ioctl(STDIN_FILENO, TIOCGWINSZ, &ws) != -1)
       if( PDC_rows != ws.ws_row || PDC_cols != ws.ws_col)
          {
@@ -209,6 +212,7 @@ static void sigwinchHandler( int sig)
 
 static void sigintHandler( int sig)
 {
+    INTENTIONALLY_UNUSED_PARAMETER( sig);
     if( !SP->raw_inp)
     {
         PDC_scr_close( );
@@ -327,6 +331,8 @@ int PDC_scr_open(void)
 
 int PDC_set_function_key( const unsigned function, const int new_key)
 {
+   INTENTIONALLY_UNUSED_PARAMETER( function);
+   INTENTIONALLY_UNUSED_PARAMETER( new_key);
    return( 0);
 }
 
@@ -335,6 +341,10 @@ void PDC_set_resize_limits( const int new_min_lines,
                             const int new_min_cols,
                             const int new_max_cols)
 {
+   INTENTIONALLY_UNUSED_PARAMETER( new_min_lines);
+   INTENTIONALLY_UNUSED_PARAMETER( new_max_lines);
+   INTENTIONALLY_UNUSED_PARAMETER( new_min_cols);
+   INTENTIONALLY_UNUSED_PARAMETER( new_max_cols);
    return;
 }
 

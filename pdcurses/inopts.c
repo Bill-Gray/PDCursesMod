@@ -195,6 +195,8 @@ int intrflush(WINDOW *win, bool bf)
 {
     PDC_LOG(("intrflush() - called\n"));
 
+    INTENTIONALLY_UNUSED_PARAMETER( win);
+    INTENTIONALLY_UNUSED_PARAMETER( bf);
     return OK;
 }
 
@@ -215,6 +217,7 @@ int meta(WINDOW *win, bool bf)
 {
     PDC_LOG(("meta() - called\n"));
 
+    INTENTIONALLY_UNUSED_PARAMETER( win);
     assert( SP);
     if (!SP)
         return ERR;
@@ -267,6 +270,8 @@ int notimeout(WINDOW *win, bool flag)
 {
     PDC_LOG(("notimeout() - called\n"));
 
+    INTENTIONALLY_UNUSED_PARAMETER( win);
+    INTENTIONALLY_UNUSED_PARAMETER( flag);
     return OK;
 }
 
@@ -310,6 +315,7 @@ void qiflush(void)
 
 int typeahead(int fildes)
 {
+    INTENTIONALLY_UNUSED_PARAMETER( fildes);
     PDC_LOG(("typeahead() - called\n"));
 
     return OK;

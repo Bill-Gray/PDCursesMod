@@ -120,4 +120,6 @@ size_t  PDC_wcstombs(char *, const wchar_t *, size_t);
 #define _INBUFSIZ        512  /* size of terminal input buffer */
 #define NUNGETCH         256  /* max # chars to ungetch() */
 
+#define INTENTIONALLY_UNUSED_PARAMETER( param) (void)(param)
+
 #endif /* __CURSES_INTERNALS__ */

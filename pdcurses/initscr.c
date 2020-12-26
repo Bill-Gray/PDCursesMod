@@ -326,6 +326,9 @@ SCREEN *newterm(const char *type, FILE *outfd, FILE *infd)
 {
     PDC_LOG(("newterm() - called\n"));
 
+    INTENTIONALLY_UNUSED_PARAMETER( type);
+    INTENTIONALLY_UNUSED_PARAMETER( outfd);
+    INTENTIONALLY_UNUSED_PARAMETER( infd);
     return initscr() ? SP : NULL;
 }
 
