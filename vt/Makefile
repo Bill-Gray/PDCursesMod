@@ -89,10 +89,10 @@ tui.o tuidemo.o : $(PDCURSES_CURSES_H)
 panel.o ptest: $(PANEL_HEADER)
 
 $(LIBOBJS) : %.o: $(srcdir)/%.c
-	$(BUILD) $(SFLAGS) -c $<
+	$(BUILD) $(SFLAGS) -Wextra -Werror -c $<
 
 $(PDCOBJS) : %.o: $(osdir)/%.c
-	$(BUILD) $(SFLAGS) -c $<
+	$(BUILD) $(SFLAGS) -Wextra -Werror -c $<
 
 firework$(E) : $(demodir)/firework.c
 	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
