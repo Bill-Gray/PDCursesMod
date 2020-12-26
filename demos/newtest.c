@@ -358,11 +358,12 @@ int main( int argc, char **argv)
                 {
                 char buff[4];
 
-                sprintf( buff, "%02x",
 #ifdef HAVE_WIDE
+                sprintf( buff, "%02x",
                                 (unsigned)( i * 16 + unicode_offset) & 0xff);
 #else
-                                (unsigned)( i * 16 + 128) & 0xff);
+                sprintf( buff, "%02x", (unsigned)( i * 16 + 128) & 0xff);
+
 #endif
                 mvaddstr( 6 + i, 1, buff);
                 mvaddstr( 6 + i, 36, buff);
