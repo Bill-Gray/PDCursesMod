@@ -53,6 +53,8 @@ static int next_j(int j)
     return j;
 }
 
+#define INTENTIONALLY_UNUSED_PARAMETER( param) (void)(param)
+
 int main(int argc, char *argv[])
 {
     time_t seed;
@@ -62,6 +64,8 @@ int main(int argc, char *argv[])
 #ifdef XCURSES
     Xinitscr(argc, argv);
 #else
+    INTENTIONALLY_UNUSED_PARAMETER( argv);
+    INTENTIONALLY_UNUSED_PARAMETER( argc);
     initscr();
 #endif
     seed = time((time_t *)0);

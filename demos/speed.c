@@ -30,6 +30,8 @@ would account for why the first load is a little slower.
 tested it under "real" Windows.
 */
 
+#define INTENTIONALLY_UNUSED_PARAMETER( param) (void)(param)
+
 /* ftime() is consided obsolete.  But it's all we have for
 millisecond precision on older compilers/systems.  We'll
 use gettimeofday() when available.        */
@@ -62,6 +64,8 @@ int main( const int argc, const char **argv)
     unsigned n_frames = 0;
     long t0;
 
+    INTENTIONALLY_UNUSED_PARAMETER( argv);
+    INTENTIONALLY_UNUSED_PARAMETER( argc);
     resize_term( 30, 90);
     initscr();
     cbreak( );

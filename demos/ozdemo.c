@@ -209,6 +209,8 @@ void trap(int sig)
     }
 }
 
+#define INTENTIONALLY_UNUSED_PARAMETER( param) (void)(param)
+
 int main(int argc, char **argv)
 {
     WINDOW *win;
@@ -226,6 +228,8 @@ int main(int argc, char **argv)
 #ifdef XCURSES
     Xinitscr(argc, argv);
 #else
+    INTENTIONALLY_UNUSED_PARAMETER( argv);
+    INTENTIONALLY_UNUSED_PARAMETER( argc);
     initscr();
 #endif
     seed = time((time_t *)0);

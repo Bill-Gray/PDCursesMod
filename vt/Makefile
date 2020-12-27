@@ -20,7 +20,7 @@ SFLAGS		= -DHAVE_VSNPRINTF -DHAVE_VSSCANF
 ifeq ($(DEBUG),Y)
 	CFLAGS  = -g -Wall -pedantic -DPDCDEBUG
 else
-	CFLAGS  = -O2 -Wall -pedantic
+	CFLAGS  = -O2 -Wall -Wextra -pedantic
 endif
 
 ifeq ($(DOS),Y)
@@ -89,10 +89,10 @@ tui.o tuidemo.o : $(PDCURSES_CURSES_H)
 panel.o ptest: $(PANEL_HEADER)
 
 $(LIBOBJS) : %.o: $(srcdir)/%.c
-	$(BUILD) $(SFLAGS) -Wextra -Werror -c $<
+	$(BUILD) $(SFLAGS) -c $<
 
 $(PDCOBJS) : %.o: $(osdir)/%.c
-	$(BUILD) $(SFLAGS) -Wextra -Werror -c $<
+	$(BUILD) $(SFLAGS) -c $<
 
 firework$(E) : $(demodir)/firework.c
 	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)

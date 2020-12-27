@@ -218,7 +218,7 @@ void subsub(void)
 
 /***************************** start main menu  ***************************/
 
-int main(int argc, char **argv)
+int main( void)
 {
     setlocale(LC_ALL, "");
 

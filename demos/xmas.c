@@ -82,6 +82,8 @@ WINDOW *treescrn, *treescrn2, *treescrn3, *treescrn4, *treescrn5,
        *bigdeer2, *bigdeer3, *bigdeer4, *lookdeer0, *lookdeer1,
        *lookdeer2, *lookdeer3, *lookdeer4, *w_holiday, *w_del_msg;
 
+#define INTENTIONALLY_UNUSED_PARAMETER( param) (void)(param)
+
 int main(int argc, char **argv)
 {
     int loopy;
@@ -89,6 +91,8 @@ int main(int argc, char **argv)
 #ifdef XCURSES
     Xinitscr(argc, argv);
 #else
+    INTENTIONALLY_UNUSED_PARAMETER( argc);
+    INTENTIONALLY_UNUSED_PARAMETER( argv);
     initscr();
 #endif
     nodelay(stdscr, TRUE);
