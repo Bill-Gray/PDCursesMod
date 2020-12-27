@@ -354,7 +354,7 @@ int PDC_get_key( void)
                }
             else                 /* SGR mouse encoding */
                {
-               int n_fields, n_bytes, i;
+               int n_fields, n_bytes;
                char tbuff[MAX_COUNT];
 
                assert( c[1] == '<');

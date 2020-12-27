@@ -136,9 +136,9 @@ int main()
          case KEY_LEFT: case KEY_RIGHT: case KEY_UP: case KEY_DOWN:
             {
             WINDOW *win = panel_window( curr_top);
-            int x = getbegx( win);
-            int y = getbegy( win);
 
+            x = getbegx( win);
+            y = getbegy( win);
             if( c == KEY_LEFT)
                x--;
             if( c == KEY_RIGHT)
