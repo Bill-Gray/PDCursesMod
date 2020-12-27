@@ -14,7 +14,7 @@
 PDCEX SDL_Surface *pdc_screen;
 PDCEX int pdc_yoffset;
 
-int main(int argc, char **argv)
+int main( void)
 {
     char inp[60];
     int i, j, seed;
