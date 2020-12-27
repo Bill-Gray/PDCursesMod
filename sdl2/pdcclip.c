@@ -64,6 +64,7 @@ int PDC_setclipboard(const char *contents, long length)
 {
     PDC_LOG(("PDC_setclipboard() - called\n"));
 
+    INTENTIONALLY_UNUSED_PARAMETER( length);
     if (SDL_SetClipboardText(contents) != 0)
         return PDC_CLIP_ACCESS_ERROR;
 

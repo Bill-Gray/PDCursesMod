@@ -74,6 +74,7 @@ static struct
 
 void PDC_set_keyboard_binary(bool on)
 {
+    INTENTIONALLY_UNUSED_PARAMETER( on);
     PDC_LOG(("PDC_set_keyboard_binary() - called\n"));
 }
 
@@ -426,6 +427,7 @@ int PDC_get_key(void)
         break;
     case SDL_MOUSEMOTION:
         SDL_ShowCursor(SDL_ENABLE);
+               /* FALLTHRU */
     case SDL_MOUSEBUTTONUP:
     case SDL_MOUSEBUTTONDOWN:
     case SDL_MOUSEWHEEL:

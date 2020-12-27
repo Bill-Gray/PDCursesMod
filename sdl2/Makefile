@@ -49,9 +49,9 @@ CC		= $(PREFIX)gcc
 PDCURSES_SDL_H	= $(osdir)/pdcsdl.h
 
 ifeq ($(DEBUG),Y)
-	CFLAGS  = -g -Wall -DPDCDEBUG -fPIC
+	CFLAGS  = -g -Wall -Wextra -Werror -pedantic -DPDCDEBUG -fPIC
 else
-	CFLAGS  += -O2 -Wall -fPIC
+	CFLAGS  += -O2 -Wall -Wextra -Werror -pedantic -fPIC
 endif
 
 ifeq ($(WIDE),Y)

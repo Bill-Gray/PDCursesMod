@@ -10,6 +10,8 @@
 #include <stdlib.h>
 #include <time.h>
 
+#define INTENTIONALLY_UNUSED_PARAMETER( param) (void)(param)
+
 #include "pdcsdl.h"
 
 int main(int argc, char **argv)
@@ -30,6 +32,9 @@ int main(int argc, char **argv)
     {
          pdc_sdl_render_mode = atoi( argv[1]);
     }
+#else
+    INTENTIONALLY_UNUSED_PARAMETER( argc);
+    INTENTIONALLY_UNUSED_PARAMETER( argv);
 #endif
 
     atexit(SDL_Quit);
