@@ -530,7 +530,7 @@ unsigned long PDC_get_key_modifiers(void)
 
     assert( SP);
     if (!SP)
-        return ERR;
+        return (unsigned long)ERR;
 
     return SP->key_modifiers;
 }
@@ -563,7 +563,7 @@ int wget_wch(WINDOW *win, wint_t *wch)
     if (key == ERR)
         return ERR;
 
-    *wch = key;
+    *wch = (wint_t)key;
 
     return SP->key_code ? KEY_CODE_YES : OK;
 }

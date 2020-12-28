@@ -326,7 +326,7 @@ int wgetn_wstr(WINDOW *win, wint_t *wstr, int n)
                 {
                     if (oldecho)
                         waddch(win, ch);
-                    *p++ = ch;
+                    *p++ = (wint_t)ch;
                     ++chars;
                 }
                 else
@@ -392,7 +392,7 @@ int wgetn_wstr(WINDOW *win, wint_t *wstr, int n)
             {
                 if (!SP->key_code)
                 {
-                    *p++ = ch;
+                    *p++ = (wint_t)ch;
                     if (oldecho)
                         waddch(win, ch);
                     chars++;

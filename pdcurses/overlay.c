@@ -217,5 +217,5 @@ int copywin(const WINDOW *src_w, WINDOW *dst_w, int src_tr, int src_tc,
     src_end_x = src_tc + min_cols;
 
     return _copy_win(src_w, dst_w, src_tr, src_tc, src_end_y, src_end_x,
-                     dst_tr, dst_tc, _overlay);
+                     dst_tr, dst_tc, (bool)_overlay);
 }

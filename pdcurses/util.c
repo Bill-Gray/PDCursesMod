@@ -314,7 +314,7 @@ size_t PDC_mbstowcs(wchar_t *dest, const char *src, size_t n)
         int retval = PDC_mbtowc(dest + i, src, len);
 
         if (retval < 1)
-            return -1;
+            return (size_t)-1;
 
         src += retval;
         len -= retval;
