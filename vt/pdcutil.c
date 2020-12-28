@@ -6,9 +6,11 @@
    #include <unistd.h>
 #endif
 #include "curspriv.h"
+#include "pdcvt.h"
 
 void PDC_beep(void)
 {
+   PDC_puts_to_stdout( "\a");
 }
 
 void PDC_napms(int ms)
