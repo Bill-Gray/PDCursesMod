@@ -116,8 +116,10 @@ void PDC_reset_prog_mode( void)
     term.c_lflag &= ~(ICANON | ECHO);
     tcsetattr( STDIN, TCSANOW, &term);
 #endif
+#ifndef _WIN32
     if( !PDC_is_ansi)
         PDC_puts_to_stdout( "\033[?1006h");    /* Set SGR mouse tracking,  if available */
+#endif
     PDC_puts_to_stdout( "\033[?47h");      /* Save screen */
     PDC_puts_to_stdout( "\033" "7");         /* save cursor & attribs (VT100) */
 
@@ -163,8 +165,10 @@ void PDC_save_screen_mode(int i)
 
 void PDC_scr_close( void)
 {
+#ifndef _WIN32
    if( !PDC_is_ansi)
        PDC_puts_to_stdout( "\033[?1006l");    /* Turn off SGR mouse tracking */
+#endif
    PDC_puts_to_stdout( "\033" "8");         /* restore cursor & attribs (VT100) */
    PDC_puts_to_stdout( "\033[m");         /* set default screen attributes */
    PDC_puts_to_stdout( "\033[?47l");      /* restore screen */
