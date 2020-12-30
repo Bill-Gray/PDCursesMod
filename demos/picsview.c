@@ -257,6 +257,11 @@ int main( const int argc, const char *argv[])
       bytes_per_pixel = 1;
    if( fgets( buff, sizeof( buff), ifile))
       sscanf( buff, "%d %d", &xsize, &ysize);
+   else
+      {
+      fprintf( stderr, "Unable to read '%s'\n", filename_to_show);
+      return( -9);
+      }
    if( !fgets( buff, sizeof( buff), ifile))
       return( -4);
    pixels = (char *)calloc( xsize * ysize, 3);
@@ -292,6 +297,7 @@ int main( const int argc, const char *argv[])
       double xpix1, ypix1;
 
       assert( xloc);
+      memset( &mouse_event, 0, sizeof( MEVENT));
       if( !scale)       /* recompute scale */
          {
          double scale1 = (double)xsize / (double)COLS;

@@ -729,7 +729,7 @@ int weditstr(WINDOW *win, char *buf, int field)
                         memmove((void *)(bp + 1), (const void *)bp,
                                 strlen(bp) + 1);
 
-                        *bp++ = c;
+                        *bp++ = (char)c;
                     }
                 }
                 else if (bp - buf < field - 1)
@@ -739,7 +739,7 @@ int weditstr(WINDOW *win, char *buf, int field)
                     if (!*bp)
                         bp[1] = '\0';
 
-                    *bp++ = c;
+                    *bp++ = (char)c;
                 }
             }
         }

@@ -381,7 +381,7 @@ int main(int argc, char *argv[])
         {
             if ((x = w->xpos[h = w->head]) < 0)
             {
-                move(y = w->ypos[h] = bottom, x = w->xpos[h] = 0);
+                move(y = w->ypos[h] = (short)bottom, x = w->xpos[h] = 0);
                 addch(flavor[n % FLAVORS]);
                 ref[y][x]++;
             }
@@ -438,7 +438,7 @@ int main(int argc, char *argv[])
                 y = 0;
 
             addch(flavor[n % FLAVORS]);
-            ref[w->ypos[h] = y][w->xpos[h] = x]++;
+            ref[w->ypos[h] = (short)y][w->xpos[h] = (short)x]++;
         }
         napms(12);
         refresh();

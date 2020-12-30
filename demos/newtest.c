@@ -125,6 +125,8 @@ we can switch back to a "normal" console app by removing the above
 #undef MOUSE_MOVED
 #include <windows.h>
 
+#define INTENTIONALLY_UNUSED_PARAMETER( param) (void)(param)
+
 int dummy_main( int argc, char **argv);
 
 int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
@@ -133,6 +135,9 @@ int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
    char *argv[30];
    int i, argc = 1;
 
+   INTENTIONALLY_UNUSED_PARAMETER( hInstance);
+   INTENTIONALLY_UNUSED_PARAMETER( hPrevInstance);
+   INTENTIONALLY_UNUSED_PARAMETER( nCmdShow);
    argv[0] = "newtest";
    for( i = 0; lpszCmdLine[i]; i++)
        if( lpszCmdLine[i] != ' ' && (!i || lpszCmdLine[i - 1] == ' '))
@@ -169,7 +174,7 @@ int main( int argc, char **argv)
 
     setlocale(LC_ALL, "");
     ttytype[0] = 25;   ttytype[1] = 90;         /* Allow 25 to 90 lines... */
-    ttytype[2] = 80;   ttytype[3] = (char)200;  /* ...and 80 to 200 columns */
+    ttytype[2] = 80;   ttytype[3] = (char)127;  /* ...and 80 to 127 columns */
          /* (This program gets weird artifacts when smaller than 25x80.) */
     for( i = 1; i < argc; i++)
         if( argv[i][0] == '-')
@@ -198,10 +203,10 @@ int main( int argc, char **argv)
                                        &min_lines, &max_lines,
                                        &min_cols, &max_cols) == 4)
                         {
-                            ttytype[0] = min_lines;
-                            ttytype[1] = max_lines;
-                            ttytype[2] = min_cols;
-                            ttytype[3] = max_cols;
+                            ttytype[0] = (char)min_lines;
+                            ttytype[1] = (char)max_lines;
+                            ttytype[2] = (char)min_cols;
+                            ttytype[3] = (char)max_cols;
                         }
                     }
                     break;
@@ -356,8 +361,6 @@ int main( int argc, char **argv)
             mvaddstr( 5, 1, "   0 1 2 3 4 5 6 7 8 9 a b c d e f");
             for( i = 0; i < 8; i++)
                 {
-                char buff[4];
-
 #ifdef HAVE_WIDE
                 sprintf( buff, "%02x",
                                 (unsigned)( i * 16 + unicode_offset) & 0xff);
@@ -371,11 +374,11 @@ int main( int argc, char **argv)
             for( i = 0; i < 128; i++)
             {                 /* Show extended characters: */
 #ifdef HAVE_WIDE
-                wchar_t buff[2];
+                wchar_t wbuff[2];
 
-                buff[0] = (wchar_t)( i + unicode_offset);
-                buff[1] = '\0';
-                mvaddwstr( 6 + i / 16, 4 + 2 * (i % 16), buff);
+                wbuff[0] = (wchar_t)( i + unicode_offset);
+                wbuff[1] = '\0';
+                mvaddwstr( 6 + i / 16, 4 + 2 * (i % 16), wbuff);
 #else
                 move( 6 + i / 16, 4 + 2 * (i % 16));
                 addch( i + 128);

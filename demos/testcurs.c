@@ -115,7 +115,10 @@ int main(int argc, char *argv[])
     int key, old_option = -1, new_option = 0;
     bool quit = FALSE;
 
-    setlocale(LC_ALL, "");
+    if( argc == 2)
+       setlocale(LC_ALL, argv[1]);
+    else
+       setlocale(LC_ALL, "");
 
 #ifdef PDCURSES
 #ifdef PDC_VER_MAJOR   /* so far only seen in 4.0+ */
@@ -1293,7 +1296,7 @@ void remap(int tmarg, const short *colors)
     {
         short red, green, blue;
     } orgcolors[16];
-    int i, maxcol = (COLORS >= 16) ? 16 : 8;
+    short i, maxcol = (COLORS >= 16) ? 16 : 8;
 
     for (i = 0; i < maxcol; i++)
         color_content(i, &(orgcolors[i].red),
@@ -1325,7 +1328,7 @@ void remap(int tmarg, const short *colors)
 
 void extended(int tmarg)
 {
-    int i, x, y, z, lmarg = (COLS - 77) / 2;
+    short i, x, y, z, lmarg = (short)(COLS - 77) / 2;
 
     erase();
 
@@ -1402,8 +1405,8 @@ void gradient(int tmarg)
         move(tmarg + 3 + i, (COLS - 69) / 2);
         for (j = 0; j < len && cnum < COLORS && pnum < COLOR_PAIRS; j++)
         {
-            const int oval = j * 1000 / len;
-            const int reverse = 1000 - oval;
+            const short oval = (short)( j * 1000 / len);
+            const short reverse = 1000 - oval;
 
             if (!i)
             {
@@ -1422,10 +1425,12 @@ void gradient(int tmarg)
             }
             else
             {
-                const int r = rand( ) % 400, g = rand( ) % 400, b = rand( ) % 400;
+                const short r = (short)( rand( ) % 400);
+                const short g = (short)( rand( ) % 400);
+                const short b = (short)( rand( ) % 400);
 
-                init_color(cnum, r, g, b);
-                init_color(cnum + 1, 1000 - r, 1000 - g, 1000 - b);
+                init_color( cnum, r, g, b);
+                init_color( cnum + 1, 1000 - r, 1000 - g, 1000 - b);
             }
             init_pair(pnum, cnum, cnum + 1);
             attrset(COLOR_PAIR(pnum));
@@ -1493,9 +1498,9 @@ void colorTest(WINDOW *win)
 
     for (i = 0; i < 8; i++)
     {
-        init_pair(i + 4, colors[i], COLOR_BLACK);
+        init_pair((short)i + 4, colors[i], COLOR_BLACK);
         if (widecol)
-            init_pair(i + 12, colors[i] + 8, COLOR_BLACK);
+            init_pair((short)i + 12, colors[i] + 8, COLOR_BLACK);
 
         mvaddstr(tmarg + i + 5, col1, colornames[i]);
 
