@@ -60,7 +60,12 @@ static void put_to_stdout( const char *buff, size_t bytes_out)
         if( bytes_cached == TBUFF_SIZE || !buff)
             while( bytes_cached)
             {
+#ifdef _WIN32
+                const size_t bytes_written = _write( stdout_fd, tbuff,
+                                             (unsigned int)bytes_cached);
+#else
                 const size_t bytes_written = write( stdout_fd, tbuff, bytes_cached);
+#endif
 
                 bytes_cached -= bytes_written;
                 if( bytes_cached)
@@ -82,6 +87,7 @@ void PDC_gotoyx(int y, int x)
    PDC_puts_to_stdout( tbuff);
 }
 
+#define RESET_ATTRS   "\033[0m"
 #define ITALIC_ON     "\033[3m"
 #define ITALIC_OFF    "\033[23m"
 #define UNDERLINE_ON  "\033[4m"
@@ -93,7 +99,6 @@ void PDC_gotoyx(int y, int x)
 #define DIM_ON        "\033[2m"
 #define DIM_OFF       "\033[22m"
 #define REVERSE_ON    "\033[7m"
-#define REVERSE_OFF   "\033[27m"
 
 const chtype MAX_UNICODE = 0x110000;
 
@@ -198,10 +203,9 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
 
     if( !srcp)
     {
-        const char *reset_all = BLINK_OFF BOLD_OFF UNDERLINE_OFF ITALIC_OFF REVERSE_OFF;
         prev_ch = 0;
         force_reset_all_attribs = TRUE;
-        PDC_puts_to_stdout( reset_all);
+        PDC_puts_to_stdout( RESET_ATTRS);
         return;
     }
     assert( x >= 0);
@@ -225,16 +229,21 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
           ch = (int)acs_map[ch & 0x7f];
        if( ch < (int)' ' || (ch >= 0x80 && ch <= 0x9f))
           ch = ' ';
+       *obuff = '\0';
+       if( (prev_ch & ~*srcp) & A_REVERSE)
+       {
+          prev_ch = 0;
+          changes = *srcp;
+          strcpy( obuff, RESET_ATTRS);
+       }
        if( SP->termattrs & changes & A_BOLD)
-          strcpy( obuff, (*srcp & A_BOLD) ? BOLD_ON : BOLD_OFF);
-       else
-          *obuff = '\0';
+          strcat( obuff, (*srcp & A_BOLD) ? BOLD_ON : BOLD_OFF);
        if( changes & A_UNDERLINE)
           strcat( obuff, (*srcp & A_UNDERLINE) ? UNDERLINE_ON : UNDERLINE_OFF);
        if( changes & A_ITALIC)
           strcat( obuff, (*srcp & A_ITALIC) ? ITALIC_ON : ITALIC_OFF);
        if( changes & A_REVERSE)
-          strcat( obuff, (*srcp & A_REVERSE) ? REVERSE_ON : REVERSE_OFF);
+          strcat( obuff, REVERSE_ON);
        if( SP->termattrs & changes & A_BLINK)
           strcat( obuff, (*srcp & A_BLINK) ? BLINK_ON : BLINK_OFF);
        if( changes & (A_COLOR | A_STANDOUT | A_BLINK))
