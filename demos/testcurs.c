@@ -1251,15 +1251,30 @@ void attrTest(WINDOW *win)
     attrset(A_NORMAL);
 
 #ifdef A_STRIKEOUT
-    attrset(A_STRIKEOUT);
-    mvaddstr(tmarg + 15, col1, "A_STRIKEOUT");
-    attrset(A_NORMAL);
+    if( A_STRIKEOUT)
+    {
+        attrset(A_STRIKEOUT);
+        mvaddstr(tmarg + 15, col1, "A_STRIKEOUT");
+        attrset(A_NORMAL);
+    }
+#endif
+
+#ifdef A_OVERLINE
+    if( A_OVERLINE)
+    {
+        attrset(A_OVERLINE);
+        mvaddstr(tmarg + 15, col2, "A_OVERLINE");
+        attrset(A_NORMAL);
+    }
 #endif
 
 #ifdef A_ITALIC
-    attrset(A_ITALIC|A_UNDERLINE);
-    mvaddstr(tmarg + 3, col2, "Underlined Italic");
-    attrset(A_NORMAL);
+    if( A_ITALIC)
+    {
+        attrset(A_ITALIC|A_UNDERLINE);
+        mvaddstr(tmarg + 3, col2, "Underlined Italic");
+        attrset(A_NORMAL);
+    }
 #endif
 
     attrset(A_BOLD|A_UNDERLINE);
