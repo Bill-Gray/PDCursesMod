@@ -99,6 +99,7 @@ void PDC_gotoyx(int y, int x)
 #define DIM_ON        "\033[2m"
 #define DIM_OFF       "\033[22m"
 #define REVERSE_ON    "\033[7m"
+#define STRIKEOUT_ON  "\033[9m"
 
 const chtype MAX_UNICODE = 0x110000;
 
@@ -230,7 +231,7 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
        if( ch < (int)' ' || (ch >= 0x80 && ch <= 0x9f))
           ch = ' ';
        *obuff = '\0';
-       if( (prev_ch & ~*srcp) & A_REVERSE)
+       if( (prev_ch & ~*srcp) & (A_REVERSE | A_STRIKEOUT))
        {
           prev_ch = 0;
           changes = *srcp;
@@ -244,6 +245,10 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
           strcat( obuff, (*srcp & A_ITALIC) ? ITALIC_ON : ITALIC_OFF);
        if( changes & A_REVERSE)
           strcat( obuff, REVERSE_ON);
+#ifndef _WIN32                /* MS doesn't support strikeout text */
+       if( changes & A_STRIKEOUT)
+          strcat( obuff, STRIKEOUT_ON);
+#endif
        if( SP->termattrs & changes & A_BLINK)
           strcat( obuff, (*srcp & A_BLINK) ? BLINK_ON : BLINK_OFF);
        if( changes & (A_COLOR | A_STANDOUT | A_BLINK))

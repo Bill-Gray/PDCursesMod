@@ -260,6 +260,8 @@ int PDC_scr_open(void)
           PDC_capabilities |= A_DIM;
        if( strstr( capabilities, "STA"))
           PDC_capabilities |= A_STANDOUT;
+       if( strstr( capabilities, "STR"))
+          PDC_capabilities |= A_STRIKEOUT;
        }
     COLORS = (PDC_is_ansi ? 16 : 256);
     if( PDC_has_rgb_color)

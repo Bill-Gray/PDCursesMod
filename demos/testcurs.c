@@ -1250,6 +1250,12 @@ void attrTest(WINDOW *win)
     mvaddstr(tmarg + 13, col1, "A_UNDERLINE");
     attrset(A_NORMAL);
 
+#ifdef A_STRIKEOUT
+    attrset(A_STRIKEOUT);
+    mvaddstr(tmarg + 15, col1, "A_STRIKEOUT");
+    attrset(A_NORMAL);
+#endif
+
 #ifdef A_ITALIC
     attrset(A_ITALIC|A_UNDERLINE);
     mvaddstr(tmarg + 3, col2, "Underlined Italic");
@@ -1280,7 +1286,7 @@ void attrTest(WINDOW *win)
     mvaddstr(tmarg + 13, col2, "Reverse Blink");
     attrset(A_NORMAL);
 
-    mvaddstr(tmarg + 16, 3, "Press any key to continue");
+    mvaddstr(tmarg + 17, 3, "Press any key to continue");
     curTest();
 
 #ifdef PDCURSES
