@@ -594,7 +594,7 @@ int PDC_scr_open(void)
     SP->audible = TRUE;
 
     SP->termattrs = A_COLOR | A_ITALIC | A_UNDERLINE | A_LEFT | A_RIGHT |
-                    A_REVERSE;
+                    A_REVERSE | A_STRIKEOUT | A_OVERLINE;
 
     /* Add Event handlers to the drawing widget */
 

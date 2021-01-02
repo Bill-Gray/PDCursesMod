@@ -301,16 +301,26 @@ static int _new_packet(chtype attr, int len, int col, int row,
 
         /* Underline, etc. */
 
-        if (attr & (A_LEFT | A_RIGHT | A_UNDERLINE))
+        if (attr & (A_LEFT | A_RIGHT | A_UNDERLINE | A_OVERLINE | A_STRIKEOUT))
         {
             int k;
+            const int xend = xpos + pdc_fwidth * len;
 
             if (SP->line_color != -1)
                 XSetForeground(XCURSESDISPLAY, gc, PDC_get_pixel( SP->line_color));
 
             if (attr & A_UNDERLINE)
                 XDrawLine(XCURSESDISPLAY, XCURSESWIN, gc,
-                          xpos, ypos + 1, xpos + pdc_fwidth * len, ypos + 1);
+                          xpos, ypos + 1, xend, ypos + 1);
+
+            if (attr & A_OVERLINE)
+                XDrawLine(XCURSESDISPLAY, XCURSESWIN, gc,
+                          xpos, ypos - pdc_fascent, xend,  ypos - pdc_fascent);
+
+            if (attr & A_STRIKEOUT)
+                XDrawLine(XCURSESDISPLAY, XCURSESWIN, gc,
+                          xpos, ypos - pdc_fascent / 2, xend,
+                                ypos - pdc_fascent / 2);
 
             if (attr & A_LEFT)
                 for (k = 0; k < len; k++)
