@@ -16,6 +16,8 @@ static int PDC_shutdown_key[PDC_MAX_FUNCTION_KEYS] = { 0, 0, 0, 0, 0 };
 #include "../common/icon64.xpm"
 #include "../common/icon32.xpm"
 
+#include "../common/pdccolor.c"
+
 #ifdef PDC_WIDE
 # define DEFNFONT "-misc-fixed-medium-r-normal--20-200-75-75-c-100-iso10646-1"
 # define DEFIFONT "-misc-fixed-medium-o-normal--20-200-75-75-c-100-iso10646-1"
@@ -146,8 +148,6 @@ static XrmOptionDescRec options[] =
 #undef CCOLOR
 #undef COPT
 
-Pixel pdc_color[PDC_MAXCOL];
-
 XCursesAppData pdc_app_data;
 XtAppContext pdc_app_context;
 Widget pdc_toplevel, pdc_drawing;
@@ -223,45 +223,11 @@ void XCursesExit(void)
     PDC_scr_free();
 }
 
-static void _initialize_colors(void)
+Pixel PDC_get_pixel( const int idx)
 {
-    int i, r, g, b;
+   PACKED_RGB rgb = PDC_get_palette_entry( idx);
 
-    pdc_color[COLOR_BLACK]   = pdc_app_data.colorBlack;
-    pdc_color[COLOR_RED]     = pdc_app_data.colorRed;
-    pdc_color[COLOR_GREEN]   = pdc_app_data.colorGreen;
-    pdc_color[COLOR_YELLOW]  = pdc_app_data.colorYellow;
-    pdc_color[COLOR_BLUE]    = pdc_app_data.colorBlue;
-    pdc_color[COLOR_MAGENTA] = pdc_app_data.colorMagenta;
-    pdc_color[COLOR_CYAN]    = pdc_app_data.colorCyan;
-    pdc_color[COLOR_WHITE]   = pdc_app_data.colorWhite;
-
-    pdc_color[COLOR_BLACK + 8]   = pdc_app_data.colorBoldBlack;
-    pdc_color[COLOR_RED + 8]     = pdc_app_data.colorBoldRed;
-    pdc_color[COLOR_GREEN + 8]   = pdc_app_data.colorBoldGreen;
-    pdc_color[COLOR_YELLOW + 8]  = pdc_app_data.colorBoldYellow;
-    pdc_color[COLOR_BLUE + 8]    = pdc_app_data.colorBoldBlue;
-    pdc_color[COLOR_MAGENTA + 8] = pdc_app_data.colorBoldMagenta;
-    pdc_color[COLOR_CYAN + 8]    = pdc_app_data.colorBoldCyan;
-    pdc_color[COLOR_WHITE + 8]   = pdc_app_data.colorBoldWhite;
-
-#define RGB(R, G, B) ( ((unsigned long)(R) << 16) | \
-                       ((unsigned long)(G) << 8) | \
-                       ((unsigned long)(B)) )
-
-    /* 256-color xterm extended palette: 216 colors in a 6x6x6 color
-       cube, plus 24 shades of gray */
-
-    for (i = 16, r = 0; r < 6; r++)
-        for (g = 0; g < 6; g++)
-            for (b = 0; b < 6; b++)
-                pdc_color[i++] = RGB(r ? r * 40 + 55 : 0,
-                                     g ? g * 40 + 55 : 0,
-                                     b ? b * 40 + 55 : 0);
-    for (i = 0; i < 24; i++)
-        pdc_color[i + 232] = RGB(i * 10 + 8, i * 10 + 8, i * 10 + 8);
-
-#undef RGB
+   return( (Pixel) ( ((rgb >> 16) & 0xff) | (rgb & 0xff00) | ((rgb & 0xff) << 16)));
 }
 
 static void _get_icon(void)
@@ -472,8 +438,8 @@ static void _get_gc(GC *gc, XFontStruct *font_info, int fore, int back)
 
     XSetFont(XCURSESDISPLAY, *gc, font_info->fid);
 
-    XSetForeground(XCURSESDISPLAY, *gc, pdc_color[fore]);
-    XSetBackground(XCURSESDISPLAY, *gc, pdc_color[back]);
+    XSetForeground(XCURSESDISPLAY, *gc, PDC_get_pixel( fore));
+    XSetBackground(XCURSESDISPLAY, *gc, PDC_get_pixel( back));
 }
 
 static void _pointer_setup(void)
@@ -689,7 +655,7 @@ int PDC_scr_open(void)
         XtDispatchEvent(&event);
     }
 
-    _initialize_colors();
+    PDC_init_palette( );
 
     SP->orig_attr = FALSE;
 
@@ -751,7 +717,7 @@ int PDC_color_content(int color, int *red, int *green, int *blue)
     Colormap cmap = DefaultColormap(XCURSESDISPLAY,
                                     DefaultScreen(XCURSESDISPLAY));
 
-    tmp.pixel = pdc_color[color];
+    tmp.pixel = PDC_get_pixel( color);
     XQueryColor(XCURSESDISPLAY, cmap, &tmp);
 
     *red = ((double)(tmp.red) * 1000 / 65535) + 0.5;
@@ -773,8 +739,10 @@ int PDC_init_color(int color, int red, int green, int blue)
                                     DefaultScreen(XCURSESDISPLAY));
 
     if (XAllocColor(XCURSESDISPLAY, cmap, &tmp))
-        pdc_color[color] = tmp.pixel;
-
+        PDC_set_palette_entry( color,
+                  PACK_RGB( (PACKED_RGB)tmp.red >> 8,
+                            (PACKED_RGB)tmp.green >> 8,
+                            (PACKED_RGB)tmp.blue >> 8));
     return OK;
 }
 

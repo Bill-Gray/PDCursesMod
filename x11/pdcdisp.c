@@ -89,7 +89,7 @@ static void _display_cursor(int old_row, int old_x, int new_row, int new_x)
 
     if (pdc_vertical_cursor)
     {
-        XSetForeground(XCURSESDISPLAY, pdc_cursor_gc, pdc_color[back]);
+        XSetForeground(XCURSESDISPLAY, pdc_cursor_gc, PDC_get_pixel( back));
 
         for (i = 1; i <= SP->visibility; i++)
             XDrawLine(XCURSESDISPLAY, XCURSESWIN, pdc_cursor_gc,
@@ -281,7 +281,7 @@ static int _new_packet(chtype attr, int len, int col, int row,
 
     if (pdc_blinked_off && (sysattrs & A_BLINK) && (attr & A_BLINK))
     {
-        XSetForeground(XCURSESDISPLAY, gc, pdc_color[rev ? fore : back]);
+        XSetForeground(XCURSESDISPLAY, gc, PDC_get_pixel( rev ? fore : back));
         XFillRectangle(XCURSESDISPLAY, XCURSESWIN, gc, xpos, bounds.y,
                        bounds.width, pdc_fheight);
     }
@@ -289,8 +289,8 @@ static int _new_packet(chtype attr, int len, int col, int row,
     {
         /* Draw it */
 
-        XSetForeground(XCURSESDISPLAY, gc, pdc_color[rev ? back : fore]);
-        XSetBackground(XCURSESDISPLAY, gc, pdc_color[rev ? fore : back]);
+        XSetForeground(XCURSESDISPLAY, gc, PDC_get_pixel( rev ? back : fore));
+        XSetBackground(XCURSESDISPLAY, gc, PDC_get_pixel( rev ? fore : back));
 
 #ifdef PDC_WIDE
         XDrawImageString16(
@@ -306,7 +306,7 @@ static int _new_packet(chtype attr, int len, int col, int row,
             int k;
 
             if (SP->line_color != -1)
-                XSetForeground(XCURSESDISPLAY, gc, pdc_color[SP->line_color]);
+                XSetForeground(XCURSESDISPLAY, gc, PDC_get_pixel( SP->line_color));
 
             if (attr & A_UNDERLINE)
                 XDrawLine(XCURSESDISPLAY, XCURSESWIN, gc,

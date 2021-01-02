@@ -59,9 +59,9 @@ typedef struct
     int textBlinkRate;
 } XCursesAppData;
 
-extern Pixel pdc_color[PDC_MAXCOL];
 extern XIC pdc_xic;
 
+Pixel PDC_get_pixel( const int idx);
 extern XCursesAppData pdc_app_data;
 extern XtAppContext pdc_app_context;
 extern Widget pdc_toplevel, pdc_drawing;

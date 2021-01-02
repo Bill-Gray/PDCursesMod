@@ -67,8 +67,8 @@ int PDC_set_blink(bool blinkon)
     if (!SP)
         return ERR;
 
-    if (SP->color_started)
-        COLORS = PDC_MAXCOL;
+    if (SP->color_started)          /* see ../common/pdccolor.txt */
+        COLORS = 256 + (1 << 24);
 
     if (blinkon)
     {
