@@ -11,6 +11,7 @@
 #endif
 
 #include "../common/acs_defs.h"
+#include "../common/pdccolor.h"
 
 bool pdc_blinked_off;
 bool pdc_visible_cursor = FALSE;
@@ -136,7 +137,7 @@ void PDC_blink_text(XtPointer unused, XtIntervalId *id)
 
     PDC_LOG(("PDC_blink_text() - called:\n"));
 
-    pdc_blinked_off = !pdc_blinked_off;
+    PDC_blink_state = pdc_blinked_off = !pdc_blinked_off;
 
     /* Redraw changed lines on the screen to match the blink state */
 
@@ -229,6 +230,8 @@ void PDC_gotoyx(int row, int col)
     PDC_display_cursor(SP->cursrow, SP->curscol, row, col, SP->visibility);
 }
 
+#define reverse_bytes( rgb) ((rgb >> 16) | (rgb & 0xff00) | ((rgb & 0xff) << 16))
+
 /* update the given physical line to look like the corresponding line in
    curscr */
 
@@ -244,22 +247,16 @@ static int _new_packet(chtype attr, int len, int col, int row,
     XRectangle bounds;
     GC gc;
     int xpos, ypos;
-    int fore, back;
+    PACKED_RGB fore_rgb, back_rgb;
     attr_t sysattrs;
-    bool rev;
 
-    extended_pair_content(PAIR_NUMBER(attr), &fore, &back);
+    PDC_get_rgb_values( attr, &fore_rgb, &back_rgb);
+    fore_rgb = reverse_bytes( fore_rgb);
+    back_rgb = reverse_bytes( back_rgb);
 
     /* Specify the color table offsets */
 
     sysattrs = SP->termattrs;
-
-    if ((attr & A_BOLD) && !(sysattrs & A_BOLD))
-        fore |= 8;
-    if ((attr & A_BLINK) && !(sysattrs & A_BLINK))
-        back |= 8;
-
-    rev = !!(attr & A_REVERSE);
 
     /* Determine which GC to use - normal, italic or bold */
 
@@ -281,7 +278,7 @@ static int _new_packet(chtype attr, int len, int col, int row,
 
     if (pdc_blinked_off && (sysattrs & A_BLINK) && (attr & A_BLINK))
     {
-        XSetForeground(XCURSESDISPLAY, gc, PDC_get_pixel( rev ? fore : back));
+        XSetForeground(XCURSESDISPLAY, gc, (Pixel)fore_rgb);
         XFillRectangle(XCURSESDISPLAY, XCURSESWIN, gc, xpos, bounds.y,
                        bounds.width, pdc_fheight);
     }
@@ -289,8 +286,8 @@ static int _new_packet(chtype attr, int len, int col, int row,
     {
         /* Draw it */
 
-        XSetForeground(XCURSESDISPLAY, gc, PDC_get_pixel( rev ? back : fore));
-        XSetBackground(XCURSESDISPLAY, gc, PDC_get_pixel( rev ? fore : back));
+        XSetForeground(XCURSESDISPLAY, gc, (Pixel)fore_rgb);
+        XSetBackground(XCURSESDISPLAY, gc, (Pixel)back_rgb);
 
 #ifdef PDC_WIDE
         XDrawImageString16(
@@ -341,8 +338,8 @@ static int _new_packet(chtype attr, int len, int col, int row,
     }
 
     PDC_LOG(("_new_packet() - row: %d col: %d "
-             "num_cols: %d fore: %d back: %d text:<%s>\n",
-             row, col, len, fore, back, text));
+             "num_cols: %d fore: %x back: %x text:<%s>\n",
+             row, col, len, fore_rgb, back_rgb, text));
 
     return OK;
 }
