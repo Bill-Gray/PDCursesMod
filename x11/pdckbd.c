@@ -160,8 +160,7 @@ static struct
 };
 
 static KeySym keysym = 0;
-static XIM Xim = NULL;
-
+XIM pdc_xim = NULL;
 XIC pdc_xic = NULL;
 
 #ifdef MOUSE_DEBUG
@@ -551,11 +550,11 @@ static void _dummy_handler(Widget w, XtPointer client_data,
 
 int PDC_kb_setup(void)
 {
-    Xim = XOpenIM(XCURSESDISPLAY, NULL, NULL, NULL);
+    pdc_xim = XOpenIM(XCURSESDISPLAY, NULL, NULL, NULL);
 
-    if (Xim)
+    if (pdc_xim)
     {
-        pdc_xic = XCreateIC(Xim, XNInputStyle,
+        pdc_xic = XCreateIC(pdc_xim, XNInputStyle,
                             XIMPreeditNothing | XIMStatusNothing,
                             XNClientWindow, XCURSESWIN, NULL);
     }

@@ -178,8 +178,12 @@ void PDC_scr_close(void)
     PDC_LOG(("PDC_scr_close() - called\n"));
 }
 
+static void _remove_event_handlers( void);
+
 void PDC_scr_free(void)
 {
+    extern XIM pdc_xim;
+
     if (icon_pixmap)
     {
         XFreePixmap(XCURSESDISPLAY, icon_pixmap);
@@ -215,6 +219,17 @@ void PDC_scr_free(void)
     {
         XDestroyIC(pdc_xic);
         pdc_xic = 0;
+    }
+    if( pdc_xim)
+    {
+        XCloseIM( pdc_xim);
+        pdc_xim = NULL;
+    }
+    if( pdc_app_context)
+    {
+        _remove_event_handlers( );
+        XtDestroyApplicationContext( pdc_app_context);
+        pdc_app_context = 0;
     }
 }
 
@@ -662,6 +677,16 @@ int PDC_scr_open(void)
     atexit(PDC_scr_free);
 
     return OK;
+}
+
+static void _remove_event_handlers( void)
+{
+    XtRemoveEventHandler(pdc_drawing, ExposureMask, False, _handle_expose, NULL);
+    XtRemoveEventHandler(pdc_drawing, StructureNotifyMask, False,
+                      _handle_structure_notify, NULL);
+    XtRemoveEventHandler(pdc_drawing, EnterWindowMask | LeaveWindowMask, False,
+                      _handle_enter_leave, NULL);
+    XtRemoveEventHandler(pdc_toplevel, 0, True, _handle_nonmaskable, NULL);
 }
 
 /* the core of resize_term() */
