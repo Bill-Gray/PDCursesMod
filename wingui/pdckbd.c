@@ -6,6 +6,8 @@
 void PDC_set_keyboard_binary(bool on)
 {
     PDC_LOG(("PDC_set_keyboard_binary() - called\n"));
+
+    INTENTIONALLY_UNUSED_PARAMETER( on);
 }
 
 /* check if a key or mouse event is waiting */

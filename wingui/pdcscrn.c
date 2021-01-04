@@ -38,7 +38,7 @@ functions.        */
 static int add_mouse( int button, const int action, const int x, const int y);
 static int keep_size_within_bounds( int *lines, int *cols);
 INLINE int set_default_sizes_from_registry( const int n_cols, const int n_rows,
-               const int xloc, const int yloc, const int menu_shown);
+               const int xloc, const int yloc);
 void PDC_transform_line_given_hdc( const HDC hdc, const int lineno,
                              int x, int len, const chtype *srcp);
 
@@ -96,7 +96,6 @@ int debug_printf( const char *format, ...)
             {
                 printf( "Opening '%s' failed\n", output_filename);
                 exit( 0);
-                debugging = FALSE;       /* don't bother trying again */
             }
         }
     }
@@ -118,7 +117,7 @@ static void final_cleanup( void)
 
         GetWindowRect( PDC_hWnd, &rect);
         set_default_sizes_from_registry( SP->cols, SP->lines,
-                  rect.left, rect.top, menu_shown);
+                  rect.left, rect.top);
     }
     PDC_LOG(( "final_cleanup: freeing fonts\n"));
     PDC_transform_line( 0, 0, 0, NULL);  /* free any fonts */
@@ -1035,6 +1034,7 @@ static void get_app_name( TCHAR *buff, const size_t buff_size, const bool includ
 static BOOL CALLBACK get_app_icon_callback(HMODULE hModule, LPCTSTR lpszType,
                                            LPTSTR lpszName, LONG_PTR lParam)
 {
+    INTENTIONALLY_UNUSED_PARAMETER( lpszType);
     *((HICON *) lParam) = LoadIcon(hModule, lpszName);
     return FALSE; /* stop enumeration after first icon */
 }
@@ -1060,7 +1060,7 @@ for,  say,  Testcurs,  while having different settings for,  say,  Firework
 or Rain or one's own programs.  */
 
 INLINE int set_default_sizes_from_registry( const int n_cols, const int n_rows,
-               const int xloc, const int yloc, const int menu_shown)
+               const int xloc, const int yloc)
 {
     DWORD is_new_key;
     HKEY hNewKey;
@@ -1219,7 +1219,7 @@ void PDC_set_resize_limits( const int new_min_lines, const int new_max_lines,
       /* for the application title and the menu.  */
 
 static void adjust_window_size( int *xpixels, int *ypixels, DWORD window_style,
-               const int menu_shown, DWORD window_ex_style)
+                                     DWORD window_ex_style)
 {
     RECT rect;
 
@@ -1260,7 +1260,7 @@ static int keep_size_within_bounds( int *lines, int *cols)
 }
 
 INLINE int get_default_sizes_from_registry( int *n_cols, int *n_rows,
-                                     int *xloc, int *yloc, int *menu_shown)
+                                     int *xloc, int *yloc)
 {
     TCHAR data[100];
     DWORD size_out = sizeof( data);
@@ -1285,7 +1285,7 @@ INLINE int get_default_sizes_from_registry( int *n_cols, int *n_rows,
 
             my_stscanf( data, _T( "%dx%d,%d,%d,%d,%d;%d,%d,%d,%d:%n"),
                              &x, &y, &PDC_font_size,
-                             xloc, yloc, menu_shown,
+                             xloc, yloc, &menu_shown,
                              &minl, &maxl,
                              &minc, &maxc,
                              &bytes_read);
@@ -1416,7 +1416,7 @@ static void HandleSize( const WPARAM wParam, const LPARAM lParam)
         int new_ypixels = PDC_cyChar * PDC_n_rows;
 
         adjust_window_size( &new_xpixels, &new_ypixels,
-                            GetWindowLong( PDC_hWnd, GWL_STYLE), menu_shown,
+                            GetWindowLong( PDC_hWnd, GWL_STYLE),
                             GetWindowLong( PDC_hWnd, GWL_EXSTYLE));
         debug_printf( "Irregular size\n");
         SetWindowPos( PDC_hWnd, 0, 0, 0,
@@ -1435,6 +1435,7 @@ static int HandleMouseMove( WPARAM wParam, LPARAM lParam)
     const int mouse_x = LOWORD( lParam) / PDC_cxChar;
     const int mouse_y = HIWORD( lParam) / PDC_cyChar;
 
+    INTENTIONALLY_UNUSED_PARAMETER( wParam);
     return( add_mouse( 0, BUTTON_MOVED, mouse_x, mouse_y) != -1);
 }
 
@@ -1568,6 +1569,7 @@ static void HandleTimer( const WPARAM wParam )
 {
     int i;           /* see WndProc() notes */
 
+    INTENTIONALLY_UNUSED_PARAMETER( wParam);
     PDC_blink_state ^= 1;
     if( SP->termattrs & A_BLINK)
     {
@@ -1621,7 +1623,7 @@ static HMENU set_menu( void)
 
 INLINE void HandleMenuToggle( bool *ptr_ignore_resize)
 {
-    const bool is_zoomed = IsZoomed( PDC_hWnd);
+    const BOOL is_zoomed = IsZoomed( PDC_hWnd);
     HMENU hMenu;
 
     menu_shown ^= 1;
@@ -2263,8 +2265,7 @@ INLINE int set_up_window( void)
 #endif
 
     get_default_sizes_from_registry( &n_default_columns, &n_default_rows,
-                                     &winfo.xloc, &winfo.yloc,
-                                     &menu_shown);
+                                     &winfo.xloc, &winfo.yloc);
     if( PDC_n_rows > 2 && PDC_n_cols > 2)
     {
         n_default_columns = PDC_n_cols;
@@ -2295,7 +2296,7 @@ INLINE int set_up_window( void)
         winfo.xsize = PDC_cxChar * n_default_columns;
         winfo.ysize = PDC_cyChar * n_default_rows;
         adjust_window_size( &winfo.xsize, &winfo.ysize, winfo.window_style,
-                            menu_shown, winfo.window_ex_style);
+                                        winfo.window_ex_style);
     }
 
     InitializeCriticalSection(&PDC_cs);
@@ -2474,10 +2475,12 @@ void PDC_reset_shell_mode(void)
 
 void PDC_restore_screen_mode(int i)
 {
+   INTENTIONALLY_UNUSED_PARAMETER( i);
 }
 
 void PDC_save_screen_mode(int i)
 {
+   INTENTIONALLY_UNUSED_PARAMETER( i);
 }
 
 bool PDC_can_change_color(void)
