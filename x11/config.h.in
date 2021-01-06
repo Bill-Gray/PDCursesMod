@@ -9,6 +9,9 @@
 /* Define if you have the <Sunkeysym.h> header file */
 #undef HAVE_SUNKEYSYM_H
 
+/* Define if you have the <XF86keysym.h> header file */
+#undef HAVE_XF86KEYSYM_H
+
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
 

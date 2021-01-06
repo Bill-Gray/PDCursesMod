@@ -4270,7 +4270,7 @@ fi
 
 save_CPPFLAGS="$CPPFLAGS"
 CPPFLAGS="$CPPFLAGS $MH_XINC_DIR"
-for mh_header in DECkeysym.h Sunkeysym.h xpm.h; do
+for mh_header in DECkeysym.h Sunkeysym.h xpm.h XF86keysym.h; do
 	for ac_header in $mh_header
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
@@ -5921,6 +5921,10 @@ $as_echo "#define HAVE_DECKEYSYM_H /**/" >>confdefs.h
 
 
 $as_echo "#define HAVE_SUNKEYSYM_H /**/" >>confdefs.h
+
+
+
+$as_echo "#define HAVE_XF86KEYSYM_H /**/" >>confdefs.h
 
 
 

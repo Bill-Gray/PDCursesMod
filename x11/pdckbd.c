@@ -13,6 +13,10 @@
 # include <Sunkeysym.h>
 #endif
 
+#ifdef HAVE_XF86KEYSYM_H
+# include <XF86keysym.h>
+#endif
+
 static struct
 {
     KeySym keycode;
@@ -81,6 +85,8 @@ static struct
  {XK_Menu,      FALSE,  KEY_OPTIONS, KEY_SOPTIONS, KEY_OPTIONS, KEY_OPTIONS},
  {XK_Super_R,   FALSE,  KEY_COMMAND, KEY_SCOMMAND, KEY_COMMAND, KEY_COMMAND},
  {XK_Super_L,   FALSE,  KEY_COMMAND, KEY_SCOMMAND, KEY_COMMAND, KEY_COMMAND},
+ {XK_Undo,      FALSE,  KEY_UNDO,    KEY_SUNDO,    KEY_UNDO,    KEY_UNDO},
+ {XK_Redo,      FALSE,  KEY_REDO,    KEY_SREDO,    KEY_REDO,    KEY_REDO},
 #ifdef HAVE_SUNKEYSYM_H
  {SunXK_F36,    FALSE,  KEY_F(41),   KEY_F(43),    KEY_F(45),   KEY_F(47)},
  {SunXK_F37,    FALSE,  KEY_F(42),   KEY_F(44),    KEY_F(46),   KEY_F(48)},
@@ -156,6 +162,128 @@ static struct
 #ifdef XK_KP_Prior
  {XK_KP_Prior,  TRUE,   KEY_A3,      '9',          CTL_PAD9,    ALT_PAD9},
 #endif
+
+#ifdef XF86XK_Back
+ {XF86XK_Back,  FALSE,  KEY_BROWSER_BACK, KEY_BROWSER_BACK,
+                        KEY_BROWSER_BACK, KEY_BROWSER_BACK },
+#endif
+
+#ifdef XF86XK_Forward
+ {XF86XK_Forward, FALSE,  KEY_BROWSER_FWD, KEY_BROWSER_FWD,
+                          KEY_BROWSER_FWD, KEY_BROWSER_FWD },
+#endif
+
+#ifdef XF86XK_Reload
+ {XF86XK_Reload, FALSE,  KEY_BROWSER_REF, KEY_BROWSER_REF,
+                         KEY_BROWSER_REF, KEY_BROWSER_REF },
+#endif
+
+#ifdef XF86XK_Search
+ {XF86XK_Search, FALSE,  KEY_SEARCH, KEY_SEARCH,
+                         KEY_SEARCH, KEY_SEARCH },
+#endif
+
+#ifdef XF86XK_Favorites
+ {XF86XK_Favorites, FALSE,  KEY_FAVORITES, KEY_FAVORITES,
+                            KEY_FAVORITES, KEY_FAVORITES },
+#endif
+
+#ifdef XF86XK_AudioPlay
+ {XF86XK_AudioPlay, FALSE,  KEY_PLAY_PAUSE, KEY_PLAY_PAUSE,
+                            KEY_PLAY_PAUSE, KEY_PLAY_PAUSE },
+#endif
+
+#ifdef XF86XK_AudioStop
+ {XF86XK_AudioStop, FALSE,  KEY_MEDIA_STOP, KEY_MEDIA_STOP,
+                            KEY_MEDIA_STOP, KEY_MEDIA_STOP },
+#endif
+
+#ifdef XF86XK_AudioPrev
+ {XF86XK_AudioPrev, FALSE,  KEY_PREV_TRACK, KEY_PREV_TRACK,
+                            KEY_PREV_TRACK, KEY_PREV_TRACK },
+#endif
+
+#ifdef XF86XK_AudioNext
+ {XF86XK_AudioNext, FALSE,  KEY_NEXT_TRACK, KEY_NEXT_TRACK,
+                            KEY_NEXT_TRACK, KEY_NEXT_TRACK },
+#endif
+
+#ifdef XF86XK_AudioMute
+ {XF86XK_AudioMute, FALSE,  KEY_VOLUME_MUTE, KEY_VOLUME_MUTE,
+                            KEY_VOLUME_MUTE, KEY_VOLUME_MUTE },
+#endif
+
+#ifdef XF86XK_AudioLowerVolume
+ {XF86XK_AudioLowerVolume, FALSE,  KEY_VOLUME_DOWN, KEY_VOLUME_DOWN,
+                                   KEY_VOLUME_DOWN, KEY_VOLUME_DOWN },
+#endif
+
+#ifdef XF86XK_AudioRaiseVolume
+ {XF86XK_AudioRaiseVolume, FALSE,  KEY_VOLUME_UP, KEY_VOLUME_UP,
+                                   KEY_VOLUME_UP, KEY_VOLUME_UP },
+#endif
+
+#ifdef XF86XK_Tools
+ {XF86XK_Tools,     FALSE,  KEY_MEDIA_SELECT, KEY_MEDIA_SELECT,
+                            KEY_MEDIA_SELECT, KEY_MEDIA_SELECT },
+#endif
+
+#ifdef XF86XK_Save
+ {XF86XK_Save,        FALSE,  KEY_SAVE, KEY_SSAVE, KEY_SAVE, KEY_SAVE },
+#endif
+
+#ifdef XF86XK_Send
+ {XF86XK_Send,        FALSE,  KEY_SEND, KEY_SEND, KEY_SEND, KEY_SEND },
+#endif
+
+#ifdef XF86XK_Close
+ {XF86XK_Close,        FALSE,  KEY_CLOSE, KEY_CLOSE, KEY_CLOSE, KEY_CLOSE },
+#endif
+
+#ifdef XF86XK_Open
+ {XF86XK_Open,         FALSE,  KEY_OPEN, KEY_OPEN, KEY_OPEN, KEY_OPEN },
+#endif
+
+#ifdef XF86XK_Launch1
+ {XF86XK_Launch1,      FALSE, KEY_LAUNCH_APP1, KEY_LAUNCH_APP1, KEY_LAUNCH_APP1, KEY_LAUNCH_APP1 },
+#endif
+
+#ifdef XF86XK_Launch2
+ {XF86XK_Launch2,      FALSE, KEY_LAUNCH_APP2, KEY_LAUNCH_APP2, KEY_LAUNCH_APP2, KEY_LAUNCH_APP2 },
+#endif
+
+#ifdef XF86XK_Launch3
+ {XF86XK_Launch3,      FALSE, KEY_LAUNCH_APP3, KEY_LAUNCH_APP3, KEY_LAUNCH_APP3, KEY_LAUNCH_APP3 },
+#endif
+
+#ifdef XF86XK_Launch4
+ {XF86XK_Launch4,      FALSE, KEY_LAUNCH_APP4, KEY_LAUNCH_APP4, KEY_LAUNCH_APP4, KEY_LAUNCH_APP4 },
+#endif
+
+#ifdef XF86XK_Launch5
+ {XF86XK_Launch5,      FALSE, KEY_LAUNCH_APP5, KEY_LAUNCH_APP5, KEY_LAUNCH_APP5, KEY_LAUNCH_APP5 },
+#endif
+
+#ifdef XF86XK_Launch6
+ {XF86XK_Launch6,      FALSE, KEY_LAUNCH_APP6, KEY_LAUNCH_APP6, KEY_LAUNCH_APP6, KEY_LAUNCH_APP6 },
+#endif
+
+#ifdef XF86XK_Launch7
+ {XF86XK_Launch7,      FALSE, KEY_LAUNCH_APP7, KEY_LAUNCH_APP7, KEY_LAUNCH_APP7, KEY_LAUNCH_APP7 },
+#endif
+
+#ifdef XF86XK_Launch8
+ {XF86XK_Launch8,      FALSE, KEY_LAUNCH_APP8, KEY_LAUNCH_APP8, KEY_LAUNCH_APP8, KEY_LAUNCH_APP8 },
+#endif
+
+#ifdef XF86XK_Launch9
+ {XF86XK_Launch9,      FALSE, KEY_LAUNCH_APP9, KEY_LAUNCH_APP9, KEY_LAUNCH_APP9, KEY_LAUNCH_APP9 },
+#endif
+
+#ifdef XF86XK_Launch10
+ {XF86XK_Launch10,      FALSE, KEY_LAUNCH_APP10, KEY_LAUNCH_APP10, KEY_LAUNCH_APP10, KEY_LAUNCH_APP10 },
+#endif
+
  {0,            0,      0,           0,            0,           0}
 };
 
@@ -292,7 +420,12 @@ static unsigned long _process_key_event(XEvent *event)
     }
 
     if (!key && buffer[0] && count == 1)
-        key = buffer[0];
+    {
+        if( keysym >= ' ' && keysym < 127 && !isalpha( keysym))
+            key = keysym;
+        else
+            key = buffer[0];
+    }
 
     PDC_LOG(("Key: %s pressed - %x Mod: %x\n",
              XKeysymToString(keysym), key, event->xkey.state));
