@@ -158,6 +158,11 @@ static void reset_color( char *obuff, const chtype ch)
     static PACKED_RGB prev_fg = (PACKED_RGB)-1;
     PACKED_RGB bg, fg;
 
+    if( !obuff)
+        {
+        prev_bg = prev_fg = (PACKED_RGB)-1;
+        return;
+        }
     PDC_get_rgb_values( ch, &fg, &bg);
     *obuff = '\0';
     if( bg != prev_bg)
@@ -236,6 +241,7 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
           prev_ch = 0;
           changes = *srcp;
           strcpy( obuff, RESET_ATTRS);
+          reset_color( NULL, 0);
        }
        if( SP->termattrs & changes & A_BOLD)
           strcat( obuff, (*srcp & A_BOLD) ? BOLD_ON : BOLD_OFF);
@@ -251,7 +257,7 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
 #endif
        if( SP->termattrs & changes & A_BLINK)
           strcat( obuff, (*srcp & A_BLINK) ? BLINK_ON : BLINK_OFF);
-       if( changes & (A_COLOR | A_STANDOUT | A_BLINK))
+       if( changes & (A_COLOR | A_STANDOUT | A_BLINK | A_REVERSE))
           reset_color( obuff + strlen( obuff), *srcp & ~A_REVERSE);
        PDC_puts_to_stdout( obuff);
 #ifdef USING_COMBINING_CHARACTER_SCHEME
