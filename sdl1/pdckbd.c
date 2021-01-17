@@ -8,7 +8,7 @@ static SDL_Event event;
 static SDLKey oldkey;
 static MOUSE_STATUS old_mouse_status;
 
-static struct
+static const struct
 {
     SDLKey keycode;
     bool numkeypad;
@@ -69,6 +69,14 @@ static struct
  {SDLK_KP7,   TRUE,   KEY_A1,      '7',      CTL_PAD7,   ALT_PAD7},
  {SDLK_KP8,   TRUE,   KEY_A2,      '8',      CTL_PAD8,   ALT_PAD8},
  {SDLK_KP9,   TRUE,   KEY_A3,      '9',      CTL_PAD9,   ALT_PAD9},
+#ifdef SDL_DOESNT_RECOGNIZE
+ {SDLK_VOLUMEUP,  FALSE, KEY_VOLUME_UP, KEY_VOLUME_UP, KEY_VOLUME_UP, KEY_VOLUME_UP},
+ {SDLK_VOLUMEDOWN,  FALSE, KEY_VOLUME_DOWN, KEY_VOLUME_DOWN, KEY_VOLUME_DOWN, KEY_VOLUME_DOWN},
+ {SDLK_MUTE, FALSE, KEY_VOLUME_MUTE, KEY_VOLUME_MUTE, KEY_VOLUME_MUTE, KEY_VOLUME_MUTE},
+ {SDLK_AGAIN, FALSE, KEY_REDO, KEY_REDO, KEY_REDO, KEY_REDO },
+ {SDLK_SCROLLLOCK, FALSE, KEY_SCROLLLOCK, KEY_SCROLLLOCK, KEY_SCROLLLOCK, KEY_SCROLLLOCK },
+#endif
+ {SDLK_UNDO, FALSE, KEY_UNDO, KEY_UNDO, KEY_UNDO, KEY_UNDO },
  {0,      0,   0,        0,         0,      0}
 };
 
