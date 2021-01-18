@@ -64,6 +64,10 @@ ifeq ($(UTF8),Y)
 	CFLAGS += -DPDC_FORCE_UTF8
 endif
 
+ifdef CHTYPE_32
+	CFLAGS += -DCHTYPE_32
+endif
+
 ifeq ($(DLL),Y)
 	ifeq ($(OS),Windows_NT)
 		CFLAGS += -DPDC_DLL_BUILD

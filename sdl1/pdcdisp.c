@@ -469,14 +469,24 @@ void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
     }
 #endif
 
-    if (!blink && (attr & A_UNDERLINE))
+    if (!blink && (attr & (A_UNDERLINE | A_OVERLINE | A_STRIKEOUT)))
     {
-        dest.y += pdc_fheight - pdc_fthick;
         dest.x = pdc_fwidth * x + pdc_xoffset;
         dest.h = pdc_fthick;
         dest.w = pdc_fwidth * len;
-
-        SDL_FillRect(pdc_screen, &dest, pdc_mapped[hcol]);
+        if( attr & A_OVERLINE)
+           SDL_FillRect(pdc_screen, &dest, pdc_mapped[hcol]);
+        if( attr & A_UNDERLINE)
+        {
+           dest.y += pdc_fheight - pdc_fthick;
+           SDL_FillRect(pdc_screen, &dest, pdc_mapped[hcol]);
+           dest.y -= pdc_fheight - pdc_fthick;
+        }
+        if( attr & A_STRIKEOUT)
+        {
+           dest.y += (pdc_fheight - pdc_fthick) / 2;
+           SDL_FillRect(pdc_screen, &dest, pdc_mapped[hcol]);
+        }
     }
 }
 

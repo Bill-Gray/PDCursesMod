@@ -30,6 +30,10 @@ ifeq ($(UTF8),Y)
 	CFLAGS	+= -DPDC_FORCE_UTF8
 endif
 
+ifdef CHTYPE_32
+	CFLAGS += -DCHTYPE_32
+endif
+
 BUILD		= $(CC) $(CFLAGS) -I$(PDCURSES_SRCDIR)
 
 LINK		= $(CC)
