@@ -37,7 +37,7 @@ pdcsetsc
 
 **man-end****************************************************************/
 
-// #define BLINKING_CURSOR   "\033[?12h"
+    /* #define BLINKING_CURSOR   "\033[?12h"    */
 #define BLINKING_BLOCK      "\033[1 q"
 #define STEADY_BLOCK        "\033[2 q"
 #define BLINKING_UNDERLINE  "\033[3 q"
