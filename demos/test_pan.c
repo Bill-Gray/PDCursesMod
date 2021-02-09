@@ -184,4 +184,5 @@ int main()
 #ifdef PDCURSES
     delscreen( SP);
 #endif
+    return( 0);
 }
