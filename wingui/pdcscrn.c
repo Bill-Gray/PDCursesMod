@@ -1479,7 +1479,6 @@ static void HandleSyskeyDown( const WPARAM wParam, const LPARAM lParam,
     const int alt_pressed = (GetKeyState( VK_MENU) & 0x8000);
     const int extended = ((lParam & 0x01000000) != 0);
     const int repeated = (int)( lParam >> 30) & 1;
-    const KPTAB *kptr = kptab + wParam;
     int key = 0;
     static int repeat_count;
 
@@ -1513,17 +1512,30 @@ static void HandleSyskeyDown( const WPARAM wParam, const LPARAM lParam,
 
     if( !key)           /* it's not a shift, ctl, alt handled above */
     {
-        if( extended && kptr->extended != 999)
-            kptr = ext_kptab + kptr->extended;
-
-        if( alt_pressed)
-            key = kptr->alt;
-        else if( ctrl_pressed)
-            key = kptr->control;
-        else if( shift_pressed)
-            key = kptr->shift;
+        if( wParam >= sizeof( kptab) / sizeof( kptab[0]))
+            return;
         else
-            key = kptr->normal;
+        {
+            const KPTAB *kptr = kptab + wParam;
+
+            if( extended && kptr->extended != 999)
+            {
+            if( kptr->extended >= sizeof( ext_kptab) / sizeof( ext_kptab[0])
+                      || kptr->extended < 0)
+                return;
+            else
+                kptr = ext_kptab + kptr->extended;
+            }
+
+            if( alt_pressed)
+                key = kptr->alt;
+            else if( ctrl_pressed)
+                key = kptr->control;
+            else if( shift_pressed)
+                key = kptr->shift;
+            else
+                key = kptr->normal;
+        }
     }
 
     /* On non-US keyboards,  people hit Alt-Gr ("Alt-Ctrl" to */

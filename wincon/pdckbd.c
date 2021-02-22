@@ -410,7 +410,16 @@ static int _process_key_event(void)
         idx = vk;
     }
 
-    if (state & SHIFT_PRESSED)
+    if( idx < 0)
+        key = -1;
+
+    else if( enhanced && idx >= sizeof( ext_kptab) / sizeof( ext_kptab[0]))
+        key = -1;       /* unhandled key outside table */
+
+    else if( !enhanced && idx >= sizeof( kptab) / sizeof( kptab[0]))
+        key = -1;       /* unhandled key outside table */
+
+    else if (state & SHIFT_PRESSED)
         key = enhanced ? ext_kptab[idx].shift : kptab[idx].shift;
 
     else if (state & (LEFT_CTRL_PRESSED|RIGHT_CTRL_PRESSED))
