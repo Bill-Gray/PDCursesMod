@@ -22,15 +22,14 @@ void PDC_beep(void)
 /* 1080 seconds = 18 minutes = 1/80 day is exactly 19663 ticks.
 If asked to nap for longer than 1080000 milliseconds,  we take
 one or more 18-minute naps.  This avoids wraparound issues and
-the integer overflows that would result for ms > MAX_INT / 859
+the integer overflows that would result for ms > MAX_LONG / 859
 (about 42 minutes).  */
 
 #define MAX_NAP_SPAN      (MS_PER_DAY / 80ul)
 
 void PDC_napmsl( long ms)
 {
-    const long tick0 = getdosmemdword(0x46c);
-    long ticks_to_wait;
+    long tick0, ticks_to_wait;
 
     PDC_LOG(("PDC_napms() - called: ms=%d\n", ms));
 
@@ -45,7 +44,7 @@ void PDC_napmsl( long ms)
            The following is good to four parts per billion and
            doesn't overflow (because 0 <= ms <= MAX_NAP_SPAN). */
     ticks_to_wait = (ms * 859L) / 47181L + 1L;
-
+    tick0 = getdosmemdword(0x46c);
     for( ;;)
     {
         long ticks_elapsed = getdosmemdword(0x46c) - tick0;
