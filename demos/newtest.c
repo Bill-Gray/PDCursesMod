@@ -506,6 +506,12 @@ int main( int argc, char **argv)
             sprintf( buff, "Key %s", keyname( c));
             if( !memcmp( buff + 4, "UNKNOWN", 7))
                 sprintf( buff + 11, " (%x)", c);
+            if( c == KEY_RESIZE)
+                {
+                sprintf( buff + strlen( buff), "(%d x %d)       ",
+                        COLS, LINES);
+                napms( 300);
+                }
             strcat( buff, " hit                 ");
             buff[COL2 - COL1] = '\0';
             mvaddstr( 0, COL1, buff);
