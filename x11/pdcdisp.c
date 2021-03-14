@@ -237,11 +237,11 @@ void PDC_gotoyx(int row, int col)
 
 /* Output a block of characters with common attributes */
 
-static int _new_packet(chtype attr, int len, int col, int row,
+static int _new_packet(const chtype attr, const int len, const int col, const int row,
 #ifdef PDC_WIDE
-                       XChar2b *text)
+                       const XChar2b *text)
 #else
-                       char *text)
+                       const char *text)
 #endif
 {
     XRectangle bounds;
@@ -346,12 +346,14 @@ static int _new_packet(chtype attr, int len, int col, int row,
 
 /* The core display routine -- update one line of text */
 
+#define MAX_PACKET_SIZE 128
+
 void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
 {
 #ifdef PDC_WIDE
-    XChar2b text[513];
+    XChar2b text[MAX_PACKET_SIZE];
 #else
-    char text[513];
+    char text[MAX_PACKET_SIZE];
 #endif
     chtype old_attr, attr;
     int i, j;
@@ -385,7 +387,7 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
             attr ^= A_REVERSE;
         }
 #endif
-        if (attr != old_attr)
+        if (attr != old_attr || i == MAX_PACKET_SIZE - 1)
         {
             if (_new_packet(old_attr, i, x, lineno, text) == ERR)
                 return;

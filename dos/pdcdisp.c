@@ -1,6 +1,7 @@
 /* PDCurses */
 
 #include "pdcdos.h"
+#include <assert.h>
 
 /* ACS definitions originally by jshumate@wrdis01.robins.af.mil -- these
    match code page 437 and compatible pages (CP850, CP852, etc.) */
@@ -23,13 +24,16 @@ void PDC_gotoyx(int row, int col)
     PDCINT(0x10, regs);
 }
 
-void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
+#define MAX_PACKET_SIZE 256
+
+static void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
 {
     attr_t sysattrs;
     int j;
     short fore, back;
     unsigned char mapped_attr;
 
+    assert( len >= 0 && len < MAX_PACKET_SIZE);
     sysattrs = SP->termattrs;
     pair_content(PAIR_NUMBER(attr), &fore, &back);
 
@@ -64,7 +68,7 @@ void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
 #endif
         /* this should be enough for the maximum width of a screen */
 
-        struct {unsigned char text, attr;} temp_line[256];
+        struct {unsigned char text, attr;} temp_line[MAX_PACKET_SIZE];
 
         /* replace the attribute part of the chtype with the actual
            color value for each chtype in the line */
