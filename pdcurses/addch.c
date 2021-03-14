@@ -128,8 +128,8 @@ addch
  * int argument instead of wchar_t,  because in MS-land, wchar_t
  * is 16 bits;  getting the full Unicode range requires 21 bits.
  * Also modified format/indenting to conform to PDCurses norms.
- * NOTE that this version is current only to Unicode 5.0!  Some
- * updates are almost certainly needed...
+ * NOTE that this version is current only to Unicode 5.0!  Updates
+ * could use https://unicode.org/Public/UNIDATA/EastAsianWidth.txt .
  */
 
 struct interval
