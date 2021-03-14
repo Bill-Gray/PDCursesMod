@@ -4,6 +4,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 #ifdef PDC_WIDE
    #define USE_UNICODE_ACS_CHARS 1
@@ -143,11 +144,22 @@ const chtype MAX_UNICODE = 0x10ffff;
 const chtype DUMMY_CHAR_NEXT_TO_FULLWIDTH = 0x110000;
 #endif
 
+#define MAX_PACKET_SIZE 128
+
 void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
 {
     int j;
     int fore, back;
     bool blink, ansi;
+
+    assert( len >= 0);
+    while( len > MAX_PACKET_SIZE)
+    {
+        _new_packet( attr, lineno, x, MAX_PACKET_SIZE, srcp);
+        srcp += MAX_PACKET_SIZE;
+        x += MAX_PACKET_SIZE;
+        len -= MAX_PACKET_SIZE;
+    }
 
     if (pdc_ansi && (lineno == (SP->lines - 1)) && ((x + len) == SP->cols))
     {
@@ -179,9 +191,9 @@ void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
     if (ansi)
     {
 #ifdef PDC_WIDE
-        WCHAR buffer[512];
+        WCHAR buffer[MAX_PACKET_SIZE];
 #else
-        char buffer[512];
+        char buffer[MAX_PACKET_SIZE];
 #endif
         int n_out;
 
@@ -211,7 +223,7 @@ void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
     }
     else
     {
-        CHAR_INFO buffer[512];
+        CHAR_INFO buffer[MAX_PACKET_SIZE];
         COORD bufSize, bufPos;
         SMALL_RECT sr;
         WORD mapped_attr;
