@@ -95,7 +95,7 @@ int winsnstr(WINDOW *win, const char *str, int n)
     p = wstr;
     i = 0;
 
-    while (str[i] && i < n)
+    while( i < n && str[i])
     {
         int retval = PDC_mbtowc(p, str + i, n - i);
 

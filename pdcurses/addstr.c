@@ -75,7 +75,7 @@ int waddnstr(WINDOW *win, const char *str, int n)
     if (!win || !str)
         return ERR;
 
-    while (str[i] && (i < n || n < 0))
+    while( (i < n || n < 0) && str[i])
     {
 #ifdef PDC_WIDE
         wchar_t wch;
@@ -171,6 +171,7 @@ int waddnwstr(WINDOW *win, const wchar_t *wstr, int n)
         return ERR;
 
     while (wstr[i] && (i < n || n < 0))
+    while( (i < n || n < 0) && wstr[i])
     {
         chtype wch = wstr[i++];
 
