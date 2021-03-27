@@ -330,7 +330,10 @@ int PDC_get_key( void)
                rval = -1;
             }
          if( !count)             /* Escape hit */
+            {
+            SP->key_code = 0;
             rval = 27;
+            }
          count--;
          if( rval == KEY_MOUSE)
             {
