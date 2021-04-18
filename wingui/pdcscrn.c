@@ -1667,21 +1667,6 @@ INLINE void HandleMenuToggle( bool *ptr_ignore_resize)
     InvalidateRect( PDC_hWnd, NULL, FALSE);
 }
 
-INLINE uint64_t milliseconds_since_1970( void)
-{
-   FILETIME ft;
-   const uint64_t jd_1601 = 2305813;  /* actually 2305813.5 */
-   const uint64_t jd_1970 = 2440587;  /* actually 2440587.5 */
-   const uint64_t ten_million = 10000000;
-   const uint64_t diff = (jd_1970 - jd_1601) * ten_million * 86400;
-   uint64_t decimicroseconds_since_1970;   /* i.e.,  time in units of 1e-7 seconds */
-
-   GetSystemTimeAsFileTime( &ft);
-   decimicroseconds_since_1970 = ((uint64_t)ft.dwLowDateTime |
-                                ((uint64_t)ft.dwHighDateTime << 32)) - diff;
-   return( decimicroseconds_since_1970 / 10000);
-}
-
 typedef struct
 {
    int x, y;
@@ -1692,10 +1677,7 @@ static int add_mouse( int button, const int action, const int x, const int y)
 {
    static int n = 0;
    static PDC_mouse_event e[10];
-   static uint64_t prev_t = 0;
-   const uint64_t curr_t = milliseconds_since_1970( );
-   const int timing_slop = 20;
-   bool within_timeout = (curr_t < prev_t + SP->mouse_wait + timing_slop);
+   bool within_timeout = (button != -1);
    static int mouse_state = 0;
    static int prev_x, prev_y = -1;
    const bool actually_moved = (x != prev_x || y != prev_y);
@@ -1736,18 +1718,18 @@ static int add_mouse( int button, const int action, const int x, const int y)
            return( n);
    if( button < 0 && action != BUTTON_MOVED)
        return( n);         /* we're just checking for timed-out events */
-   debug_printf( "Button %d, act %d, dt %ld : n %d\n", button, action,
-                  (long)( curr_t - prev_t), n);
+   debug_printf( "Button %d, act %d : n %d\n", button, action, n);
    e[n].button = button;
    e[n].action = action;
    e[n].x = x;
    e[n].y = y;
    if( n)
    {
-       int merged_act = 0;
+       int merged_act;
 
        do
        {
+           merged_act = 0;
            if( e[n - 1].button == e[n].button)
            {
                if( e[n - 1].action == BUTTON_PRESSED && e[n].action == BUTTON_RELEASED)
@@ -1764,7 +1746,6 @@ static int add_mouse( int button, const int action, const int x, const int y)
            }
        }  while( n && merged_act);
    }
-   prev_t = curr_t;
    n++;
    return( n);
 }
@@ -1842,7 +1823,6 @@ static LRESULT ALIGN_STACK CALLBACK WndProc (const HWND hwnd,
         EnterCriticalSection(&PDC_cs);
         if( HandleMouseMove( wParam, lParam))
             modified_key_to_return = 0;
-        add_mouse( -1, -1, -1, -1);
         LeaveCriticalSection(&PDC_cs);
         return 0;
 
@@ -1959,16 +1939,13 @@ static LRESULT ALIGN_STACK CALLBACK WndProc (const HWND hwnd,
         if( wParam != TIMER_ID_FOR_BLINKING)
         {
             KillTimer( PDC_hWnd, (int)wParam);
-#if 0 /* checkme */
-            within_timeout = FALSE;
-#endif
+            add_mouse( -1, -1, -1, -1);
         }
         else if( SP && curscr && curscr->_y)
         {
             /* blink the blinking text */
             HandleTimer( wParam );
         }
-        add_mouse( -1, -1, -1, -1);
         LeaveCriticalSection(&PDC_cs);
         return 0;
 
@@ -2040,9 +2017,7 @@ static LRESULT ALIGN_STACK CALLBACK WndProc (const HWND hwnd,
        SetCapture( hwnd);
     else
        ReleaseCapture( );
-#if 0 /* checkme */
     SetTimer( hwnd, 0, SP->mouse_wait, NULL);
-#endif
 
     LeaveCriticalSection(&PDC_cs);
     return 0;
