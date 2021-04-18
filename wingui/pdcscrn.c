@@ -520,27 +520,28 @@ static const KPTAB ext_kptab[] =
 
 HFONT PDC_get_font_handle( const int is_bold);            /* pdcdisp.c */
 
-/* Mouse handling is done as follows:
+/* Mouse handling is done as follows.  Windows (*) gives us a
+sequence of "raw" mouse events,  which are :
 
-   "Raw" mouse events (the ones Windows sends to us (*)) are :
       button pressed
       button released
       wheel up/down/left/right
       mouse moved
 
-   The presses and releases will be combined into clicks and
-double-clicks,  _if_ each event involved occurs within
-SP->mouse_wait milliseconds of the next.  All of these events
-are sent in "raw" form to add_mouse( ).
+   We need to provide a sequence of "combined" mouse events,
+in which presses and releases get combined into clicks,
+double-clicks, and triple-clicks if the "raw" events are within
+SP->mouse_wait milliseconds of each other and the mouse doesn't
+move in between.  add_mouse( ) takes the "raw" events and figures
+out what "combined" events should be emitted.
 
-   If the event is a press or release,  we also add a timer to
+   If the raw event is a press or release,  we also set a timer to
 trigger in SP->mouse_wait milliseconds.  When that timer event is
 triggered,  it calls add_mouse( -1, -1, -1, -1), meaning "synthesize
 all events and pass them to set_mouse". Basically,  if we hit the
-timeout _or_ the mouse is moved, we can clear out the events (call
-set_mouse( ) for each of 'em). A KEY_MOUSE event will be added to
-the queue (unless there's one already there) and the event set up
-appropriately.
+timeout _or_ the mouse is moved, we can send combined events to
+set_mouse( ).  A KEY_MOUSE event will be added to the queue (unless
+there's one already there) and the event set up appropriately.
 
    A mouse move is simply ignored if it's within the current
 character cell.  (Note that ncurses does provide 'mouse move' events
@@ -1661,27 +1662,40 @@ INLINE void HandleMenuToggle( bool *ptr_ignore_resize)
     InvalidateRect( PDC_hWnd, NULL, FALSE);
 }
 
-typedef struct
-{
-   int x, y;
-   int button, action;
-} PDC_mouse_event;
+/* 'button_count' is zero if a button hasn't been pressed;  one if it
+has been;  two if pressed/released (clicked);  three if clicked and
+pressed again... all the way up to six if it's been triple-clicked. */
 
 static int add_mouse( int button, const int action, const int x, const int y)
 {
-   static int n = 0;
-   static PDC_mouse_event e[10];
-   const bool within_timeout = (button != -1);
-   static int mouse_state = 0;
+   bool flush_events_to_queue = (button == -1 || action == BUTTON_MOVED);
+   static int mouse_state = 0, button_count[PDC_MAX_MOUSE_BUTTONS];
    static int prev_x, prev_y = -1;
    const bool actually_moved = (x != prev_x || y != prev_y);
+   size_t i;
 
    if( action == BUTTON_MOVED && mouse_key_already_in_queue( ))
        return( 0);
-   if( action == BUTTON_PRESSED)
-       mouse_state |= (1 << button);
    else if( action == BUTTON_RELEASED)
+   {
        mouse_state &= ~(1 << button);
+       if( !button_count[button - 1])   /* a release with no matching press */
+       {
+           set_mouse( button - 1, BUTTON_RELEASED, x, y);
+           return( 0);
+       }
+       else if( button_count[button - 1] & 1)
+       {
+           button_count[button - 1]++;
+           if( button_count[button - 1] == 6)    /* triple-click completed */
+               flush_events_to_queue = true;
+       }
+   }
+   else if( action == BUTTON_PRESSED && !(button_count[button - 1] & 1))
+   {
+      mouse_state |= (1 << button);
+      button_count[button - 1]++;
+   }
    if( button >= 0)
    {
       prev_x = x;
@@ -1689,59 +1703,34 @@ static int add_mouse( int button, const int action, const int x, const int y)
    }
    if( action == BUTTON_MOVED)
    {
-       int i;
-
        if( !actually_moved)     /* have to move to a new character cell, */
            return( -1);         /* not just a new pixel */
        button = -1;        /* assume no buttons down */
-       for( i = 0; i < 9; i++)
+       for( i = 0; i < PDC_MAX_MOUSE_BUTTONS; i++)
            if( (mouse_state >> i) & 1)
                button = i;
        if( button == -1 && !(SP->_trap_mbe & REPORT_MOUSE_POSITION))
            return( -1);
    }
 
-   if( !within_timeout || action == BUTTON_MOVED)
-       while( n && !set_mouse( e->button - 1, e->action, e->x, e->y))
-       {
-           n--;
-           memmove( e, e + 1, n * sizeof( PDC_mouse_event));
-       }
-   if( action == BUTTON_MOVED)
-       if( !set_mouse( button - 1, action, x, y))
-           return( n);
-   if( button < 0 && action != BUTTON_MOVED)
-       return( n);         /* we're just checking for timed-out events */
-   debug_printf( "Button %d, act %d : n %d\n", button, action, n);
-   e[n].button = button;
-   e[n].action = action;
-   e[n].x = x;
-   e[n].y = y;
-   if( n)
-   {
-       int merged_act;
-
-       do
-       {
-           merged_act = 0;
-           if( e[n - 1].button == e[n].button)
+   if( flush_events_to_queue)
+       for( i = 0; i < PDC_MAX_MOUSE_BUTTONS; i++)
+           if( button_count[i])
            {
-               if( e[n - 1].action == BUTTON_PRESSED && e[n].action == BUTTON_RELEASED)
-                   merged_act = BUTTON_CLICKED;
-               else if( e[n - 1].action == BUTTON_CLICKED && e[n].action == BUTTON_CLICKED)
-                   merged_act = BUTTON_DOUBLE_CLICKED;
-               else if( e[n - 1].action == BUTTON_DOUBLE_CLICKED && e[n].action == BUTTON_CLICKED)
-                   merged_act = BUTTON_TRIPLE_CLICKED;
-               if( merged_act)
-               {
-                   n--;
-                   e[n].action = merged_act;
-               }
+               const int events[4] = { 0, BUTTON_CLICKED,
+                           BUTTON_DOUBLE_CLICKED, BUTTON_TRIPLE_CLICKED };
+
+               assert( button_count[i] > 0 && button_count[i] < 7);
+               if( button_count[i] & 1)
+                  set_mouse( i, BUTTON_PRESSED, prev_x, prev_y);
+               if( button_count[i] >= 2)
+                  set_mouse( i, events[button_count[i] / 2], prev_x, prev_y);
+               button_count[i] = 0;
            }
-       }  while( n && merged_act);
-   }
-   n++;
-   return( n);
+   if( action == BUTTON_MOVED)
+      set_mouse( button - 1, action, x, y);
+   debug_printf( "Button %d, act %d\n", button, action);
+   return( 0);
 }
 
 /* Note that there are two types of WM_TIMER timer messages.  One type
