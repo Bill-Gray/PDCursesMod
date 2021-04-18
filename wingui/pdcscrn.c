@@ -522,38 +522,36 @@ HFONT PDC_get_font_handle( const int is_bold);            /* pdcdisp.c */
 
 /* Mouse handling is done as follows:
 
-   What we want is a setup wherein,  if the user presses and releases a
-mouse button within SP->mouse_wait milliseconds,  there will be a
-KEY_MOUSE issued through getch( ) and the "button state" for that button
-will be set to BUTTON_CLICKED.
+   "Raw" mouse events (the ones Windows sends to us (*)) are :
+      button pressed
+      button released
+      wheel up/down/left/right
+      mouse moved
 
-   If the user presses and releases the button,  and it takes _longer_
-than SP->mouse_wait milliseconds,  then there should be a KEY_MOUSE
-issued with the "button state" set to BUTTON_PRESSED.  Then,  later,
-another KEY_MOUSE with a BUTTON_RELEASED.
+   The presses and releases will be combined into clicks and
+double-clicks,  _if_ each event involved occurs within
+SP->mouse_wait milliseconds of the next.  All of these events
+are sent in "raw" form to add_mouse( ).
 
-   To accomplish this:  when a message such as WM_LBUTTONDOWN,
-WM_RBUTTONDOWN,  or WM_MBUTTONDOWN is issued (and more recently WM_XBUTTONDOWN
-for five-button mice),  we set up a timer with a period of SP->mouse_wait
-milliseconds.  There are then two possibilities. The user will release the
-button quickly (so it's a "click") or they won't (and it's a "press/release").
+   If the event is a press or release,  we also add a timer to
+trigger in SP->mouse_wait milliseconds.  When that timer event is
+triggered,  it calls add_mouse( -1, -1, -1, -1), meaning "synthesize
+all events and pass them to set_mouse". Basically,  if we hit the
+timeout _or_ the mouse is moved, we can clear out the events (call
+set_mouse( ) for each of 'em). A KEY_MOUSE event will be added to
+the queue (unless there's one already there) and the event set up
+appropriately.
 
-   In the first case,  we'll get the WM_xBUTTONUP message before the
-WM_TIMER one.  We'll kill the timer and set up the BUTTON_CLICKED state. (*)
-
-   In the second case,  we'll get the WM_TIMER message first,  so we'll
-set the BUTTON_PRESSED state and kill the timer.  Eventually,  the user
-will get around to letting go of the mouse button,  and we'll get that
-WM_xBUTTONUP message.  At that time,  we'll set the BUTTON_RELEASED state
-and add the second KEY_MOUSE to the key queue.
+   A mouse move is simply ignored if it's within the current
+character cell.  (Note that ncurses does provide 'mouse move' events
+even if the mouse has only moved within the character cell.)
 
    Also,  note that if there is already a KEY_MOUSE to the queue,  there's
 no point in adding another one.  At least at present,  the actual mouse
 events aren't queued anyway.  So if there was,  say,  a click and then a
 release without getch( ) being called in between,  you'd then have two
 KEY_MOUSEs on the queue,  but would have lost all information about what
-the first one actually was.  Hence the code near the end of this function
-to ensure there isn't already a KEY_MOUSE in the queue.
+the first one actually was.
 
    Also,  a note about wheel handling.  Pre-Vista,  you could just say
 "the wheel went up" or "the wheel went down".  Vista introduced the possibility
@@ -564,16 +562,12 @@ is that whereas before,  each movement would be 120 units (the default),
 you might now get a series of 40-unit moves and should emit a wheel up/down
 event on every third move.
 
-   (*) Things are actually slightly more complicated than this.  In general,
-it'll just be a plain old BUTTON_CLICKED state.  But if there was another
-BUTTON_CLICKED within the last 2 * SP->mouse_wait milliseconds,  then this
-must be a _double_ click,  so we set the BUTTON_DOUBLE_CLICKED state.  And
-if,  within that time frame,  there was a double or triple click,  then we
-set the BUTTON_TRIPLE_CLICKED state.  There isn't a "quad" or higher state,
-so if you quadruple-click the mouse,  with each click separated by less
-than 2 * SP->mouse_wait milliseconds,  then the messages sent will be
-BUTTON_CLICKED,  BUTTON_DOUBLE_CLICKED,  BUTTON_TRIPLE_CLICKED,  and
-then another BUTTON_TRIPLE_CLICKED.                                     */
+   (*) This is not necessarily Windows-specific.  The same logic should
+apply in any system where a timer can be set.  Or a "timer" could be
+synthesized by storing the time of the last mouse event,  comparing
+it to the current time,  and saying that if SP->mouse_wait milliseconds
+have elapsed,  it's time to call add_mouse( -1, -1, -1, -1) to force
+all mouse events to be output.            */
 
 static bool mouse_key_already_in_queue( void)
 {
@@ -1677,7 +1671,7 @@ static int add_mouse( int button, const int action, const int x, const int y)
 {
    static int n = 0;
    static PDC_mouse_event e[10];
-   bool within_timeout = (button != -1);
+   const bool within_timeout = (button != -1);
    static int mouse_state = 0;
    static int prev_x, prev_y = -1;
    const bool actually_moved = (x != prev_x || y != prev_y);
