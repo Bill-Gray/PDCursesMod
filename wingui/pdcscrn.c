@@ -1424,14 +1424,6 @@ static void HandleSize( const WPARAM wParam, const LPARAM lParam)
     prev_wParam = wParam;
 }
 
-static int HandleMouseMove( WPARAM wParam, LPARAM lParam)
-{
-    const int mouse_x = LOWORD( lParam) / PDC_cxChar;
-    const int mouse_y = HIWORD( lParam) / PDC_cyChar;
-
-    INTENTIONALLY_UNUSED_PARAMETER( wParam);
-    return( add_mouse( 0, BUTTON_MOVED, mouse_x, mouse_y) != -1);
-}
 
 static void HandlePaint( HWND hwnd )
 {
@@ -1803,10 +1795,15 @@ static LRESULT ALIGN_STACK CALLBACK WndProc (const HWND hwnd,
         return 0;
 
     case WM_MOUSEMOVE:
+        {
+        const int mouse_x = LOWORD( lParam) / PDC_cxChar;
+        const int mouse_y = HIWORD( lParam) / PDC_cyChar;
+
         EnterCriticalSection(&PDC_cs);
-        if( HandleMouseMove( wParam, lParam))
+        if( add_mouse( 0, BUTTON_MOVED, mouse_x, mouse_y))
             modified_key_to_return = 0;
         LeaveCriticalSection(&PDC_cs);
+        }
         return 0;
 
     case WM_LBUTTONDOWN:
