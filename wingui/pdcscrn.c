@@ -61,8 +61,7 @@ cube of 16 million colors. */
    #define PDC_MAX_MOUSE_BUTTONS 3
 #endif
 
-#define VERTICAL_WHEEL_EVENT      PDC_MAX_MOUSE_BUTTONS
-#define HORIZONTAL_WHEEL_EVENT   (PDC_MAX_MOUSE_BUTTONS + 1)
+#define WHEEL_EVENT      PDC_MAX_MOUSE_BUTTONS
 
 int PDC_show_ctrl_alts = 0;
 
@@ -619,46 +618,8 @@ static int set_mouse( const int button_index, const int button_state,
             else
                SP->mouse_status.changes = (0x40 << button_index);
         }
-        else                      /* actually a wheel mouse movement */
-        {                         /* button_state = number of units moved */
-            static int mouse_wheel_vertical_loc = 0;
-            static int mouse_wheel_horizontal_loc = 0;
-            const int mouse_wheel_sensitivity = 120;
-
-            n_key_mouse_to_add = 0;
-            if( button_index == VERTICAL_WHEEL_EVENT)
-            {
-                mouse_wheel_vertical_loc += button_state;
-                while( mouse_wheel_vertical_loc > mouse_wheel_sensitivity / 2)
-                {
-                    n_key_mouse_to_add++;
-                    mouse_wheel_vertical_loc -= mouse_wheel_sensitivity;
-                    SP->mouse_status.changes |= PDC_MOUSE_WHEEL_UP;
-                }
-                while( mouse_wheel_vertical_loc < -mouse_wheel_sensitivity / 2)
-                {
-                    n_key_mouse_to_add++;
-                    mouse_wheel_vertical_loc += mouse_wheel_sensitivity;
-                    SP->mouse_status.changes |= PDC_MOUSE_WHEEL_DOWN;
-                }
-             }
-             else       /* must be a horizontal event: */
-            {
-                mouse_wheel_horizontal_loc += button_state;
-                while( mouse_wheel_horizontal_loc > mouse_wheel_sensitivity / 2)
-                {
-                    n_key_mouse_to_add++;
-                    mouse_wheel_horizontal_loc -= mouse_wheel_sensitivity;
-                    SP->mouse_status.changes |= PDC_MOUSE_WHEEL_RIGHT;
-                }
-                while( mouse_wheel_horizontal_loc < -mouse_wheel_sensitivity / 2)
-                {
-                    n_key_mouse_to_add++;
-                    mouse_wheel_horizontal_loc += mouse_wheel_sensitivity;
-                    SP->mouse_status.changes |= PDC_MOUSE_WHEEL_LEFT;
-                }
-             }
-        }
+        else if( button_index == WHEEL_EVENT)
+             SP->mouse_status.changes |= button_state;
     }
     SP->mouse_status.x = pt.x;
     SP->mouse_status.y = pt.y;
@@ -1780,16 +1741,45 @@ static LRESULT ALIGN_STACK CALLBACK WndProc (const HWND hwnd,
     case WM_MOUSEHWHEEL:
         EnterCriticalSection(&PDC_cs);
         {
+            static int mouse_wheel_vertical_loc = 0;
+            static int mouse_wheel_horizontal_loc = 0;
+            const int mouse_wheel_sensitivity = 80;
             POINT pt;
 
             pt.x = LOWORD( lParam);
             pt.y = HIWORD( lParam);
             ScreenToClient( hwnd, &pt);
-            debug_printf( "Mouse wheel: %u %x %lx\n", message, wParam, lParam);
+            pt.x /= PDC_cxChar;
+            pt.y /= PDC_cyChar;
             modified_key_to_return = 0;
-            set_mouse( (message == WM_MOUSEWHEEL)
-                      ? VERTICAL_WHEEL_EVENT : HORIZONTAL_WHEEL_EVENT,
-                      (short)( HIWORD(wParam)), pt.x / PDC_cxChar, pt.y / PDC_cyChar);
+            if( message == WM_MOUSEWHEEL)      /* i.e.,  vertical */
+            {
+                mouse_wheel_vertical_loc += (short)HIWORD( wParam);
+                while( mouse_wheel_vertical_loc > mouse_wheel_sensitivity / 2)
+                {
+                    mouse_wheel_vertical_loc -= mouse_wheel_sensitivity;
+                    set_mouse( WHEEL_EVENT, PDC_MOUSE_WHEEL_UP, pt.x, pt.y);
+                }
+                while( mouse_wheel_vertical_loc < -mouse_wheel_sensitivity / 2)
+                {
+                    mouse_wheel_vertical_loc += mouse_wheel_sensitivity;
+                    set_mouse( WHEEL_EVENT, PDC_MOUSE_WHEEL_DOWN, pt.x, pt.y);
+                }
+            }
+            else       /* must be a horizontal event: */
+            {
+                mouse_wheel_horizontal_loc += (short)HIWORD( wParam);
+                while( mouse_wheel_horizontal_loc > mouse_wheel_sensitivity / 2)
+                {
+                    mouse_wheel_horizontal_loc -= mouse_wheel_sensitivity;
+                    set_mouse( WHEEL_EVENT, PDC_MOUSE_WHEEL_RIGHT, pt.x, pt.y);
+                }
+                while( mouse_wheel_horizontal_loc < -mouse_wheel_sensitivity / 2)
+                {
+                    mouse_wheel_horizontal_loc += mouse_wheel_sensitivity;
+                    set_mouse( WHEEL_EVENT, PDC_MOUSE_WHEEL_LEFT, pt.x, pt.y);
+                }
+            }
         }
         LeaveCriticalSection(&PDC_cs);
         return 0;
