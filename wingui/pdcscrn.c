@@ -1381,8 +1381,7 @@ static void HandleSyskeyDown( const WPARAM wParam, const LPARAM lParam,
 
             if( extended && kptr->extended != 999)
             {
-            if( kptr->extended >= sizeof( ext_kptab) / sizeof( ext_kptab[0])
-                      || kptr->extended < 0)
+            if( kptr->extended >= sizeof( ext_kptab) / sizeof( ext_kptab[0]))
                 return;
             else
                 kptr = ext_kptab + kptr->extended;
@@ -1639,7 +1638,7 @@ static int add_mouse( int button, const int action, const int x, const int y)
        {
            button_count[button - 1]++;
            if( button_count[button - 1] == 6)    /* triple-click completed */
-               flush_events_to_queue = true;
+               flush_events_to_queue = TRUE;
        }
    }
    else if( action == BUTTON_PRESSED && !(button_count[button - 1] & 1))
