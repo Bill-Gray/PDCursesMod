@@ -1659,7 +1659,7 @@ static int add_mouse( int button, const int action, const int x, const int y)
        button = -1;        /* assume no buttons down */
        for( i = 0; i < PDC_MAX_MOUSE_BUTTONS; i++)
            if( (mouse_state >> i) & 1)
-               button = i;
+               button = (int)i;
        if( button == -1 && !(SP->_trap_mbe & REPORT_MOUSE_POSITION))
            return( -1);
    }
@@ -1673,9 +1673,9 @@ static int add_mouse( int button, const int action, const int x, const int y)
 
                assert( button_count[i] > 0 && button_count[i] < 7);
                if( button_count[i] >= 2)
-                  add_mouse_event_to_queue( i, events[button_count[i] / 2], prev_x, prev_y);
+                  add_mouse_event_to_queue( (int)i, events[button_count[i] / 2], prev_x, prev_y);
                if( button_count[i] & 1)
-                  add_mouse_event_to_queue( i, BUTTON_PRESSED, prev_x, prev_y);
+                  add_mouse_event_to_queue( (int)i, BUTTON_PRESSED, prev_x, prev_y);
                button_count[i] = 0;
            }
    if( action == BUTTON_MOVED)
