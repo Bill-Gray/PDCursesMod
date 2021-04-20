@@ -316,6 +316,7 @@ static int _process_mouse_event(void)
 {
     SDL_Keymod keymods;
     short shift_flags = 0;
+    int wheel_x = 0, wheel_y = 0;
 
     memset(&SP->mouse_status, 0, sizeof(MOUSE_STATUS));
 
@@ -331,7 +332,11 @@ static int _process_mouse_event(void)
         shift_flags |= BUTTON_ALT;
 
     if (event.type == SDL_MOUSEWHEEL)
+    {
+        wheel_x = event.wheel.x;
+        wheel_y = event.wheel.y;
         SDL_GetMouseState( &event.motion.x, &event.motion.y);
+    }
 
     SP->mouse_status.x = (event.motion.x - pdc_xoffset) / pdc_fwidth;
     SP->mouse_status.y = (event.motion.y - pdc_yoffset) / pdc_fheight;
@@ -358,13 +363,13 @@ static int _process_mouse_event(void)
     }
     else if (event.type == SDL_MOUSEWHEEL)
     {
-        if (event.wheel.y > 0)
+        if (wheel_y > 0)
             SP->mouse_status.changes = PDC_MOUSE_WHEEL_UP;
-        else if (event.wheel.y < 0)
+        else if (wheel_y < 0)
             SP->mouse_status.changes = PDC_MOUSE_WHEEL_DOWN;
-        else if (event.wheel.x > 0)
+        else if (wheel_x > 0)
             SP->mouse_status.changes = PDC_MOUSE_WHEEL_RIGHT;
-        else if (event.wheel.x < 0)
+        else if (wheel_x < 0)
             SP->mouse_status.changes = PDC_MOUSE_WHEEL_LEFT;
         else
             return -1;
