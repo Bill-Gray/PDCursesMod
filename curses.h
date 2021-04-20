@@ -31,10 +31,10 @@ Defined by this header:
 #define PDC_BUILD (PDC_VER_MAJOR*1000 + PDC_VER_MINOR *100 + PDC_VER_CHANGE)
 #define PDC_VER_MAJOR    4
 #define PDC_VER_MINOR    2
-#define PDC_VER_CHANGE   2
+#define PDC_VER_CHANGE   3
 #define PDC_VER_YEAR   2021
-#define PDC_VER_MONTH    03
-#define PDC_VER_DAY      14
+#define PDC_VER_MONTH    04
+#define PDC_VER_DAY      20
 
 #define PDC_STRINGIZE( x) #x
 #define PDC_stringize( x) PDC_STRINGIZE( x)
@@ -475,19 +475,20 @@ indicator.
    By default,  a 64-bit chtype is used :
 
 -------------------------------------------------------------------------------
-|63|62|61|60|59|..|34|33|32|31|30|29|28|..|22|21|20|19|18|17|16|..| 3| 2| 1| 0|
+|63|62|..|53|52|..|34|33|32|31|30|29|28|..|22|21|20|19|18|17|16|..| 3| 2| 1| 0|
 -------------------------------------------------------------------------------
-         color number   |        modifiers      |         character eg 'a'
+  unused    |color pair |        modifiers      |         character eg 'a'
 
    We take five more bits for the character (thus allowing Unicode values
 past 64K;  the full range of Unicode goes up to 0x10ffff,  requiring 21 bits
 total),  and four more bits for attributes.  Three are currently used as
 A_OVERLINE, A_DIM, and A_STRIKEOUT;  one more is reserved for future use.
-On some platforms,  bits 33-40 are used to select a color pair (can run from
-0 to 255). Bits 41 and 42 have been added to this to get 1024 color pairs.
-On some platforms (as of 2020 May 17,  WinGUI and VT),  bits 33-52 are used,
-allowing 2^20 = 1048576 color pairs.  That should be enough for anybody, and
-leaves twelve bits for other uses.
+Bits 33-52 are used to specify a color pair.  In theory,  there can be
+2^20 = 1048576 color pairs;  as of 2021 Apr 20,  only WinGUI,  VT and X11
+have COLOR_PAIRS = 1048576.  Other platforms may join them,  but some
+(DOS,  OS/2) simply do not have full-color capability.
+
+   Bits 53-63 are currently unused.
 
 **man-end****************************************************************/
 
@@ -509,13 +510,8 @@ leaves twelve bits for other uses.
     # define A_OVERLINE   ((chtype)0x100 << PDC_CHARTEXT_BITS)
     # define A_STRIKEOUT  ((chtype)0x200 << PDC_CHARTEXT_BITS)
     # define A_DIM        ((chtype)0x400 << PDC_CHARTEXT_BITS)
-#if 0
-                  /* May come up with a use for this bit    */
-                  /* someday; reserved for the future: */
-    # define A_FUTURE_2   ((chtype)0x800 << PDC_CHARTEXT_BITS)
-#endif
     # define PDC_COLOR_SHIFT (PDC_CHARTEXT_BITS + 12)
-    # define A_COLOR      ((chtype)0x7fffffff << PDC_COLOR_SHIFT)
+    # define A_COLOR      ((chtype)0xfffff << PDC_COLOR_SHIFT)
     # define A_ATTRIBUTES (((chtype)0xfff << PDC_CHARTEXT_BITS) | A_COLOR)
 # else         /* plain ol' 32-bit chtypes */
     # define PDC_CHARTEXT_BITS      16
@@ -1154,8 +1150,7 @@ Some won't work in non-wide X11 builds (see 'acs_defs.h' for details). */
 #define KEY_SUP               (KEY_OFFSET + 0x123) /* Shifted up arrow */
 #define KEY_SDOWN             (KEY_OFFSET + 0x124) /* Shifted down arrow */
 
-         /* The following were added 2011 Sep 14,  and are */
-         /* not returned by most flavors of PDCurses:      */
+         /* The following are not returned on most PDCurses platforms. */
 
 #define KEY_APPS              (KEY_OFFSET + 0x125)
 
