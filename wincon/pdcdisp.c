@@ -209,8 +209,10 @@ static void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *s
 
 #ifdef PDC_WIDE
             if( (ch & A_CHARTEXT) != DUMMY_CHAR_NEXT_TO_FULLWIDTH)
-#endif
                 buffer[n_out++] = (WCHAR)( ch & A_CHARTEXT);
+#else
+            buffer[n_out++] = (char)( ch & A_CHARTEXT);
+#endif
         }
 
         PDC_gotoyx(lineno, x);
