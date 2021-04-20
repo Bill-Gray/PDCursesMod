@@ -33,7 +33,7 @@ void PDC_gotoyx(int row, int col)
     SetConsoleCursorPosition(pdc_con_out, coord);
 }
 
-void _set_ansi_color(short f, short b, attr_t attr)
+static void _set_ansi_color(short f, short b, attr_t attr)
 {
     char esc[64], *p;
     short tmp, underline;
@@ -146,7 +146,7 @@ const chtype DUMMY_CHAR_NEXT_TO_FULLWIDTH = 0x110000;
 
 #define MAX_PACKET_SIZE 128
 
-void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
+static void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
 {
     int j;
     int fore, back;
