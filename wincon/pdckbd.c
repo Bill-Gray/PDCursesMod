@@ -195,26 +195,26 @@ static KPTAB kptab[] =
 
 static KPTAB ext_kptab[] =
 {
-   {0,          0,              0,              0,          }, /* MUST BE EMPTY */
-   {PADENTER,   SHF_PADENTER,   CTL_PADENTER,   ALT_PADENTER}, /* 13 */
-   {PADSLASH,   SHF_PADSLASH,   CTL_PADSLASH,   ALT_PADSLASH}, /* 111 */
-   {KEY_PPAGE,  KEY_SPREVIOUS,  CTL_PGUP,       ALT_PGUP    }, /* 33 */
-   {KEY_NPAGE,  KEY_SNEXT,      CTL_PGDN,       ALT_PGDN    }, /* 34 */
-   {KEY_END,    KEY_SEND,       CTL_END,        ALT_END     }, /* 35 */
-   {KEY_HOME,   KEY_SHOME,      CTL_HOME,       ALT_HOME    }, /* 36 */
-   {KEY_LEFT,   KEY_SLEFT,      CTL_LEFT,       ALT_LEFT    }, /* 37 */
-   {KEY_UP,     KEY_SUP,        CTL_UP,         ALT_UP      }, /* 38 */
-   {KEY_RIGHT,  KEY_SRIGHT,     CTL_RIGHT,      ALT_RIGHT   }, /* 39 */
-   {KEY_DOWN,   KEY_SDOWN,      CTL_DOWN,       ALT_DOWN    }, /* 40 */
-   {KEY_IC,     KEY_SIC,        CTL_INS,        ALT_INS     }, /* 45 */
-   {KEY_DC,     KEY_SDC,        CTL_DEL,        ALT_DEL     }, /* 46 */
-   {PADSLASH,   SHF_PADSLASH,   CTL_PADSLASH,   ALT_PADSLASH}, /* 191 */
+   {0,          0,              0,              0,            0}, /* MUST BE EMPTY */
+   {PADENTER,   SHF_PADENTER,   CTL_PADENTER,   ALT_PADENTER, 0}, /* 13 */
+   {PADSLASH,   SHF_PADSLASH,   CTL_PADSLASH,   ALT_PADSLASH, 0}, /* 111 */
+   {KEY_PPAGE,  KEY_SPREVIOUS,  CTL_PGUP,       ALT_PGUP,     0}, /* 33 */
+   {KEY_NPAGE,  KEY_SNEXT,      CTL_PGDN,       ALT_PGDN,     0}, /* 34 */
+   {KEY_END,    KEY_SEND,       CTL_END,        ALT_END,      0}, /* 35 */
+   {KEY_HOME,   KEY_SHOME,      CTL_HOME,       ALT_HOME,     0}, /* 36 */
+   {KEY_LEFT,   KEY_SLEFT,      CTL_LEFT,       ALT_LEFT,     0}, /* 37 */
+   {KEY_UP,     KEY_SUP,        CTL_UP,         ALT_UP,       0}, /* 38 */
+   {KEY_RIGHT,  KEY_SRIGHT,     CTL_RIGHT,      ALT_RIGHT,    0}, /* 39 */
+   {KEY_DOWN,   KEY_SDOWN,      CTL_DOWN,       ALT_DOWN,     0}, /* 40 */
+   {KEY_IC,     KEY_SIC,        CTL_INS,        ALT_INS,      0}, /* 45 */
+   {KEY_DC,     KEY_SDC,        CTL_DEL,        ALT_DEL,      0}  /* 46 */
 };
 
 /* End of kptab[] */
 
 void PDC_set_keyboard_binary(bool on)
 {
+    INTENTIONALLY_UNUSED_PARAMETER( on);
     PDC_LOG(("PDC_set_keyboard_binary() - called\n"));
 }
 
@@ -413,10 +413,10 @@ static int _process_key_event(void)
     if( idx < 0)
         key = -1;
 
-    else if( enhanced && idx >= sizeof( ext_kptab) / sizeof( ext_kptab[0]))
+    else if( enhanced && (size_t)idx >= sizeof( ext_kptab) / sizeof( ext_kptab[0]))
         key = -1;       /* unhandled key outside table */
 
-    else if( !enhanced && idx >= sizeof( kptab) / sizeof( kptab[0]))
+    else if( !enhanced && (size_t)idx >= sizeof( kptab) / sizeof( kptab[0]))
         key = -1;       /* unhandled key outside table */
 
     else if (state & SHIFT_PRESSED)
