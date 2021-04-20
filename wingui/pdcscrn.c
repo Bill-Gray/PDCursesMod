@@ -483,38 +483,38 @@ static const KPTAB kptab[] =
 
 static const KPTAB ext_kptab[] =
 {
-   {0,          0,              0,              0,          }, /*  0  MUST BE EMPTY */
-   {PADENTER,   SHF_PADENTER,   CTL_PADENTER,   ALT_PADENTER}, /*  1  13 */
-   {PADSLASH,   SHF_PADSLASH,   CTL_PADSLASH,   ALT_PADSLASH}, /*  2 111 */
-   {KEY_PPAGE,  KEY_SPREVIOUS,  CTL_PGUP,       ALT_PGUP    }, /*  3  33 */
-   {KEY_NPAGE,  KEY_SNEXT,      CTL_PGDN,       ALT_PGDN    }, /*  4  34 */
-   {KEY_END,    KEY_SEND,       CTL_END,        ALT_END     }, /*  5  35 */
-   {KEY_HOME,   KEY_SHOME,      CTL_HOME,       ALT_HOME    }, /*  6  36 */
-   {KEY_LEFT,   KEY_SLEFT,      CTL_LEFT,       ALT_LEFT    }, /*  7  37 */
-   {KEY_UP,     KEY_SUP,        CTL_UP,         ALT_UP      }, /*  8  38 */
-   {KEY_RIGHT,  KEY_SRIGHT,     CTL_RIGHT,      ALT_RIGHT   }, /*  9  39 */
-   {KEY_DOWN,   KEY_SDOWN,      CTL_DOWN,       ALT_DOWN    }, /* 10  40 */
-   {KEY_IC,     KEY_SIC,        CTL_INS,        ALT_INS     }, /* 11  45 */
-   {KEY_DC,     KEY_SDC,        CTL_DEL,        ALT_DEL     }, /* 12  46 */
-   {KEY_APPS,   KEY_APPS,       KEY_APPS,       KEY_APPS,   }, /* 13  93  VK_APPS    */
-   {KEY_BROWSER_BACK, KEY_BROWSER_BACK, KEY_BROWSER_BACK, KEY_BROWSER_BACK, }, /* 14 166 VK_BROWSER_BACK        */
-   {KEY_BROWSER_FWD,  KEY_BROWSER_FWD,  KEY_BROWSER_FWD,  KEY_BROWSER_FWD,  }, /* 15 167 VK_BROWSER_FORWARD     */
-   {KEY_BROWSER_REF,  KEY_BROWSER_REF,  KEY_BROWSER_REF,  KEY_BROWSER_REF,  }, /* 16 168 VK_BROWSER_REFRESH     */
-   {KEY_BROWSER_STOP, KEY_BROWSER_STOP, KEY_BROWSER_STOP, KEY_BROWSER_STOP, }, /* 17 169 VK_BROWSER_STOP        */
-   {KEY_SEARCH,       KEY_SEARCH,       KEY_SEARCH,       KEY_SEARCH,       }, /* 18 170 VK_BROWSER_SEARCH      */
-   {KEY_FAVORITES,    KEY_FAVORITES,    KEY_FAVORITES,    KEY_FAVORITES,    }, /* 19 171 VK_BROWSER_FAVORITES   */
-   {KEY_BROWSER_HOME, KEY_BROWSER_HOME, KEY_BROWSER_HOME, KEY_BROWSER_HOME, }, /* 20 172 VK_BROWSER_HOME        */
-   {KEY_VOLUME_MUTE,  KEY_VOLUME_MUTE,  KEY_VOLUME_MUTE,  KEY_VOLUME_MUTE,  }, /* 21 173 VK_VOLUME_MUTE         */
-   {KEY_VOLUME_DOWN,  KEY_VOLUME_DOWN,  KEY_VOLUME_DOWN,  KEY_VOLUME_DOWN,  }, /* 22 174 VK_VOLUME_DOWN         */
-   {KEY_VOLUME_UP,    KEY_VOLUME_UP,    KEY_VOLUME_UP,    KEY_VOLUME_UP,    }, /* 23 175 VK_VOLUME_UP           */
-   {KEY_NEXT_TRACK,   KEY_NEXT_TRACK,   KEY_NEXT_TRACK,   KEY_NEXT_TRACK,   }, /* 24 176 VK_MEDIA_NEXT_TRACK    */
-   {KEY_PREV_TRACK,   KEY_PREV_TRACK,   KEY_PREV_TRACK,   KEY_PREV_TRACK,   }, /* 25 177 VK_MEDIA_PREV_TRACK    */
-   {KEY_MEDIA_STOP,   KEY_MEDIA_STOP,   KEY_MEDIA_STOP,   KEY_MEDIA_STOP,   }, /* 26 178 VK_MEDIA_STOP          */
-   {KEY_PLAY_PAUSE,   KEY_PLAY_PAUSE,   KEY_PLAY_PAUSE,   KEY_PLAY_PAUSE,   }, /* 27 179 VK_MEDIA_PLAY_PAUSE    */
-   {KEY_LAUNCH_MAIL,  KEY_LAUNCH_MAIL,  KEY_LAUNCH_MAIL,  KEY_LAUNCH_MAIL,  }, /* 28 180 VK_LAUNCH_MAIL         */
-   {KEY_MEDIA_SELECT, KEY_MEDIA_SELECT, KEY_MEDIA_SELECT, KEY_MEDIA_SELECT, }, /* 29 181 VK_LAUNCH_MEDIA_SELECT */
-   {KEY_LAUNCH_APP1,  KEY_LAUNCH_APP1,  KEY_LAUNCH_APP1,  KEY_LAUNCH_APP1,  }, /* 30 182 VK_LAUNCH_APP1         */
-   {KEY_LAUNCH_APP2,  KEY_LAUNCH_APP2,  KEY_LAUNCH_APP2,  KEY_LAUNCH_APP2,  }, /* 31 183 VK_LAUNCH_APP2         */
+   {0,          0,              0,              0,            0}, /*  0  MUST BE EMPTY */
+   {PADENTER,   SHF_PADENTER,   CTL_PADENTER,   ALT_PADENTER, 0}, /*  1  13 */
+   {PADSLASH,   SHF_PADSLASH,   CTL_PADSLASH,   ALT_PADSLASH, 0}, /*  2 111 */
+   {KEY_PPAGE,  KEY_SPREVIOUS,  CTL_PGUP,       ALT_PGUP,     0}, /*  3  33 */
+   {KEY_NPAGE,  KEY_SNEXT,      CTL_PGDN,       ALT_PGDN,     0}, /*  4  34 */
+   {KEY_END,    KEY_SEND,       CTL_END,        ALT_END,      0}, /*  5  35 */
+   {KEY_HOME,   KEY_SHOME,      CTL_HOME,       ALT_HOME,     0}, /*  6  36 */
+   {KEY_LEFT,   KEY_SLEFT,      CTL_LEFT,       ALT_LEFT,     0}, /*  7  37 */
+   {KEY_UP,     KEY_SUP,        CTL_UP,         ALT_UP,       0}, /*  8  38 */
+   {KEY_RIGHT,  KEY_SRIGHT,     CTL_RIGHT,      ALT_RIGHT,    0}, /*  9  39 */
+   {KEY_DOWN,   KEY_SDOWN,      CTL_DOWN,       ALT_DOWN,     0}, /* 10  40 */
+   {KEY_IC,     KEY_SIC,        CTL_INS,        ALT_INS,      0}, /* 11  45 */
+   {KEY_DC,     KEY_SDC,        CTL_DEL,        ALT_DEL,      0}, /* 12  46 */
+   {KEY_APPS,   KEY_APPS,       KEY_APPS,       KEY_APPS,     0}, /* 13  93  VK_APPS    */
+   {KEY_BROWSER_BACK, KEY_BROWSER_BACK, KEY_BROWSER_BACK, KEY_BROWSER_BACK, 0}, /* 14 166 VK_BROWSER_BACK        */
+   {KEY_BROWSER_FWD,  KEY_BROWSER_FWD,  KEY_BROWSER_FWD,  KEY_BROWSER_FWD,  0}, /* 15 167 VK_BROWSER_FORWARD     */
+   {KEY_BROWSER_REF,  KEY_BROWSER_REF,  KEY_BROWSER_REF,  KEY_BROWSER_REF,  0}, /* 16 168 VK_BROWSER_REFRESH     */
+   {KEY_BROWSER_STOP, KEY_BROWSER_STOP, KEY_BROWSER_STOP, KEY_BROWSER_STOP, 0}, /* 17 169 VK_BROWSER_STOP        */
+   {KEY_SEARCH,       KEY_SEARCH,       KEY_SEARCH,       KEY_SEARCH,       0}, /* 18 170 VK_BROWSER_SEARCH      */
+   {KEY_FAVORITES,    KEY_FAVORITES,    KEY_FAVORITES,    KEY_FAVORITES,    0}, /* 19 171 VK_BROWSER_FAVORITES   */
+   {KEY_BROWSER_HOME, KEY_BROWSER_HOME, KEY_BROWSER_HOME, KEY_BROWSER_HOME, 0}, /* 20 172 VK_BROWSER_HOME        */
+   {KEY_VOLUME_MUTE,  KEY_VOLUME_MUTE,  KEY_VOLUME_MUTE,  KEY_VOLUME_MUTE,  0}, /* 21 173 VK_VOLUME_MUTE         */
+   {KEY_VOLUME_DOWN,  KEY_VOLUME_DOWN,  KEY_VOLUME_DOWN,  KEY_VOLUME_DOWN,  0}, /* 22 174 VK_VOLUME_DOWN         */
+   {KEY_VOLUME_UP,    KEY_VOLUME_UP,    KEY_VOLUME_UP,    KEY_VOLUME_UP,    0}, /* 23 175 VK_VOLUME_UP           */
+   {KEY_NEXT_TRACK,   KEY_NEXT_TRACK,   KEY_NEXT_TRACK,   KEY_NEXT_TRACK,   0}, /* 24 176 VK_MEDIA_NEXT_TRACK    */
+   {KEY_PREV_TRACK,   KEY_PREV_TRACK,   KEY_PREV_TRACK,   KEY_PREV_TRACK,   0}, /* 25 177 VK_MEDIA_PREV_TRACK    */
+   {KEY_MEDIA_STOP,   KEY_MEDIA_STOP,   KEY_MEDIA_STOP,   KEY_MEDIA_STOP,   0}, /* 26 178 VK_MEDIA_STOP          */
+   {KEY_PLAY_PAUSE,   KEY_PLAY_PAUSE,   KEY_PLAY_PAUSE,   KEY_PLAY_PAUSE,   0}, /* 27 179 VK_MEDIA_PLAY_PAUSE    */
+   {KEY_LAUNCH_MAIL,  KEY_LAUNCH_MAIL,  KEY_LAUNCH_MAIL,  KEY_LAUNCH_MAIL,  0}, /* 28 180 VK_LAUNCH_MAIL         */
+   {KEY_MEDIA_SELECT, KEY_MEDIA_SELECT, KEY_MEDIA_SELECT, KEY_MEDIA_SELECT, 0}, /* 29 181 VK_LAUNCH_MEDIA_SELECT */
+   {KEY_LAUNCH_APP1,  KEY_LAUNCH_APP1,  KEY_LAUNCH_APP1,  KEY_LAUNCH_APP1,  0}, /* 30 182 VK_LAUNCH_APP1         */
+   {KEY_LAUNCH_APP2,  KEY_LAUNCH_APP2,  KEY_LAUNCH_APP2,  KEY_LAUNCH_APP2,  0}, /* 31 183 VK_LAUNCH_APP2         */
 };
 
 
@@ -1213,22 +1213,6 @@ INLINE void HandleSizing( WPARAM wParam, LPARAM lParam )
         rect->left = rect->right - rounded_width;
 }
 
-/* Under Wine,  it appears that the code to force the window size to be
-an integral number of columns and rows doesn't work.  This is because
-WM_SIZING messages aren't sent (this is apparently fixed as of Wine 1.7.18,
-though I've not tried it yet;  I'm still on Wine 1.6,  the stable branch.)
-You can therefore end up in a loop where the code keeps trying to resize a
-window that isn't actually resizing.  So,  _when running in Wine only_,
-we want that code not to be executed... which means having to figure out:
-are we running under Wine?  Which means that when PDCurses/WinGUI is
-initialized,  we set the following 'wine_version' pointer.  One could
-actually call wine_version(),  if not NULL,  to get the current Wine
-version.      */
-
-typedef const char *(CDECL *wine_version_func)(void);
-
-static wine_version_func wine_version;
-
 static void HandleSize( const WPARAM wParam, const LPARAM lParam)
 {
     static WPARAM prev_wParam = (WPARAM)-99;
@@ -1238,9 +1222,6 @@ static void HandleSize( const WPARAM wParam, const LPARAM lParam)
 
     debug_printf( "WM_SIZE: wParam %x %d %d %d\n", (unsigned)wParam,
                   n_xpixels, n_ypixels, SP->resized);
-/*  if( wine_version)
-        printf( "Wine version: %s\n", wine_version( ));  */
-
 
     if( wParam == SIZE_MINIMIZED )
     {
@@ -1273,8 +1254,6 @@ static void HandleSize( const WPARAM wParam, const LPARAM lParam)
             SP->resized = TRUE;
         }
     }
-    else if( wine_version)
-        return;
 
     add_resize_key = 1;
     if( wParam == SIZE_RESTORED &&
@@ -2300,11 +2279,6 @@ INLINE int set_up_window( void)
 
 int PDC_scr_open(void)
 {
-    HMODULE hntdll = GetModuleHandle( _T("ntdll.dll"));
-
-    if( hntdll)
-        wine_version = (wine_version_func)GetProcAddress(hntdll, "wine_get_version");
-
     PDC_LOG(("PDC_scr_open() - called\n"));
     COLORS = N_COLORS;  /* should give this a try and see if it works! */
     if (!SP || PDC_init_palette( ))
