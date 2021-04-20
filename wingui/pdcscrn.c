@@ -41,6 +41,7 @@ INLINE int set_default_sizes_from_registry( const int n_cols, const int n_rows,
                const int xloc, const int yloc);
 void PDC_transform_line_given_hdc( const HDC hdc, const int lineno,
                              int x, int len, const chtype *srcp);
+int PDC_get_mouse_event_from_queue( void);     /* pdcscrn.c */
 
 /* We have a 'base' standard palette of 256 colors,  plus a true-color
 cube of 16 million colors. */
@@ -537,21 +538,14 @@ out what "combined" events should be emitted.
    If the raw event is a press or release,  we also set a timer to
 trigger in SP->mouse_wait milliseconds.  When that timer event is
 triggered,  it calls add_mouse( -1, -1, -1, -1), meaning "synthesize
-all events and pass them to set_mouse". Basically,  if we hit the
-timeout _or_ the mouse is moved, we can send combined events to
-set_mouse( ).  A KEY_MOUSE event will be added to the queue (unless
-there's one already there) and the event set up appropriately.
+all events and pass them to add_mouse_event_to_queue( )". Basically,  if
+we hit the timeout _or_ the mouse is moved, we can send combined events
+to add_mouse_event_to_queue( ).  A corresponding KEY_MOUSE event will
+be added to the key queue.
 
    A mouse move is simply ignored if it's within the current
 character cell.  (Note that ncurses does provide 'mouse move' events
 even if the mouse has only moved within the character cell.)
-
-   Also,  note that if there is already a KEY_MOUSE to the queue,  there's
-no point in adding another one.  At least at present,  the actual mouse
-events aren't queued anyway.  So if there was,  say,  a click and then a
-release without getch( ) being called in between,  you'd then have two
-KEY_MOUSEs on the queue,  but would have lost all information about what
-the first one actually was.
 
    Also,  a note about wheel handling.  Pre-Vista,  you could just say
 "the wheel went up" or "the wheel went down".  Vista introduced the possibility
@@ -568,87 +562,6 @@ synthesized by storing the time of the last mouse event,  comparing
 it to the current time,  and saying that if SP->mouse_wait milliseconds
 have elapsed,  it's time to call add_mouse( -1, -1, -1, -1) to force
 all mouse events to be output.            */
-
-static bool mouse_key_already_in_queue( void)
-{
-    int i = PDC_key_queue_low;
-
-    while( i != PDC_key_queue_high)
-    {
-        if( PDC_key_queue[i] == KEY_MOUSE)
-        {
-            debug_printf( "Mouse key already in queue\n");
-            return( TRUE);
-        }
-        i = (i + 1) % KEY_QUEUE_SIZE;
-    }
-    return( FALSE);
-}
-
-static int set_mouse( const int button_index, const int button_state,
-                           const int x, const int y)
-{
-    int n_key_mouse_to_add = 1;
-    POINT pt;
-
-                  /* If there is already a KEY_MOUSE in the queue,  we   */
-                  /* don't really want to add another one.  See above.   */
-    if( mouse_key_already_in_queue( ))
-        return( -1);
-    pt.x = x;
-    pt.y = y;
-    memset(&SP->mouse_status, 0, sizeof(MOUSE_STATUS));
-    if( button_state == BUTTON_MOVED)
-    {
-        if( button_index < 0)
-            SP->mouse_status.changes = PDC_MOUSE_POSITION;
-        else
-        {
-            SP->mouse_status.changes = PDC_MOUSE_MOVED | (1 << button_index);
-            SP->mouse_status.button[button_index] = BUTTON_MOVED;
-        }
-    }
-    else
-    {
-        if( button_index < PDC_MAX_MOUSE_BUTTONS)
-        {
-            SP->mouse_status.button[button_index] = (short)button_state;
-            if( button_index < 3)
-               SP->mouse_status.changes = (1 << button_index);
-            else
-               SP->mouse_status.changes = (0x40 << button_index);
-        }
-        else if( button_index == WHEEL_EVENT)
-             SP->mouse_status.changes |= button_state;
-    }
-    SP->mouse_status.x = pt.x;
-    SP->mouse_status.y = pt.y;
-    {
-        int i, button_flags = 0;
-
-        if( GetKeyState( VK_MENU) & 0x8000)
-            button_flags |= PDC_BUTTON_ALT;
-
-        if( GetKeyState( VK_SHIFT) & 0x8000)
-            button_flags |= PDC_BUTTON_SHIFT;
-
-        if( GetKeyState( VK_CONTROL) & 0x8000)
-            button_flags |= PDC_BUTTON_CONTROL;
-
-        for (i = 0; i < PDC_MAX_MOUSE_BUTTONS; i++)
-            SP->mouse_status.button[i] |= button_flags;
-    }
-                  /* If the window is maximized,  the click may occur just */
-                  /* outside the "real" screen area.  If so,  we again     */
-                  /* don't want to add a key to the queue:                 */
-    if( SP->mouse_status.x >= PDC_n_cols || SP->mouse_status.y >= PDC_n_rows)
-        n_key_mouse_to_add = 0;
-                  /* OK,  there isn't a KEY_MOUSE already in the queue.   */
-                  /* So we'll add one (or zero or more,  for wheel mice): */
-    while( n_key_mouse_to_add--)
-        add_key_to_queue( KEY_MOUSE);
-    return( 0);
-}
 
       /* The following should be #defined in 'winuser.h',  but such is */
       /* not always the case.  The following fixes the exceptions:     */
@@ -1615,6 +1528,92 @@ INLINE void HandleMenuToggle( bool *ptr_ignore_resize)
     InvalidateRect( PDC_hWnd, NULL, FALSE);
 }
 
+typedef struct
+{
+   int x, y;
+   int button, action;
+   int button_flags;    /* Alt, shift, ctrl */
+} PDC_mouse_event;
+
+/* As "combined" mouse events (i.e.,  clicks and double- and triple-clicks
+along with the usual mouse moves,  button presses and releases,  and wheel
+movements) occur,  we add them to a queue.  They are removed for each
+KEY_MOUSE event from getch( ),  and SP->mouse_status is set to reflect
+what the mouse was doing at that event.
+
+Seven queued mouse events is possibly overkill.       */
+
+#define MAX_MOUSE_QUEUE       7
+
+static PDC_mouse_event mouse_queue[MAX_MOUSE_QUEUE];
+static int n_mouse_queue = 0;
+
+int PDC_get_mouse_event_from_queue( void)
+{
+    size_t i;
+
+    if( !n_mouse_queue)
+        return( -1);
+    EnterCriticalSection(&PDC_cs);
+    memset(&SP->mouse_status, 0, sizeof(MOUSE_STATUS));
+    if( mouse_queue->action == BUTTON_MOVED)
+    {
+        if( mouse_queue->button < 0)
+            SP->mouse_status.changes = PDC_MOUSE_POSITION;
+        else
+        {
+            SP->mouse_status.changes = PDC_MOUSE_MOVED | (1 << mouse_queue->button);
+            SP->mouse_status.button[mouse_queue->button] = BUTTON_MOVED;
+        }
+    }
+    else
+    {
+        if( mouse_queue->button < PDC_MAX_MOUSE_BUTTONS)
+        {
+            SP->mouse_status.button[mouse_queue->button] = (short)mouse_queue->action;
+            if( mouse_queue->button < 3)
+               SP->mouse_status.changes = (1 << mouse_queue->button);
+            else
+               SP->mouse_status.changes = (0x40 << mouse_queue->button);
+        }
+        else if( mouse_queue->button == WHEEL_EVENT)
+             SP->mouse_status.changes |= mouse_queue->action;
+    }
+    SP->mouse_status.x = mouse_queue->x;
+    SP->mouse_status.y = mouse_queue->y;
+    for (i = 0; i < PDC_MAX_MOUSE_BUTTONS; i++)
+        SP->mouse_status.button[i] |= mouse_queue->button_flags;
+    n_mouse_queue--;
+    memmove( mouse_queue, mouse_queue + 1, n_mouse_queue * sizeof( PDC_mouse_event));
+    LeaveCriticalSection(&PDC_cs);
+    return( 0);
+}
+
+static void add_mouse_event_to_queue( const int button, const int action,
+            const int x, const int y)
+{
+    if( x < PDC_n_cols && y < PDC_n_rows && n_mouse_queue < MAX_MOUSE_QUEUE)
+    {
+        int button_flags = 0;
+
+        mouse_queue[n_mouse_queue].button = button;
+        mouse_queue[n_mouse_queue].action = action;
+        mouse_queue[n_mouse_queue].x = x;
+        mouse_queue[n_mouse_queue].y = y;
+        if( GetKeyState( VK_MENU) & 0x8000)
+            button_flags |= PDC_BUTTON_ALT;
+
+        if( GetKeyState( VK_SHIFT) & 0x8000)
+            button_flags |= PDC_BUTTON_SHIFT;
+
+        if( GetKeyState( VK_CONTROL) & 0x8000)
+            button_flags |= PDC_BUTTON_CONTROL;
+        mouse_queue[n_mouse_queue].button_flags = button_flags;
+        n_mouse_queue++;
+        add_key_to_queue( KEY_MOUSE);
+    }
+}
+
 /* 'button_count' is zero if a button hasn't been pressed;  one if it
 has been;  two if pressed/released (clicked);  three if clicked and
 pressed again... all the way up to six if it's been triple-clicked. */
@@ -1627,14 +1626,13 @@ static int add_mouse( int button, const int action, const int x, const int y)
    const bool actually_moved = (x != prev_x || y != prev_y);
    size_t i;
 
-   if( action == BUTTON_MOVED && mouse_key_already_in_queue( ))
-       return( 0);
-   else if( action == BUTTON_RELEASED)
+   if( action == BUTTON_RELEASED)
    {
        mouse_state &= ~(1 << button);
+       printf( "Button %d released, count %d\n", button, button_count[button - 1]);
        if( !button_count[button - 1])   /* a release with no matching press */
        {
-           set_mouse( button - 1, BUTTON_RELEASED, x, y);
+           add_mouse_event_to_queue( button - 1, BUTTON_RELEASED, x, y);
            return( 0);
        }
        else if( button_count[button - 1] & 1)
@@ -1648,6 +1646,7 @@ static int add_mouse( int button, const int action, const int x, const int y)
    {
       mouse_state |= (1 << button);
       button_count[button - 1]++;
+      printf( "Button %d pressed, count %d\n", button, button_count[button - 1]);
    }
    if( button >= 0)
    {
@@ -1674,14 +1673,14 @@ static int add_mouse( int button, const int action, const int x, const int y)
                            BUTTON_DOUBLE_CLICKED, BUTTON_TRIPLE_CLICKED };
 
                assert( button_count[i] > 0 && button_count[i] < 7);
-               if( button_count[i] & 1)
-                  set_mouse( i, BUTTON_PRESSED, prev_x, prev_y);
                if( button_count[i] >= 2)
-                  set_mouse( i, events[button_count[i] / 2], prev_x, prev_y);
+                  add_mouse_event_to_queue( i, events[button_count[i] / 2], prev_x, prev_y);
+               if( button_count[i] & 1)
+                  add_mouse_event_to_queue( i, BUTTON_PRESSED, prev_x, prev_y);
                button_count[i] = 0;
            }
    if( action == BUTTON_MOVED)
-      set_mouse( button - 1, action, x, y);
+      add_mouse_event_to_queue( button - 1, action, x, y);
    debug_printf( "Button %d, act %d\n", button, action);
    return( 0);
 }
@@ -1743,7 +1742,7 @@ static LRESULT ALIGN_STACK CALLBACK WndProc (const HWND hwnd,
         {
             static int mouse_wheel_vertical_loc = 0;
             static int mouse_wheel_horizontal_loc = 0;
-            const int mouse_wheel_sensitivity = 80;
+            const int mouse_wheel_sensitivity = 120;
             POINT pt;
 
             pt.x = LOWORD( lParam);
@@ -1758,12 +1757,12 @@ static LRESULT ALIGN_STACK CALLBACK WndProc (const HWND hwnd,
                 while( mouse_wheel_vertical_loc > mouse_wheel_sensitivity / 2)
                 {
                     mouse_wheel_vertical_loc -= mouse_wheel_sensitivity;
-                    set_mouse( WHEEL_EVENT, PDC_MOUSE_WHEEL_UP, pt.x, pt.y);
+                    add_mouse_event_to_queue( WHEEL_EVENT, PDC_MOUSE_WHEEL_UP, pt.x, pt.y);
                 }
                 while( mouse_wheel_vertical_loc < -mouse_wheel_sensitivity / 2)
                 {
                     mouse_wheel_vertical_loc += mouse_wheel_sensitivity;
-                    set_mouse( WHEEL_EVENT, PDC_MOUSE_WHEEL_DOWN, pt.x, pt.y);
+                    add_mouse_event_to_queue( WHEEL_EVENT, PDC_MOUSE_WHEEL_DOWN, pt.x, pt.y);
                 }
             }
             else       /* must be a horizontal event: */
@@ -1772,12 +1771,12 @@ static LRESULT ALIGN_STACK CALLBACK WndProc (const HWND hwnd,
                 while( mouse_wheel_horizontal_loc > mouse_wheel_sensitivity / 2)
                 {
                     mouse_wheel_horizontal_loc -= mouse_wheel_sensitivity;
-                    set_mouse( WHEEL_EVENT, PDC_MOUSE_WHEEL_RIGHT, pt.x, pt.y);
+                    add_mouse_event_to_queue( WHEEL_EVENT, PDC_MOUSE_WHEEL_RIGHT, pt.x, pt.y);
                 }
                 while( mouse_wheel_horizontal_loc < -mouse_wheel_sensitivity / 2)
                 {
                     mouse_wheel_horizontal_loc += mouse_wheel_sensitivity;
-                    set_mouse( WHEEL_EVENT, PDC_MOUSE_WHEEL_LEFT, pt.x, pt.y);
+                    add_mouse_event_to_queue( WHEEL_EVENT, PDC_MOUSE_WHEEL_LEFT, pt.x, pt.y);
                 }
             }
         }
