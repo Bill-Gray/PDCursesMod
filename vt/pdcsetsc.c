@@ -67,33 +67,41 @@ int PDC_curs_set( int visibility)
     {
         const int vis1 = visibility & 0xff;
         const int vis2 = (visibility >> 8) & 0xff;
-        const char *command = CURSOR_ON;            /* our default */
+        const char *command;
 
         if( vis1 && vis2)      /* show solid */
             switch( vis1)
             {
-                case 1:        /* "normal" four lines at bottom */
-                    command = STEADY_BAR;
+                case 1:        /* "normal" = underline */
+                case 5:        /* bottom half block;  we don't actually have that */
+                    command = STEADY_UNDERLINE;
                     break;
                 case 2:        /* full block */
                     command = STEADY_BLOCK;
                     break;
-                case 5:        /* bottom half block */
+                case 4:       /* caret */
+                    command = STEADY_BAR;
+                    break;
+                default:      /* since we can't do outline, cross, etc. */
                     command = STEADY_UNDERLINE;
                     break;
             }
-        else switch( vis1 + vis2)
+        else switch( vis1 ? vis1 : vis2)
             {
                 case 0:        /* just turning it off */
                     command = CURSOR_OFF;
                     break;
-                case 1:        /* "normal" four lines at bottom */
-                    command = BLINKING_BAR;
+                case 1:        /* "normal" = underline */
+                case 5:        /* bottom half block;  we don't actually have that */
+                    command = BLINKING_UNDERLINE;
                     break;
                 case 2:        /* full block */
                     command = BLINKING_BLOCK;
                     break;
-                case 5:        /* bottom half block */
+                case 4:        /* caret */
+                    command = BLINKING_BAR;
+                    break;
+                default:      /* since we can't do outline, cross, etc. */
                     command = BLINKING_UNDERLINE;
                     break;
             }
