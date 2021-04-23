@@ -79,6 +79,8 @@ void PDC_set_keyboard_binary(bool on)
 #ifdef __DJGPP__
     setmode(fileno(stdin), on ? O_BINARY : O_TEXT);
     signal(SIGINT, on ? SIG_IGN : SIG_DFL);
+#else
+   INTENTIONALLY_UNUSED_PARAMETER( on);
 #endif
 }
 
