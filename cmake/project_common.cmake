@@ -1,9 +1,9 @@
 message(STATUS "**** ${PROJECT_NAME} ****")
 
-set(PDCURSES_SRCDIR ${CMAKE_SOURCE_DIR})
+set(PDCURSES_SRCDIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(PDCURSES_DIST ${CMAKE_INSTALL_PREFIX}/${CMAKE_BUILD_TYPE})
 
-set(osdir ${PDCURSES_SRCDIR}/${PROJECT_NAME})
+set(osdir ${PDCURSES_SRCDIR})
 set(demodir ${PDCURSES_SRCDIR}/demos)
 
 set(pdc_src_files
@@ -112,23 +112,25 @@ else()
 endif()
 
 macro (demo_app dir targ)
-    set(bin_name "${PROJECT_NAME}_${targ}")
-    if(${targ} STREQUAL "tuidemo")
-        set(src_files ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/tuidemo.c ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/tui.c)
-    else()
-        set(src_files ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/${targ}.c)
+    if (PDC_DEMOS_BUILD)
+        set(bin_name "${PROJECT_NAME}_${targ}")
+        if(${targ} STREQUAL "tuidemo")
+            set(src_files ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/tuidemo.c ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/tui.c)
+        else()
+            set(src_files ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/${targ}.c)
+        endif()
+
+        add_executable(${bin_name} ${ARGV2} ${src_files})
+
+        if((${PROJECT_NAME} STREQUAL "wincon") OR (${PROJECT_NAME} STREQUAL "wingui"))
+            target_link_libraries(${bin_name} ${PDCURSE_PROJ} ${EXTRA_LIBS} ${WINCON_WINGUI_DEP_LIBS})
+        else()
+            target_link_libraries(${bin_name} ${PDCURSE_PROJ} ${EXTRA_LIBS})
+        endif()
+
+        add_dependencies(${bin_name} ${PDCURSE_PROJ})
+        set_target_properties(${bin_name} PROPERTIES OUTPUT_NAME ${targ})
+
+        install(TARGETS ${bin_name} RUNTIME DESTINATION ${PDCURSES_DIST}/bin/${PROJECT_NAME} COMPONENT applications)
     endif()
-
-    add_executable(${bin_name} ${ARGV2} ${src_files})
-
-    if((${PROJECT_NAME} STREQUAL "wincon") OR (${PROJECT_NAME} STREQUAL "wingui"))
-        target_link_libraries(${bin_name} ${PDCURSE_PROJ} ${EXTRA_LIBS} ${WINCON_WINGUI_DEP_LIBS})
-    else()
-        target_link_libraries(${bin_name} ${PDCURSE_PROJ} ${EXTRA_LIBS})
-    endif()
-
-    add_dependencies(${bin_name} ${PDCURSE_PROJ})
-    set_target_properties(${bin_name} PROPERTIES OUTPUT_NAME ${targ})
-
-    install(TARGETS ${bin_name} RUNTIME DESTINATION ${PDCURSES_DIST}/bin/${PROJECT_NAME} COMPONENT applications)
 endmacro ()
