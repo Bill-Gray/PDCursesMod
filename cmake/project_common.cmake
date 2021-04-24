@@ -99,15 +99,19 @@ if(PDC_BUILD_SHARED)
         target_link_libraries(${PDCURSE_PROJ} ${EXTRA_LIBS})
     endif()
 
-    install(TARGETS ${PDCURSE_PROJ}
-        ARCHIVE DESTINATION ${PDCURSES_DIST}/lib/${PROJECT_NAME}
-        LIBRARY DESTINATION ${PDCURSES_DIST}/lib/${PROJECT_NAME}
-        RUNTIME DESTINATION ${PDCURSES_DIST}/bin/${PROJECT_NAME} COMPONENT applications)
+    if(PDC_INSTALL_TARGETS)
+        install(TARGETS ${PDCURSE_PROJ}
+            ARCHIVE DESTINATION ${PDCURSES_DIST}/lib/${PROJECT_NAME}
+            LIBRARY DESTINATION ${PDCURSES_DIST}/lib/${PROJECT_NAME}
+            RUNTIME DESTINATION ${PDCURSES_DIST}/bin/${PROJECT_NAME} COMPONENT applications)
+    endif()
     set_target_properties(${PDCURSE_PROJ} PROPERTIES OUTPUT_NAME "pdcurses")
 else()
     set(PDCURSE_PROJ ${PROJECT_NAME}_pdcursesstatic)
     add_library (${PDCURSE_PROJ} STATIC ${pdc_src_files} ${pdcurses_src_files})
-    install (TARGETS ${PDCURSE_PROJ} ARCHIVE DESTINATION ${PDCURSES_DIST}/lib/${PROJECT_NAME} COMPONENT applications)
+    if(PDC_INSTALL_TARGETS)
+        install (TARGETS ${PDCURSE_PROJ} ARCHIVE DESTINATION ${PDCURSES_DIST}/lib/${PROJECT_NAME} COMPONENT applications)
+    endif()
     set_target_properties(${PDCURSE_PROJ} PROPERTIES OUTPUT_NAME "pdcursesstatic")
 endif()
 
@@ -131,6 +135,8 @@ macro (demo_app dir targ)
         add_dependencies(${bin_name} ${PDCURSE_PROJ})
         set_target_properties(${bin_name} PROPERTIES OUTPUT_NAME ${targ})
 
-        install(TARGETS ${bin_name} RUNTIME DESTINATION ${PDCURSES_DIST}/bin/${PROJECT_NAME} COMPONENT applications)
+        if(PDC_INSTALL_TARGETS)
+            install(TARGETS ${bin_name} RUNTIME DESTINATION ${PDCURSES_DIST}/bin/${PROJECT_NAME} COMPONENT applications)
+        endif()
     endif()
 endmacro ()
