@@ -37,7 +37,8 @@ getstr
    wgetch()'d values into a multibyte string in the current locale
    before returning it. The resulting string is placed in the area
    pointed to by *str. The routines with n as the last argument read at
-   most n characters.
+   most n characters.  Note that this does not include the terminating
+   '\0' character;  be sure your buffer has room for that.
 
    Note that there's no way to know how long the buffer passed to
    wgetstr() is, so use wgetnstr() to avoid buffer overflows.
