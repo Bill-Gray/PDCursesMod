@@ -19,7 +19,7 @@ some of which would fail if (for example) the library had been compiled
 with wide characters and the application had not,  or the version numbers
 didn't match,  or the size of chtypes differed.  */
 
-int main( const int argc, const char **argv)
+int main( void)
 {
    static const char *port_text[] = { "X11", "Win32 console", "Win32a",
          "DOS", "OS/2", "SDL1", "SDL2", "VT" };
