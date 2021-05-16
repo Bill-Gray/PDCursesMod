@@ -194,7 +194,6 @@ static int _process_mouse_events(void)
 
     key_pressed = TRUE;
     old_shift = shift_status;
-    SP->key_code = TRUE;
 
     /* Set shift modifiers */
 
@@ -330,7 +329,6 @@ int PDC_get_key(void)
         key_pressed = FALSE;
         old_shift = shift_status;
 
-        SP->key_code = TRUE;
         return key;
     }
 
@@ -405,7 +403,6 @@ int PDC_get_key(void)
     }
 
     key_pressed = TRUE;
-    SP->key_code = ((unsigned)key >= 256);
 
     return key;
 }

@@ -337,8 +337,6 @@ static int _process_key_event(void)
     int idx;
     BOOL enhanced;
 
-    SP->key_code = TRUE;
-
     /* Save the key modifiers. Do this first to allow to detect e.g. a
        pressed CTRL key after a hit of NUMLOCK. */
 
@@ -396,10 +394,7 @@ static int _process_key_event(void)
            positive codes. */
 
         if (kptab[vk].extended == 0)
-        {
-            SP->key_code = FALSE;
             return key;
-        }
     }
 
     /* This case happens if a functional key has been entered. */
@@ -436,9 +431,6 @@ static int _process_key_event(void)
     else
         key = enhanced ? ext_kptab[idx].normal : kptab[idx].normal;
 
-    if (key < KEY_CODE_YES)
-        SP->key_code = FALSE;
-
     return key;
 }
 
@@ -449,7 +441,6 @@ static int _process_mouse_event(void)
     int i;
 
     save_press = 0;
-    SP->key_code = TRUE;
 
     memset(&SP->mouse_status, 0, sizeof(MOUSE_STATUS));
 
@@ -616,7 +607,6 @@ int PDC_get_key(void)
                 if (!SP->resized)
                 {
                     SP->resized = TRUE;
-                    SP->key_code = TRUE;
                     return KEY_RESIZE;
                 }
             }

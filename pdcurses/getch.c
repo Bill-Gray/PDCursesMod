@@ -269,7 +269,6 @@ static int _mouse_key(void)
              changes & 2 && (SP->mouse_status.button[1] &
              BUTTON_ACTION_MASK) == BUTTON_CLICKED)
     {
-        SP->key_code = FALSE;
         return _paste();
     }
 
@@ -422,12 +421,12 @@ int wgetch(WINDOW *win)
         /* filter mouse events; translate mouse clicks in the slk
            area to function keys */
 
-        if (SP->key_code && key == KEY_MOUSE)
+        if( key == KEY_MOUSE)
             key = _mouse_key();
 
         /* filter special keys if not in keypad mode */
 
-        if (SP->key_code && !win->_use_keypad)
+        if( key >= KEY_MIN && key < KEY_MAX && !win->_use_keypad)
             key = -1;
 
         /* unwanted key? loop back */
@@ -446,7 +445,7 @@ int wgetch(WINDOW *win)
 
         /* if echo is enabled */
 
-        if (SP->echo && !SP->key_code)
+        if (SP->echo && (key < KEY_MIN || key >= KEY_MAX))
         {
             waddch(win, key);
             wrefresh(win);
@@ -565,7 +564,7 @@ int wget_wch(WINDOW *win, wint_t *wch)
 
     *wch = (wint_t)key;
 
-    return SP->key_code ? KEY_CODE_YES : OK;
+    return (key >= KEY_MIN && key < KEY_MAX) ? KEY_CODE_YES : OK;
 }
 
 int get_wch(wint_t *wch)

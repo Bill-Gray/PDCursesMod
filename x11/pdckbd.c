@@ -305,7 +305,6 @@ static unsigned long _process_key_event(XEvent *event)
     int buflen = 40;
     int i, count;
     unsigned long modifier = 0;
-    bool key_code = FALSE;
 
     PDC_LOG(("_process_key_event() - called\n"));
 
@@ -346,7 +345,6 @@ static unsigned long _process_key_event(XEvent *event)
 
             if (key)
             {
-                SP->key_code = TRUE;
                 return key;
             }
         }
@@ -414,7 +412,6 @@ static unsigned long _process_key_event(XEvent *event)
             else
                 key = key_table[i].normal;
 
-            key_code = (key > 0x100);
             break;
         }
     }
@@ -435,22 +432,13 @@ static unsigned long _process_key_event(XEvent *event)
     if (event->xkey.state & Mod1Mask)
     {
         if (key >= 'A' && key <= 'Z')
-        {
             key += ALT_A - 'A';
-            key_code = TRUE;
-        }
 
         if (key >= 'a' && key <= 'z')
-        {
             key += ALT_A - 'a';
-            key_code = TRUE;
-        }
 
         if (key >= '0' && key <= '9')
-        {
             key += ALT_0 - '0';
-            key_code = TRUE;
-        }
     }
 
     /* After all that, send the key back to the application if is
@@ -460,7 +448,6 @@ static unsigned long _process_key_event(XEvent *event)
     {
         SP->key_modifiers = modifier;
 
-        SP->key_code = key_code;
         return key;
     }
 
@@ -516,7 +503,6 @@ static unsigned long _process_mouse_event( const XEvent *event)
                   SP->mouse_status.changes = PDC_MOUSE_WHEEL_RIGHT;
             }
 
-            SP->key_code = TRUE;
             return KEY_MOUSE;
         }
 
@@ -587,7 +573,6 @@ static unsigned long _process_mouse_event( const XEvent *event)
 
     /* Send the KEY_MOUSE to curses program */
 
-    SP->key_code = TRUE;
     return KEY_MOUSE;
 }
 
@@ -613,7 +598,6 @@ int PDC_get_key(void)
     if (pdc_resize_now)
     {
         pdc_resize_now = FALSE;
-        SP->key_code = TRUE;
         return KEY_RESIZE;
     }
 

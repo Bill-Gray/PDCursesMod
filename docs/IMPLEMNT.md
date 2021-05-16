@@ -145,16 +145,14 @@ function is called from wgetch(). This function may be blocking, and
 traditionally is; but it need not be. If a valid key or mouse event
 cannot be returned, for any reason, this function returns -1. Valid keys
 are those that fall within the appropriate character set, or are in the
-list of special keys found in curses.h (KEY_MIN through KEY_MAX). When
-returning a special key code, this routine must also set SP->key_code to
-TRUE; otherwise it must set it to FALSE. If SP->return_key_modifiers is
-TRUE, this function may return modifier keys (shift, control, alt),
-pressed alone, as special key codes; if SP->return_key_modifiers is
-FALSE, it must not. If modifier keys are returned, it should only happen
-if no other keys were pressed in the meantime; i.e., the return should
-happen on key up. But if this is not possible, it may return the
-modifier keys on key down (if and only if SP->return_key_modifiers is
-TRUE).
+list of special keys found in curses.h (KEY_MIN through KEY_MAX). If
+SP->return_key_modifiers is TRUE, this function may return modifier keys
+(shift, control, alt), pressed alone, as special key codes; if
+SP->return_key_modifiers is FALSE, it must not. If modifier keys are
+returned, it should only happen if no other keys were pressed in the
+meantime; i.e., the return should happen on key up. But if this is not
+possible, it may return the modifier keys on key down (if and only if
+SP->return_key_modifiers is TRUE).
 
 ### bool PDC_has_mouse(void);
 

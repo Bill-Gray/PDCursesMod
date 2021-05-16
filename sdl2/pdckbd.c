@@ -160,18 +160,11 @@ static int _handle_alt_keys(int key)
     else if (SP->key_modifiers & PDC_KEY_MODIFIER_ALT)
     {
         if (key >= 'A' && key <= 'Z')
-        {
             key += ALT_A - 'A';
-            SP->key_code = TRUE;
-        } else if (key >= 'a' && key <= 'z')
-        {
+        else if (key >= 'a' && key <= 'z')
             key += ALT_A - 'a';
-            SP->key_code = TRUE;
-        } else if (key >= '0' && key <= '9')
-        {
+        else if (key >= '0' && key <= '9')
             key += ALT_0 - '0';
-            SP->key_code = TRUE;
-        }
     }
 
     return key;
@@ -184,8 +177,6 @@ static int _process_key_event(void)
 #ifdef PDC_WIDE
     size_t bytes;
 #endif
-
-    SP->key_code = FALSE;
 
     if (event.type == SDL_KEYUP)
     {
@@ -210,7 +201,6 @@ static int _process_key_event(void)
 
         if (SP->return_key_modifiers && event.key.keysym.sym == oldkey)
         {
-            SP->key_code = TRUE;
             switch (event.key.keysym.sym)
             {
             case SDLK_RSHIFT:
@@ -230,7 +220,6 @@ static int _process_key_event(void)
             }
         }
 
-        SP->key_code = FALSE;
         return -1;
     }
     else if (event.type == SDL_TEXTINPUT)
@@ -301,7 +290,6 @@ static int _process_key_event(void)
                 key = key_table[i].normal;
             }
 
-            SP->key_code = (key > 0x100);
             return key;
         }
     }
@@ -374,7 +362,6 @@ static int _process_mouse_event(void)
         else
             return -1;
 
-        SP->key_code = TRUE;
         return KEY_MOUSE;
     }
     else
@@ -411,7 +398,6 @@ static int _process_mouse_event(void)
 
     old_mouse_status = SP->mouse_status;
 
-    SP->key_code = TRUE;
     return KEY_MOUSE;
 }
 
@@ -435,7 +421,6 @@ int PDC_get_key(void)
             if (!SP->resized)
             {
                 SP->resized = TRUE;
-                SP->key_code = TRUE;
                 return KEY_RESIZE;
             }
         }

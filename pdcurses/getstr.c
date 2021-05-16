@@ -189,15 +189,12 @@ int wgetnstr(WINDOW *win, char *str, int n)
             break;
 
         default:
-            if (chars < n)
+            if (chars < n && ch < 0x100)
             {
-                if (!SP->key_code && ch < 0x100)
-                {
-                    *p++ = (char)ch;
-                    if (oldecho)
-                        waddch(win, ch);
-                    chars++;
-                }
+                *p++ = (char)ch;
+                if (oldecho)
+                    waddch(win, ch);
+                chars++;
             }
             else
                 beep();
@@ -391,7 +388,7 @@ int wgetn_wstr(WINDOW *win, wint_t *wstr, int n)
         default:
             if (chars < n)
             {
-                if (!SP->key_code)
+                if( ch < KEY_MIN || ch >= KEY_MAX)
                 {
                     *p++ = (wint_t)ch;
                     if (oldecho)

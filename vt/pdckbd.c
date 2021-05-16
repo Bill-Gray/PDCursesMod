@@ -304,8 +304,7 @@ int PDC_get_key( void)
       int c[MAX_COUNT];
 
 #ifdef USE_CONIO
-      SP->key_code = (rval == 0 || rval == 224);
-      if( SP->key_code)
+      if( rval == 0 || rval == 224)
          {
          int key2;
 
@@ -316,7 +315,6 @@ int PDC_get_key( void)
          }
 
 #endif
-      SP->key_code = (rval == 27);
       if( rval == 27)
          {
          int count = 0;
@@ -330,10 +328,7 @@ int PDC_get_key( void)
                rval = -1;
             }
          if( !count)             /* Escape hit */
-            {
-            SP->key_code = 0;
             rval = 27;
-            }
          count--;
          if( rval == KEY_MOUSE)
             {

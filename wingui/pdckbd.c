@@ -48,7 +48,6 @@ int PDC_get_key(void)
          if( rval == KEY_MOUSE)
             PDC_get_mouse_event_from_queue( );
     }
-    SP->key_code = (rval >= KEY_MIN && rval <= KEY_MAX);
     return rval;
 }
 
