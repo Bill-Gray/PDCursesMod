@@ -236,6 +236,17 @@ static int xlate_vt_codes( const int *c, const int count)
              { KEY_F(23),   "[23$"   },    /* shift-f11 on rxvt */
              { KEY_F(24),   "[24$"   },    /* shift-f12 on rxvt */
 
+             { CTL_PGUP,    "[5;5~"  },
+             { CTL_PGDN,    "[6;5~"  },
+             { CTL_HOME,    "[1;5H"  },
+             { CTL_END,     "[1;5F"  },
+             { CTL_DEL,     "[3;5~"  },
+             { ALT_END,     "[1;3F"  },
+             { ALT_PAD5,    "[1;3E"  },
+             { ALT_HOME,    "[1;3H"  },
+             { ALT_INS,     "[2;3~"  },
+             { ALT_DEL,     "[3;3~"  },
+
              { ALT_UP,      "[1;3A"   },
              { ALT_RIGHT,   "[1;3C"   },
              { ALT_DOWN,    "[1;3B"   },
