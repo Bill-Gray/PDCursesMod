@@ -162,103 +162,92 @@ typedef struct
 static int xlate_vt_codes( const int *c, const int count)
 {
    static const xlate_t xlates[] =  {
-             { KEY_UP,     "[A"   },
-             { KEY_DOWN,   "[B"   },
-             { KEY_LEFT,   "[D"   },
-             { KEY_RIGHT,  "[C"   },
-             { KEY_HOME,   "OH"   },
-             { KEY_HOME,   "[H"   },
-             { KEY_END,    "OF"   },
-             { KEY_END,    "[F"   },
-             { KEY_END,    "[8~"  },         /* rxvt */
-             { KEY_B2,     "[E"   },
-
-             { KEY_BTAB,   "[Z"   },           /* Shift-Tab */
-             { KEY_IC,     "[2~"  },
-             { KEY_DC,     "[3~"  },
-             { KEY_PPAGE,  "[5~"  },
-             { KEY_NPAGE,  "[6~"  },
-
-             { CTL_LEFT,   "[1;5D"  },
-             { CTL_RIGHT,  "[1;5C"  },
-             { CTL_UP,     "[1;5A"  },
-             { CTL_DOWN,   "[1;5B"  },
-
-             { ALT_PGUP,   "[5;3~"  },
-             { ALT_PGDN,   "[6;3~"  },
-
-             { KEY_F(1),    "[[A"   },      /* Linux console */
-             { KEY_F(2),    "[[B"   },
-             { KEY_F(3),    "[[C"   },
-             { KEY_F(4),    "[[D"   },
-             { KEY_F(5),    "[[E"   },
-             { KEY_END,     "[4~"   },
-             { KEY_HOME,    "[1~"   },
-             { KEY_HOME,    "[7~"   },    /* rxvt */
-
+             { KEY_END,     "OF"      },
+             { KEY_HOME,    "OH"      },
              { KEY_F(1),    "OP"      },
-             { KEY_F(1),    "[11~"    },
              { KEY_F(2),    "OQ"      },
-             { KEY_F(2),    "[12~"    },
              { KEY_F(3),    "OR"      },
-             { KEY_F(3),    "[13~"    },
              { KEY_F(4),    "OS"      },
+             { KEY_F(1),    "[11~"    },
+             { KEY_F(2),    "[12~"    },
+             { KEY_F(3),    "[13~"    },
              { KEY_F(4),    "[14~"    },
+             { KEY_F(17),   "[15;2~"  },   /* shift-f5 */
              { KEY_F(5),    "[15~"    },
+             { KEY_F(18),   "[17;2~"  },
              { KEY_F(6),    "[17~"    },
+             { KEY_F(19),   "[18;2~"  },
              { KEY_F(7),    "[18~"    },
+             { KEY_F(20),   "[19;2~"  },
              { KEY_F(8),    "[19~"    },
-             { KEY_F(9),    "[20~"    },
-             { KEY_F(10),   "[21~"   },
-             { KEY_F(11),   "[23~"   },
-             { KEY_F(12),   "[24~"   },
-             { KEY_F(13),   "[1;2P"  },      /* shift-f1 */
-             { KEY_F(14),   "[1;2Q"  },
-             { KEY_F(15),   "[1;2R"  },
-             { KEY_F(16),   "[1;2S"  },
-             { KEY_F(17),   "[15;2~"   },  /* shift-f5 */
-             { KEY_F(18),   "[17;2~"   },
-             { KEY_F(19),   "[18;2~"   },
-             { KEY_F(20),   "[19;2~"   },
-             { KEY_F(21),   "[20;2~"   },
-             { KEY_F(22),   "[21;2~"   },
-             { KEY_F(23),   "[23;2~"   },  /* shift-f11 */
-             { KEY_F(24),   "[24;2~"   },
-
-             { KEY_F(15),   "[25~"   },    /* shift-f3 on rxvt */
-             { KEY_F(16),   "[26~"   },    /* shift-f4 on rxvt */
-             { KEY_F(17),   "[28~"   },    /* shift-f5 on rxvt */
-             { KEY_F(18),   "[29~"   },    /* shift-f6 on rxvt */
-             { KEY_F(19),   "[31~"   },    /* shift-f7 on rxvt */
-             { KEY_F(20),   "[32~"   },    /* shift-f8 on rxvt */
-             { KEY_F(21),   "[33~"   },    /* shift-f9 on rxvt */
-             { KEY_F(22),   "[34~"   },    /* shift-f10 on rxvt */
-             { KEY_F(23),   "[23$"   },    /* shift-f11 on rxvt */
-             { KEY_F(24),   "[24$"   },    /* shift-f12 on rxvt */
-
-             { CTL_PGUP,    "[5;5~"  },
-             { CTL_PGDN,    "[6;5~"  },
-             { CTL_HOME,    "[1;5H"  },
-             { CTL_END,     "[1;5F"  },
-             { CTL_DEL,     "[3;5~"  },
-             { ALT_END,     "[1;3F"  },
-             { ALT_PAD5,    "[1;3E"  },
-             { ALT_HOME,    "[1;3H"  },
-             { ALT_INS,     "[2;3~"  },
-             { ALT_DEL,     "[3;3~"  },
-
-             { ALT_UP,      "[1;3A"   },
-             { ALT_RIGHT,   "[1;3C"   },
-             { ALT_DOWN,    "[1;3B"   },
-             { ALT_LEFT,    "[1;3D"   },
-             { CTL_UP,      "[1;5A"   },
-             { CTL_RIGHT,   "[1;5C"   },
-             { CTL_DOWN,    "[1;5B"   },
-             { CTL_LEFT,    "[1;5D"   },
              { KEY_SUP,     "[1;2A"   },
-             { KEY_SRIGHT,  "[1;2C"   },
              { KEY_SDOWN,   "[1;2B"   },
-             { KEY_SLEFT,   "[1;2D"   }  };
+             { KEY_SRIGHT,  "[1;2C"   },
+             { KEY_SLEFT,   "[1;2D"   },
+             { KEY_F(13),   "[1;2P"   },   /* shift-f1 */
+             { KEY_F(14),   "[1;2Q"   },
+             { KEY_F(15),   "[1;2R"   },
+             { KEY_F(16),   "[1;2S"   },
+             { ALT_UP,      "[1;3A"   },
+             { ALT_DOWN,    "[1;3B"   },
+             { ALT_RIGHT,   "[1;3C"   },
+             { ALT_LEFT,    "[1;3D"   },
+             { ALT_PAD5,    "[1;3E"   },
+             { ALT_END,     "[1;3F"   },
+             { ALT_HOME,    "[1;3H"   },
+             { CTL_UP,      "[1;5A"   },
+             { CTL_DOWN,    "[1;5B"   },
+             { CTL_RIGHT,   "[1;5C"   },
+             { CTL_LEFT,    "[1;5D"   },
+             { CTL_END,     "[1;5F"   },
+             { CTL_HOME,    "[1;5H"   },
+             { KEY_HOME,    "[1~"     },
+             { KEY_F(21),   "[20;2~"  },
+             { KEY_F(9),    "[20~"    },
+             { KEY_F(22),   "[21;2~"  },
+             { KEY_F(10),   "[21~"    },
+             { KEY_F(23),   "[23$"    },   /* shift-f11 on rxvt */
+             { KEY_F(23),   "[23;2~"  },   /* shift-f11 */
+             { KEY_F(11),   "[23~"    },
+             { KEY_F(24),   "[24$"    },   /* shift-f12 on rxvt */
+             { KEY_F(24),   "[24;2~"  },
+             { KEY_F(12),   "[24~"    },
+             { KEY_F(15),   "[25~"    },   /* shift-f3 on rxvt */
+             { KEY_F(16),   "[26~"    },   /* shift-f4 on rxvt */
+             { KEY_F(17),   "[28~"    },   /* shift-f5 on rxvt */
+             { KEY_F(18),   "[29~"    },   /* shift-f6 on rxvt */
+             { ALT_INS,     "[2;3~"   },
+             { KEY_IC,      "[2~"     },
+             { KEY_F(19),   "[31~"    },   /* shift-f7 on rxvt */
+             { KEY_F(20),   "[32~"    },   /* shift-f8 on rxvt */
+             { KEY_F(21),   "[33~"    },   /* shift-f9 on rxvt */
+             { KEY_F(22),   "[34~"    },   /* shift-f10 on rxvt */
+             { ALT_DEL,     "[3;3~"   },
+             { CTL_DEL,     "[3;5~"   },
+             { KEY_DC,      "[3~"     },
+             { KEY_END,     "[4~"     },
+             { ALT_PGUP,    "[5;3~"   },
+             { CTL_PGUP,    "[5;5~"   },
+             { KEY_PPAGE,   "[5~"     },
+             { ALT_PGDN,    "[6;3~"   },
+             { CTL_PGDN,    "[6;5~"   },
+             { KEY_NPAGE,   "[6~"     },
+             { KEY_HOME,    "[7~"     },    /* rxvt */
+             { KEY_END,     "[8~"     },    /* rxvt */
+             { KEY_UP,      "[A"      },
+             { KEY_DOWN,    "[B"      },
+             { KEY_RIGHT,   "[C"      },
+             { KEY_LEFT,    "[D"      },
+             { KEY_B2,      "[E"      },
+             { KEY_END,     "[F"      },
+             { KEY_HOME,    "[H"      },
+             { KEY_BTAB,    "[Z"      },    /* Shift-Tab */
+             { KEY_F(1),    "[[A"     },    /* Linux console */
+             { KEY_F(2),    "[[B"     },
+             { KEY_F(3),    "[[C"     },
+             { KEY_F(4),    "[[D"     },
+             { KEY_F(5),    "[[E"     },
+             };
    const size_t n_keycodes = sizeof( xlates) / sizeof( xlates[0]);
    size_t i;
    int rval = -1;
