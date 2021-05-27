@@ -40,7 +40,7 @@ getch
    If keypad() is TRUE, and a function key is pressed, the token for
    that function key will be returned instead of the raw characters.
    Possible function keys are defined in <curses.h> with integers
-   beginning with 0401, whose names begin with KEY_.
+   starting at KEY_OFFSET, whose names begin with KEY_.
 
    If nodelay(win, TRUE) has been called on the window and no input is
    waiting, the value ERR is returned.
@@ -55,8 +55,9 @@ getch
    PDCurses is built with the PDC_WIDE option. It takes a pointer to a
    wint_t rather than returning the key as an int, and instead returns
    KEY_CODE_YES if the key is a function key. Otherwise, it returns OK
-   or ERR. It's important to check for KEY_CODE_YES, since regular wide
-   characters can have the same values as function key codes.
+   or ERR. It's important to check for KEY_CODE_YES; on most Curses
+   implementations (not PDCursesMod),  regular wide characters can have
+   the same values as function key codes.
 
    unget_wch() puts a wide character on the input queue.
 
@@ -334,6 +335,11 @@ static int _mouse_key(void)
     return key;
 }
 
+bool PDC_is_function_key( const int key)
+{
+   return( key >= KEY_MIN && key < KEY_MAX);
+}
+
 #define WAIT_FOREVER    -1
 
 int wgetch(WINDOW *win)
@@ -426,7 +432,7 @@ int wgetch(WINDOW *win)
 
         /* filter special keys if not in keypad mode */
 
-        if( key >= KEY_MIN && key < KEY_MAX && !win->_use_keypad)
+        if( PDC_is_function_key( key) && !win->_use_keypad)
             key = -1;
 
         /* unwanted key? loop back */
@@ -445,7 +451,7 @@ int wgetch(WINDOW *win)
 
         /* if echo is enabled */
 
-        if (SP->echo && (key < KEY_MIN || key >= KEY_MAX))
+        if (SP->echo && !PDC_is_function_key( key))
         {
             waddch(win, key);
             wrefresh(win);
@@ -564,7 +570,7 @@ int wget_wch(WINDOW *win, wint_t *wch)
 
     *wch = (wint_t)key;
 
-    return (key >= KEY_MIN && key < KEY_MAX) ? KEY_CODE_YES : OK;
+    return PDC_is_function_key( key) ? KEY_CODE_YES : OK;
 }
 
 int get_wch(wint_t *wch)
