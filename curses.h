@@ -33,8 +33,8 @@ Defined by this header:
 #define PDC_VER_MINOR    2
 #define PDC_VER_CHANGE   3
 #define PDC_VER_YEAR   2021
-#define PDC_VER_MONTH    04
-#define PDC_VER_DAY      20
+#define PDC_VER_MONTH    05
+#define PDC_VER_DAY      27
 
 #define PDC_STRINGIZE( x) #x
 #define PDC_stringize( x) PDC_STRINGIZE( x)
@@ -1607,6 +1607,8 @@ PDCEX  int     getcurx(WINDOW *);
 PDCEX  int     getcury(WINDOW *);
 PDCEX  void    traceoff(void);
 PDCEX  void    traceon(void);
+PDCEX  void    trace( const unsigned);
+PDCEX  unsigned curses_trace( const unsigned);
 PDCEX  char   *unctrl(chtype);
 
 PDCEX  int     crmode(void);
@@ -1762,6 +1764,30 @@ PDCEX  int     wunderscore(WINDOW *);
 #define PDC_KEY_MODIFIER_ALT     4
 #define PDC_KEY_MODIFIER_NUMLOCK 8
 #define PDC_KEY_MODIFIER_REPEAT  16
+
+/* Bitflags for trace(), curses_trace(),  for ncurses compatibility.
+Values were copied from ncurses.  Note that those involving terminfo,
+termcap,  and TTY control bits are meaningless in PDCurses and will be
+ignored.       */
+
+#define TRACE_DISABLE   0x0000   /* turn off tracing */
+#define TRACE_TIMES     0x0001   /* trace user and system times of updates */
+#define TRACE_TPUTS     0x0002   /* trace tputs calls */
+#define TRACE_UPDATE    0x0004   /* trace update actions, old & new screens */
+#define TRACE_MOVE      0x0008   /* trace cursor moves and scrolls */
+#define TRACE_CHARPUT   0x0010   /* trace all character outputs */
+#define TRACE_ORDINARY  0x001F   /* trace all update actions */
+#define TRACE_CALLS     0x0020   /* trace all curses calls */
+#define TRACE_VIRTPUT   0x0040   /* trace virtual character puts */
+#define TRACE_IEVENT    0x0080   /* trace low-level input processing */
+#define TRACE_BITS      0x0100   /* trace state of TTY control bits */
+#define TRACE_ICALLS    0x0200   /* trace internal/nested calls */
+#define TRACE_CCALLS    0x0400   /* trace per-character calls */
+#define TRACE_DATABASE  0x0800   /* trace read/write of terminfo/termcap data */
+#define TRACE_ATTRS     0x1000   /* trace attribute updates */
+
+#define TRACE_SHIFT         13   /* number of bits in the trace masks */
+#define TRACE_MAXIMUM   ((1u << TRACE_SHIFT) - 1u) /* max tracing */
 
 #ifdef __cplusplus
 # ifndef PDC_PP98

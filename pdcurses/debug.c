@@ -12,13 +12,24 @@ debug
 
     void traceon(void);
     void traceoff(void);
+    unsigned curses_trace( const unsigned);
+    void trace( const unsigned);
     void PDC_debug(const char *, ...);
 
 ### Description
 
    traceon() and traceoff() toggle the recording of debugging
    information to the file "trace". Although not standard, similar
-   functions are in some other curses implementations.
+   functions are in some other curses implementations (e.g., SVr4).
+
+   curses_trace() turns tracing on if called with a non-zero value and
+   off if called with zero.  At some point,  the input value will be
+   used to set flags for more nuanced trace output,  a la ncurses;  but
+   at present,  debugging is simply on or off.  The previous tracing
+   flags are returned.
+
+   trace() is a duplicate of curses_trace(),  but returns nothing.  It
+   is deprecated because it often conflicts with application names.
 
    PDC_debug() is the function that writes to the file, based on whether
    traceon() has been called. It's used from the PDC_LOG() macro.
@@ -31,6 +42,8 @@ debug
                              X/Open  ncurses  NetBSD
     traceon                     -       -       -
     traceoff                    -       -       -
+    trace                       -       Y       -
+    curses_trace                -       Y       -
     PDC_debug                   -       -       -
 
 **man-end****************************************************************/
@@ -39,6 +52,10 @@ debug
 #include <string.h>
 #include <sys/types.h>
 #include <time.h>
+
+/* PDC_trace_flags will eventually be global or part of the SCREEN struct. */
+
+static unsigned PDC_trace_flags = 0;
 
 static bool want_fflush = FALSE;
 
@@ -90,6 +107,7 @@ void traceon(void)
         return;
     }
 
+    PDC_trace_flags = TRACE_MAXIMUM;
     if (getenv("PDC_TRACE_FLUSH"))
         want_fflush = TRUE;
 
@@ -106,5 +124,25 @@ void traceoff(void)
 
     fclose(SP->dbfp);
     SP->dbfp = NULL;
+    PDC_trace_flags = TRACE_DISABLE;
     want_fflush = FALSE;
+}
+
+unsigned curses_trace( const unsigned param)
+{
+    const unsigned rval = PDC_trace_flags;
+
+    assert( SP);
+    if( SP)
+    {
+        param ? traceon( ) : traceoff( );
+        PDC_trace_flags = param;
+    }
+    PDC_LOG(("curses_trace() - called\n"));
+    return( rval);
+}
+
+void trace( const unsigned param)
+{
+   curses_trace( param);
 }
