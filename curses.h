@@ -1672,6 +1672,7 @@ PDCEX  wchar_t *slk_wlabel(int);
 #endif
 
 PDCEX  void    PDC_debug(const char *, ...);
+PDCEX  void    _tracef(const char *, ...);
 PDCEX  void    PDC_get_version(PDC_VERSION *);
 PDCEX  int     PDC_ungetch(int);
 PDCEX  int     PDC_set_blink(bool);

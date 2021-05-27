@@ -15,6 +15,7 @@ debug
     unsigned curses_trace( const unsigned);
     void trace( const unsigned);
     void PDC_debug(const char *, ...);
+    void _tracef(const char *, ...);
 
 ### Description
 
@@ -34,6 +35,9 @@ debug
    PDC_debug() is the function that writes to the file, based on whether
    traceon() has been called. It's used from the PDC_LOG() macro.
 
+   _tracef() is an ncurses alias for PDC_debug,  and is added solely
+   for compatibility.
+
    The environment variable PDC_TRACE_FLUSH controls whether the trace
    file contents are fflushed after each write. The default is not. Set
    it to enable this (may affect performance).
@@ -45,6 +49,7 @@ debug
     trace                       -       Y       -
     curses_trace                -       Y       -
     PDC_debug                   -       -       -
+    _tracef                     -       Y       -
 
 **man-end****************************************************************/
 
@@ -88,6 +93,15 @@ void PDC_debug(const char *fmt, ...)
        crashes, you may need to add a platform-dependent mechanism to
        flush the OS buffers as well (such as fsync() on POSIX) -- but
        expect terrible performance. */
+}
+
+void _tracef(const char *fmt, ...)
+{
+    va_list args;
+
+    va_start(args, fmt);
+    PDC_debug( fmt, args);
+    va_end(args);
 }
 
 void traceon(void)
