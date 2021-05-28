@@ -484,9 +484,9 @@ past 64K;  the full range of Unicode goes up to 0x10ffff,  requiring 21 bits
 total),  and four more bits for attributes.  Three are currently used as
 A_OVERLINE, A_DIM, and A_STRIKEOUT;  one more is reserved for future use.
 Bits 33-52 are used to specify a color pair.  In theory,  there can be
-2^20 = 1048576 color pairs;  as of 2021 Apr 20,  only WinGUI,  VT and X11
-have COLOR_PAIRS = 1048576.  Other platforms may join them,  but some
-(DOS,  OS/2) simply do not have full-color capability.
+2^20 = 1048576 color pairs,  but as of 2021 May 27,  only WinGUI,  VT,  X11,
+and SDL2 have COLOR_PAIRS = 1048576.  Other platforms may join them,  but
+some (DOS,  OS/2) simply do not have full-color capability.
 
    Bits 53-63 are currently unused.
 
