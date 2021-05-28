@@ -1359,7 +1359,12 @@ void extended(int tmarg)
     mvaddstr(tmarg, (COLS - 15) / 2, "Extended Colors");
     attrset(A_NORMAL);
 
-    mvaddstr(tmarg + 3, lmarg, "6x6x6 Color Cube (16-231):");
+    mvaddstr(tmarg + 2, lmarg, "6x6x6 Color Cube (16-231):");
+
+    mvaddstr(tmarg + 4,  lmarg, "Blk      Red");
+    mvaddstr(tmarg + 4,  lmarg + 65, "Grn      Yel");
+    mvaddstr(tmarg + 11, lmarg, "Blue    Mgta");
+    mvaddstr(tmarg + 11, lmarg + 65, "Cyan   White");
 
     for (i = 16; i < 256; i++)
         init_pair(i, COLOR_BLACK, i);
