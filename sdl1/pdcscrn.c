@@ -7,6 +7,8 @@
 #include "../common/font437.h"
 #endif
 #include "../common/iconbmp.h"
+#include "../common/pdccolor.h"
+#include "../common/pdccolor.c"
 
 #ifdef PDC_WIDE
 # ifndef PDC_FONT_PATH
@@ -21,8 +23,6 @@ SDL_Surface *pdc_screen = NULL, *pdc_font = NULL, *pdc_icon = NULL,
             *pdc_back = NULL, *pdc_tileback = NULL;
 int pdc_sheight = 0, pdc_swidth = 0, pdc_yoffset = 0, pdc_xoffset = 0;
 
-SDL_Color pdc_color[PDC_MAXCOL];
-Uint32 pdc_mapped[PDC_MAXCOL];
 int pdc_fheight, pdc_fwidth, pdc_fthick, pdc_flastc;
 bool pdc_own_screen;
 
@@ -84,41 +84,6 @@ void PDC_scr_close(void)
 
 void PDC_scr_free(void)
 {
-}
-
-static void _initialize_colors(void)
-{
-    int i, r, g, b;
-
-    for (i = 0; i < 8; i++)
-    {
-        pdc_color[i].r = (i & COLOR_RED) ? 0xc0 : 0;
-        pdc_color[i].g = (i & COLOR_GREEN) ? 0xc0 : 0;
-        pdc_color[i].b = (i & COLOR_BLUE) ? 0xc0 : 0;
-
-        pdc_color[i + 8].r = (i & COLOR_RED) ? 0xff : 0x40;
-        pdc_color[i + 8].g = (i & COLOR_GREEN) ? 0xff : 0x40;
-        pdc_color[i + 8].b = (i & COLOR_BLUE) ? 0xff : 0x40;
-    }
-
-    /* 256-color xterm extended palette: 216 colors in a 6x6x6 color
-       cube, plus 24 shades of gray */
-
-    for (i = 16, r = 0; r < 6; r++)
-        for (g = 0; g < 6; g++)
-            for (b = 0; b < 6; b++, i++)
-            {
-                pdc_color[i].r = (r ? r * 40 + 55 : 0);
-                pdc_color[i].g = (g ? g * 40 + 55 : 0);
-                pdc_color[i].b = (b ? b * 40 + 55 : 0);
-            }
-
-    for (i = 232; i < 256; i++)
-        pdc_color[i].r = pdc_color[i].g = pdc_color[i].b = (i - 232) * 10 + 8;
-
-    for (i = 0; i < 256; i++)
-        pdc_mapped[i] = SDL_MapRGB(pdc_screen->format, pdc_color[i].r,
-                                   pdc_color[i].g, pdc_color[i].b);
 }
 
 /* open the physical screen -- miscellaneous initialization */
@@ -272,8 +237,6 @@ int PDC_scr_open(void)
     if (SP->orig_attr)
         PDC_retile();
 
-    _initialize_colors();
-
     SDL_EnableUNICODE(1);
 
     PDC_mouse_set();
@@ -361,24 +324,25 @@ bool PDC_can_change_color(void)
     return TRUE;
 }
 
-int PDC_color_content(int color, int *red, int *green, int *blue)
+int PDC_color_content( int color, int *red, int *green, int *blue)
 {
-    *red = DIVROUND(pdc_color[color].r * 1000, 255);
-    *green = DIVROUND(pdc_color[color].g * 1000, 255);
-    *blue = DIVROUND(pdc_color[color].b * 1000, 255);
+    const PACKED_RGB col = PDC_get_palette_entry( color);
+
+    *red = DIVROUND( Get_RValue(col) * 1000, 255);
+    *green = DIVROUND( Get_GValue(col) * 1000, 255);
+    *blue = DIVROUND( Get_BValue(col) * 1000, 255);
 
     return OK;
 }
 
-int PDC_init_color(int color, int red, int green, int blue)
+int PDC_init_color( int color, int red, int green, int blue)
 {
-    pdc_color[color].r = DIVROUND(red * 255, 1000);
-    pdc_color[color].g = DIVROUND(green * 255, 1000);
-    pdc_color[color].b = DIVROUND(blue * 255, 1000);
+    const PACKED_RGB new_rgb = PACK_RGB(DIVROUND(red * 255, 1000),
+                                 DIVROUND(green * 255, 1000),
+                                 DIVROUND(blue * 255, 1000));
 
-    pdc_mapped[color] = SDL_MapRGB(pdc_screen->format, pdc_color[color].r,
-                                   pdc_color[color].g, pdc_color[color].b);
-
+    if( !PDC_set_palette_entry( color, new_rgb))
+        curscr->_clear = TRUE;
     return OK;
 }
 
