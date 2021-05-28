@@ -1,7 +1,7 @@
-   The VT,  WinGUI,  X11,  and SDL2 models all have the ability to
-support 'full' RGB,  16 million colors.  SDL1, DOSVGA,  WinCon,
-and Plan9 don't currently support full color,  but may eventually
-be revised using the same scheme.
+   The VT,  WinGUI,  X11,  and SDLn models all have the ability to
+support 'full' RGB,  16 million colors.  DOSVGA,  WinCon, and Plan9
+don't currently support full color,  but may eventually be revised
+using the same scheme.
 
    ncurses currently supports full color with the xterm-direct model,
 in which you get 2^24 colors and can't change them.  The problem with

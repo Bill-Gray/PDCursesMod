@@ -34,7 +34,7 @@ Defined by this header:
 #define PDC_VER_CHANGE   3
 #define PDC_VER_YEAR   2021
 #define PDC_VER_MONTH    05
-#define PDC_VER_DAY      27
+#define PDC_VER_DAY      28
 
 #define PDC_STRINGIZE( x) #x
 #define PDC_stringize( x) PDC_STRINGIZE( x)
@@ -485,7 +485,7 @@ total),  and four more bits for attributes.  Three are currently used as
 A_OVERLINE, A_DIM, and A_STRIKEOUT;  one more is reserved for future use.
 Bits 33-52 are used to specify a color pair.  In theory,  there can be
 2^20 = 1048576 color pairs,  but as of 2021 May 27,  only WinGUI,  VT,  X11,
-and SDL2 have COLOR_PAIRS = 1048576.  Other platforms may join them,  but
+and SDLn have COLOR_PAIRS = 1048576.  Other platforms may join them,  but
 some (DOS,  OS/2) simply do not have full-color capability.
 
    Bits 53-63 are currently unused.
