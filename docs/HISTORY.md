@@ -1,3 +1,80 @@
+
+Changes since 4.2.0,  as of 2021 May 28
+=======================================
+
+Major new features
+------------------
+
+-  SDLs and X11 ports now supports full colors,  a la WinGUI and VT.
+   a266f923ee, b63b36f9b8, fee4af28c8, 8606b96111
+
+Minor new features
+------------------
+
+-  SDLs now have strikeout and overlined text.  91b280f442  So does X11
+   5e5cd29617
+
+-  SDLs now recognize some 'extended' media keys.  5e10ef17fc
+
+-  SDLs can be compiled as shared libraries.  b78cd8a33f
+
+-  VT has strikeout text in xterm,  some (not many) others.
+   05af0c6810
+
+-  Removed unnecessary 'extended' key definitions.  b9fafe60f1
+
+-  Code compiles with -Wextra -pedantic on many flavors without warnings.
+   674512453a, 6ad85268c5, 2648cdf5cd, others.
+
+-  Some tests done using GitHub's CI.  3cb1b5f1bf,  several following
+   commits.
+
+-  WinGUI,  WinCon beep() is now in a separate thread,  so we don't
+   hang the program while the beeping takes place.  a6212d94d2
+
+-  WinCon can be compiled for 32-bit chtypes.
+
+-  Added a PDC_set_default_colors( ) function.  Some platforms expect
+   particular background/foreground colors by default.  This lets you set
+   those colors.   b642c91279
+
+-  In Windows,  one can use Ctrl-C/Ctrl-V to copy/paste,  instead of
+   Ctrl-Shift-C/Ctrl-Shift-V.   9f487d4fea
+
+-  Added assert()s on many NULL parameters.  Calling with such parameters
+   is permitted,  but usually indicates bugs that should result in an assertion
+   when in debugging mode.  96f4984f9f
+
+-  In DOSVGA,  as in X11,  WinGUI,  and the SDLs,  you can specify an
+   initial screen size using resize_screen() before actually starting PDCurses.
+   0623c44ff0
+
+-  _tracef(), trace(), curses_trace() added for ncurses compatibility.  This
+   doesn't (as yet) actually add any capabilities;  it just lets you access
+   existing capabilities in the same way you would if using ncurses.
+
+Bug fixes
+---------
+
+-  SDL2 display did not update after restoring from iconified form.
+   2bb4284597
+
+-  DOS PDC_napms() failed for times greater than 18 minutes (would round
+   time down to nearest multiple of 18 min).  acc1fa72fa
+
+-  Buffer could overrun on extremely large (more than 512 column) displays
+   in X11 (91b280f442), WinCon (51327cad4d)
+
+-  Certain extended keys could crash WinCon, WinGUI.  d747d35ed8
+
+-  Plugged some memory leaks in X11.  Much more to be done.  cb4344a163
+
+-  In VT flavor,  the mix of printfs() and (unbuffered) write() calls
+   wasn't interrupt-safe,  and led to some corruption in the output.  This
+   is now fixed. 365b6cce79
+
+-  Some cursor shapes in VT were mixed up.  1f1bbe7d8a
+
 PDCursesMod 4.2 - 2020 Oct 03
 =========================
 
