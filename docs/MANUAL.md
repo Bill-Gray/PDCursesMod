@@ -42,19 +42,20 @@ indicator.
    By default,  a 64-bit chtype is used :
 
 -------------------------------------------------------------------------------
-|63|62|61|60|59|..|34|33|32|31|30|29|28|..|22|21|20|19|18|17|16|..| 3| 2| 1| 0|
+|63|62|..|53|52|..|34|33|32|31|30|29|28|..|22|21|20|19|18|17|16|..| 3| 2| 1| 0|
 -------------------------------------------------------------------------------
-         color number   |        modifiers      |         character eg 'a'
+  unused    |color pair |        modifiers      |         character eg 'a'
 
    We take five more bits for the character (thus allowing Unicode values
 past 64K;  the full range of Unicode goes up to 0x10ffff,  requiring 21 bits
 total),  and four more bits for attributes.  Three are currently used as
 A_OVERLINE, A_DIM, and A_STRIKEOUT;  one more is reserved for future use.
-On some platforms,  bits 33-40 are used to select a color pair (can run from
-0 to 255). Bits 41 and 42 have been added to this to get 1024 color pairs.
-On some platforms (as of 2020 May 17,  WinGUI and VT),  bits 33-52 are used,
-allowing 2^20 = 1048576 color pairs.  That should be enough for anybody, and
-leaves twelve bits for other uses.
+Bits 33-52 are used to specify a color pair.  In theory,  there can be
+2^20 = 1048576 color pairs,  but as of 2021 May 27,  only WinGUI,  VT,  X11,
+and SDLn have COLOR_PAIRS = 1048576.  Other platforms may join them,  but
+some (DOS,  OS/2) simply do not have full-color capability.
+
+   Bits 53-63 are currently unused.
 
 
 
@@ -780,16 +781,31 @@ debug
 
     void traceon(void);
     void traceoff(void);
+    unsigned curses_trace( const unsigned);
+    void trace( const unsigned);
     void PDC_debug(const char *, ...);
+    void _tracef(const char *, ...);
 
 ### Description
 
    traceon() and traceoff() toggle the recording of debugging
    information to the file "trace". Although not standard, similar
-   functions are in some other curses implementations.
+   functions are in some other curses implementations (e.g., SVr4).
+
+   curses_trace() turns tracing on if called with a non-zero value and
+   off if called with zero.  At some point,  the input value will be
+   used to set flags for more nuanced trace output,  a la ncurses;  but
+   at present,  debugging is simply on or off.  The previous tracing
+   flags are returned.
+
+   trace() is a duplicate of curses_trace(),  but returns nothing.  It
+   is deprecated because it often conflicts with application names.
 
    PDC_debug() is the function that writes to the file, based on whether
    traceon() has been called. It's used from the PDC_LOG() macro.
+
+   _tracef() is an ncurses alias for PDC_debug,  and is added solely
+   for compatibility.
 
    The environment variable PDC_TRACE_FLUSH controls whether the trace
    file contents are fflushed after each write. The default is not. Set
@@ -799,7 +815,10 @@ debug
                              X/Open  ncurses  NetBSD
     traceon                     -       -       -
     traceoff                    -       -       -
+    trace                       -       Y       -
+    curses_trace                -       Y       -
     PDC_debug                   -       -       -
+    _tracef                     -       Y       -
 
 
 
@@ -927,7 +946,7 @@ getch
    If keypad() is TRUE, and a function key is pressed, the token for
    that function key will be returned instead of the raw characters.
    Possible function keys are defined in <curses.h> with integers
-   beginning with 0401, whose names begin with KEY_.
+   starting at KEY_OFFSET, whose names begin with KEY_.
 
    If nodelay(win, TRUE) has been called on the window and no input is
    waiting, the value ERR is returned.
@@ -942,8 +961,9 @@ getch
    PDCurses is built with the PDC_WIDE option. It takes a pointer to a
    wint_t rather than returning the key as an int, and instead returns
    KEY_CODE_YES if the key is a function key. Otherwise, it returns OK
-   or ERR. It's important to check for KEY_CODE_YES, since regular wide
-   characters can have the same values as function key codes.
+   or ERR. It's important to check for KEY_CODE_YES; on most Curses
+   implementations (not PDCursesMod),  regular wide characters can have
+   the same values as function key codes.
 
    unget_wch() puts a wide character on the input queue.
 
@@ -1014,7 +1034,8 @@ getstr
    wgetch()'d values into a multibyte string in the current locale
    before returning it. The resulting string is placed in the area
    pointed to by *str. The routines with n as the last argument read at
-   most n characters.
+   most n characters.  Note that this does not include the terminating
+   '\0' character;  be sure your buffer has room for that.
 
    Note that there's no way to know how long the buffer passed to
    wgetstr() is, so use wgetnstr() to avoid buffer overflows.
@@ -2110,6 +2131,8 @@ panel
     PANEL *new_panel(WINDOW *win);
     PANEL *panel_above(const PANEL *pan);
     PANEL *panel_below(const PANEL *pan);
+    PANEL *ground_panel(SCREEN *sp);
+    PANEL *ceiling_panel(SCREEN *sp);
     int panel_hidden(const PANEL *pan);
     const void *panel_userptr(const PANEL *pan);
     WINDOW *panel_window(const PANEL *pan);
@@ -2158,6 +2181,10 @@ panel
    or NULL if pan is the bottom panel. If the value of pan passed is
    NULL, this function returns a pointer to the top panel in the deck.
 
+   ground_panel() returns a pointer to the bottom panel in the deck.
+
+   ceiling_panel() returns a pointer to the top panel in the deck.
+
    panel_hidden() returns OK if pan is hidden and ERR if it is not.
 
    panel_userptr() - Each panel has a user pointer available for
@@ -2198,6 +2225,8 @@ panel
     new_panel                   -       Y       Y
     panel_above                 -       Y       Y
     panel_below                 -       Y       Y
+    ground_panel                -       Y       N
+    ceiling_panel               -       Y       N
     panel_hidden                -       Y       Y
     panel_userptr               -       Y       Y
     panel_window                -       Y       Y
