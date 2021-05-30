@@ -1,9 +1,10 @@
 /* PDCurses */
 
-/* Palette management code used by VT and WinGUI for 'full color'
-(24-bit).  It will be used eventually by X11,  SDL1/2,  and DOSVGA,
-all of which are full-color capable.  See 'pdccolor.txt' for a
-rationale of how this works.    */
+/* Palette management code used by VT,  WinGUI,  SDL1/2,  and X11 for
+'full color' (24-bit).  It may eventually be used by DOSVGA,  WinCon,
+and/or the Plan9 platform,  all of which have full color capability.
+It will presumably never be useful for the DOS or OS/2 platforms.
+See 'pdccolor.txt' for a rationale of how this works. */
 
 #ifdef NO_STDINT_H
    #define uint64_t unsigned long long
