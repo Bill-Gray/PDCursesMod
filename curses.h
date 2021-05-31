@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*
- *                              PDCurses                                *
+ *                              PDCursesMod                             *
  *----------------------------------------------------------------------*/
 
 #ifndef __PDCURSES__
@@ -224,11 +224,11 @@ typedef struct
  *                           1000000 <- mouse wheel down       6
  *                          10000000 <- mouse wheel left       7
  *                         100000000 <- mouse wheel right      8
- *                        1000000000 <- button 4 has changed   9
- * (NOTE: buttons 6 to   10000000000 <- button 5 has changed  10
- * 9 aren't implemented 100000000000 <- button 6 has changed  11
- * in any flavor of    1000000000000 <- button 7 has changed  12
- * PDCurses yet!)     10000000000000 <- button 8 has changed  13
+ * (Buttons 4 and up are  1000000000 <- button 4 has changed   9
+ * PDCursesMod-only,     10000000000 <- button 5 has changed  10
+ * and only 4 & 5 are   100000000000 <- button 6 has changed  11
+ * currently used)     1000000000000 <- button 7 has changed  12
+ *                    10000000000000 <- button 8 has changed  13
  *                   100000000000000 <- button 9 has changed  14
  */
 
@@ -470,9 +470,9 @@ If CHTYPE_32 is #defined,  PDCurses uses a 32-bit integer for its chtype:
 There are 256 color pairs (8 bits), 8 bits for modifiers, and 16 bits
 for character data. The modifiers are bold, underline, right-line,
 left-line, italic, reverse and blink, plus the alternate character set
-indicator.
+indicator.  (This is the scheme used in PDCurses.)
 
-   By default,  a 64-bit chtype is used :
+   By default,  PDCursesMod uses 64-bit chtype :
 
 -------------------------------------------------------------------------------
 |63|62|..|53|52|..|34|33|32|31|30|29|28|..|22|21|20|19|18|17|16|..| 3| 2| 1| 0|
@@ -1150,7 +1150,8 @@ Some won't work in non-wide X11 builds (see 'acs_defs.h' for details). */
 #define KEY_SUP               (KEY_OFFSET + 0x123) /* Shifted up arrow */
 #define KEY_SDOWN             (KEY_OFFSET + 0x124) /* Shifted down arrow */
 
-         /* The following are not returned on most PDCurses platforms. */
+      /* The following are PDCursesMod extensions.  Even there,  not all
+         platforms support them. */
 
 #define KEY_APPS              (KEY_OFFSET + 0x125)
 
