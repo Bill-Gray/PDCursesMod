@@ -59,5 +59,12 @@
 /* Fool ncurses.c so it gives us all the tests, and doesn't redefine
    ACS_ chars
 */
+#ifdef __GNUC__
+   #define GCC_UNUSED __attribute__((unused))
+   #define GCC_NORETURN __attribute__((noreturn))
+#else
+   #define GCC_UNUSED
+   #define GCC_NORETURN
+#endif
 
 #define NCURSES_VERSION PDCURSES
