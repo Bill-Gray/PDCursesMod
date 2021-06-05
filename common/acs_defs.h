@@ -186,7 +186,14 @@ Only 32 are used in ncurses.  So caution is advised. */
 #define CENTERED_SQUARE                   CHOOSE( 0xfe,  0x25a0,  TBD)
 #define NON_BREAKING_SPACE                CHOOSE( 0xff,  0x00a0, 0xa0)
 
+/* The following four characters are not currently implemented. However,
+they would enable rounded box corners when Unicode is available.
+(Otherwise,  the 'traditional' unrounded corner character is used.) */
 
+#define BOX_URROUNDED                     CHOOSE( 0xbf,  0x256e,   12)
+#define BOX_LLROUNDED                     CHOOSE( 0xc0,  0x2570,   14)
+#define BOX_LRROUNDED                     CHOOSE( 0xd9,  0x256f,   11)
+#define BOX_ULROUNDED                     CHOOSE( 0xda,  0x256d,   13)
 
       /* It says at http://unicode.org/charts/PDF/U2300.pdf */
       /* that '...the scan line numbers here refer to old,  */
@@ -194,9 +201,9 @@ Only 32 are used in ncurses.  So caution is advised. */
       /* nine scan lines per fixed-size character glyph.    */
       /* Even-numbered scan lines are unified with box      */
       /* drawing graphics."                                 */
-      /*  The utility of these is questionable;  they'd     */
-      /* work Just Fine in wingdi (_if_ the appropriate     */
-      /* glyphs are available),  but not elsewhere.         */
+      /*  The utility of these is questionable;  they       */
+      /* work Just Fine in wide-character builds if the     */
+      /* glyphs are available,  but not elsewhere.          */
 #define HORIZ_SCAN_LINE_1                 CHOOSE( 0x2d,  0x23ba,   16)
 #define HORIZ_SCAN_LINE_3                 CHOOSE( 0x2d,  0x23bb,   17)
 #define HORIZ_SCAN_LINE_7                 CHOOSE( 0x2d,  0x23bc,   19)
