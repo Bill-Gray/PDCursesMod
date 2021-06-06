@@ -166,5 +166,7 @@ tuidemo.o: $(demodir)/tuidemo.c $(PDCURSES_CURSES_H)
 PLATFORM1 = MinGW Win32
 PLATFORM2 = MinGW for Win32
 ARCNAME = pdc$(VER)_ming_w32
+BUILD		= $(CC) $(CFLAGS) -I$(PDCURSES_SRCDIR) -mwindows $(LIBCURSES)
 
 include $(common)/makedist.mif
+include $(common)/nctests.mif
