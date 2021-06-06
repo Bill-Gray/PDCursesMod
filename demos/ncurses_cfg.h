@@ -69,3 +69,8 @@
 #endif
 
 #define NCURSES_VERSION PDCURSES
+
+#ifdef PDC_WIDE
+   #define wcwidth PDC_wcwidth
+   PDCEX int PDC_wcwidth( const int32_t ucs);
+#endif
