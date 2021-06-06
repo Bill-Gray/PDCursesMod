@@ -171,4 +171,6 @@ tuidemo.o: $(demodir)/tuidemo.c $(PDCURSES_CURSES_H)
 PLATFORM1 = MinGW WinCon
 PLATFORM2 = MinGW for WinCon
 ARCNAME = pdc$(VER)_ming_wcon
+BUILD		= $(CC) $(CFLAGS) -I$(PDCURSES_SRCDIR) -mwindows $(LIBCURSES)
 
+include $(PDCURSES_SRCDIR)/demos/nctests.mif

@@ -169,4 +169,4 @@ ARCNAME = pdc$(VER)_ming_w32
 BUILD		= $(CC) $(CFLAGS) -I$(PDCURSES_SRCDIR) -mwindows $(LIBCURSES)
 
 include $(common)/makedist.mif
-include $(common)/nctests.mif
+include $(PDCURSES_SRCDIR)/demos/nctests.mif
