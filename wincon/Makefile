@@ -72,10 +72,10 @@ AR	= ar
 STRIP	= strip
 
 ifeq ($(DEBUG),Y)
-	CFLAGS  = -g -Wall -DPDCDEBUG
+	CFLAGS  = -g -Wall -Wextra -pedantic -DPDCDEBUG
 	LDFLAGS = -g
 else
-	CFLAGS  = -O4 -Wall -pedantic
+	CFLAGS  = -O4 -Wall -Wextra -pedantic
 	LDFLAGS =
 endif
 
