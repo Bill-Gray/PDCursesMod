@@ -1,5 +1,5 @@
 
-Changes since 4.2.0,  as of 2021 May 28
+Changes since 4.2.0,  as of 2021 June 5
 =======================================
 
 Major new features
@@ -11,12 +11,17 @@ Major new features
 Minor new features
 ------------------
 
+-  ncurses tests build correctly again.  Moved to ncurses-6.2 tests,
+   and they can now be built on VT and WinGUI (they already worked
+   with X11 and SDLn).  f8dd18c0f2  4a71b26dd1  c8b67969d6 edd97f38fd
+
 -  SDLs now have strikeout and overlined text.  91b280f442  So does X11
    5e5cd29617
 
 -  SDLs now recognize some 'extended' media keys.  5e10ef17fc
 
--  SDLs can be compiled as shared libraries.  b78cd8a33f
+-  SDLs can be compiled as shared libraries and installed/uninstalled.
+   b78cd8a33f bb8d408675
 
 -  VT has strikeout text in xterm,  some (not many) others.
    05af0c6810
