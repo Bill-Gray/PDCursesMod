@@ -52,9 +52,33 @@ ifdef _w32
 	E = .exe
 endif
 
+ifeq ($(OS),Windows_NT)
+	E = .exe
+endif
+
+LIBFLAGS = rv
+LIBCURSES	= libpdcurses.a
 CC	= $(PREFIX)gcc
 AR	= $(PREFIX)ar
 STRIP	= $(PREFIX)strip
+
+ifeq ($(DLL),Y)
+	ifeq ($(E),.exe)
+		CFLAGS += -DPDC_DLL_BUILD
+		LIBCURSES	= pdcurses.dll
+		LIBEXE = $(CC)
+		LIBFLAGS = -Wl,--out-implib,pdcurses.a -shared -o
+	else
+		ifeq ($(shell uname -s),Darwin)
+			DLL_SUFFIX = .dylib
+		else
+			DLL_SUFFIX = .so
+		endif
+		LIBEXE = $(CC)
+		LIBFLAGS = -shared -o
+		LIBCURSES = libpdcurses$(DLL_SUFFIX)
+	endif
+endif
 
 include $(common)/libobjs.mif
 
@@ -63,7 +87,6 @@ BUILD		= $(CC) $(CFLAGS) -I$(PDCURSES_SRCDIR)
 LINK		= $(CC)
 LDFLAGS		= $(LIBCURSES)
 RANLIB		= ranlib
-LIBCURSES	= libpdcurses.a
 
 .PHONY: all libs clean demos
 
@@ -80,8 +103,10 @@ ifneq ($(DEBUG),Y)
 endif
 
 $(LIBCURSES) : $(LIBOBJS) $(PDCOBJS)
-	ar rv $@ $?
+	$(LIBEXE) $(LIBFLAGS) $@ $?
+ifeq ($(LIBCURSES),libpdcurses.a)
 	-$(RANLIB) $@
+endif
 
 $(LIBOBJS) $(PDCOBJS) : $(PDCURSES_HEADERS)
 $(DEMOS) : $(PDCURSES_CURSES_H) $(LIBCURSES)
@@ -137,3 +162,15 @@ tuidemo.o: $(demodir)/tuidemo.c
 	$(BUILD) -c $(DEMOFLAGS) $(demodir)/tuidemo.c
 
 include $(demodir)/nctests.mif
+
+install:
+ifneq ($(OS),Windows_NT)
+	cp libpdcurses.so /usr/local/lib
+	ldconfig /usr/local/lib
+endif
+
+uninstall:
+ifneq ($(OS),Windows_NT)
+	rm /usr/local/lib/libpdcurses.so
+	ldconfig /usr/local/lib
+endif
