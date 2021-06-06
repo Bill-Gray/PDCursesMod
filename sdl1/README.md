@@ -9,8 +9,9 @@ Building
 
 - On *nix (including Linux), run "make" in the sdl1 directory. There is
   no configure script (yet?) for this port. This assumes a working
-  sdl-config, and GNU make. It builds the libraries pdcurses.a and
-  pdcurses.so.
+  sdl-config, and GNU make. It builds the libraries libpdcurses.a and
+  libpdcurses.so.  Run "make install" (you may need to run "sudo make
+  install") to install the shared library on *nix machines.
 
 - The makefile accepts the optional parameter "DEBUG=Y", and recognizes
   the optional PDCURSES_SRCDIR environment variable, as with the console
@@ -19,7 +20,8 @@ Building
   simple bitmap fonts. "UTF8=Y" makes PDCurses ignore the system locale,
   and treat all narrow-character strings as UTF-8; this option has no
   effect unless WIDE=Y is also set. Add the target "demos" to build the
-  sample programs.
+  sample programs;  when doing so,  you can add DLL=Y to link to the
+  shared library.
 
 
 Usage
@@ -142,11 +144,11 @@ for the font, icon, and background, respectively. You can set any or all
 of them before initscr(), and thus override any of the other ways to set
 them. But note that pdc_icon will be ignored if pdc_screen is preset.
 
-pdc_sdl_render_mode (in 16-bit mode) can be set to `PDC_SDL_RENDER_SOLID`, 
+pdc_sdl_render_mode (in 16-bit mode) can be set to `PDC_SDL_RENDER_SOLID`,
 `PDC_SDL_RENDER_SHADED` or `PDC_SDL_RENDER_BLENDED`. This determines which SDL TTF
-render mode will be used for rendering text: `TTF_RenderUNICODE_Solid()`, 
-`TTF_RenderUNICODE_Shaded()` or `TTF_RenderUNICODE_Blended()` respectively. 
-This will default to `PDC_SDL_RENDER_BLENDED`. If you wish to use this feature 
+render mode will be used for rendering text: `TTF_RenderUNICODE_Solid()`,
+`TTF_RenderUNICODE_Shaded()` or `TTF_RenderUNICODE_Blended()` respectively.
+This will default to `PDC_SDL_RENDER_BLENDED`. If you wish to use this feature
 without including `pdcsdl.h`, you must define the following constants:
 
 ```
