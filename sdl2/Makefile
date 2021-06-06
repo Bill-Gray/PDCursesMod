@@ -72,7 +72,7 @@ ifeq ($(DLL),Y)
 	ifeq ($(OS),Windows_NT)
 		CFLAGS += -DPDC_DLL_BUILD
 		LIBEXE = $(CC)
-		LIBFLAGS = -Wl,--out-implib,pdcurses.a -shared -o
+		LIBFLAGS = -Wl,--out-implib,libpdcurses.a -shared -o
 		LIBCURSES = pdcurses.dll
 		CLEAN = $(LIBCURSES) *.a
 		RESOURCE = pdcurses.o
@@ -86,7 +86,7 @@ ifeq ($(DLL),Y)
 		endif
 		LIBEXE = $(CC)
 		LIBFLAGS = -shared -o
-		LIBCURSES = pdcurses$(DLL_SUFFIX)
+		LIBCURSES = libpdcurses$(DLL_SUFFIX)
 		LIBLIBS = $(SLIBS)
 		LDFLAGS = $(LIBCURSES)
 		CLEAN = *$(DLL_SUFFIX)
@@ -94,7 +94,7 @@ ifeq ($(DLL),Y)
 else
 	LIBEXE = $(AR)
 	LIBFLAGS = rcv
-	LIBCURSES = pdcurses.a
+	LIBCURSES = libpdcurses.a
 	LDFLAGS = $(LIBCURSES) $(SLIBS)
 	CLEAN = *.a
 endif
@@ -117,6 +117,18 @@ clean:
 demos:	$(DEMOS)
 ifneq ($(DEBUG),Y)
 	strip $(DEMOS)
+endif
+
+install:
+ifneq ($(OS),Windows_NT)
+	cp libpdcurses.so /usr/local/lib
+	ldconfig /usr/local/lib
+endif
+
+uninstall:
+ifneq ($(OS),Windows_NT)
+	rm /usr/local/lib/libpdcurses.so
+	ldconfig /usr/local/lib
 endif
 
 $(LIBCURSES) : $(LIBOBJS) $(PDCOBJS) $(RESOURCE)

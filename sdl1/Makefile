@@ -37,10 +37,14 @@ endif
 BUILD		= $(CC) $(CFLAGS) -I$(PDCURSES_SRCDIR)
 
 LINK		= $(CC)
-LDFLAGS		= $(LIBCURSES) $(SLIBS)
+ifeq ($(DLL),Y)
+	LDFLAGS		= $(LIBCURSES_SO) $(SLIBS)
+else
+	LDFLAGS		= $(LIBCURSES) $(SLIBS)
+endif
 RANLIB		= ranlib
-LIBCURSES	= pdcurses.a
-LIBCURSES_SO	= pdcurses.so
+LIBCURSES	= libpdcurses.a
+LIBCURSES_SO	= libpdcurses.so
 
 DEMOS		+= sdltest
 
@@ -56,6 +60,18 @@ clean:
 demos:	$(DEMOS)
 ifneq ($(DEBUG),Y)
 	strip $(DEMOS)
+endif
+
+install:
+ifneq ($(OS),Windows_NT)
+	cp $(LIBCURSES_SO) /usr/local/lib
+	ldconfig /usr/local/lib
+endif
+
+uninstall:
+ifneq ($(OS),Windows_NT)
+	rm /usr/local/lib/$(LIBCURSES_SO)
+	ldconfig /usr/local/lib
 endif
 
 $(LIBCURSES) : $(LIBOBJS) $(PDCOBJS)
