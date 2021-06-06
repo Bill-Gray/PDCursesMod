@@ -45,6 +45,7 @@
 #define HAVE_PUTWIN 1
 #define HAVE_SLK_COLOR 1
 #define HAVE_SLK_INIT 1
+#define HAVE_STRSTR 1
 #define HAVE_USE_DEFAULT_COLORS 1
 #define HAVE_WRESIZE 1
 
