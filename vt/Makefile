@@ -59,7 +59,7 @@ endif
 LIBFLAGS = rv
 LIBCURSES	= libpdcurses.a
 CC	= $(PREFIX)gcc
-AR	= $(PREFIX)ar
+LIBEXE = $(PREFIX)ar
 STRIP	= $(PREFIX)strip
 
 ifeq ($(DLL),Y)
