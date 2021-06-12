@@ -3,6 +3,7 @@
 #include "pdcsdl.h"
 
 #include <stdlib.h>
+#include <limits.h>
 #ifndef PDC_WIDE
 # include "../common/font437.h"
 #endif
@@ -40,6 +41,83 @@ bool pdc_own_window;
 
 /* special purpose function keys */
 static int PDC_shutdown_key[PDC_MAX_FUNCTION_KEYS] = { 0, 0, 0, 0, 0 };
+
+#ifndef PDC_WIDE
+
+/* Load a bitmap from bmp_rw and also determine its palette size.
+   ->format->palette->ncolors may be greater than the actual size.
+   To get the real palette size, some custom bitmap parsing is needed. */
+
+static SDL_Surface *_load_bmp_and_palette_size(SDL_RWops *bmp_rw, int *sizep)
+{
+    SDL_Surface *bmp = NULL;
+    int palette_size = -1;
+    Sint64 start_offset;
+
+    if (!bmp_rw)
+        goto error_rw;
+
+    start_offset = SDL_RWtell(bmp_rw);
+    if (start_offset < 0)
+        goto error_reading;
+
+    bmp = SDL_LoadBMP_RW(bmp_rw, 0);
+    if (!bmp)
+        goto error_reading;
+
+    /* Non-monochromatic bitmaps only */
+    if (bmp->format->palette)
+    {
+        Uint32 header_size;
+
+        palette_size = bmp->format->palette->ncolors;
+
+        /* Offsets from https://en.wikipedia.org/wiki/BMP_file_format#DIB_header_(bitmap_information_header) */
+        if (SDL_RWseek(bmp_rw, start_offset + 14, RW_SEEK_SET) < 0)
+            goto error_reading;
+        header_size = SDL_ReadLE32(bmp_rw);
+
+        /* If the info header is at least 40 bytes in size, palette size
+           information is available. */
+        if (header_size >= 40)
+        {
+            Uint32 num_colors;
+
+            if (SDL_RWseek(bmp_rw, start_offset + 46, RW_SEEK_SET) < 0)
+                goto error_reading;
+            num_colors = SDL_ReadLE32(bmp_rw);
+
+            if (num_colors > 0 && num_colors <= (Uint32)INT_MAX &&
+                (int)num_colors <= bmp->format->palette->ncolors)
+                palette_size = (int)num_colors;
+            else
+            {
+                /* Fall back to calculating num_colors from bits_per_pixel. */
+
+                Uint16 bits_per_pixel;
+
+                if (SDL_RWseek(bmp_rw, start_offset + 28, RW_SEEK_SET) < 0)
+                    goto error_reading;
+                bits_per_pixel = SDL_ReadLE16(bmp_rw);
+
+                num_colors = (Uint32)1 << bits_per_pixel;
+
+                if (num_colors > 0 && num_colors <= (Uint32)INT_MAX &&
+                    (int)num_colors <= bmp->format->palette->ncolors)
+                    palette_size = (int)num_colors;
+            }
+        }
+    }
+
+error_reading:
+    SDL_RWclose(bmp_rw);
+
+error_rw:
+    *sizep = palette_size;
+    return bmp;
+}
+
+#endif
 
 static void _clean(void)
 {
@@ -181,19 +259,23 @@ int PDC_scr_open(void)
 
     SP->mono = FALSE;
 #else
-    if (!pdc_font)
+    if (pdc_font)
+        pdc_flastc = pdc_font->format->palette->ncolors - 1;
+    else
     {
         const char *fname = getenv("PDC_FONT");
-        pdc_font = SDL_LoadBMP(fname ? fname : "pdcfont.bmp");
-    }
+        SDL_RWops *bmp_rw = SDL_RWFromFile(fname ? fname : "pdcfont.bmp", "r");
+        if (!bmp_rw)
+            bmp_rw = SDL_RWFromMem(font437, sizeof(font437));
 
-    if (!pdc_font)
-        pdc_font = SDL_LoadBMP_RW(SDL_RWFromMem(font437, sizeof(font437)), 0);
+        pdc_font = _load_bmp_and_palette_size(bmp_rw, &pdc_flastc);
+        pdc_flastc--;
 
-    if (!pdc_font)
-    {
-        fprintf(stderr, "Could not load font\n");
-        return ERR;
+        if (!pdc_font)
+        {
+            fprintf(stderr, "Could not load font\n");
+            return ERR;
+        }
     }
 
     SP->mono = !pdc_font->format->palette;
@@ -221,9 +303,6 @@ int PDC_scr_open(void)
     pdc_fheight = pdc_font->h / 8;
     pdc_fwidth = pdc_font->w / 32;
     pdc_fthick = 1;
-
-    if (!SP->mono)
-        pdc_flastc = pdc_font->format->palette->ncolors - 1;
 #endif
 
     if (pdc_own_window && !pdc_icon)
