@@ -263,19 +263,25 @@ int PDC_scr_open(void)
         pdc_flastc = pdc_font->format->palette->ncolors - 1;
     else
     {
-        const char *fname = getenv("PDC_FONT");
-        SDL_RWops *bmp_rw = SDL_RWFromFile(fname ? fname : "pdcfont.bmp", "r");
-        if (!bmp_rw)
-            bmp_rw = SDL_RWFromMem(font437, sizeof(font437));
+        int palette_size;
 
-        pdc_font = _load_bmp_and_palette_size(bmp_rw, &pdc_flastc);
-        pdc_flastc--;
+        const char *fname = getenv("PDC_FONT");
+        SDL_RWops *file = SDL_RWFromFile(fname ? fname : "pdcfont.bmp", "r");
+        if (file)
+            pdc_font = _load_bmp_and_palette_size(file, &palette_size);
+
+        if (!pdc_font)
+            pdc_font = _load_bmp_and_palette_size(
+                SDL_RWFromMem(font437, sizeof(font437)), &palette_size);
 
         if (!pdc_font)
         {
             fprintf(stderr, "Could not load font\n");
             return ERR;
         }
+
+        if (pdc_font->format->palette)
+            pdc_flastc = palette_size - 1;
     }
 
     SP->mono = !pdc_font->format->palette;
