@@ -260,7 +260,10 @@ int PDC_scr_open(void)
     SP->mono = FALSE;
 #else
     if (pdc_font)
-        pdc_flastc = pdc_font->format->palette->ncolors - 1;
+    {
+        if (pdc_font->format->palette)
+            pdc_flastc = pdc_font->format->palette->ncolors - 1;
+    }
     else
     {
         int palette_size;
