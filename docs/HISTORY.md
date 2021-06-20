@@ -1,6 +1,6 @@
 
-Changes since 4.2.0,  as of 2021 June 5
-=======================================
+Changes since 4.2.0,  as of 2021 June 20
+========================================
 
 Major new features
 ------------------
@@ -12,16 +12,17 @@ Minor new features
 ------------------
 
 -  ncurses tests build correctly again.  Moved to ncurses-6.2 tests,
-   and they can now be built on VT and WinGUI (they already worked
-   with X11 and SDLn).  f8dd18c0f2  4a71b26dd1  c8b67969d6 edd97f38fd
+   and they can now be built on VT,  WinCon,  and WinGUI (they already
+   worked with X11 and SDLn).  f8dd18c0f2 4a71b26dd1 c8b67969d6
+   edd97f38fd 68f1f1c299
 
 -  SDLs now have strikeout and overlined text.  91b280f442  So does X11
    5e5cd29617
 
 -  SDLs now recognize some 'extended' media keys.  5e10ef17fc
 
--  SDLs can be compiled as shared libraries and installed/uninstalled.
-   b78cd8a33f bb8d408675
+-  SDLs and VT can be compiled as shared libraries and installed/uninstalled.
+   b78cd8a33f bb8d408675 d0309c2963
 
 -  VT has strikeout text in xterm,  some (not many) others.
    05af0c6810
@@ -79,6 +80,17 @@ Bug fixes
    is now fixed. 365b6cce79
 
 -  Some cursor shapes in VT were mixed up.  1f1bbe7d8a
+
+-  Fixes for SDL2 font colors when using non-mono bitmaps.  e2b2874e76
+   d9306c09db
+
+-  Computation of the font width in X11 was wrong,  leading to misaligned
+   text.  This also mangled the code that checks that the bold and italic
+   fonts are the same size as the 'normal' font.   54d721cafe
+
+-  Input in WinCon,  when compiled in narrow (8-bit,  non-PDC_WIDE) mode,
+   could be mangled.  Shamelessly copied wmcbrine's fix from the commit
+   in PDCurses e28e705d17438ffd (q.v.).   83dcf79672
 
 PDCursesMod 4.2 - 2020 Oct 03
 =========================

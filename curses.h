@@ -24,6 +24,10 @@ Defined by this header:
     PDC_BUILD       API build version
     PDC_VER_MAJOR   major version number
     PDC_VER_MINOR   minor version number
+    PDC_VER_CHANGE  version change number
+    PDC_VER_YEAR    year of version
+    PDC_VER_MONTH   month of version
+    PDC_VER_DAY     day of month of version
     PDC_VERDOT      version string
 
 **man-end****************************************************************/
@@ -35,7 +39,7 @@ Defined by this header:
 #define PDC_VER_CHANGE   3
 #define PDC_VER_YEAR   2021
 #define PDC_VER_MONTH    06
-#define PDC_VER_DAY      06
+#define PDC_VER_DAY      20
 
 #define PDC_STRINGIZE( x) #x
 #define PDC_stringize( x) PDC_STRINGIZE( x)
