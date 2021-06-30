@@ -83,7 +83,10 @@ PACKED_RGB PDC_get_palette_entry( const int idx)
    PACKED_RGB rval;
 
    if( idx < palette_size)
+   {
+      assert( idx >= 0);
       rval = rgbs[idx];
+   }
    else
       rval = PDC_default_color( idx);
    return( rval);
@@ -173,20 +176,17 @@ void PDC_get_rgb_values( const chtype srcp,
     bool reverse_colors = ((srcp & A_REVERSE) ? TRUE : FALSE);
     bool intensify_backgnd = FALSE;
     bool default_foreground = FALSE, default_background = FALSE;
+    int foreground_index, background_index;
 
-    {
-        int foreground_index, background_index;
-
-        extended_pair_content( color, &foreground_index, &background_index);
-        if( foreground_index < 0 && SP->orig_attr)
-            default_foreground = TRUE;
-        else
-            *foreground_rgb = PDC_get_palette_entry( foreground_index);
-        if( background_index < 0 && SP->orig_attr)
-            default_background = TRUE;
-        else
-            *background_rgb = PDC_get_palette_entry( background_index);
-    }
+    extended_pair_content( color, &foreground_index, &background_index);
+    if( foreground_index < 0 && SP->orig_attr)
+        default_foreground = TRUE;
+    else
+        *foreground_rgb = PDC_get_palette_entry( foreground_index);
+    if( background_index < 0 && SP->orig_attr)
+        default_background = TRUE;
+    else
+        *background_rgb = PDC_get_palette_entry( background_index);
 
     if( srcp & A_BLINK)
     {
