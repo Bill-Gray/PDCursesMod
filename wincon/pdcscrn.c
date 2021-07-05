@@ -35,7 +35,7 @@ static short ansitocurs[16] =
 
 short pdc_curstoreal[16], pdc_curstoansi[16];
 short pdc_oldf, pdc_oldb, pdc_oldu;
-bool pdc_conemu, pdc_ansi;
+bool pdc_conemu, pdc_wt, pdc_ansi;
 
 enum { PDC_RESTORE_NONE, PDC_RESTORE_BUFFER };
 
@@ -415,9 +415,10 @@ int PDC_scr_open(void)
     is_nt = !(GetVersion() & 0x80000000);
 #endif
 
+    pdc_wt = !!getenv("WT_SESSION");
     str = getenv("ConEmuANSI");
     pdc_conemu = !!str;
-    pdc_ansi = pdc_conemu ? !strcmp(str, "ON") : FALSE;
+    pdc_ansi = pdc_wt ? TRUE : pdc_conemu ? !strcmp(str, "ON") : FALSE;
 
     GetConsoleScreenBufferInfo(pdc_con_out, &csbi);
     GetConsoleScreenBufferInfo(pdc_con_out, &orig_scr);
