@@ -416,7 +416,7 @@ int PDC_scr_open(void)
 #endif
 
     pdc_wt = !!getenv("WT_SESSION");
-    str = getenv("ConEmuANSI");
+    str = pdc_wt ? NULL : getenv("ConEmuANSI");
     pdc_conemu = !!str;
     pdc_ansi = pdc_wt ? TRUE : pdc_conemu ? !strcmp(str, "ON") : FALSE;
 
