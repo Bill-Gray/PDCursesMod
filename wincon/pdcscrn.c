@@ -639,7 +639,7 @@ bool PDC_can_change_color(void)
 
 int PDC_color_content(int color, int *red, int *green, int *blue)
 {
-    if (color < 16 && !pdc_conemu)
+    if (color < 16 && !(pdc_conemu || pdc_wt))
     {
         COLORREF *color_table = _get_colors();
 
@@ -678,7 +678,7 @@ int PDC_init_color(int color, int red, int green, int blue)
         return OK;
     }
 
-    if (color < 16 && !pdc_conemu)
+    if (color < 16 && !(pdc_conemu || pdc_wt))
     {
         COLORREF *color_table = _get_colors();
 
