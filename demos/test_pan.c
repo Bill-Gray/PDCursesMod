@@ -70,6 +70,7 @@ int main()
    WINDOW *my_wins[3];
    PANEL  *my_panels[3];
    int lines = 10, cols = 40, y = 7, x = 4, i, c = 0;
+   int box_style = 0;
 
    initscr();
    cbreak();
@@ -104,7 +105,8 @@ int main()
    mvaddstr( 2, 1, "Cursor keys move the top panel");
    mvaddstr( 3, 1, "Tab toggles display of top panel");
    mvaddstr( 4, 1, "Click on a panel to bring to top/send to bottom");
-   mvaddstr( 5, 1, "Escape or q exits the program");
+   mvaddstr( 5, 1, "h, v toggle doubled horiz/vert lines");
+   mvaddstr( 6, 1, "Escape or q exits the program");
 
    /* Update the stacking order. 2nd panel will be on top */
    while( c != 27 && c != 'q')
@@ -123,7 +125,7 @@ int main()
          case '1': case '2': case '3':
             top_panel( my_panels[c - '1']);
             break;
-         case 9: case 'h':
+         case 9:
 #ifdef __PDCURSES__
             if( panel_hidden( curr_top) == OK)
 #else
@@ -132,6 +134,17 @@ int main()
                show_panel( curr_top);
             else
                hide_panel( curr_top);
+            break;
+         case 'v':
+         case 'h':
+            if( c == 'v')
+               box_style ^= PDC_BOX_DOUBLED_V;
+            else
+               box_style ^= PDC_BOX_DOUBLED_H;
+            PDC_set_box_type( box_style);
+            for(i = 0; i < 3; ++i)
+               box(my_wins[i], 0, 0);
+            update_panels();
             break;
          case KEY_LEFT: case KEY_RIGHT: case KEY_UP: case KEY_DOWN:
             {
