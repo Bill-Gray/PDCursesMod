@@ -154,13 +154,13 @@ static int get_sixteen_color_idx( const PACKED_RGB rgb)
 
 static void reset_color( char *obuff, const chtype ch)
 {
-    static PACKED_RGB prev_bg = (PACKED_RGB)-1;
-    static PACKED_RGB prev_fg = (PACKED_RGB)-1;
+    static PACKED_RGB prev_bg = (PACKED_RGB)-2;
+    static PACKED_RGB prev_fg = (PACKED_RGB)-2;
     PACKED_RGB bg, fg;
 
     if( !obuff)
         {
-        prev_bg = prev_fg = (PACKED_RGB)-1;
+        prev_bg = prev_fg = (PACKED_RGB)-2;
         return;
         }
     PDC_get_rgb_values( ch, &fg, &bg);
@@ -223,6 +223,7 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
     if( force_reset_all_attribs || (!x && !lineno))
     {
         force_reset_all_attribs = FALSE;
+        reset_color( NULL, 0);
         prev_ch = ~*srcp;
     }
     while( len)
@@ -236,15 +237,15 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
        if( ch < (int)' ' || (ch >= 0x80 && ch <= 0x9f))
           ch = ' ';
        *obuff = '\0';
-       if( (prev_ch & ~*srcp) & (A_REVERSE | A_STRIKEOUT))
+       if( changes & (A_REVERSE | A_STRIKEOUT | A_BOLD))
        {
           prev_ch = 0;
-          changes = *srcp;
+          changes = *srcp | A_COLOR;
           strcpy( obuff, RESET_ATTRS);
           reset_color( NULL, 0);
        }
-       if( SP->termattrs & changes & A_BOLD)
-          strcat( obuff, (*srcp & A_BOLD) ? BOLD_ON : BOLD_OFF);
+       if( SP->termattrs & *srcp & A_BOLD)
+          strcat( obuff, BOLD_ON);
        if( changes & A_UNDERLINE)
           strcat( obuff, (*srcp & A_UNDERLINE) ? UNDERLINE_ON : UNDERLINE_OFF);
        if( changes & A_ITALIC)
