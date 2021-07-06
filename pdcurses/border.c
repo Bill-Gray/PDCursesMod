@@ -41,6 +41,7 @@ border
     int mvvline_set(int y, int x, const cchar_t *wch, int n);
     int mvwhline_set(WINDOW *win, int y, int x, const cchar_t *wch, int n);
     int mvwvline_set(WINDOW *win, int y, int x, const cchar_t *wch, int n);
+    int PDC_set_box_type( const int box_type);
 
 ### Description
 
@@ -55,6 +56,11 @@ border
     tr    top right corner of border      ACS_URCORNER
     bl    bottom left corner of border    ACS_LLCORNER
     br    bottom right corner of border   ACS_LRCORNER
+
+   PDC_set_box_type() can reset these defaults to use the double-line
+   characters.  'box_type' can include the bitflag constants.
+   PDC_BOX_DOUBLED_V and/or PDC_BOX_DOUBLED_H.  The previously set
+   default box type is returned.
 
    hline() and whline() draw a horizontal line, using ch, starting from
    the current cursor position. The cursor position does not change. The
@@ -135,10 +141,24 @@ static chtype _attr_passthru(WINDOW *win, chtype ch)
     return ch;
 }
 
+static int _box_type = 0;
+
+
+int PDC_set_box_type( const int box_type)
+{
+   const int rval = _box_type;
+
+   _box_type = box_type;
+   return( rval);
+}
+
 int wborder(WINDOW *win, chtype ls, chtype rs, chtype ts, chtype bs,
             chtype tl, chtype tr, chtype bl, chtype br)
 {
     int i, ymax, xmax;
+    chtype def_val;
+    const int doubled_v = (_box_type & PDC_BOX_DOUBLED_V);
+    const int doubled_h = (_box_type & PDC_BOX_DOUBLED_H);
 
     PDC_LOG(("wborder() - called\n"));
 
@@ -149,14 +169,22 @@ int wborder(WINDOW *win, chtype ls, chtype rs, chtype ts, chtype bs,
     ymax = win->_maxy - 1;
     xmax = win->_maxx - 1;
 
-    ls = _attr_passthru(win, ls ? ls : ACS_VLINE);
-    rs = _attr_passthru(win, rs ? rs : ACS_VLINE);
-    ts = _attr_passthru(win, ts ? ts : ACS_HLINE);
-    bs = _attr_passthru(win, bs ? bs : ACS_HLINE);
-    tl = _attr_passthru(win, tl ? tl : ACS_ULCORNER);
-    tr = _attr_passthru(win, tr ? tr : ACS_URCORNER);
-    bl = _attr_passthru(win, bl ? bl : ACS_LLCORNER);
-    br = _attr_passthru(win, br ? br : ACS_LRCORNER);
+    def_val = (doubled_v ? ACS_D_VLINE : ACS_VLINE);
+    ls = _attr_passthru(win, ls ? ls : def_val);
+    rs = _attr_passthru(win, rs ? rs : def_val);
+    def_val = (doubled_h ? ACS_D_HLINE : ACS_HLINE);
+    ts = _attr_passthru(win, ts ? ts : def_val);
+    bs = _attr_passthru(win, bs ? bs : def_val);
+
+    if( doubled_v)
+        def_val = doubled_h ? ACS_D_LRCORNER : ACS_DS_LRCORNER;
+    else
+        def_val = doubled_h ? ACS_SD_LRCORNER : ACS_LRCORNER;
+
+    tl = _attr_passthru(win, tl ? tl : def_val + 2);
+    tr = _attr_passthru(win, tr ? tr : def_val + 1);
+    bl = _attr_passthru(win, bl ? bl : def_val + 3);
+    br = _attr_passthru(win, br ? br : def_val);
 
     for (i = 1; i < xmax; i++)
     {

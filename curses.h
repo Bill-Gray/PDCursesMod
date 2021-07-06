@@ -38,8 +38,8 @@ Defined by this header:
 #define PDC_VER_MINOR    2
 #define PDC_VER_CHANGE   3
 #define PDC_VER_YEAR   2021
-#define PDC_VER_MONTH    06
-#define PDC_VER_DAY      20
+#define PDC_VER_MONTH    07
+#define PDC_VER_DAY      06
 
 #define PDC_STRINGIZE( x) #x
 #define PDC_stringize( x) PDC_STRINGIZE( x)
@@ -1685,6 +1685,7 @@ PDCEX  int     PDC_set_blink(bool);
 PDCEX  int     PDC_set_bold(bool);
 PDCEX  int     PDC_set_line_color(short);
 PDCEX  void    PDC_set_title(const char *);
+PDCEX  int     PDC_set_box_type( const int box_type);
 
 PDCEX  int     PDC_clearclipboard(void);
 PDCEX  int     PDC_freeclipboard(char *);
@@ -1756,6 +1757,11 @@ PDCEX  int     wunderscore(WINDOW *);
 
 #define PDC_save_key_modifiers(x)  (OK)
 #define PDC_get_input_fd()         0
+
+/* masks for PDC_set_box_type() */
+
+#define PDC_BOX_DOUBLED_V        1
+#define PDC_BOX_DOUBLED_H        2
 
 /* return codes from PDC_getclipboard() and PDC_setclipboard() calls */
 
