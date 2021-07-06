@@ -454,6 +454,19 @@ static unsigned long _process_key_event(XEvent *event)
     return -1;
 }
 
+static void _set_mouse_modifier_flags( const int button_no,
+                  const int state)
+{
+    SP->mouse_status.button[button_no - 1] &=
+               ~(BUTTON_SHIFT | BUTTON_CONTROL | BUTTON_ALT);
+    if (state & ShiftMask)
+        SP->mouse_status.button[button_no - 1] |= BUTTON_SHIFT;
+    if (state & ControlMask)
+        SP->mouse_status.button[button_no - 1] |= BUTTON_CONTROL;
+    if (state & Mod1Mask)
+        SP->mouse_status.button[button_no - 1] |= BUTTON_ALT;
+}
+
 static unsigned long _process_mouse_event( const XEvent *event)
 {
     int button_no = event->xbutton.button;
@@ -480,8 +493,6 @@ static unsigned long _process_mouse_event( const XEvent *event)
            mouse scroll up and down, and button 6 and 7, which are
            normally mapped to the wheel mouse scroll left and right */
 
-        last_button_no = button_no;
-
         if (button_no >= 4 && button_no <= 7)
         {
             /* Send the KEY_MOUSE to curses program */
@@ -502,6 +513,7 @@ static unsigned long _process_mouse_event( const XEvent *event)
                case 7:
                   SP->mouse_status.changes = PDC_MOUSE_WHEEL_RIGHT;
             }
+            _set_mouse_modifier_flags( 1, event->xbutton.state);
 
             return KEY_MOUSE;
         }
@@ -509,6 +521,7 @@ static unsigned long _process_mouse_event( const XEvent *event)
         MOUSE_LOG(("\nButtonPress\n"));
 
         SP->mouse_status.button[button_no - 1] = BUTTON_PRESSED;
+        last_button_no = button_no;
 
         napms(SP->mouse_wait);
         while (XtAppPending(pdc_app_context))
@@ -517,7 +530,10 @@ static unsigned long _process_mouse_event( const XEvent *event)
             XtAppNextEvent(pdc_app_context, &rel);
 
             if (rel.type == ButtonRelease && rel.xbutton.button == button_no)
+            {
                 SP->mouse_status.button[button_no - 1] = BUTTON_CLICKED;
+                last_button_no = 0;
+            }
             else
                 XSendEvent(XtDisplay(pdc_toplevel),
                            RootWindowOfScreen(XtScreen(pdc_toplevel)),
@@ -532,7 +548,6 @@ static unsigned long _process_mouse_event( const XEvent *event)
                    pdc_fwidth, pdc_fheight));
 
         button_no = last_button_no;
-
         SP->mouse_status.changes |= PDC_MOUSE_MOVED;
         break;
 
@@ -541,28 +556,29 @@ static unsigned long _process_mouse_event( const XEvent *event)
 
         /* ignore "releases" of scroll buttons */
 
+        last_button_no = 0;
         if (button_no >= 4 && button_no <= 7)
             return -1;
 
         SP->mouse_status.button[button_no - 1] = BUTTON_RELEASED;
     }
 
-    assert( button_no >= 1 && button_no <= PDC_MAX_MOUSE_BUTTONS);
+    assert( button_no >= 0 && button_no <= PDC_MAX_MOUSE_BUTTONS);
     /* Set up the mouse status fields in preparation for sending */
 
-    SP->mouse_status.changes |= 1 << (button_no - 1);
+    if( button_no > 0)
+    {
+        SP->mouse_status.changes |= 1 << (button_no - 1);
 
-    if (SP->mouse_status.changes & PDC_MOUSE_MOVED &&
-        (SP->mouse_status.button[button_no - 1] &
-         BUTTON_ACTION_MASK) == BUTTON_PRESSED)
-        SP->mouse_status.button[button_no - 1] = BUTTON_MOVED;
+        if( (SP->mouse_status.changes & PDC_MOUSE_MOVED) &&
+            (SP->mouse_status.button[button_no - 1] &
+             BUTTON_ACTION_MASK) == BUTTON_PRESSED)
+            SP->mouse_status.button[button_no - 1] = BUTTON_MOVED;
 
-    if (event->xbutton.state & ShiftMask)
-        SP->mouse_status.button[button_no - 1] |= BUTTON_SHIFT;
-    if (event->xbutton.state & ControlMask)
-        SP->mouse_status.button[button_no - 1] |= BUTTON_CONTROL;
-    if (event->xbutton.state & Mod1Mask)
-        SP->mouse_status.button[button_no - 1] |= BUTTON_ALT;
+    }
+    else if( event->type == MotionNotify &&
+                 !(SP->_trap_mbe & REPORT_MOUSE_POSITION))
+        return( -1);   /* i.e.,  we're ignoring 'plain' mouse moves */
 
     /* If we are ignoring the event, or the mouse position is outside
        the bounds of the screen, return here */
@@ -571,6 +587,10 @@ static unsigned long _process_mouse_event( const XEvent *event)
         SP->mouse_status.y < 0 || SP->mouse_status.y >= SP->lines)
         return -1;
 
+    if( !button_no)           /* mouse move event */
+        button_no = 1;
+
+    _set_mouse_modifier_flags( button_no, event->xbutton.state);
     /* Send the KEY_MOUSE to curses program */
 
     return KEY_MOUSE;
@@ -685,7 +705,7 @@ int PDC_kb_setup(void)
         /* Add in the mouse events */
 
         im_event_mask |= ButtonPressMask | ButtonReleaseMask |
-                         ButtonMotionMask;
+                         PointerMotionMask;
 
         XtAddEventHandler(pdc_drawing, im_event_mask, False,
                           _dummy_handler, NULL);
