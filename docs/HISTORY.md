@@ -1,5 +1,5 @@
 
-Changes since 4.2.0,  as of 2021 June 20
+Changes since 4.2.0,  as of 2021 July 06
 ========================================
 
 Major new features
@@ -34,6 +34,10 @@ Minor new features
 
 -  Some tests done using GitHub's CI.  3cb1b5f1bf,  several following
    commits.
+
+-  New PDC_set_box_type( ) function to allow boxes/lines to be drawn using
+   the doubled-line characters.  Modified 'test_pan.c' to demonstrate the
+   new function.  ab7bad3981  dd981b0e78
 
 -  WinGUI,  WinCon beep() is now in a separate thread,  so we don't
    hang the program while the beeping takes place.  a6212d94d2
@@ -87,6 +91,10 @@ Bug fixes
 -  Computation of the font width in X11 was wrong,  leading to misaligned
    text.  This also mangled the code that checks that the bold and italic
    fonts are the same size as the 'normal' font.   54d721cafe
+
+-  X11 mouse handling ignored mouse moves,  sometimes suppressed Ctrl/Alt/
+   Shift modifiers,  and the logic was confusing;  other bugs may have
+   lurked in there.   cfd7f64b95
 
 -  Input in WinCon,  when compiled in narrow (8-bit,  non-PDC_WIDE) mode,
    could be mangled.  Shamelessly copied wmcbrine's fix from the commit
