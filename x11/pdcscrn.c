@@ -742,9 +742,9 @@ int PDC_color_content(int color, int *red, int *green, int *blue)
     tmp.pixel = PDC_get_pixel( color);
     XQueryColor(XCURSESDISPLAY, cmap, &tmp);
 
-    *red = ((double)(tmp.red) * 1000 / 65535) + 0.5;
-    *green = ((double)(tmp.green) * 1000 / 65535) + 0.5;
-    *blue = ((double)(tmp.blue) * 1000 / 65535) + 0.5;
+    *red   = (int)( ((long)tmp.red   * 1000L + 32767L) / 65535L);
+    *green = (int)( ((long)tmp.green * 1000L + 32767L) / 65535L);
+    *blue  = (int)( ((long)tmp.blue  * 1000L + 32767L) / 65535L);
 
     return OK;
 }
@@ -753,9 +753,9 @@ int PDC_init_color(int color, int red, int green, int blue)
 {
     XColor tmp;
 
-    tmp.red = ((double)red * 65535 / 1000) + 0.5;
-    tmp.green = ((double)green * 65535 / 1000) + 0.5;
-    tmp.blue = ((double)blue * 65535 / 1000) + 0.5;
+    tmp.red    = (unsigned short)( ((long)red   * 65535L + 500L) / 1000L);
+    tmp.green  = (unsigned short)( ((long)green * 65535L + 500L) / 1000L);
+    tmp.blue   = (unsigned short)( ((long)blue  * 65535L + 500L) / 1000L);
 
     Colormap cmap = DefaultColormap(XCURSESDISPLAY,
                                     DefaultScreen(XCURSESDISPLAY));
