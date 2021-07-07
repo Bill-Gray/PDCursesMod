@@ -118,6 +118,10 @@ static int atrtab_size_alloced;
 
 static bool default_colors = FALSE;
 static int first_col = 0;
+static int _default_foreground_idx = COLOR_WHITE;
+static int _default_background_idx = COLOR_BLACK;
+
+static void _init_pair_core(int pair, int fg, int bg);
 
 #define UNSET_COLOR_PAIR      -2
 
@@ -136,7 +140,7 @@ int start_color(void)
     if (!default_colors && SP->orig_attr && getenv("PDC_ORIGINAL_COLORS"))
         default_colors = TRUE;
 
-    PDC_init_atrtab();
+    _init_pair_core( 0, _default_foreground_idx, _default_background_idx);
 #if defined( CHTYPE_64) && !defined(OS2) && !defined(DOS)
     if( COLORS >= 1024 && (long)INT_MAX > 1024L * 1024L)
         COLOR_PAIRS = 1024 * 1024;
@@ -150,9 +154,6 @@ int start_color(void)
 #endif
     return OK;
 }
-
-static int _default_foreground_idx = COLOR_WHITE;
-static int _default_background_idx = COLOR_BLACK;
 
 void PDC_set_default_colors( const int fg_idx, const int bg_idx)
 {
@@ -350,7 +351,9 @@ int PDC_init_atrtab(void)
        if( !SP->atrtab)
            return -1;
     }
-    _init_pair_core( 0, UNSET_COLOR_PAIR, UNSET_COLOR_PAIR);
+    _init_pair_core( 0,
+            (SP->orig_attr ? SP->orig_fore : _default_foreground_idx),
+            (SP->orig_attr ? SP->orig_back : _default_background_idx));
     return( 0);
 }
 
