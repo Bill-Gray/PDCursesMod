@@ -188,10 +188,7 @@ static void _init_pair_core(int pair, int fg, int bg)
         assert( SP->atrtab);
         p = SP->atrtab + atrtab_size_alloced;
         for( i = new_size - atrtab_size_alloced; i; i--, p++)
-        {
-            p->f = COLOR_GREEN;    /* signal uninitialized pairs by */
-            p->b = COLOR_YELLOW;   /* using unusual colors          */
-        }
+            p->f = p->b = UNSET_COLOR_PAIR;
         atrtab_size_alloced = new_size;
     }
 
@@ -289,7 +286,7 @@ int extended_pair_content(int pair, int *fg, int *bg)
     if (pair < 0 || pair >= COLOR_PAIRS || !fg || !bg)
         return ERR;
 
-    if( pair >= atrtab_size_alloced)
+    if( pair >= atrtab_size_alloced || (pair && *fg == UNSET_COLOR_PAIR))
     {
         *fg = COLOR_RED;      /* signal use of uninitialized pair */
         *bg = COLOR_BLUE;     /* with visible,  but odd,  colors  */
