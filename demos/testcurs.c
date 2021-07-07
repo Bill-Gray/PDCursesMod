@@ -1399,6 +1399,41 @@ void extended(int tmarg)
     curTest();
 }
 
+#if defined( PDCURSES)
+static void supergradient(int tmarg)
+{
+    int i, j, pair_num = 256;
+
+    erase();
+    refresh();
+    for( i = 0; i < LINES; i++)
+    {
+        const int green1 = ((i * 2 + 1) * 255 / (LINES * 2)) << 8;
+        const int green2 = (  (i * 2)   * 255 / (LINES * 2)) << 8;
+
+        move( i, 0);
+        for( j = 0; j < COLS && pair_num < COLOR_PAIRS; j++)
+        {
+            const int red = (j * 255 / COLS);
+
+            init_extended_pair( pair_num, red + green1 + 256, red + green2 + 256);
+            attrset( COLOR_PAIR( pair_num));
+            addch( ACS_BBLOCK);
+            pair_num++;
+        }
+    }
+    refresh();
+    curs_set(1);
+
+    attrset( COLOR_PAIR( 0));
+    mvaddstr(tmarg, 3, " Generalized gradients ");
+
+    mvaddstr(tmarg + 19, 3, "Press any key to continue");
+    getch();
+}
+#endif
+
+
 void gradient(int tmarg)
 {
     int i;
@@ -1552,6 +1587,11 @@ void colorTest(WINDOW *win)
 
     if (COLORS >= 256)
         extended(tmarg);
+
+#if defined( PDCURSES)
+    if (can_change_color() && COLORS == ((1 << 24) + 256) && COLOR_PAIRS > 32768)
+        supergradient( tmarg);
+#endif
 
     if (can_change_color() && COLORS >= 768)
         gradient(tmarg);
