@@ -427,8 +427,8 @@ void inputTest(WINDOW *win)
         wprintw( win, "(%x) ", c);
         if( has_key( c))
             wprintw(win, "%s", keyname(c));
-        else if (isprint(c))
-            wprintw(win, "%c", c);
+        else if (isprint(c) || c > 0x7f)
+            waddch( win, c);
         else
             wprintw(win, "%s", unctrl(c));
 #ifdef PDCURSES
