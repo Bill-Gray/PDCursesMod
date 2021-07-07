@@ -286,7 +286,7 @@ int extended_pair_content(int pair, int *fg, int *bg)
     if (pair < 0 || pair >= COLOR_PAIRS || !fg || !bg)
         return ERR;
 
-    if( pair >= atrtab_size_alloced || (pair && *fg == UNSET_COLOR_PAIR))
+    if( pair >= atrtab_size_alloced || (pair && SP->atrtab[pair].f == UNSET_COLOR_PAIR))
     {
         *fg = COLOR_RED;      /* signal use of uninitialized pair */
         *bg = COLOR_BLUE;     /* with visible,  but odd,  colors  */
