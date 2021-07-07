@@ -352,6 +352,7 @@ void inputTest(WINDOW *win)
     WINDOW *subWin;
     static const char spinner[5] = "/-\\|";
     int spinner_count = 0;
+    int line = 3;
 
     wclear(win);
 
@@ -384,7 +385,6 @@ void inputTest(WINDOW *win)
     mvwaddstr(win, 1, 1,
         "Press keys (or mouse buttons) to show their names");
     mvwaddstr(win, 2, 1, "Press spacebar to finish, Ctrl-A to return to main menu");
-    mvwaddstr(win, 2, 1, "Press spacebar to finish");
     wrefresh(win);
 
     keypad(win, TRUE);
@@ -401,6 +401,12 @@ void inputTest(WINDOW *win)
 
     while (1)
     {
+        if( line >= h - 2)
+            line = 3;
+        wmove(win, line + 1, 3);
+        wclrtoeol(win);
+        wmove(win, line, 3);
+        wclrtoeol(win);
         while (1)
         {
             c = wgetch(win);
@@ -410,18 +416,13 @@ void inputTest(WINDOW *win)
                 spinner_count++;
                 if (spinner_count == 4)
                     spinner_count = 0;
-                mvwaddch(win, 3, 3, spinner[spinner_count]);
+                mvwaddch(win, line, 3, spinner[spinner_count]);
                 wrefresh(win);
             }
             else
                 break;
         }
-#ifdef PDCURSES
-        wmove(win, 4, 18);
-        wclrtoeol(win);
-#endif
-        mvwaddstr(win, 3, 5, "Key Pressed: ");
-        wclrtoeol(win);
+        mvwaddstr(win, line, 5, "Key Pressed: ");
 
         wprintw( win, "(%x) ", c);
         if( has_key( c))
@@ -458,7 +459,8 @@ void inputTest(WINDOW *win)
                     waddstr(win, " ALT");
             }
 
-            wmove(win, 4, 18);
+            line++;
+            wmove(win, line, 5);
             wclrtoeol(win);
             wprintw(win, "Button %d: ", button);
 
@@ -503,6 +505,7 @@ void inputTest(WINDOW *win)
         }
 #endif
         wrefresh(win);
+        line++;
 
         if (c == ' ' || c == 1)
             break;
