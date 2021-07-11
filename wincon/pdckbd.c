@@ -80,16 +80,16 @@ static KPTAB kptab[] =
    {PAD0,       0x30,      CTL_PAD0,    ALT_PAD0,   11  }, /* 45  VK_INSERT  */
    {PADSTOP,    0x2E,      CTL_PADSTOP, ALT_PADSTOP,12  }, /* 46  VK_DELETE  */
    {0,          0,         0,           0,          0   }, /* 47  VK_HELP    */
-   {0x30,       0x29,      0,           ALT_0,      0   }, /* 48  */
-   {0x31,       0x21,      0,           ALT_1,      0   }, /* 49  */
-   {0x32,       0x40,      0,           ALT_2,      0   }, /* 50  */
-   {0x33,       0x23,      0,           ALT_3,      0   }, /* 51  */
-   {0x34,       0x24,      0,           ALT_4,      0   }, /* 52  */
-   {0x35,       0x25,      0,           ALT_5,      0   }, /* 53  */
-   {0x36,       0x5E,      0,           ALT_6,      0   }, /* 54  */
-   {0x37,       0x26,      0,           ALT_7,      0   }, /* 55  */
-   {0x38,       0x2A,      0,           ALT_8,      0   }, /* 56  */
-   {0x39,       0x28,      0,           ALT_9,      0   }, /* 57  */
+   {0x30,       0x29,      '0',         ALT_0,      0   }, /* 48  */
+   {0x31,       0x21,      '1',         ALT_1,      0   }, /* 49  */
+   {0x32,       0x40,      '2',         ALT_2,      0   }, /* 50  */
+   {0x33,       0x23,      '3',         ALT_3,      0   }, /* 51  */
+   {0x34,       0x24,      '4',         ALT_4,      0   }, /* 52  */
+   {0x35,       0x25,      '5',         ALT_5,      0   }, /* 53  */
+   {0x36,       0x5E,      '6',         ALT_6,      0   }, /* 54  */
+   {0x37,       0x26,      '7',         ALT_7,      0   }, /* 55  */
+   {0x38,       0x2A,      '8',         ALT_8,      0   }, /* 56  */
+   {0x39,       0x28,      '9',         ALT_9,      0   }, /* 57  */
    {0,          0,         0,           0,          0   }, /* 58  */
    {0,          0,         0,           0,          0   }, /* 59  */
    {0,          0,         0,           0,          0   }, /* 60  */
@@ -125,7 +125,7 @@ static KPTAB kptab[] =
    {0x7A,       0x5A,      0x1A,        ALT_Z,      0   }, /* 90  */
    {0,          0,         0,           0,          0   }, /* 91  VK_LWIN    */
    {0,          0,         0,           0,          0   }, /* 92  VK_RWIN    */
-   {0,          0,         0,           0,          0   }, /* 93  VK_APPS    */
+   {0,          0,         0,           0,          13  }, /* 93  VK_APPS    */
    {0,          0,         0,           0,          0   }, /* 94  */
    {0,          0,         0,           0,          0   }, /* 95  */
    {0x30,       0,         CTL_PAD0,    ALT_PAD0,   0   }, /* 96  VK_NUMPAD0 */
@@ -159,38 +159,108 @@ static KPTAB kptab[] =
 
    /* 124 through 218 */
 
-   {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},
-   {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},
-   {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},
-   {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},
-   {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},
-   {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},
-   {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},
-   {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},
-   {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},
-   {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},
-   {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},
-   {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},
-   {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},
-   {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},
-   {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},
-   {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},
-   {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},
-   {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},
-   {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},
-   {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},
-   {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},
-   {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},
-   {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},
-   {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0},
-
-   {0x5B,       0x7B,      0x1B,        ALT_LBRACKET,0  }, /* 219 */
-   {0x5C,       0x7C,      0x1C,        ALT_BSLASH, 0   }, /* 220 */
-   {0x5D,       0x7D,      0x1D,        ALT_RBRACKET,0  }, /* 221 */
-   {0,          0,         0x27,        ALT_FQUOTE, 0   }, /* 222 */
-   {0,          0,         0,           0,          0   }, /* 223 */
-   {0,          0,         0,           0,          0   }, /* 224 */
-   {0,          0,         0,           0,          0   }, /* 225 */
+    {0, 0, 0, 0, 0},  /* 124 VK_F13 */
+    {0, 0, 0, 0, 0},  /* 125 VK_F14 */
+    {0, 0, 0, 0, 0},  /* 126 VK_F15 */
+    {0, 0, 0, 0, 0},  /* 127 VK_F16 */
+    {0, 0, 0, 0, 0},  /* 128 VK_F17 */
+    {0, 0, 0, 0, 0},  /* 129 VK_F18 */
+    {0, 0, 0, 0, 0},  /* 130 VK_F19 */
+    {0, 0, 0, 0, 0},  /* 131 VK_F20 */
+    {0, 0, 0, 0, 0},  /* 132 VK_F21 */
+    {0, 0, 0, 0, 0},  /* 133 VK_F22 */
+    {0, 0, 0, 0, 0},  /* 134 VK_F23 */
+    {0, 0, 0, 0, 0},  /* 135 VK_F24 */
+    {0, 0, 0, 0, 0},  /* 136 unassigned */
+    {0, 0, 0, 0, 0},  /* 137 unassigned */
+    {0, 0, 0, 0, 0},  /* 138 unassigned */
+    {0, 0, 0, 0, 0},  /* 139 unassigned */
+    {0, 0, 0, 0, 0},  /* 140 unassigned */
+    {0, 0, 0, 0, 0},  /* 141 unassigned */
+    {0, 0, 0, 0, 0},  /* 142 unassigned */
+    {0, 0, 0, 0, 0},  /* 143 unassigned */
+    {0, 0, 0, 0, 0},  /* 144 VK_NUMLOCK */
+    {KEY_SCROLLLOCK, 0, 0, KEY_SCROLLLOCK, 0},    /* 145 VKSCROLL */
+    {0, 0, 0, 0, 0},  /* 146 OEM specific */
+    {0, 0, 0, 0, 0},  /* 147 OEM specific */
+    {0, 0, 0, 0, 0},  /* 148 OEM specific */
+    {0, 0, 0, 0, 0},  /* 149 OEM specific */
+    {0, 0, 0, 0, 0},  /* 150 OEM specific */
+    {0, 0, 0, 0, 0},  /* 151 Unassigned */
+    {0, 0, 0, 0, 0},  /* 152 Unassigned */
+    {0, 0, 0, 0, 0},  /* 153 Unassigned */
+    {0, 0, 0, 0, 0},  /* 154 Unassigned */
+    {0, 0, 0, 0, 0},  /* 155 Unassigned */
+    {0, 0, 0, 0, 0},  /* 156 Unassigned */
+    {0, 0, 0, 0, 0},  /* 157 Unassigned */
+    {0, 0, 0, 0, 0},  /* 158 Unassigned */
+    {0, 0, 0, 0, 0},  /* 159 Unassigned */
+    {0, 0, 0, 0, 0},  /* 160 VK_LSHIFT */
+    {0, 0, 0, 0, 0},  /* 161 VK_RSHIFT */
+    {0, 0, 0, 0, 0},  /* 162 VK_LCONTROL */
+    {0, 0, 0, 0, 0},  /* 163 VK_RCONTROL */
+    {0, 0, 0, 0, 0},  /* 164 VK_LMENU */
+    {0, 0, 0, 0, 0},  /* 165 VK_RMENU */
+    {0, 0, 0, 0, 14},  /* 166 VK_BROWSER_BACK        */
+    {0, 0, 0, 0, 15},  /* 167 VK_BROWSER_FORWARD     */
+    {0, 0, 0, 0, 16},  /* 168 VK_BROWSER_REFRESH     */
+    {0, 0, 0, 0, 17},  /* 169 VK_BROWSER_STOP        */
+    {0, 0, 0, 0, 18},  /* 170 VK_BROWSER_SEARCH      */
+    {0, 0, 0, 0, 19},  /* 171 VK_BROWSER_FAVORITES   */
+    {0, 0, 0, 0, 20},  /* 172 VK_BROWSER_HOME        */
+    {0, 0, 0, 0, 21},  /* 173 VK_VOLUME_MUTE         */
+    {0, 0, 0, 0, 22},  /* 174 VK_VOLUME_DOWN         */
+    {0, 0, 0, 0, 23},  /* 175 VK_VOLUME_UP           */
+    {0, 0, 0, 0, 24},  /* 176 VK_MEDIA_NEXT_TRACK    */
+    {0, 0, 0, 0, 25},  /* 177 VK_MEDIA_PREV_TRACK    */
+    {0, 0, 0, 0, 26},  /* 178 VK_MEDIA_STOP          */
+    {0, 0, 0, 0, 27},  /* 179 VK_MEDIA_PLAY_PAUSE    */
+    {0, 0, 0, 0, 28},  /* 180 VK_LAUNCH_MAIL         */
+    {0, 0, 0, 0, 29},  /* 181 VK_LAUNCH_MEDIA_SELECT */
+    {0, 0, 0, 0, 30},  /* 182 VK_LAUNCH_APP1         */
+    {0, 0, 0, 0, 31},  /* 183 VK_LAUNCH_APP2         */
+    {0, 0, 0, 0, 0},  /* 184 Reserved */
+    {0, 0, 0, 0, 0},  /* 185 Reserved */
+    {';', ':', ';',           ALT_SEMICOLON, 0},  /* 186 VK_OEM_1      */
+    {'=', '+', '=',           ALT_EQUAL,     0},  /* 187 VK_OEM_PLUS   */
+    {',', '<', ',',           ALT_COMMA,     0},  /* 188 VK_OEM_COMMA  */
+    {'-', '_', '-',           ALT_MINUS,     0},  /* 189 VK_OEM_MINUS  */
+    {'.', '>', '.',           ALT_STOP,      0},  /* 190 VK_OEM_PERIOD */
+    {'/', '?', '/',           ALT_FSLASH,    0},  /* 191 VK_OEM_2      */
+    {'`', '~', '`',           ALT_BQUOTE,    0},  /* 192 VK_OEM_3      */
+    {0, 0, 0, 0, 0},  /* 193 */
+    {0, 0, 0, 0, 0},  /* 194 */
+    {0, 0, 0, 0, 0},  /* 195 */
+    {0, 0, 0, 0, 0},  /* 196 */
+    {0, 0, 0, 0, 0},  /* 197 */
+    {0, 0, 0, 0, 0},  /* 198 */
+    {0, 0, 0, 0, 0},  /* 199 */
+    {0, 0, 0, 0, 0},  /* 200 */
+    {0, 0, 0, 0, 0},  /* 201 */
+    {0, 0, 0, 0, 0},  /* 202 */
+    {0, 0, 0, 0, 0},  /* 203 */
+    {0, 0, 0, 0, 0},  /* 204 */
+    {0, 0, 0, 0, 0},  /* 205 */
+    {0, 0, 0, 0, 0},  /* 206 */
+    {0, 0, 0, 0, 0},  /* 207 */
+    {0, 0, 0, 0, 0},  /* 208 */
+    {0, 0, 0, 0, 0},  /* 209 */
+    {0, 0, 0, 0, 0},  /* 210 */
+    {0, 0, 0, 0, 0},  /* 211 */
+    {0, 0, 0, 0, 0},  /* 212 */
+    {0, 0, 0, 0, 0},  /* 213 */
+    {0, 0, 0, 0, 0},  /* 214 */
+    {0, 0, 0, 0, 0},  /* 215 */
+    {0, 0, 0, 0, 0},  /* 216 */
+    {0, 0, 0, 0, 0},  /* 217 */
+    {0, 0, 0, 0, 0},  /* 218 */
+   {0x5B,       0x7B,      0x1B,        ALT_LBRACKET,0  }, /* 219 DB */
+   {0x5C,       0x7C,      0x1C,        ALT_BSLASH, 0   }, /* 220 DC */
+   {0x5D,       0x7D,      0x1D,        ALT_RBRACKET,0  }, /* 221 DD */
+   {0,          0,         0x27,        ALT_FQUOTE, 0   }, /* 222 DE */
+   {0,          0,         0,           0,          0   }, /* 223 DF VK_OEM_8 */
+   {0,          0,         0,           0,          0   }, /* 224 E0 Reserved */
+   {0,          0,         0,           0,          0   }, /* 225 E1 OEM-specific */
    {0,          0,         0,           0,          0   }, /* 226 E2 VK_OEM_102 */
    {0,          0,         0,           0,          0   }, /* 227 E3 OEM-specific */
    {0,          0,         0,           0,          0   }, /* 228 E4 OEM-specific */
@@ -222,21 +292,40 @@ static KPTAB kptab[] =
    {0,          0,         0,           0,          0   }  /* 254 FE VK_OEM_CLEAR */
 };
 
-static KPTAB ext_kptab[] =
+static const KPTAB ext_kptab[] =
 {
-   {0,          0,              0,              0,            0}, /* MUST BE EMPTY */
-   {PADENTER,   SHF_PADENTER,   CTL_PADENTER,   ALT_PADENTER, 0}, /* 13 */
-   {PADSLASH,   SHF_PADSLASH,   CTL_PADSLASH,   ALT_PADSLASH, 0}, /* 111 */
-   {KEY_PPAGE,  KEY_SPREVIOUS,  CTL_PGUP,       ALT_PGUP,     0}, /* 33 */
-   {KEY_NPAGE,  KEY_SNEXT,      CTL_PGDN,       ALT_PGDN,     0}, /* 34 */
-   {KEY_END,    KEY_SEND,       CTL_END,        ALT_END,      0}, /* 35 */
-   {KEY_HOME,   KEY_SHOME,      CTL_HOME,       ALT_HOME,     0}, /* 36 */
-   {KEY_LEFT,   KEY_SLEFT,      CTL_LEFT,       ALT_LEFT,     0}, /* 37 */
-   {KEY_UP,     KEY_SUP,        CTL_UP,         ALT_UP,       0}, /* 38 */
-   {KEY_RIGHT,  KEY_SRIGHT,     CTL_RIGHT,      ALT_RIGHT,    0}, /* 39 */
-   {KEY_DOWN,   KEY_SDOWN,      CTL_DOWN,       ALT_DOWN,     0}, /* 40 */
-   {KEY_IC,     KEY_SIC,        CTL_INS,        ALT_INS,      0}, /* 45 */
-   {KEY_DC,     KEY_SDC,        CTL_DEL,        ALT_DEL,      0}  /* 46 */
+   {0,          0,              0,              0,            0}, /*  0  MUST BE EMPTY */
+   {PADENTER,   SHF_PADENTER,   CTL_PADENTER,   ALT_PADENTER, 0}, /*  1  13 */
+   {PADSLASH,   SHF_PADSLASH,   CTL_PADSLASH,   ALT_PADSLASH, 0}, /*  2 111 */
+   {KEY_PPAGE,  KEY_SPREVIOUS,  CTL_PGUP,       ALT_PGUP,     0}, /*  3  33 */
+   {KEY_NPAGE,  KEY_SNEXT,      CTL_PGDN,       ALT_PGDN,     0}, /*  4  34 */
+   {KEY_END,    KEY_SEND,       CTL_END,        ALT_END,      0}, /*  5  35 */
+   {KEY_HOME,   KEY_SHOME,      CTL_HOME,       ALT_HOME,     0}, /*  6  36 */
+   {KEY_LEFT,   KEY_SLEFT,      CTL_LEFT,       ALT_LEFT,     0}, /*  7  37 */
+   {KEY_UP,     KEY_SUP,        CTL_UP,         ALT_UP,       0}, /*  8  38 */
+   {KEY_RIGHT,  KEY_SRIGHT,     CTL_RIGHT,      ALT_RIGHT,    0}, /*  9  39 */
+   {KEY_DOWN,   KEY_SDOWN,      CTL_DOWN,       ALT_DOWN,     0}, /* 10  40 */
+   {KEY_IC,     KEY_SIC,        CTL_INS,        ALT_INS,      0}, /* 11  45 */
+   {KEY_DC,     KEY_SDC,        CTL_DEL,        ALT_DEL,      0}, /* 12  46 */
+   {KEY_APPS,   KEY_APPS,       KEY_APPS,       KEY_APPS,     0}, /* 13  93  VK_APPS    */
+   {KEY_BROWSER_BACK, KEY_BROWSER_BACK, KEY_BROWSER_BACK, KEY_BROWSER_BACK, 0}, /* 14 166 VK_BROWSER_BACK        */
+   {KEY_BROWSER_FWD,  KEY_BROWSER_FWD,  KEY_BROWSER_FWD,  KEY_BROWSER_FWD,  0}, /* 15 167 VK_BROWSER_FORWARD     */
+   {KEY_BROWSER_REF,  KEY_BROWSER_REF,  KEY_BROWSER_REF,  KEY_BROWSER_REF,  0}, /* 16 168 VK_BROWSER_REFRESH     */
+   {KEY_BROWSER_STOP, KEY_BROWSER_STOP, KEY_BROWSER_STOP, KEY_BROWSER_STOP, 0}, /* 17 169 VK_BROWSER_STOP        */
+   {KEY_SEARCH,       KEY_SEARCH,       KEY_SEARCH,       KEY_SEARCH,       0}, /* 18 170 VK_BROWSER_SEARCH      */
+   {KEY_FAVORITES,    KEY_FAVORITES,    KEY_FAVORITES,    KEY_FAVORITES,    0}, /* 19 171 VK_BROWSER_FAVORITES   */
+   {KEY_BROWSER_HOME, KEY_BROWSER_HOME, KEY_BROWSER_HOME, KEY_BROWSER_HOME, 0}, /* 20 172 VK_BROWSER_HOME        */
+   {KEY_VOLUME_MUTE,  KEY_VOLUME_MUTE,  KEY_VOLUME_MUTE,  KEY_VOLUME_MUTE,  0}, /* 21 173 VK_VOLUME_MUTE         */
+   {KEY_VOLUME_DOWN,  KEY_VOLUME_DOWN,  KEY_VOLUME_DOWN,  KEY_VOLUME_DOWN,  0}, /* 22 174 VK_VOLUME_DOWN         */
+   {KEY_VOLUME_UP,    KEY_VOLUME_UP,    KEY_VOLUME_UP,    KEY_VOLUME_UP,    0}, /* 23 175 VK_VOLUME_UP           */
+   {KEY_NEXT_TRACK,   KEY_NEXT_TRACK,   KEY_NEXT_TRACK,   KEY_NEXT_TRACK,   0}, /* 24 176 VK_MEDIA_NEXT_TRACK    */
+   {KEY_PREV_TRACK,   KEY_PREV_TRACK,   KEY_PREV_TRACK,   KEY_PREV_TRACK,   0}, /* 25 177 VK_MEDIA_PREV_TRACK    */
+   {KEY_MEDIA_STOP,   KEY_MEDIA_STOP,   KEY_MEDIA_STOP,   KEY_MEDIA_STOP,   0}, /* 26 178 VK_MEDIA_STOP          */
+   {KEY_PLAY_PAUSE,   KEY_PLAY_PAUSE,   KEY_PLAY_PAUSE,   KEY_PLAY_PAUSE,   0}, /* 27 179 VK_MEDIA_PLAY_PAUSE    */
+   {KEY_LAUNCH_MAIL,  KEY_LAUNCH_MAIL,  KEY_LAUNCH_MAIL,  KEY_LAUNCH_MAIL,  0}, /* 28 180 VK_LAUNCH_MAIL         */
+   {KEY_MEDIA_SELECT, KEY_MEDIA_SELECT, KEY_MEDIA_SELECT, KEY_MEDIA_SELECT, 0}, /* 29 181 VK_LAUNCH_MEDIA_SELECT */
+   {KEY_LAUNCH_APP1,  KEY_LAUNCH_APP1,  KEY_LAUNCH_APP1,  KEY_LAUNCH_APP1,  0}, /* 30 182 VK_LAUNCH_APP1         */
+   {KEY_LAUNCH_APP2,  KEY_LAUNCH_APP2,  KEY_LAUNCH_APP2,  KEY_LAUNCH_APP2,  0}, /* 31 183 VK_LAUNCH_APP2         */
 };
 
 /* End of kptab[] */
