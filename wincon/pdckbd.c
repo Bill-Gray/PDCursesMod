@@ -190,7 +190,36 @@ static KPTAB kptab[] =
    {0,          0,         0x27,        ALT_FQUOTE, 0   }, /* 222 */
    {0,          0,         0,           0,          0   }, /* 223 */
    {0,          0,         0,           0,          0   }, /* 224 */
-   {0,          0,         0,           0,          0   }  /* 225 */
+   {0,          0,         0,           0,          0   }, /* 225 */
+   {0,          0,         0,           0,          0   }, /* 226 E2 VK_OEM_102 */
+   {0,          0,         0,           0,          0   }, /* 227 E3 OEM-specific */
+   {0,          0,         0,           0,          0   }, /* 228 E4 OEM-specific */
+   {0,          0,         0,           0,          0   }, /* 229 E5 VK_PROCESSKEY */
+   {0,          0,         0,           0,          0   }, /* 230 E6 OEM-specific */
+   {0,          0,         0,           0,          0   }, /* 231 E7 VK_PACKET */
+   {0,          0,         0,           0,          0   }, /* 232 E8 Unassigned */
+   {0,          0,         0,           0,          0   }, /* 233 E9 OEM-specific */
+   {0,          0,         0,           0,          0   }, /* 234 EA OEM-specific */
+   {0,          0,         0,           0,          0   }, /* 235 EB OEM-specific */
+   {0,          0,         0,           0,          0   }, /* 236 EC OEM-specific */
+   {0,          0,         0,           0,          0   }, /* 237 ED OEM-specific */
+   {0,          0,         0,           0,          0   }, /* 238 EE OEM-specific */
+   {0,          0,         0,           0,          0   }, /* 239 EF OEM-specific */
+   {0,          0,         0,           0,          0   }, /* 240 F0 OEM-specific */
+   {0,          0,         0,           0,          0   }, /* 241 F1 OEM-specific */
+   {0,          0,         0,           0,          0   }, /* 242 F2 OEM-specific */
+   {0,          0,         0,           0,          0   }, /* 243 F3 OEM-specific */
+   {0,          0,         0,           0,          0   }, /* 244 F4 OEM-specific */
+   {0,          0,         0,           0,          0   }, /* 245 F5 OEM-specific */
+   {0,          0,         0,           0,          0   }, /* 246 F6 VK_ATTN */
+   {0,          0,         0,           0,          0   }, /* 247 F7 VK_CRSEL */
+   {0,          0,         0,           0,          0   }, /* 248 F8 VK_EXSEL */
+   {0,          0,         0,           0,          0   }, /* 249 F9 VK_EREOF */
+   {0,          0,         0,           0,          0   }, /* 250 FA VK_PLAY */
+   {0,          0,         0,           0,          0   }, /* 251 FB VK_ZOOM */
+   {0,          0,         0,           0,          0   }, /* 252 FC VK_NONAME */
+   {0,          0,         0,           0,          0   }, /* 253 FD VK_PA1 */
+   {0,          0,         0,           0,          0   }  /* 254 FE VK_OEM_CLEAR */
 };
 
 static KPTAB ext_kptab[] =
