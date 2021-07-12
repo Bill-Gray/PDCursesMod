@@ -476,7 +476,7 @@ If CHTYPE_32 is #defined,  PDCurses uses a 32-bit integer for its chtype:
 There are 256 color pairs (8 bits), 8 bits for modifiers, and 16 bits
 for character data. The modifiers are bold, underline, right-line,
 left-line, italic, reverse and blink, plus the alternate character set
-indicator.  (This is the scheme used in PDCurses.)
+indicator.  (This is the scheme used in 'traditional' PDCurses.)
 
    By default,  PDCursesMod uses 64-bit chtype :
 
@@ -491,8 +491,9 @@ total),  and four more bits for attributes.  Three are currently used as
 A_OVERLINE, A_DIM, and A_STRIKEOUT;  one more is reserved for future use.
 Bits 33-52 are used to specify a color pair.  In theory,  there can be
 2^20 = 1048576 color pairs,  but as of 2021 May 27,  only WinGUI,  VT,  X11,
-and SDLn have COLOR_PAIRS = 1048576.  Other platforms may join them,  but
-some (DOS,  OS/2) simply do not have full-color capability.
+and SDLn have COLOR_PAIRS = 1048576.  Other platforms (DOSVGA,  Plan9,
+WinCon) may join them,  but some (DOS,  OS/2) simply do not have full-color
+capability.
 
    Bits 53-63 are currently unused.
 
