@@ -178,6 +178,9 @@ int main(int argc, char *argv[])
             break;
 
         case KEY_UP:
+#ifdef KEY_A2
+        case KEY_A2:
+#endif
             old_option = new_option;
             new_option = (new_option == 0) ?
                 new_option : new_option - 1;
@@ -185,6 +188,9 @@ int main(int argc, char *argv[])
             break;
 
         case KEY_DOWN:
+#ifdef KEY_C2
+        case KEY_C2:
+#endif
             old_option = new_option;
             new_option = (new_option == MAX_OPTIONS - 1) ?
                 new_option : new_option + 1;
