@@ -39,7 +39,7 @@ Defined by this header:
 #define PDC_VER_CHANGE   3
 #define PDC_VER_YEAR   2021
 #define PDC_VER_MONTH    07
-#define PDC_VER_DAY      06
+#define PDC_VER_DAY      11
 
 #define PDC_STRINGIZE( x) #x
 #define PDC_stringize( x) PDC_STRINGIZE( x)
@@ -368,6 +368,7 @@ typedef struct
 {
     int f;                /* foreground color */
     int b;                /* background color */
+    int count;            /* allocation order */
 } PDC_PAIR;
 
 /* Avoid using the SCREEN struct directly -- use the corresponding
@@ -1634,8 +1635,11 @@ PDCEX  mmask_t getmouse(void);
 
 /* ncurses */
 
+PDCEX  int     alloc_pair(int, int);
 PDCEX  int     assume_default_colors(int, int);
 PDCEX  const char *curses_version(void);
+PDCEX  int     find_pair(int, int);
+PDCEX  int     free_pair( int);
 PDCEX  bool    has_key(int);
 PDCEX  bool    is_keypad(const WINDOW *);
 PDCEX  bool    is_leaveok(const WINDOW *);

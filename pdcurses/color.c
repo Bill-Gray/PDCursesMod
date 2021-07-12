@@ -21,7 +21,10 @@ color
     int init_extended_color(int color, int red, int green, int blue);
     int extended_color_content(int color, int *red, int *green, int *blue);
 
+    int alloc_pair( int fg, int bg);
     int assume_default_colors(int f, int b);
+    int find_pair( int fg, int bg);
+    int free_pair( int pair);
     int use_default_colors(void);
 
     int PDC_set_line_color(short color);
@@ -80,6 +83,13 @@ color
    variable PDC_ORIGINAL_COLORS is set at the time start_color() is
    called, that's equivalent to calling use_default_colors().
 
+   alloc_pair(), find_pair() and free_pair() are also from ncurses.
+   free_pair() marks a pair as unused; find_pair() returns an existing
+   pair with the specified foreground and background colors, if one
+   exists. And alloc_pair() returns such a pair whether or not it was
+   previously set, overwriting the oldest initialized pair if there are
+   no free pairs.
+
    PDC_set_line_color() is used to set the color, globally, for the
    color of the lines drawn for the attributes: A_UNDERLINE, A_LEFT and
    A_RIGHT. A value of -1 (the default) indicates that the current
@@ -89,8 +99,13 @@ color
 
 ### Return Value
 
-   All functions return OK on success and ERR on error, except for
-   has_colors() and can_change_colors(), which return TRUE or FALSE.
+   Most functions return OK on success and ERR on error. has_colors()
+   and can_change_colors() return TRUE or FALSE. alloc_pair() and
+   find_pair() return a pair number, or -1 on error.
+
+
+
+
 
 ### Portability
                              X/Open  ncurses  NetBSD
@@ -101,7 +116,10 @@ color
     can_change_color            Y       Y       Y
     init_color                  Y       Y       Y
     color_content               Y       Y       Y
+    alloc_pair                  -       Y       -
     assume_default_colors       -       Y       Y
+    find_pair                   -       Y       -
+    free_pair                   -       Y       -
     use_default_colors          -       Y       Y
     PDC_set_line_color          -       -       -
 
@@ -172,12 +190,15 @@ static void _normalize(int *fg, int *bg)
         *bg = using_defaults ? SP->orig_back : _default_background_idx;
 }
 
+static int allocnum = 1;
+
 static void _init_pair_core(int pair, int fg, int bg)
 {
     PDC_PAIR *p;
 
     assert( SP->atrtab);
     assert( atrtab_size_alloced);
+    assert( pair < COLOR_PAIRS);
     if( pair >= atrtab_size_alloced)
     {
         int i, new_size = atrtab_size_alloced * 2;
@@ -188,7 +209,10 @@ static void _init_pair_core(int pair, int fg, int bg)
         assert( SP->atrtab);
         p = SP->atrtab + atrtab_size_alloced;
         for( i = new_size - atrtab_size_alloced; i; i--, p++)
+        {
             p->f = p->b = UNSET_COLOR_PAIR;
+            p->count = 0;
+        }
         atrtab_size_alloced = new_size;
     }
 
@@ -209,6 +233,7 @@ static void _init_pair_core(int pair, int fg, int bg)
     }
     p->f = fg;
     p->b = bg;
+    p->count = allocnum++;
 }
 
 int init_extended_pair(int pair, int fg, int bg)
@@ -389,4 +414,79 @@ int color_content( short color, short *red, short *green, short *blue)
         *blue  = (short)i_blue;
     }
     return( rval);
+}
+
+int find_pair( int fg, int bg)
+{
+    int i;
+
+    assert( SP);
+    assert( SP->atrtab);
+    assert( atrtab_size_alloced);
+    for( i = 1; i < atrtab_size_alloced; i++)
+        if( SP->atrtab[i].f == fg && SP->atrtab[i].b == bg)
+            return( i);
+    return( -1);
+}
+
+/* alloc_pair() first simply looks to see if the desired pair is
+already allocated.  If it has been,  we're done.
+   Otherwise,  we look within the allocated colors for an unused
+pair.  If we find one,  we'll use that.
+   Otherwise... it's still possible the allocated color table
+hasn't reached the COLOR_PAIRS size yet.  (Quite likely,  if
+COLOR_PAIRS = 2^20.)  In which case we'll use the next available
+color,  forcing the pair table to be resized in the process.
+   However,  we may simply have run out of color pairs (the
+"all pairs are in use" case commented below).  In that case,
+we look for the eldest pair (the one with the lowest allocation
+count).
+   ncurses does all this with a fast lookup table.  I don't
+really see much point to that,  but there are certainly ways
+this code could be more efficient if we came across a situation
+where performance was an issue.        */
+
+int alloc_pair( int fg, int bg)
+{
+    int rval = find_pair( fg, bg);
+
+    if( -1 == rval)        /* pair isn't already allocated.  First,  look */
+    {                      /* for an unset color pair. */
+        int i;
+
+        for( i = 1; rval < 0 && i < atrtab_size_alloced; i++)
+            if( SP->atrtab[i].f == UNSET_COLOR_PAIR)
+                rval = i;
+        if( -1 == rval)
+        {
+            if( COLOR_PAIRS == i)
+            {         /* all color pairs are in use */
+                 rval = 1;
+                 assert( atrtab_size_alloced >= COLOR_PAIRS);
+                 for( i = 2; i < atrtab_size_alloced; i++)
+                     if( SP->atrtab[i].count < SP->atrtab[rval].count)
+                         rval = i;
+            }
+            else     /* still have more colors;  just need to realloc tbl */
+               rval = i;
+        }
+        if( ERR == init_extended_pair( rval, fg, bg))
+            rval = -1;
+        assert( rval != -1);
+   }
+   return( rval);
+}
+
+int free_pair( int pair)
+{
+    assert( SP && SP->atrtab);
+    assert( pair >= 1 && pair < atrtab_size_alloced);
+    assert( SP->atrtab[pair].f != UNSET_COLOR_PAIR);
+    if (!SP || !SP->color_started || pair < 1 || pair >= atrtab_size_alloced
+               || SP->atrtab[pair].f == UNSET_COLOR_PAIR)
+        return ERR;
+
+    _init_pair_core(pair, UNSET_COLOR_PAIR, UNSET_COLOR_PAIR);
+    curscr->_clear = TRUE;
+    return OK;
 }
