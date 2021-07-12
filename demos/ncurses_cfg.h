@@ -27,6 +27,7 @@
 
 #define ExitProgram exit
 
+#define HAVE_ALLOC_PAIR 1
 #define HAVE_ASSUME_DEFAULT_COLORS 1
 #define HAVE_CURSES_VERSION 1
 #define HAVE_GETBEGX 1
@@ -74,3 +75,5 @@
    #define wcwidth PDC_wcwidth
    PDCEX int PDC_wcwidth( const int32_t ucs);
 #endif
+
+#define tigetstr( unused)    ((char *)(-1))

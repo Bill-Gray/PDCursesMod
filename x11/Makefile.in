@@ -535,7 +535,7 @@ xmas.o: $(demodir)/xmas.c
 
 ncurses_testdir	= $(HOME)/ncurses-6.2/test
 
-NCURSES_TESTS	= bs gdc hanoi knight tclock lrtest ncurses
+NCURSES_TESTS	= bs demo_new_pair gdc hanoi knight tclock lrtest ncurses
 
 ncurses_tests: $(NCURSES_TESTS)
 
@@ -552,6 +552,9 @@ gdc: gdc.o $(LIBCURSES)
 
 hanoi: hanoi.o $(LIBCURSES)
 	$(LINK) hanoi.o -o $@ $(LDFLAGS) -lm
+
+demo_new_pair: demo_new_pair.o $(LIBCURSES)
+	$(LINK) demo_new_pair.o -o $@ $(LDFLAGS)
 
 knight: knight.o $(LIBCURSES)
 	$(LINK) knight.o -o $@ $(LDFLAGS)
@@ -573,6 +576,9 @@ gdc.o: $(ncurses_testdir)/gdc.c $(PDCURSES_CURSES_H)
 
 hanoi.o: $(ncurses_testdir)/hanoi.c $(PDCURSES_CURSES_H)
 	$(BUILD) $(NCFLAGS) $(ncurses_testdir)/hanoi.c
+
+demo_new_pair.o: $(ncurses_testdir)/demo_new_pair.c $(PDCURSES_CURSES_H)
+	$(BUILD) $(NCFLAGS) $(ncurses_testdir)/demo_new_pair.c
 
 knight.o: $(ncurses_testdir)/knight.c $(PDCURSES_CURSES_H)
 	$(BUILD) $(NCFLAGS) $(ncurses_testdir)/knight.c
