@@ -211,15 +211,8 @@ int pnoutrefresh(WINDOW *w, int py, int px, int sy1, int sx1, int sy2, int sx2)
             memcpy(curscr->_y[sline] + sx1, w->_y[pline] + px,
                    num_cols * sizeof(chtype));
 
-            if ((curscr->_firstch[sline] == _NO_CHANGE)
-                || (curscr->_firstch[sline] > sx1))
-                curscr->_firstch[sline] = sx1;
-
-            if (sx2 > curscr->_lastch[sline])
-                curscr->_lastch[sline] = sx2;
-
-            w->_firstch[pline] = _NO_CHANGE; /* updated now */
-            w->_lastch[pline] = _NO_CHANGE;  /* updated now */
+            PDC_mark_cells_as_changed( curscr, sline, sx1, sx2);
+            PDC_set_changed_cells_range( w, pline, _NO_CHANGE, _NO_CHANGE);
         }
 
         sline++;

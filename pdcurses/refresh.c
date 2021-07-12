@@ -125,11 +125,8 @@ int wnoutrefresh(WINDOW *win)
                 if (last > curscr->_lastch[j])
                     curscr->_lastch[j] = last;
             }
-
-            win->_firstch[i] = _NO_CHANGE;  /* updated now */
         }
-
-        win->_lastch[i] = _NO_CHANGE;       /* updated now */
+        PDC_set_changed_cells_range( win, i, _NO_CHANGE, _NO_CHANGE);
     }
 
     if (win->_clear)
@@ -224,8 +221,7 @@ int doupdate(void)
                     first++;
             }
 
-            curscr->_firstch[y] = _NO_CHANGE;
-            curscr->_lastch[y] = _NO_CHANGE;
+            PDC_set_changed_cells_range( curscr, y, _NO_CHANGE, _NO_CHANGE);
         }
     }
 
@@ -284,10 +280,7 @@ int wredrawln(WINDOW *win, int start, int num)
         return ERR;
 
     for (i = start; i < start + num; i++)
-    {
-        win->_firstch[i] = 0;
-        win->_lastch[i] = win->_maxx - 1;
-    }
+        PDC_mark_line_as_changed( win, i);
 
     return OK;
 }

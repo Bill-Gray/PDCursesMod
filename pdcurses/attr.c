@@ -356,13 +356,7 @@ int wchgat(WINDOW *win, int n, attr_t attr, short color, const void *opts)
     for (n = startpos; n <= endpos; n++)
         dest[n] = (dest[n] & A_CHARTEXT) | newattr;
 
-    n = win->_cury;
-
-    if (startpos < win->_firstch[n] || win->_firstch[n] == _NO_CHANGE)
-        win->_firstch[n] = startpos;
-
-    if (endpos > win->_lastch[n])
-        win->_lastch[n] = endpos;
+    PDC_mark_cells_as_changed( win, win->_cury, startpos, endpos);
 
     PDC_sync(win);
 

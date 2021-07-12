@@ -61,6 +61,45 @@ touch
 
 **man-end****************************************************************/
 
+void PDC_set_changed_cells_range( WINDOW *win, const int y, const int start, const int end)
+{
+    assert( win);
+    assert( y >= 0 && y < win->_maxy);
+    win->_firstch[y] = start;
+    win->_lastch[y] = end;
+}
+
+void PDC_mark_line_as_changed( WINDOW *win, const int y)
+{
+    assert( win);
+    assert( y >= 0 && y < win->_maxy);
+    win->_firstch[y] = 0;
+    win->_lastch[y] = win->_maxx - 1;
+}
+
+void PDC_mark_cells_as_changed( WINDOW *win, const int y, const int start, const int end)
+{
+    assert( win);
+    assert( y >= 0 && y < win->_maxy);
+    if( win->_firstch[y] == _NO_CHANGE)
+    {
+        win->_firstch[y] = start;
+        win->_lastch[y] = end;
+    }
+    else
+    {
+        if( win->_firstch[y] > start)
+            win->_firstch[y] = start;
+        if( win->_lastch[y] < end)
+            win->_lastch[y] = end;
+    }
+}
+
+void PDC_mark_cell_as_changed( WINDOW *win, const int y, const int x)
+{
+    PDC_mark_cells_as_changed( win, y, x, x);
+}
+
 int touchwin(WINDOW *win)
 {
     int i;
@@ -72,10 +111,7 @@ int touchwin(WINDOW *win)
         return ERR;
 
     for (i = 0; i < win->_maxy; i++)
-    {
-        win->_firstch[i] = 0;
-        win->_lastch[i] = win->_maxx - 1;
-    }
+        PDC_mark_line_as_changed( win, i);
 
     return OK;
 }
@@ -92,10 +128,7 @@ int touchline(WINDOW *win, int start, int count)
         return ERR;
 
     for (i = start; i < start + count; i++)
-    {
-        win->_firstch[i] = 0;
-        win->_lastch[i] = win->_maxx - 1;
-    }
+        PDC_mark_line_as_changed( win, i);
 
     return OK;
 }
@@ -111,10 +144,7 @@ int untouchwin(WINDOW *win)
         return ERR;
 
     for (i = 0; i < win->_maxy; i++)
-    {
-        win->_firstch[i] = _NO_CHANGE;
-        win->_lastch[i] = _NO_CHANGE;
-    }
+        PDC_set_changed_cells_range( win, i, _NO_CHANGE, _NO_CHANGE);
 
     return OK;
 }
@@ -133,15 +163,9 @@ int wtouchln(WINDOW *win, int y, int n, int changed)
     for (i = y; i < y + n; i++)
     {
         if (changed)
-        {
-            win->_firstch[i] = 0;
-            win->_lastch[i] = win->_maxx - 1;
-        }
+            PDC_mark_line_as_changed( win, i);
         else
-        {
-            win->_firstch[i] = _NO_CHANGE;
-            win->_lastch[i] = _NO_CHANGE;
-        }
+            PDC_set_changed_cells_range( win, i, _NO_CHANGE, _NO_CHANGE);
     }
 
     return OK;
@@ -199,10 +223,7 @@ int touchoverlap(const WINDOW *win1, WINDOW *win2)
     endx -= 1;
 
     for (y = starty; y < endy; y++)
-    {
-        win2->_firstch[y] = startx;
-        win2->_lastch[y] = endx;
-    }
+        PDC_set_changed_cells_range( win2, y, startx, endx);
 
     return OK;
 }

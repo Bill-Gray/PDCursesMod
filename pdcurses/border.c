@@ -203,11 +203,13 @@ int wborder(WINDOW *win, chtype ls, chtype rs, chtype ts, chtype bs,
     win->_y[ymax][0] = bl;
     win->_y[ymax][xmax] = br;
 
-    for (i = 0; i <= ymax; i++)
+    for (i = 1; i < ymax; i++)
     {
-        win->_firstch[i] = 0;
-        win->_lastch[i] = xmax;
+        PDC_mark_cell_as_changed( win, i, 0);
+        PDC_mark_cell_as_changed( win, i, xmax);
     }
+    PDC_set_changed_cells_range( win, 0, 0, xmax);
+    PDC_set_changed_cells_range( win, ymax, 0, xmax);
 
     PDC_sync(win);
 
@@ -250,11 +252,7 @@ int whline(WINDOW *win, chtype ch, int n)
 
     n = win->_cury;
 
-    if (startpos < win->_firstch[n] || win->_firstch[n] == _NO_CHANGE)
-        win->_firstch[n] = startpos;
-
-    if (endpos > win->_lastch[n])
-        win->_lastch[n] = endpos;
+    PDC_mark_cells_as_changed( win, n, startpos, endpos);
 
     PDC_sync(win);
 
@@ -306,12 +304,7 @@ int wvline(WINDOW *win, chtype ch, int n)
     for (n = win->_cury; n < endpos; n++)
     {
         win->_y[n][x] = ch;
-
-        if (x < win->_firstch[n] || win->_firstch[n] == _NO_CHANGE)
-            win->_firstch[n] = x;
-
-        if (x > win->_lastch[n])
-            win->_lastch[n] = x;
+        PDC_mark_cell_as_changed( win, n, x);
     }
 
     PDC_sync(win);

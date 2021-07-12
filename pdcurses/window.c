@@ -401,8 +401,7 @@ WINDOW *dupwin(WINDOW *win)
              ptr < new->_y[i] + ncols; ptr++, ptr1++)
             *ptr = *ptr1;
 
-        new->_firstch[i] = 0;
-        new->_lastch[i] = ncols - 1;
+        PDC_mark_line_as_changed( new, i);
     }
 
     new->_curx = win->_curx;

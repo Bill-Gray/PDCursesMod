@@ -60,10 +60,7 @@ int wdelch(WINDOW *win)
 
     win->_y[y][maxx] = win->_bkgd;
 
-    win->_lastch[y] = maxx;
-
-    if ((win->_firstch[y] == _NO_CHANGE) || (win->_firstch[y] > x))
-        win->_firstch[y] = x;
+    PDC_mark_cells_as_changed( win, y, x, maxx);
 
     PDC_sync(win);
 

@@ -502,21 +502,13 @@ int waddch( WINDOW *win, const chtype ch)
 
         text |= attr;
 
-        /* Only change _firstch/_lastch if the character to be added is
+        /* Only change 'dirty' cells if the character to be added is
            different from the character/attribute that is already in
            that position in the window. */
 
         if (win->_y[y][x] != text)
         {
-            if (win->_firstch[y] == _NO_CHANGE)
-                win->_firstch[y] = win->_lastch[y] = x;
-            else
-                if (x < win->_firstch[y])
-                    win->_firstch[y] = x;
-                else
-                    if (x > win->_lastch[y])
-                        win->_lastch[y] = x;
-
+            PDC_mark_cell_as_changed( win, y, x);
             win->_y[y][x] = text;
         }
 
