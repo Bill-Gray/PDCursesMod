@@ -164,6 +164,7 @@ int start_color(void)
         default_colors = TRUE;
 
     _init_pair_core( 0, _default_foreground_idx, _default_background_idx);
+    curscr->_clear = TRUE;
 #if defined( CHTYPE_64) && !defined(OS2) && !defined(DOS)
     if( COLORS >= 1024 && (long)INT_MAX > 1024L * 1024L)
         COLOR_PAIRS = 1024 * 1024;
@@ -196,6 +197,32 @@ static void _normalize(int *fg, int *bg)
 }
 
 static int allocnum = 1;
+
+/* When a color pair is reset,  all cells of that color should be
+marked for redrawing.  (One could simply set curscr->_clear = TRUE
+and redraw everything,  but it's slightly more efficient to redraw
+only the affected characters.)  The bitmask test involving A_COLOR
+is equivalent to 'if( pair == (int)PAIR_NUMBER( *line))',  but saves
+a few cycles by not shifting.   */
+
+static void _set_cells_to_refresh_for_pair_change( const int pair)
+{
+    int x, y;
+    const chtype mask = ((chtype)pair << PDC_COLOR_SHIFT);
+
+    assert( SP->lines);
+    assert( curscr && curscr->_y);
+    if( !curscr->_clear)
+        for( y = 0; y < SP->lines; y++)
+        {
+            chtype *line = curscr->_y[y];
+
+            assert( line);
+            for( x = 0; x < SP->cols; x++, line++)
+                if( !(( *line ^ mask) & A_COLOR))
+                    PDC_mark_cell_as_changed( curscr, y, x);
+        }
+}
 
 static void _init_pair_core(int pair, int fg, int bg)
 {
@@ -234,7 +261,7 @@ static void _init_pair_core(int pair, int fg, int bg)
     if (p->f != UNSET_COLOR_PAIR)
     {
         if (p->f != fg || p->b != bg)
-            curscr->_clear = TRUE;
+            _set_cells_to_refresh_for_pair_change( pair);
     }
     p->f = fg;
     p->b = bg;
@@ -251,7 +278,6 @@ int init_extended_pair(int pair, int fg, int bg)
         return ERR;
 
     _init_pair_core(pair, fg, bg);
-    curscr->_clear = TRUE;
     return OK;
 }
 
@@ -492,7 +518,6 @@ int free_pair( int pair)
         return ERR;
 
     _init_pair_core(pair, UNSET_COLOR_PAIR, UNSET_COLOR_PAIR);
-    curscr->_clear = TRUE;
     return OK;
 }
 
