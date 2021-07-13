@@ -224,6 +224,29 @@ static void _set_cells_to_refresh_for_pair_change( const int pair)
         }
 }
 
+/* Similarly,  if PDC_set_bold(),  PDC_set_blink(),  or
+PDC_set_line_color() is called (and changes the way in which text
+with those attributes is drawn),  the corresponding text should be
+marked for rewriting.   */
+
+void PDC_set_cells_to_refresh_for_attr_change( const chtype attr)
+{
+    int x, y;
+
+    assert( SP->lines);
+    assert( curscr && curscr->_y);
+    if( !curscr->_clear)
+        for( y = 0; y < SP->lines; y++)
+        {
+            chtype *line = curscr->_y[y];
+
+            assert( line);
+            for( x = 0; x < SP->cols; x++, line++)
+                if( !(*line & attr))
+                    PDC_mark_cell_as_changed( curscr, y, x);
+        }
+}
+
 static void _init_pair_core(int pair, int fg, int bg)
 {
     PDC_PAIR *p;
@@ -389,8 +412,10 @@ int PDC_set_line_color(short color)
     if (!SP || color < -1 || color >= COLORS)
         return ERR;
 
+    if( SP->line_color != color)
+        PDC_set_cells_to_refresh_for_attr_change(
+               A_OVERLINE | A_UNDERLINE | A_LEFTLINE | A_RIGHTLINE | A_STRIKEOUT);
     SP->line_color = color;
-    curscr->_clear = TRUE;
     return OK;
 }
 
