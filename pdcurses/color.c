@@ -26,6 +26,7 @@ color
     int find_pair( int fg, int bg);
     int free_pair( int pair);
     int use_default_colors(void);
+    void reset_color_pairs(void);
 
     int PDC_set_line_color(short color);
 
@@ -89,6 +90,10 @@ color
    exists. And alloc_pair() returns such a pair whether or not it was
    previously set, overwriting the oldest initialized pair if there are
    no free pairs.
+
+   reset_color_pairs(),  also from ncurses,  discards all color pair
+   information that was set with init_pair().  In practice,  this means
+   all color pairs except pair 0 become undefined.
 
    PDC_set_line_color() is used to set the color, globally, for the
    color of the lines drawn for the attributes: A_UNDERLINE, A_LEFT and
@@ -489,4 +494,12 @@ int free_pair( int pair)
     _init_pair_core(pair, UNSET_COLOR_PAIR, UNSET_COLOR_PAIR);
     curscr->_clear = TRUE;
     return OK;
+}
+
+void reset_color_pairs( void)
+{
+    assert( SP && SP->atrtab);
+    SP->atrtab = (PDC_PAIR *)realloc( SP->atrtab, sizeof( PDC_PAIR));
+    atrtab_size_alloced = 1;
+    curscr->_clear = TRUE;
 }

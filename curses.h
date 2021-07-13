@@ -1645,6 +1645,7 @@ PDCEX  bool    has_key(int);
 PDCEX  bool    is_keypad(const WINDOW *);
 PDCEX  bool    is_leaveok(const WINDOW *);
 PDCEX  bool    is_pad(const WINDOW *);
+PDCEX  void    reset_color_pairs( void);
 PDCEX  int     set_tabsize(int);
 PDCEX  int     use_default_colors(void);
 PDCEX  int     wresize(WINDOW *, int, int);
