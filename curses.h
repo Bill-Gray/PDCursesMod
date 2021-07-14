@@ -4,6 +4,7 @@
 
 #ifndef __PDCURSES__
 #define __PDCURSES__ 1
+#define __PDCURSESMOD__ 1
 
 /*man-start**************************************************************
 
@@ -39,7 +40,7 @@ Defined by this header:
 #define PDC_VER_CHANGE   3
 #define PDC_VER_YEAR   2021
 #define PDC_VER_MONTH    07
-#define PDC_VER_DAY      13
+#define PDC_VER_DAY      14
 
 #define PDC_STRINGIZE( x) #x
 #define PDC_stringize( x) PDC_STRINGIZE( x)
