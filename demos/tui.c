@@ -136,9 +136,6 @@ static void setcolor(WINDOW *win, chtype color)
 static void colorbox(WINDOW *win, chtype color, int hasbox)
 {
     int maxy;
-#ifndef PDCURSES
-    int maxx;
-#endif
     chtype attr = color & A_ATTR;  /* extract Bold, Reverse, Blink bits */
 
     setcolor(win, color);
@@ -152,11 +149,8 @@ static void colorbox(WINDOW *win, chtype color, int hasbox)
 
     werase(win);
 
-#ifdef PDCURSES
     maxy = getmaxy(win);
-#else
-    getmaxyx(win, maxy, maxx);
-#endif
+//  getmaxyx(win, maxy, maxx);
     if (hasbox && (maxy > 2))
         box(win, 0, 0);
 
@@ -369,14 +363,7 @@ void clsbody(void)
 
 int bodylen(void)
 {
-#ifdef PDCURSES
     return getmaxy(wbody);
-#else
-    int maxy, maxx;
-
-    getmaxyx(wbody, maxy, maxx);
-    return maxy;
-#endif
 }
 
 WINDOW *bodywin(void)
@@ -581,16 +568,8 @@ void startmenu(menu *mp, char *mtitle)
 
 static void repainteditbox(WINDOW *win, int x, char *buf)
 {
-#ifndef PDCURSES
-    int maxy;
-#endif
-    int maxx;
+    const int maxx = getmaxx(win);
 
-#ifdef PDCURSES
-    maxx = getmaxx(win);
-#else
-    getmaxyx(win, maxy, maxx);
-#endif
     werase(win);
     mvwprintw(win, 0, 0, "%s", padstr(buf, maxx));
     wmove(win, 0, x);
