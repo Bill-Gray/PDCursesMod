@@ -553,8 +553,8 @@ gdc: gdc.o $(LIBCURSES)
 hanoi: hanoi.o $(LIBCURSES)
 	$(LINK) hanoi.o -o $@ $(LDFLAGS) -lm
 
-demo_new_pair: demo_new_pair.o $(LIBCURSES)
-	$(LINK) demo_new_pair.o -o $@ $(LDFLAGS)
+demo_new_pair: demo_new_pair.o popup_msg.o terminfo.o $(LIBCURSES)
+	$(LINK) demo_new_pair.o popup_msg.o terminfo.o -o $@ $(LDFLAGS)
 
 knight: knight.o $(LIBCURSES)
 	$(LINK) knight.o -o $@ $(LDFLAGS)
@@ -582,6 +582,12 @@ demo_new_pair.o: $(ncurses_testdir)/demo_new_pair.c $(PDCURSES_CURSES_H)
 
 knight.o: $(ncurses_testdir)/knight.c $(PDCURSES_CURSES_H)
 	$(BUILD) $(NCFLAGS) $(ncurses_testdir)/knight.c
+
+popup_msg.o: $(ncurses_testdir)/popup_msg.c $(PDCURSES_CURSES_H)
+	$(BUILD) $(NCFLAGS) $(ncurses_testdir)/popup_msg.c
+
+terminfo.o: $(srcdir)/terminfo.c $(PDCURSES_CURSES_H)
+	$(BUILD) $(NCFLAGS) $(srcdir)/terminfo.c
 
 tclock.o: $(ncurses_testdir)/tclock.c $(PDCURSES_CURSES_H)
 	$(BUILD) $(NCFLAGS) $(ncurses_testdir)/tclock.c

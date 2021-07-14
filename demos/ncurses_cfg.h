@@ -14,7 +14,6 @@
 #define DATA_DIR "."
 #define NCURSES_CONST
 #define NCURSES_EXPORT(foo) foo
-#define popup_msg(bar, baz)
 
 #define RETSIGTYPE void
 #define TIME_WITH_SYS_TIME 1
@@ -76,4 +75,4 @@
    PDCEX int PDC_wcwidth( const int32_t ucs);
 #endif
 
-#define tigetstr( unused)    ((char *)(-1))
+char *tigetstr( const char *capname);

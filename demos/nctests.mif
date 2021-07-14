@@ -15,8 +15,8 @@ NCFLAGS         = $(DEMOFLAGS) -I$(demodir) -I$(ncurses_testdir)
 bs$(E): $(ncurses_testdir)/bs.c
 	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
 
-demo_new_pair$(E): $(ncurses_testdir)/demo_new_pair.c
-	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+demo_new_pair$(E): $(ncurses_testdir)/demo_new_pair.c $(ncurses_testdir)/popup_msg.c $(srcdir)/terminfo.c
+	$(BUILD) $(NCFLAGS) -o $@ $^ $(LDFLAGS)
 
 gdc$(E): $(ncurses_testdir)/gdc.c
 	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
