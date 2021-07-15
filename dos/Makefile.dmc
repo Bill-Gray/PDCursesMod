@@ -35,7 +35,7 @@ LIBCURSES   = pdcurses.lib
 BUILD      = $(CC) $(CFLAGS) $(CPPFLAGS)
 
 DEMOS      = testcurs.exe ozdemo.exe newtest.exe xmas.exe  \
-tuidemo.exe firework.exe ptest.exe rain.exe worm.exe
+speed.exe tuidemo.exe firework.exe init_col.exe ptest.exe rain.exe worm.exe
 
 all:    $(LIBCURSES) $(DEMOS)
 
@@ -58,7 +58,7 @@ PDCOBJS = pdcclip.obj pdcdisp.obj pdcgetsc.obj pdckbd.obj pdcscrn.obj \
 pdcsetsc.obj pdcutil.obj
 
 DEMOOBJS = testcurs.obj ozdemo.obj newtest.obj xmas.obj tuidemo.obj  \
-tui.obj firework.obj ptest.obj rain.obj worm.obj
+speed.obj tui.obj firework.obj init_col.obj ptest.obj rain.obj worm.obj
 
 $(LIBOBJS) $(PDCOBJS) : $(PDCURSES_HEADERS)
 $(PDCOBJS) : $(PDCURSES_DOS_H)
@@ -218,6 +218,9 @@ pdcutil.obj: $(osdir)\pdcutil.c
 firework.exe:   $(demodir)\firework.c
    $(DEMOBUILD)
 
+init_col.exe:   $(demodir)\init_col.c
+   $(DEMOBUILD)
+
 ozdemo.exe:    $(demodir)\ozdemo.c
    $(DEMOBUILD)
 
@@ -228,6 +231,9 @@ ptest.exe:      $(demodir)\ptest.c
    $(DEMOBUILD)
 
 rain.exe:       $(demodir)\rain.c
+   $(DEMOBUILD)
+
+speed.exe:      $(demodir)\speed.c
    $(DEMOBUILD)
 
 testcurs.exe:   $(demodir)\testcurs.c

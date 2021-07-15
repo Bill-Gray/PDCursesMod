@@ -15,7 +15,7 @@ endif
 
 demodir = ../demos
 
-DEMOS    = firework ozdemo newtest picsview ptest rain speed testcurs test_pan worm xmas
+DEMOS    = firework init_col newtest ozdemo picsview ptest rain speed testcurs test_pan worm xmas
 
 all: $(DEMOS) tuidemo
 

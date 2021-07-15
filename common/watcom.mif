@@ -101,7 +101,7 @@ LIBOBJS = addch.obj addchstr.obj addstr.obj attr.obj beep.obj bkgd.obj &
 PDCOBJS = pdcclip.obj pdcdisp.obj pdcgetsc.obj pdckbd.obj pdcscrn.obj &
     pdcsetsc.obj pdcutil.obj
 
-DEMOS = firework$(E) newtest$(E) ozdemo$(E) picsview$(E) ptest$(E) &
+DEMOS = firework$(E) init_col$(E) newtest$(E) ozdemo$(E) picsview$(E) ptest$(E) &
     rain$(E) speed$(E) test_pan$(E) testcurs$(E) tuidemo$(E) worm$(E) xmas$(E)
 
 PDCNAME = pdcurses
@@ -136,6 +136,7 @@ all:	$(PDCNAME).lib
     $(LINK) $(LDFLAGS) name $@ sys $(LTARGET) file $*.obj lib $(PDCNAME).lib $(ADDED_LIBS)
 
 build_dll_firework	= no
+build_dll_init_col	= no
 build_dll_newtest	= no
 build_dll_ozdemo	= no
 build_dll_picsview	= no
@@ -149,6 +150,7 @@ build_dll_worm		= no
 build_dll_xmas		= no
 
 firework$(E):	firework.obj $(PDCNAME).lib
+init_col$(E):	init_col.obj $(PDCNAME).lib
 newtest$(E):	newtest.obj $(PDCNAME).lib
 ozdemo$(E):	ozdemo.obj $(PDCNAME).lib
 picsview$(E): picsview.obj $(PDCNAME).lib

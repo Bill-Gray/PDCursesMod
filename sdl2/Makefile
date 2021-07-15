@@ -152,6 +152,9 @@ $(PDCOBJS) : %.o: $(osdir)/%.c
 firework$(E): $(demodir)/firework.c
 	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
 
+init_col$(E): $(demodir)/init_col.c
+	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
+
 ozdemo$(E): $(demodir)/ozdemo.c
 	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
 

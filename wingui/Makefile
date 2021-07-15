@@ -149,7 +149,7 @@ $(LIBOBJS) : %.o: $(srcdir)/%.c
 $(PDCOBJS) : %.o: $(osdir)/%.c
 	$(CC) -c $(CFLAGS) $<
 
-firework.exe newtest.exe ozdemo.exe picsview.exe \
+firework.exe init_col.exe newtest.exe ozdemo.exe picsview.exe \
 ptest.exe rain.exe speed.exe testcurs.exe test_pan.exe \
 version.exe worm.exe xmas.exe: %.exe: $(demodir)/%.c
 	$(CC) $(CFLAGS) -mwindows -o$@ $< $(LIBCURSES) $(EXELIBS)
