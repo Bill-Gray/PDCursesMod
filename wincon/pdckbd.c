@@ -440,6 +440,24 @@ static int _get_key_count(void)
     return num_keys;
 }
 
+typedef const char *(CDECL *wine_version_func)(void);
+
+static bool running_under_wine( void)
+{
+    int rval = -1;
+
+    if( -1 == rval)
+    {
+         HMODULE hntdll = GetModuleHandleA( "ntdll.dll");
+
+         if( GetProcAddress(hntdll, "wine_get_version") != (FARPROC)NULL)
+             rval = 1;
+         else
+             rval = 0;
+    }
+    return( (bool)rval);
+}
+
 /* _process_key_event returns -1 if the key in save_ip should be
    ignored. Otherwise it returns the keycode which should be returned
    by PDC_get_key(). save_ip must be a key event.
@@ -552,7 +570,22 @@ static int _process_key_event(void)
         key = enhanced ? ext_kptab[idx].alt : kptab[idx].alt;
 
     else
+    {
         key = enhanced ? ext_kptab[idx].normal : kptab[idx].normal;
+        if( running_under_wine( ))
+        {
+            size_t i;          /* Wine mangles some keys. */
+            static const int wine_remaps[] = {
+                        KEY_A1, KEY_HOME,       KEY_A3, KEY_PPAGE,
+                        KEY_C1, KEY_END,        KEY_C3, KEY_NPAGE,
+                        KEY_A2, KEY_UP,         KEY_C2, KEY_DOWN,
+                        KEY_B3, KEY_RIGHT,      KEY_B1, KEY_LEFT };
+
+            for( i = 0; i < sizeof( wine_remaps) / sizeof( wine_remaps[0]); i += 2)
+                if( key == wine_remaps[i])
+                    key = wine_remaps[i + 1];
+        }
+    }
 
     return key;
 }

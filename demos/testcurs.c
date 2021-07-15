@@ -178,9 +178,6 @@ int main(int argc, char *argv[])
             break;
 
         case KEY_UP:
-#ifdef KEY_A2
-        case KEY_A2:
-#endif
             old_option = new_option;
             new_option = (new_option == 0) ?
                 new_option : new_option - 1;
@@ -188,9 +185,6 @@ int main(int argc, char *argv[])
             break;
 
         case KEY_DOWN:
-#ifdef KEY_C2
-        case KEY_C2:
-#endif
             old_option = new_option;
             new_option = (new_option == MAX_OPTIONS - 1) ?
                 new_option : new_option + 1;
@@ -1595,7 +1589,8 @@ void colorTest(WINDOW *win)
         extended(tmarg);
 
 #if defined( PDCURSES)
-    if (can_change_color() && COLORS == ((1 << 24) + 256) && COLOR_PAIRS > 32768)
+    if (can_change_color() && (long)COLORS == ((1L << 24) + 256L)
+                      && (unsigned)COLOR_PAIRS > 32768)
         supergradient( tmarg);
 #endif
 
