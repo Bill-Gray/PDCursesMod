@@ -108,17 +108,15 @@ COMMAND command[MAX_OPTIONS] =
 };
 
 int width, height;
+static bool report_mouse_movement = FALSE;
 
 int main(int argc, char *argv[])
 {
     WINDOW *win;
-    int key, old_option = -1, new_option = 0;
+    int key, old_option = -1, new_option = 0, i;
     bool quit = FALSE;
 
-    if( argc == 2)
-       setlocale(LC_ALL, argv[1]);
-    else
-       setlocale(LC_ALL, "");
+    setlocale(LC_ALL, "");
 
 #ifdef PDCURSES
 #ifdef PDC_VER_MAJOR   /* so far only seen in 4.0+ */
@@ -129,6 +127,43 @@ int main(int argc, char *argv[])
     if (initTest(&win, argc, argv))
         return 1;
 
+    for( i = 1; i < argc; i++)
+        if( argv[i][0] == '-')
+            switch( argv[i][1])
+            {
+                case 'l': case 'L':
+                    setlocale( LC_ALL, argv[i] + 2);
+                    break;
+#ifdef PDCURSES
+                case 'b': case 'B':
+                    PDC_set_blink( TRUE);
+                    break;
+                case 'm': case 'M':
+                    PDC_return_key_modifiers( TRUE);
+                    break;
+                case 't':
+                    traceon( );
+                    break;
+#ifdef PDC_VER_MAJOR   /* so far only seen in 4.0+ */
+                case 'r':     /* allow user-resizable windows */
+                    {
+                        int min_lines, max_lines, min_cols, max_cols;
+
+                        if( sscanf( argv[i] + 2, "%d,%d,%d,%d",
+                                       &min_lines, &max_lines,
+                                       &min_cols, &max_cols) == 4)
+                            PDC_set_resize_limits( min_lines, max_lines,
+                                                   min_cols, max_cols);
+                    }
+                    break;
+#endif
+#endif
+                case 'z':
+                    report_mouse_movement = TRUE;
+                    break;
+                default:
+                    break;
+            }
 #ifdef A_COLOR
     if (has_colors())
     {
@@ -394,8 +429,8 @@ void inputTest(WINDOW *win)
     wtimeout(win, 200);
 
 #ifdef PDCURSES
-    mouse_set(ALL_MOUSE_EVENTS);
-    PDC_return_key_modifiers(TRUE);
+    mouse_set( ALL_MOUSE_EVENTS |
+            (report_mouse_movement ? REPORT_MOUSE_POSITION : 0));
 #endif
     curs_set(0);        /* turn cursor off */
 
@@ -444,28 +479,19 @@ void inputTest(WINDOW *win)
             else if (BUTTON_CHANGED(3))
                 button = 3;
 
-            if (button && (BUTTON_STATUS(button) &
-                BUTTON_MODIFIER_MASK))
-            {
-                waddstr(win, " Modifier(s):");
-
-                if (BUTTON_STATUS(button) & BUTTON_SHIFT)
-                    waddstr(win, " SHIFT");
-
-                if (BUTTON_STATUS(button) & BUTTON_CONTROL)
-                    waddstr(win, " CONTROL");
-
-                if (BUTTON_STATUS(button) & BUTTON_ALT)
-                    waddstr(win, " ALT");
-            }
-
-            line++;
             wmove(win, line, 5);
             wclrtoeol(win);
-            wprintw(win, "Button %d: ", button);
+            if( button)
+                wprintw(win, "Button %d: ", button);
 
             if (MOUSE_MOVED)
+            {
                 waddstr(win, "moved: ");
+                if( !button)
+                    button = 1;     /* to allow button modifiers to be read */
+            }
+            else if (MOUSE_POS_REPORT)
+                waddstr(win, "Posn report:");
             else if (MOUSE_WHEEL_UP)
                 waddstr(win, "wheel up: ");
             else if (MOUSE_WHEEL_DOWN)
@@ -486,7 +512,19 @@ void inputTest(WINDOW *win)
             else
                 waddstr(win, "released: ");
 
-            wprintw(win, "Position: Y: %d X: %d", MOUSE_Y_POS, MOUSE_X_POS);
+            if( BUTTON_STATUS(button) & BUTTON_MODIFIER_MASK)
+            {
+                if (BUTTON_STATUS(button) & BUTTON_SHIFT)
+                    waddstr(win, "SHIFT ");
+
+                if (BUTTON_STATUS(button) & BUTTON_CONTROL)
+                    waddstr(win, "CONTROL ");
+
+                if (BUTTON_STATUS(button) & BUTTON_ALT)
+                    waddstr(win, "ALT ");
+            }
+
+            wprintw(win, "Posn: Y: %d X: %d", MOUSE_Y_POS, MOUSE_X_POS);
         }
         else if (PDC_get_key_modifiers())
         {
