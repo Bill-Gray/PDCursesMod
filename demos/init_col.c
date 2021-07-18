@@ -47,7 +47,9 @@ it here just to allow testing of resettable default colors;  the
 -w command line switch causes the default background to be white
 and the default foreground to be black.   */
 
-void PDC_set_default_colors( const int, const int);
+#ifdef __PDCURSES__
+PDCEX void PDC_set_default_colors( const int, const int);
+#endif
 
 int main( const int argc, const char *argv[])
 {
@@ -63,7 +65,11 @@ int main( const int argc, const char *argv[])
                     break;
 #ifdef __PDCURSES__
                 case 'p':
+#ifdef _WIN32
+                    _putenv( "PDC_PRESERVE_SCREEN=1");
+#else
                     putenv( "PDC_PRESERVE_SCREEN=1");
+#endif
                     break;
                 case 'w':     /* switch defaults to be black text on white */
                     PDC_set_default_colors( COLOR_BLACK, COLOR_WHITE);

@@ -180,7 +180,7 @@ int start_color(void)
     return OK;
 }
 
-void PDC_set_default_colors( const int fg_idx, const int bg_idx)
+PDCEX void PDC_set_default_colors( const int fg_idx, const int bg_idx)
 {
    _default_foreground_idx = fg_idx;
    _default_background_idx = bg_idx;
