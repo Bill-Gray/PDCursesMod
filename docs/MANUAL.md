@@ -7,6 +7,7 @@ Define before inclusion (only those needed):
     PDC_RGB         if you want to use RGB color definitions
                     (Red = 1, Green = 2, Blue = 4) instead of BGR
     PDC_WIDE        if building / built with wide-character support
+    PDC_FORCE_UTF8  if forcing use of UTF8
     PDC_DLL_BUILD   if building / built as a Windows DLL
     PDC_NCMOUSE     to use the ncurses mouse API instead
                     of PDCurses' traditional mouse API
@@ -17,6 +18,10 @@ Defined by this header:
     PDC_BUILD       API build version
     PDC_VER_MAJOR   major version number
     PDC_VER_MINOR   minor version number
+    PDC_VER_CHANGE  version change number
+    PDC_VER_YEAR    year of version
+    PDC_VER_MONTH   month of version
+    PDC_VER_DAY     day of month of version
     PDC_VERDOT      version string
 
 
@@ -37,9 +42,9 @@ If CHTYPE_32 is #defined,  PDCurses uses a 32-bit integer for its chtype:
 There are 256 color pairs (8 bits), 8 bits for modifiers, and 16 bits
 for character data. The modifiers are bold, underline, right-line,
 left-line, italic, reverse and blink, plus the alternate character set
-indicator.
+indicator.  (This is the scheme used in 'traditional' PDCurses.)
 
-   By default,  a 64-bit chtype is used :
+   By default,  PDCursesMod uses 64-bit chtype :
 
 -------------------------------------------------------------------------------
 |63|62|..|53|52|..|34|33|32|31|30|29|28|..|22|21|20|19|18|17|16|..| 3| 2| 1| 0|
@@ -52,8 +57,9 @@ total),  and four more bits for attributes.  Three are currently used as
 A_OVERLINE, A_DIM, and A_STRIKEOUT;  one more is reserved for future use.
 Bits 33-52 are used to specify a color pair.  In theory,  there can be
 2^20 = 1048576 color pairs,  but as of 2021 May 27,  only WinGUI,  VT,  X11,
-and SDLn have COLOR_PAIRS = 1048576.  Other platforms may join them,  but
-some (DOS,  OS/2) simply do not have full-color capability.
+and SDLn have COLOR_PAIRS = 1048576.  Other platforms (DOSVGA,  Plan9,
+WinCon) may join them,  but some (DOS,  OS/2) simply do not have full-color
+capability.
 
    Bits 53-63 are currently unused.
 
@@ -556,6 +562,7 @@ border
     int mvvline_set(int y, int x, const cchar_t *wch, int n);
     int mvwhline_set(WINDOW *win, int y, int x, const cchar_t *wch, int n);
     int mvwvline_set(WINDOW *win, int y, int x, const cchar_t *wch, int n);
+    int PDC_set_box_type( const int box_type);
 
 ### Description
 
@@ -570,6 +577,11 @@ border
     tr    top right corner of border      ACS_URCORNER
     bl    bottom left corner of border    ACS_LLCORNER
     br    bottom right corner of border   ACS_LRCORNER
+
+   PDC_set_box_type() can reset these defaults to use the double-line
+   characters.  'box_type' can include the bitflag constants.
+   PDC_BOX_DOUBLED_V and/or PDC_BOX_DOUBLED_H.  The previously set
+   default box type is returned.
 
    hline() and whline() draw a horizontal line, using ch, starting from
    the current cursor position. The cursor position does not change. The
@@ -685,8 +697,12 @@ color
     int init_extended_color(int color, int red, int green, int blue);
     int extended_color_content(int color, int *red, int *green, int *blue);
 
+    int alloc_pair( int fg, int bg);
     int assume_default_colors(int f, int b);
+    int find_pair( int fg, int bg);
+    int free_pair( int pair);
     int use_default_colors(void);
+    void reset_color_pairs(void);
 
     int PDC_set_line_color(short color);
 
@@ -744,6 +760,17 @@ color
    variable PDC_ORIGINAL_COLORS is set at the time start_color() is
    called, that's equivalent to calling use_default_colors().
 
+   alloc_pair(), find_pair() and free_pair() are also from ncurses.
+   free_pair() marks a pair as unused; find_pair() returns an existing
+   pair with the specified foreground and background colors, if one
+   exists. And alloc_pair() returns such a pair whether or not it was
+   previously set, overwriting the oldest initialized pair if there are
+   no free pairs.
+
+   reset_color_pairs(),  also from ncurses,  discards all color pair
+   information that was set with init_pair().  In practice,  this means
+   all color pairs except pair 0 become undefined.
+
    PDC_set_line_color() is used to set the color, globally, for the
    color of the lines drawn for the attributes: A_UNDERLINE, A_LEFT and
    A_RIGHT. A value of -1 (the default) indicates that the current
@@ -753,8 +780,13 @@ color
 
 ### Return Value
 
-   All functions return OK on success and ERR on error, except for
-   has_colors() and can_change_colors(), which return TRUE or FALSE.
+   Most functions return OK on success and ERR on error. has_colors()
+   and can_change_colors() return TRUE or FALSE. alloc_pair() and
+   find_pair() return a pair number, or -1 on error.
+
+
+
+
 
 ### Portability
                              X/Open  ncurses  NetBSD
@@ -765,7 +797,10 @@ color
     can_change_color            Y       Y       Y
     init_color                  Y       Y       Y
     color_content               Y       Y       Y
+    alloc_pair                  -       Y       -
     assume_default_colors       -       Y       Y
+    find_pair                   -       Y       -
+    free_pair                   -       Y       -
     use_default_colors          -       Y       Y
     PDC_set_line_color          -       -       -
 
@@ -2630,6 +2665,49 @@ termattr
     killwchar                   Y       Y       Y
     term_attrs                  Y       Y       Y
     wordchar                    -       -       -
+
+
+
+--------------------------------------------------------------------------
+
+
+terminfo
+--------
+
+### Synopsis
+
+    int vidattr(chtype attr);
+    int vid_attr(attr_t attr, short color_pair, void *opt);
+    int vidputs(chtype attr, int (*putfunc)(int));
+    int vid_puts(attr_t attr, short color_pair, void *opt,
+    int (*putfunc)(int));
+
+    int del_curterm(TERMINAL *);
+    int putp(const char *);
+    int restartterm(const char *, int, int *);
+    TERMINAL *set_curterm(TERMINAL *);
+    int setterm(const char *term);
+    int setupterm(const char *, int, int *);
+    int tgetent(char *, const char *);
+    int tgetflag(const char *);
+    int tgetnum(const char *);
+    char *tgetstr(const char *, char **);
+    char *tgoto(const char *, int, int);
+    int tigetflag(const char *);
+    int tigetnum(const char *);
+    char *tigetstr(const char *);
+    char *tparm(const char *,long, long, long, long, long, long,
+                long, long, long);
+    int tputs(const char *, int, int (*)(int));
+
+### Description
+
+   These functions are currently implemented as stubs,
+   returning the appropriate errors and doing nothing else.
+
+### Portability
+                             X/Open    BSD    SYS V
+    mvcur                       Y       Y       Y
 
 
 
