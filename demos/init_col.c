@@ -38,7 +38,16 @@ claim to support the concept of an 'original' background and foreground.
 I've not checked yet to see how that works out in practice.  (In
 theory,  they use the same underlying code for the purpose as
 the VT flavor of PDCurses.  In theory,  practice and theory are
-the same.  In practice,  they usually aren't.)     */
+the same.  In practice,  they usually aren't.)
+
+   The following is really a 'private',  internal PDCurses function,
+declared in curspriv.h and normally called from PDC_scr_open() to
+force particular default foreground/background colors.  We use
+it here just to allow testing of resettable default colors;  the
+-w command line switch causes the default background to be white
+and the default foreground to be black.   */
+
+void PDC_set_default_colors( const int, const int);
 
 int main( const int argc, const char *argv[])
 {
@@ -52,9 +61,14 @@ int main( const int argc, const char *argv[])
                 case 'd':
                     show_text_without_start_color = 1;
                     break;
+#ifdef __PDCURSES__
                 case 'p':
                     putenv( "PDC_PRESERVE_SCREEN=1");
                     break;
+                case 'w':     /* switch defaults to be black text on white */
+                    PDC_set_default_colors( COLOR_BLACK, COLOR_WHITE);
+                    break;
+#endif
                 default:
                     fprintf( stderr, "Unrecognized option '%s'\n", argv[i]);
                     return( -1);
