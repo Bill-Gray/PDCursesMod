@@ -11,15 +11,15 @@ The main documentation for PDCurses is here:
 Also consult the README for each specific platform you'll be using:
 
 - [DOS]
+- [DOSVGA]
 - [OS/2]
+- [Plan9]
 - [SDL 1.x]
 - [SDL 2.x]
-- [Windows]
+- [VT]
+- [Windows in console mode (WinCon)]
+- [Windows in graphical mode (WinGUI)]
 - [X11]
-
-This directory also contains the files, CNAME and index.html, that
-create pdcurses.org, via GitHub.
-
 
 Building
 --------
@@ -38,8 +38,12 @@ The files in this directory are released to the public domain.
 [Manual]: MANUAL.md
 [History]: HISTORY.md
 [DOS]: ../dos/README.md
+[DOSVGA]: ../dosvga/README.md
 [OS/2]: ../os2/README.md
+[Plan9]: ../plan9/README.md
 [SDL 1.x]: ../sdl1/README.md
 [SDL 2.x]: ../sdl2/README.md
-[Windows]: ../wincon/README.md
+[VT]: ../vt/README.md
+[Windows console]: ../wincon/README.md
+[Windows graphical]: ../wingui/README.md
 [X11]: ../x11/README.md
