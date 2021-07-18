@@ -87,7 +87,7 @@ int     PDC_mouse_in_slk(int, int);
 void    PDC_slk_free(void);
 void    PDC_slk_initialize(void);
 void    PDC_sync(WINDOW *);
-void    PDC_set_default_colors( const int, const int);
+PDCEX void    PDC_set_default_colors( const int, const int);
 void    PDC_set_changed_cells_range( WINDOW *, const int y, const int start, const int end);
 void    PDC_mark_line_as_changed( WINDOW *win, const int y);
 void    PDC_mark_cells_as_changed( WINDOW *, const int y, const int start, const int end);
