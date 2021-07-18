@@ -164,7 +164,8 @@ int start_color(void)
         default_colors = TRUE;
 
     _init_pair_core( 0, _default_foreground_idx, _default_background_idx);
-    curscr->_clear = TRUE;
+    if( !SP->_preserve)
+        curscr->_clear = TRUE;
 #if defined( CHTYPE_64) && !defined(OS2) && !defined(DOS)
     if( COLORS >= 1024 && (long)INT_MAX > 1024L * 1024L)
         COLOR_PAIRS = 1024 * 1024;
