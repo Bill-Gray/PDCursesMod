@@ -1,5 +1,5 @@
 
-Changes since 4.2.0,  as of 2021 July 06
+Changes since 4.2.0,  as of 2021 July 17
 ========================================
 
 Major new features
@@ -15,6 +15,16 @@ Minor new features
    and they can now be built on VT,  WinCon,  and WinGUI (they already
    worked with X11 and SDLn).  f8dd18c0f2 4a71b26dd1 c8b67969d6
    edd97f38fd 68f1f1c299
+
+-  Added ncurses extension functions find_pair(), alloc_pair(), free_pair()
+   (see commit 19c14525e2) and reset_color_pairs() (534f24f547).
+
+-  To test the above ncurses extensions,  added support to build
+   'demo_new_pair' from the ncurses tests (commit d8951fadc9) and
+   a new PDCursesMod-specific 'init_col' demo (commit 7b4d38a0ee).
+   The latter also tests out handling of default colors and the
+   ability to preserve the screen background... which appears to
+   only work in the VT flavor,  and imperfectly there.
 
 -  SDLs now have strikeout and overlined text.  91b280f442  So does X11
    5e5cd29617
@@ -65,6 +75,11 @@ Minor new features
 
 Bug fixes
 ---------
+
+-  WinCon and WinGUI key tables didn't go far enough and could crash if some
+   unusual key codes were received.  See wmcbrine/PDCurses issue #118 (this
+   is mostly a copy of wmcbrine's fix as suggested by zingchen).   fe124295be
+   59aa2afce9
 
 -  SDL2 display did not update after restoring from iconified form.
    2bb4284597
