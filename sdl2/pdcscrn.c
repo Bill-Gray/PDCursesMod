@@ -48,17 +48,14 @@ static int PDC_shutdown_key[PDC_MAX_FUNCTION_KEYS] = { 0, 0, 0, 0, 0 };
    ->format->palette->ncolors may be greater than the actual size.
    To get the real palette size, some custom bitmap parsing is needed. */
 
-static SDL_Surface *_load_bmp_and_palette_size(SDL_RWops *bmp_rw, int *sizep)
+static SDL_Surface *_load_bmp_and_palette_size(SDL_RWops *bmp_rw, int *palette_size)
 {
     SDL_Surface *bmp = NULL;
-    int palette_size = -1;
     Sint64 start_offset;
 
+    *palette_size = -1;
     if (!bmp_rw)
-    {
-        *sizep = -1;
         return( NULL);
-    }
 
     start_offset = SDL_RWtell(bmp_rw);
 
@@ -68,7 +65,7 @@ static SDL_Surface *_load_bmp_and_palette_size(SDL_RWops *bmp_rw, int *sizep)
     {
         Uint32 header_size;
 
-        palette_size = bmp->format->palette->ncolors;
+        *palette_size = bmp->format->palette->ncolors;
 
         /* Offsets from https://en.wikipedia.org/wiki/BMP_file_format#DIB_header_(bitmap_information_header) */
         if (SDL_RWseek(bmp_rw, start_offset + 14, RW_SEEK_SET) < 0)
@@ -87,7 +84,7 @@ static SDL_Surface *_load_bmp_and_palette_size(SDL_RWops *bmp_rw, int *sizep)
 
             if (num_colors > 0 && num_colors <= (Uint32)INT_MAX &&
                 (int)num_colors <= bmp->format->palette->ncolors)
-                palette_size = (int)num_colors;
+                *palette_size = (int)num_colors;
             else
             {
                 /* Fall back to calculating num_colors from bits_per_pixel. */
@@ -102,14 +99,13 @@ static SDL_Surface *_load_bmp_and_palette_size(SDL_RWops *bmp_rw, int *sizep)
 
                 if (num_colors > 0 && num_colors <= (Uint32)INT_MAX &&
                     (int)num_colors <= bmp->format->palette->ncolors)
-                    palette_size = (int)num_colors;
+                    *palette_size = (int)num_colors;
             }
         }
     }
 
 error_reading:
     SDL_RWclose(bmp_rw);
-    *sizep = palette_size;
     return bmp;
 }
 
