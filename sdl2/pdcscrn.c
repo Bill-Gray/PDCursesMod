@@ -55,7 +55,10 @@ static SDL_Surface *_load_bmp_and_palette_size(SDL_RWops *bmp_rw, int *sizep)
     Sint64 start_offset;
 
     if (!bmp_rw)
-        goto error_rw;
+    {
+        *sizep = -1;
+        return( NULL);
+    }
 
     start_offset = SDL_RWtell(bmp_rw);
     if (start_offset < 0)
@@ -111,8 +114,6 @@ static SDL_Surface *_load_bmp_and_palette_size(SDL_RWops *bmp_rw, int *sizep)
 
 error_reading:
     SDL_RWclose(bmp_rw);
-
-error_rw:
     *sizep = palette_size;
     return bmp;
 }
