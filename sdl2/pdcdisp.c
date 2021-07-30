@@ -75,7 +75,7 @@ void PDC_update_rects(void)
 static SDL_Color *get_pdc_color( const int color_idx)
 {
     static SDL_Color c;
-    const PACKED_RGB rgb = PDC_get_palette_entry( color_idx);
+    const PACKED_RGB rgb = PDC_get_palette_entry( color_idx > 0 ? color_idx : 0);
 
     c.r = Get_RValue( rgb);
     c.g = Get_GValue( rgb);
