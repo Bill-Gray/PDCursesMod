@@ -61,15 +61,10 @@ static SDL_Surface *_load_bmp_and_palette_size(SDL_RWops *bmp_rw, int *sizep)
     }
 
     start_offset = SDL_RWtell(bmp_rw);
-    if (start_offset < 0)
-        goto error_reading;
-
-    bmp = SDL_LoadBMP_RW(bmp_rw, 0);
-    if (!bmp)
-        goto error_reading;
 
     /* Non-monochromatic bitmaps only */
-    if (bmp->format->palette)
+    if( start_offset >= 0 && (bmp = SDL_LoadBMP_RW(bmp_rw, 0)) != NULL
+                            && bmp->format->palette)
     {
         Uint32 header_size;
 
