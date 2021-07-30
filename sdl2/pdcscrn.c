@@ -63,48 +63,41 @@ static SDL_Surface *_load_bmp_and_palette_size(SDL_RWops *bmp_rw, int *palette_s
     if( start_offset >= 0 && (bmp = SDL_LoadBMP_RW(bmp_rw, 0)) != NULL
                             && bmp->format->palette)
     {
-        Uint32 header_size;
-
         *palette_size = bmp->format->palette->ncolors;
 
         /* Offsets from https://en.wikipedia.org/wiki/BMP_file_format#DIB_header_(bitmap_information_header) */
-        if (SDL_RWseek(bmp_rw, start_offset + 14, RW_SEEK_SET) < 0)
-            goto error_reading;
-        header_size = SDL_ReadLE32(bmp_rw);
-
-        /* If the info header is at least 40 bytes in size, palette size
-           information is available. */
-        if (header_size >= 40)
+        if (SDL_RWseek(bmp_rw, start_offset + 14, RW_SEEK_SET) >= 0)
         {
-            Uint32 num_colors;
+            const Uint32 header_size = SDL_ReadLE32(bmp_rw);
 
-            if (SDL_RWseek(bmp_rw, start_offset + 46, RW_SEEK_SET) < 0)
-                goto error_reading;
-            num_colors = SDL_ReadLE32(bmp_rw);
-
-            if (num_colors > 0 && num_colors <= (Uint32)INT_MAX &&
-                (int)num_colors <= bmp->format->palette->ncolors)
-                *palette_size = (int)num_colors;
-            else
+            /* If the info header is at least 40 bytes in size, palette size
+               information is available. */
+            if (header_size >= 40
+                    && SDL_RWseek(bmp_rw, start_offset + 46, RW_SEEK_SET) >= 0)
             {
-                /* Fall back to calculating num_colors from bits_per_pixel. */
-
-                Uint16 bits_per_pixel;
-
-                if (SDL_RWseek(bmp_rw, start_offset + 28, RW_SEEK_SET) < 0)
-                    goto error_reading;
-                bits_per_pixel = SDL_ReadLE16(bmp_rw);
-
-                num_colors = (Uint32)1 << bits_per_pixel;
+                Uint32 num_colors = SDL_ReadLE32(bmp_rw);
 
                 if (num_colors > 0 && num_colors <= (Uint32)INT_MAX &&
                     (int)num_colors <= bmp->format->palette->ncolors)
-                    *palette_size = (int)num_colors;
+                         *palette_size = (int)num_colors;
+                else
+                {
+                    /* Fall back to calculating num_colors from bits_per_pixel. */
+
+                    if (SDL_RWseek(bmp_rw, start_offset + 28, RW_SEEK_SET) >= 0)
+                    {
+                        const Uint16 bits_per_pixel = SDL_ReadLE16(bmp_rw);
+
+                        num_colors = (Uint32)1 << bits_per_pixel;
+                        if (num_colors > 0 && num_colors <= (Uint32)INT_MAX &&
+                            (int)num_colors <= bmp->format->palette->ncolors)
+                                      *palette_size = (int)num_colors;
+                    }
+                }
             }
         }
     }
 
-error_reading:
     SDL_RWclose(bmp_rw);
     return bmp;
 }
