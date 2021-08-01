@@ -1,6 +1,6 @@
 # GNU MAKE Makefile for PDCurses library - OS/2 emx 0.9c+
 #
-# Usage: make -f [path\]Makefile [DEBUG=Y] [EMXVIDEO=Y] [DLL=Y] [target]
+# Usage: [g]make [-f path\Makefile] [DEBUG=Y] [EMXVIDEO=Y] [DLL=Y] [target]
 #
 # where target can be any of:
 # [all|demos|pdcurses.a|testcurs.exe...]
@@ -10,6 +10,7 @@
 
 O = o
 E = .exe
+RM = del
 
 ifndef PDCURSES_SRCDIR
 	PDCURSES_SRCDIR = ..
@@ -79,9 +80,10 @@ all:	libs demos
 libs:	$(PDCLIBS)
 
 clean:
-	-del *.o
-	-del *.exe
-	-del $(CLEAN)
+	-$(RM) *.o
+	-$(RM) *.a
+	-$(RM) *.exe
+	-$(RM) $(CLEAN)
 
 demos:	$(DEMOS)
 

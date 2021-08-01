@@ -1,4 +1,4 @@
-# Makefile for PDCurses library for VT
+# GNU MAKE Makefile for PDCurses library for VT
 #
 # Usage: [g]make [DEBUG=Y] [WIDE=Y] [UTF8=Y] [target]
 #
@@ -8,24 +8,30 @@
 O = o
 
 ifndef PDCURSES_SRCDIR
-	PDCURSES_SRCDIR	= ..
+	PDCURSES_SRCDIR = ..
 endif
 
 osdir		= $(PDCURSES_SRCDIR)/vt
 common		= $(PDCURSES_SRCDIR)/common
 
+include $(common)/libobjs.mif
+
+RM		= rm -f
+
 # If your system doesn't have these, remove the defines here
 SFLAGS		= -DHAVE_VSNPRINTF -DHAVE_VSSCANF
 
+CFLAGS  = -Wall -Wextra -pedantic
 ifeq ($(DEBUG),Y)
-	CFLAGS  = -g -Wall -pedantic -DPDCDEBUG
+	CFLAGS  += -g -DPDCDEBUG
 else
-	CFLAGS  = -O2 -Wall -Wextra -pedantic
+	CFLAGS  += -O2
 endif
 
 ifeq ($(DOS),Y)
 	CFLAGS	+= -DDOS
 	E = .exe
+	RM = del
 else
 	CFLAGS	+= -fPIC
 endif
@@ -54,6 +60,7 @@ endif
 
 ifeq ($(OS),Windows_NT)
 	E = .exe
+	RM = cmd /c del
 endif
 
 LIBFLAGS = rv
@@ -80,8 +87,6 @@ ifeq ($(DLL),Y)
 	endif
 endif
 
-include $(common)/libobjs.mif
-
 BUILD		= $(CC) $(CFLAGS) -I$(PDCURSES_SRCDIR)
 
 LINK		= $(CC)
@@ -95,11 +100,11 @@ all:	libs
 libs:	$(LIBCURSES)
 
 clean:
-	-rm -rf *.o trace $(LIBCURSES) $(DEMOS)
+	-$(RM) *.o trace $(LIBCURSES) $(DEMOS)
 
 demos:	libs $(DEMOS)
 ifneq ($(DEBUG),Y)
-	strip $(DEMOS)
+	$(STRIP) $(DEMOS)
 endif
 
 $(LIBCURSES) : $(LIBOBJS) $(PDCOBJS)
@@ -174,6 +179,6 @@ endif
 
 uninstall:
 ifneq ($(OS),Windows_NT)
-	rm /usr/local/lib/libpdcurses.so
+	$(RM) /usr/local/lib/libpdcurses.so
 	ldconfig /usr/local/lib
 endif

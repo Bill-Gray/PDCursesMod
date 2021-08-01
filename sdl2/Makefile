@@ -45,13 +45,15 @@ else
 endif
 
 CC		= $(PREFIX)gcc
+WINDRES		= windres
 
 PDCURSES_SDL_H	= $(osdir)/pdcsdl.h
 
+CFLAGS  = -Wall -Wextra -Werror -pedantic -fPIC
 ifeq ($(DEBUG),Y)
-	CFLAGS  = -g -Wall -Wextra -Werror -pedantic -DPDCDEBUG -fPIC
+	CFLAGS  += -g -DPDCDEBUG
 else
-	CFLAGS  += -O2 -Wall -Wextra -Werror -pedantic -fPIC
+	CFLAGS  += -O2
 endif
 
 ifeq ($(WIDE),Y)
@@ -127,7 +129,7 @@ endif
 
 uninstall:
 ifneq ($(OS),Windows_NT)
-	rm /usr/local/lib/libpdcurses.so
+	$(RM) /usr/local/lib/libpdcurses.so
 	ldconfig /usr/local/lib
 endif
 
@@ -135,7 +137,7 @@ $(LIBCURSES) : $(LIBOBJS) $(PDCOBJS) $(RESOURCE)
 	$(LIBEXE) $(LIBFLAGS) $@ $? $(LIBLIBS)
 
 pdcurses.o: $(common)/pdcurses.rc
-	windres -i $(common)/pdcurses.rc pdcurses.o
+	$(WINDRES) -i $(common)/pdcurses.rc pdcurses.o
 
 $(LIBOBJS) $(PDCOBJS) : $(PDCURSES_HEADERS)
 $(PDCOBJS) : $(PDCURSES_SDL_H)

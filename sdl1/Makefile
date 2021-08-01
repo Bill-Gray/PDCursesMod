@@ -6,19 +6,22 @@ ifndef PDCURSES_SRCDIR
 	PDCURSES_SRCDIR	= ..
 endif
 
-include $(PDCURSES_SRCDIR)/common/libobjs.mif
-
 osdir		= $(PDCURSES_SRCDIR)/sdl1
-
-PDCURSES_SDL_H	= $(osdir)/pdcsdl.h
+include $(PDCURSES_SRCDIR)/common/libobjs.mif
 
 SFLAGS		= $(shell sdl-config --cflags)
 SLIBS		= $(shell sdl-config --libs)
 
+CC		= gcc
+RM		= rm -f
+
+PDCURSES_SDL_H	= $(osdir)/pdcsdl.h
+
+CFLAGS  = -Wall -Wextra -Werror -pedantic -fPIC
 ifeq ($(DEBUG),Y)
-	CFLAGS  = -g -Wall -Wextra -Werror -pedantic -DPDCDEBUG -fPIC
+	CFLAGS  += -g -DPDCDEBUG
 else
-	CFLAGS  = -O2 -Wall -Wextra -Werror -pedantic -fPIC
+	CFLAGS  += -O2
 endif
 
 ifeq ($(WIDE),Y)
@@ -33,18 +36,19 @@ endif
 ifdef CHTYPE_32
 	CFLAGS += -DCHTYPE_32
 endif
-
-BUILD		= $(CC) $(CFLAGS) -I$(PDCURSES_SRCDIR)
-
-LINK		= $(CC)
 ifeq ($(DLL),Y)
 	LDFLAGS		= $(LIBCURSES_SO) $(SLIBS)
 else
 	LDFLAGS		= $(LIBCURSES) $(SLIBS)
 endif
+
 RANLIB		= ranlib
 LIBCURSES	= libpdcurses.a
 LIBCURSES_SO	= libpdcurses.so
+
+BUILD		= $(CC) $(CFLAGS) -I$(PDCURSES_SRCDIR)
+
+LINK		= $(CC)
 
 DEMOS		+= sdltest
 
@@ -55,7 +59,7 @@ all:	libs
 libs:	$(LIBCURSES) $(LIBCURSES_SO)
 
 clean:
-	-rm -rf *.o trace $(LIBCURSES) $(LIBCURSES_SO) $(DEMOS)
+	-$(RM) *.o trace $(LIBCURSES) $(LIBCURSES_SO) $(DEMOS)
 
 demos:	$(DEMOS)
 ifneq ($(DEBUG),Y)
