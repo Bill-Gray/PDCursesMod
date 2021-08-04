@@ -1,11 +1,11 @@
 
-Changes since 4.2.0,  as of 2021 July 17
+Changes since 4.2.0,  as of 2021 August 4
 ========================================
 
 Major new features
 ------------------
 
--  SDLs and X11 ports now supports full colors,  a la WinGUI and VT.
+-  SDLs and X11 ports now support full colors,  a la WinGUI and VT.
    a266f923ee, b63b36f9b8, fee4af28c8, 8606b96111
 
 Minor new features
@@ -83,6 +83,9 @@ Bug fixes
 
 -  SDL2 display did not update after restoring from iconified form.
    2bb4284597
+
+-  Both SDLs crashed if a background image was shown,  due to an out-of-bounds
+   array access.  e19ea211fc fbf4ea1fec
 
 -  DOS PDC_napms() failed for times greater than 18 minutes (would round
    time down to nearest multiple of 18 min).  acc1fa72fa

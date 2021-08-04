@@ -37,6 +37,7 @@ terminfo
 
    These functions are currently implemented as stubs,
    returning the appropriate errors and doing nothing else.
+   They are only compiled and used for certain ncurses tests.
 
 ### Portability
                              X/Open    BSD    SYS V
