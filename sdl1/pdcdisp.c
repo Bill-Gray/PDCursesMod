@@ -128,119 +128,90 @@ static void _set_attr(chtype ch)
 }
 
 #ifdef PDC_WIDE
-
 /* Draw some of the ACS_* "graphics" */
 
-bool _grprint(chtype ch, SDL_Rect dest)
+#define BIT_UP       1
+#define BIT_DN       2
+#define BIT_RT       4
+#define BIT_LT       8
+#define HORIZ   (BIT_LT | BIT_RT)
+#define VERTIC  (BIT_UP | BIT_DN)
+         /* Macros used for deciphering ACS_S1, ACS_S3, ACS_S7, ACS_S9     */
+#define Sn_CHARS      0x10
+#define SCAN_LINE( n)      (Sn_CHARS | ((n - 1) << 8))
+
+static bool _grprint(chtype ch, const SDL_Rect dest)
 {
-    Uint32 col = get_pdc_mapped( foregr);
-    int hmid = (pdc_fheight - pdc_fthick) >> 1;
-    int wmid = (pdc_fwidth - pdc_fthick) >> 1;
+    int i = 0;
+    bool rval;
+    const int remap_tbl[] = {
+            ACS_ULCORNER, BIT_DN | BIT_RT,   ACS_LLCORNER, BIT_UP | BIT_RT,
+            ACS_URCORNER, BIT_DN | BIT_LT,   ACS_LRCORNER, BIT_UP | BIT_LT,
+            ACS_LTEE, VERTIC | BIT_RT,       ACS_RTEE, VERTIC | BIT_LT,
+            ACS_TTEE, HORIZ | BIT_DN,        ACS_BTEE, HORIZ | BIT_UP,
+            ACS_HLINE, HORIZ,                ACS_VLINE, VERTIC,
+            ACS_PLUS, HORIZ | VERTIC,        ACS_BLOCK, 0,
+            ACS_S1, HORIZ | SCAN_LINE( 1),     ACS_S3, HORIZ | SCAN_LINE( 3),
+            ACS_S7, HORIZ | SCAN_LINE( 7),     ACS_S9, HORIZ | SCAN_LINE( 9),    0 };
 
-    switch (ch)
+    while( remap_tbl[i] && remap_tbl[i] != (int)ch)
+        i += 2;
+    if( remap_tbl[i] == (int)ch)
     {
-    case ACS_ULCORNER:
-        dest.h = pdc_fheight - hmid;
-        dest.y += hmid;
-        dest.w = pdc_fthick;
-        dest.x += wmid;
-        SDL_FillRect(pdc_screen, &dest, col);
-        dest.w = pdc_fwidth - wmid;
-        goto S1;
-    case ACS_LLCORNER:
-        dest.h = hmid;
-        dest.w = pdc_fthick;
-        dest.x += wmid;
-        SDL_FillRect(pdc_screen, &dest, col);
-        dest.w = pdc_fwidth - wmid;
-        dest.y += hmid;
-        goto S1;
-    case ACS_URCORNER:
-        dest.h = pdc_fheight - hmid;
-        dest.w = pdc_fthick;
-        dest.y += hmid;
-        dest.x += wmid;
-        SDL_FillRect(pdc_screen, &dest, col);
-        dest.w = wmid;
-        dest.x -= wmid;
-        goto S1;
-    case ACS_LRCORNER:
-        dest.h = hmid + pdc_fthick;
-        dest.w = pdc_fthick;
-        dest.x += wmid;
-        SDL_FillRect(pdc_screen, &dest, col);
-        dest.w = wmid;
-        dest.x -= wmid;
-        dest.y += hmid;
-        goto S1;
-    case ACS_LTEE:
-        dest.h = pdc_fthick;
-        dest.w = pdc_fwidth - wmid;
-        dest.x += wmid;
-        dest.y += hmid;
-        SDL_FillRect(pdc_screen, &dest, col);
-        dest.w = pdc_fthick;
-        dest.x -= wmid;
-        goto VLINE;
-    case ACS_RTEE:
-        dest.w = wmid;
-               /* FALLTHRU */
-    case ACS_PLUS:
-        dest.h = pdc_fthick;
-        dest.y += hmid;
-        SDL_FillRect(pdc_screen, &dest, col);
-               /* FALLTHRU */
-    VLINE:
-        dest.h = pdc_fheight;
-        dest.y -= hmid;
-               /* FALLTHRU */
-    case ACS_VLINE:
-        dest.w = pdc_fthick;
-        dest.x += wmid;
-        goto DRAW;
-    case ACS_TTEE:
-        dest.h = pdc_fheight - hmid;
-        dest.w = pdc_fthick;
-        dest.x += wmid;
-        dest.y += hmid;
-        SDL_FillRect(pdc_screen, &dest, col);
-        dest.w = pdc_fwidth;
-        dest.x -= wmid;
-        goto S1;
-    case ACS_BTEE:
-        dest.h = hmid;
-        dest.w = pdc_fthick;
-        dest.x += wmid;
-        SDL_FillRect(pdc_screen, &dest, col);
-        dest.w = pdc_fwidth;
-        dest.x -= wmid;
-               /* FALLTHRU */
-    case ACS_HLINE:
-        dest.y += hmid;
-        goto S1;
-    case ACS_S3:
-        dest.y += hmid >> 1;
-        goto S1;
-    case ACS_S7:
-        dest.y += hmid + (hmid >> 1);
-        goto S1;
-    case ACS_S9:
-        dest.y += pdc_fheight - pdc_fthick;
-               /* FALLTHRU */
-    case ACS_S1:
-    S1:
-        dest.h = pdc_fthick;
-               /* FALLTHRU */
-    case ACS_BLOCK:
-    DRAW:
-        SDL_FillRect(pdc_screen, &dest, col);
-        return TRUE;
-    default: ;
+        const int hmid = (pdc_fheight - pdc_fthick) >> 1;
+        const int wmid = (pdc_fwidth - pdc_fthick) >> 1;
+        const int mask = remap_tbl[i + 1];
+        SDL_Rect temp = dest;
+        const Uint32 col = get_pdc_mapped( foregr);
+
+        if( ch == ACS_BLOCK)
+            SDL_FillRect(pdc_screen, &temp, col);
+        if( mask & HORIZ)
+        {
+            temp.h = pdc_fthick;
+            if( mask & Sn_CHARS)    /* extract scan line for ACS_Sn characters */
+                temp.y += (mask >> 8) * hmid >> 2;
+            else
+                temp.y += hmid;
+            switch( mask & HORIZ)
+            {
+                case BIT_RT:
+                    temp.x += wmid;
+                    temp.w -= wmid;
+                    break;
+                case BIT_LT:
+                    temp.w = wmid + pdc_fthick;
+                    break;
+                case HORIZ:
+                    break;
+            }
+            SDL_FillRect(pdc_screen, &temp, col);
+        }
+        temp = dest;
+        if( mask & VERTIC)
+        {
+            temp.x += wmid;
+            temp.w = pdc_fthick;
+            switch( mask & VERTIC)
+            {
+                case BIT_DN:
+                    temp.y += hmid;
+                    temp.h -= hmid;
+                    break;
+                case BIT_UP:
+                    temp.h = hmid + pdc_fthick;
+                    break;
+                case VERTIC:
+                    break;
+            }
+            SDL_FillRect(pdc_screen, &temp, col);
+        }
+        rval = TRUE;
     }
-
-    return FALSE;  /* didn't draw it -- fall back to acs_map */
+    else
+        rval = FALSE;   /* didn't draw it -- fall back to acs_map */
+    return( rval);
 }
-
 #endif
 
 /* draw a cursor at (y, x) */
