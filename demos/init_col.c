@@ -47,7 +47,7 @@ it here just to allow testing of resettable default colors;  the
 -w command line switch causes the default background to be white
 and the default foreground to be black.   */
 
-#ifdef __PDCURSES__
+#ifdef __PDCURSESMOD__
 PDCEX void PDC_set_default_colors( const int, const int);
 #endif
 
@@ -71,9 +71,11 @@ int main( const int argc, const char *argv[])
                     putenv( "PDC_PRESERVE_SCREEN=1");
 #endif
                     break;
+#ifdef __PDCURSESMOD__
                 case 'w':     /* switch defaults to be black text on white */
                     PDC_set_default_colors( COLOR_BLACK, COLOR_WHITE);
                     break;
+#endif
 #endif
                 default:
                     fprintf( stderr, "Unrecognized option '%s'\n", argv[i]);
@@ -103,7 +105,7 @@ int main( const int argc, const char *argv[])
 
     init_pair( 1, COLOR_GREEN, COLOR_BLUE);
     attrset( COLOR_PAIR( 1));
-    mvaddstr( line++, 12, "This should be green text on blue.");
+    mvaddstr( line++, 12, "This should be  green text on blue.");
     attrset( COLOR_PAIR( 4));
     mvaddstr( line++, 2, "This uses an uninitialized color pair.  Its behavior is");
     mvaddstr( line++, 2, "undefined,  but it'll be red-on-blue in PDCurses.");
@@ -137,6 +139,7 @@ int main( const int argc, const char *argv[])
     mvaddstr( line++, 2, "Hit a key");
     getch( );
 
+#ifdef __PDCURSESMOD__
     reset_color_pairs( );
     mvaddstr( line++, 2, "And here's what things look like after reset_color_pairs().");
     mvaddstr( line++, 2, "We've discarded all color-pair info.  So all non-default");
@@ -144,6 +147,7 @@ int main( const int argc, const char *argv[])
     mvaddstr( line++, 2, "or red on blue (in PDCurses).");
     mvaddstr( line++, 2, "Hit a key");
     getch( );
+#endif
 
     endwin( );
     return( -1);
