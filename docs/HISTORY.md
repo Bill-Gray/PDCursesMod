@@ -1,5 +1,5 @@
 
-Changes since 4.2.0,  as of 2021 August 4
+PDCursesMod 4.3 - 2021 August 25
 ========================================
 
 Major new features
