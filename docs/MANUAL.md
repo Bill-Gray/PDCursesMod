@@ -703,6 +703,7 @@ color
     int free_pair( int pair);
     int use_default_colors(void);
     void reset_color_pairs(void);
+    void PDC_set_default_colors( const int fg_idx, const int bg_idx);
 
     int PDC_set_line_color(short color);
 
@@ -770,6 +771,16 @@ color
    reset_color_pairs(),  also from ncurses,  discards all color pair
    information that was set with init_pair().  In practice,  this means
    all color pairs except pair 0 become undefined.
+
+   VT and WinCon define 'default' colors to be those inherited from
+   the terminal;  SDLn defines them to be the colors of the background
+   image,  if any.  On all other platforms,  and on SDLn if there's no
+   background images,  the default background is black;  the default
+   foreground is white.  PDC_set_default_colors(),  a PDCursesMod-
+   specific function,  allows you to override this and define default
+   colors before calling initscr().  This was added for the Plan9
+   platform,  where the desired default is black text on a white
+   background,  but it can be used with any platform.
 
    PDC_set_line_color() is used to set the color, globally, for the
    color of the lines drawn for the attributes: A_UNDERLINE, A_LEFT and
@@ -2704,6 +2715,7 @@ terminfo
 
    These functions are currently implemented as stubs,
    returning the appropriate errors and doing nothing else.
+   They are only compiled and used for certain ncurses tests.
 
 ### Portability
                              X/Open    BSD    SYS V
