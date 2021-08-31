@@ -120,7 +120,8 @@ void PDC_reset_prog_mode( void)
     if( !PDC_is_ansi)
         PDC_puts_to_stdout( "\033[?1006h");    /* Set SGR mouse tracking,  if available */
 #endif
-    PDC_puts_to_stdout( "\033[?47h");      /* Save screen */
+    if( !SP->_preserve)
+       PDC_puts_to_stdout( "\033[?47h");      /* Save screen */
     PDC_puts_to_stdout( "\033" "7");         /* save cursor & attribs (VT100) */
 
     SP->_trap_mbe = _stored_trap_mbe;
@@ -330,6 +331,7 @@ int PDC_scr_open(void)
         return ERR;
     }
 
+    SP->_preserve = (getenv("PDC_PRESERVE_SCREEN") != NULL);
     PDC_reset_prog_mode();
     PDC_LOG(("PDC_scr_open exit\n"));
     return( 0);
