@@ -39,8 +39,8 @@ Defined by this header:
 #define PDC_VER_MINOR    3
 #define PDC_VER_CHANGE   0
 #define PDC_VER_YEAR   2021
-#define PDC_VER_MONTH    8
-#define PDC_VER_DAY     25
+#define PDC_VER_MONTH    9
+#define PDC_VER_DAY      1
 
 #define PDC_STRINGIZE( x) #x
 #define PDC_stringize( x) PDC_STRINGIZE( x)
@@ -151,7 +151,8 @@ enum PDC_port
     PDC_PORT_SDL2 = 6,
     PDC_PORT_VT = 7,
     PDC_PORT_DOSVGA = 8,
-   PDC_PORT_PLAN9 = 9
+    PDC_PORT_PLAN9 = 9,
+    PDC_PORT_LINUX_FB = 10
 };
 
 /* Use this structure with PDC_get_version() for run-time info about the

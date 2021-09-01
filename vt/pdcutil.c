@@ -25,7 +25,15 @@ void PDC_napms(int ms)
 
 const char *PDC_sysname(void)
 {
+#ifdef LINUX_FRAMEBUFFER_PORT
+   return( "LinuxFB");
+#else
    return( "VTx00");
+#endif
 }
 
+#ifdef LINUX_FRAMEBUFFER_PORT
+enum PDC_port PDC_port_val = PDC_PORT_LINUX_FB;
+#else
 enum PDC_port PDC_port_val = PDC_PORT_VT;
+#endif
