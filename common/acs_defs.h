@@ -195,6 +195,22 @@ they would enable rounded box corners when Unicode is available.
 #define BOX_LRROUNDED                     CHOOSE( 0xd9,  0x256f,   11)
 #define BOX_ULROUNDED                     CHOOSE( 0xda,  0x256d,   13)
 
+/* The following 'thick' box characters are also not currently implemented
+in PDCursesMod.  They are implemented (WACS only) in ncurses.  We
+_could_ put them in the first eleven entries of the acs_map[] array. */
+
+#define BOX_T_URCORNER                    CHOOSE( 0xbf,  0x2513,   12)
+#define BOX_T_LRCORNER                    CHOOSE( 0xd9,  0x251b,   11)
+#define BOX_T_ULCORNER                    CHOOSE( 0xda,  0x250f,   13)
+#define BOX_T_LLCORNER                    CHOOSE( 0xc0,  0x2517,   14)
+#define BOX_T_BTEE                        CHOOSE( 0xc1,  0x253b,   23)
+#define BOX_T_TTEE                        CHOOSE( 0xc2,  0x252f,   24)
+#define BOX_T_LTEE                        CHOOSE( 0xc3,  0x2523,   21)
+#define BOX_T_RTEE                        CHOOSE( 0xb4,  0x252b,   22)
+#define BOX_T_HLINE                       CHOOSE( 0xc4,  0x2501,   18)
+#define BOX_T_VLINE                       CHOOSE( 0xb3,  0x2503,   25)
+#define BOX_T_PLUS                        CHOOSE( 0xc5,  0x254b,   15)
+
       /* It says at http://unicode.org/charts/PDF/U2300.pdf */
       /* that '...the scan line numbers here refer to old,  */
       /* low-resolution technology for terminals, with only */
