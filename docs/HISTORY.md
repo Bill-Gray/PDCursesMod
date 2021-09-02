@@ -1,3 +1,10 @@
+Changes as of 2021 September 02
+===============================
+
+Major new features
+------------------
+
+-  Added a Linux framebuffer port.   dd5b99ce81 and many others.
 
 PDCursesMod 4.3 - 2021 August 25
 ========================================
