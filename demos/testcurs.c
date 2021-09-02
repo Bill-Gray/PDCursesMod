@@ -764,7 +764,8 @@ void outputTest(WINDOW *win)
     if (has_colors())
     {
         wclear(win);
-        mvwaddstr(win, 1, 1, "Colors should change after you press a key");
+        mvwaddstr(win, 1, 1, "This window should change to red text on a white");
+        mvwaddstr(win, 2, 1, "background after you press a key");
         Continue(win);
 
         init_pair(1, COLOR_RED, COLOR_WHITE);
