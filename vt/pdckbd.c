@@ -44,6 +44,9 @@ static bool check_key( int *c)
 
     if( PDC_resize_occurred)
        return( TRUE);
+#ifdef LINUX_FRAMEBUFFER_PORT
+    PDC_check_for_blinking( );
+#endif
     FD_ZERO( &rdset);
     FD_SET( STDIN, &rdset);
     timeout.tv_sec = 0;

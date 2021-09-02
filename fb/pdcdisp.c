@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <linux/fb.h>
 #include <unistd.h>
+#include <sys/time.h>
+#include <unistd.h>
 
 #define USE_UNICODE_ACS_CHARS 0
 
@@ -14,6 +16,65 @@
 #include "../dosvga/font.h"
 #include "../common/acs_defs.h"
 #include "../common/pdccolor.h"
+
+extern int PDC_blink_state;
+
+static int64_t _nanoseconds_since_1970( void)
+{
+   struct timeval now;
+   const int rv = gettimeofday( &now, NULL);
+   int64_t rval;
+   const int64_t one_billion = (int64_t)1000000000;
+
+   if( !rv)
+      rval = (int64_t)now.tv_sec * one_billion
+           + (int64_t)now.tv_usec * (int64_t)1000;
+   else
+      rval = 0;
+   return( rval);
+}
+
+/* Blinking of text and the cursor in this port has to be handled a
+little strangely.  "When possible",  we check to see if blink_interval
+nanoseconds (currently set to 0.5 seconds) has elapsed since the
+blinking text was drawn.  If it has,  we flip the PDC_blink_state
+bit and redraw all blinking text and the cursor.
+
+Currently,  "when possible" is in PDC_napms( ) and in check_key( )
+(see vt/pdckbd.c for the latter).  This does mean that if you set up
+some blinking text,  and then do some processor-intensive stuff and
+aren't checking for keyboard input,  the text will stop blinking. */
+
+void PDC_check_for_blinking( void)
+{
+   static int64_t prev_time = 0;
+   const int64_t t = _nanoseconds_since_1970( );
+   const int64_t blink_interval = (int64_t)500000000;
+
+   if( t > prev_time + blink_interval)
+   {
+      int x1, y, x2;
+
+      prev_time = t;
+      PDC_blink_state ^= 1;
+      for( y = 0; y < SP->lines; y++)
+      {
+         chtype *c = curscr->_y[y];
+
+         for( x1 = 0; x1 < SP->cols; x1++)
+            if( c[x1] & A_BLINK)
+            {
+               x2 = x1 + 1;
+               while( x2 < SP->cols && c[x2] & A_BLINK)
+                  x2++;
+               PDC_transform_line( y, x1, x2 - x1, c + x1);
+               x1 = x2;
+            }
+         if( SP->visibility && y == SP->cursrow)
+            PDC_transform_line( y, SP->curscol, 1, c + SP->curscol);
+      }
+   }
+}
 
                    /* Rarely,  writes to stdout fail if a signal handler is
                       called.  In which case we just try to write out the
@@ -127,7 +188,7 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
     extern struct fb_var_screeninfo PDC_vinfo;
     extern uint8_t *PDC_framebuf;
     const int font_char_size_in_bytes = (PDC_font_width + 7) >> 3;
-    int cursor_to_draw = SP->visibility & 0xff;
+    int cursor_to_draw = (PDC_blink_state ? SP->visibility & 0xff : (SP->visibility >> 8));
 
     assert( srcp);
     assert( x >= 0);
