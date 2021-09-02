@@ -137,33 +137,33 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
     assert( len > 0);
     if( lineno != SP->cursrow || x > SP->curscol || x + len < SP->curscol)
         cursor_to_draw = 0;      /* cursor won't be drawn */
-    if( PDC_vinfo.bits_per_pixel == 32)
+    while( len)
     {
-        const int line_len = PDC_finfo.line_length / sizeof( uint32_t);
-        uint32_t *tptr = (uint32_t *)PDC_framebuf + x * PDC_font_width
-               + lineno * PDC_font_height * line_len;
+        int run_len = 1;
+        PACKED_RGB fg, bg;
 
-        while( len)
+        PDC_get_rgb_values( *srcp & ~A_REVERSE, &fg, &bg);
+        if( fg == (PACKED_RGB)-1)   /* default foreground */
+            fg = 0xffffff;
+        fg = SWAP_RED_AND_BLUE( fg);
+        if( bg == (PACKED_RGB)-1)   /* default background */
+            bg = 0;
+        bg = SWAP_RED_AND_BLUE( bg);
+        if( *srcp & A_REVERSE)
         {
-            int run_len = 1;
-            PACKED_RGB fg, bg;
+            PACKED_RGB temp_rgb = fg;
 
-            PDC_get_rgb_values( *srcp & ~A_REVERSE, &fg, &bg);
-            if( fg == (PACKED_RGB)-1)   /* default foreground */
-                fg = 0xffffff;
-            fg = SWAP_RED_AND_BLUE( fg);
-            if( bg == (PACKED_RGB)-1)   /* default background */
-                bg = 0;
-            bg = SWAP_RED_AND_BLUE( bg);
-            if( *srcp & A_REVERSE)
-            {
-                PACKED_RGB temp_rgb = fg;
+            fg = bg;
+            bg = temp_rgb;
+        }
+        while( run_len < len && !((*srcp ^ srcp[run_len]) & A_ATTRIBUTES))
+            run_len++;
+        if( PDC_vinfo.bits_per_pixel == 32)
+        {
+            const int line_len = PDC_finfo.line_length / sizeof( uint32_t);
+            uint32_t *tptr = (uint32_t *)PDC_framebuf + x * PDC_font_width
+                   + lineno * PDC_font_height * line_len;
 
-                fg = bg;
-                bg = temp_rgb;
-            }
-            while( run_len < len && !((*srcp ^ srcp[run_len]) & A_ATTRIBUTES))
-                run_len++;
             while( run_len--)
             {
                 int ch = (int)( *srcp & A_CHARTEXT);
