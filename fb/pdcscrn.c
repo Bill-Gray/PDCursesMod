@@ -83,6 +83,12 @@ void PDC_save_screen_mode(int i)
     INTENTIONALLY_UNUSED_PARAMETER( i);
 }
 
+bool PDC_has_rgb_color = TRUE;
+struct fb_fix_screeninfo PDC_finfo;
+struct fb_var_screeninfo PDC_vinfo;
+uint8_t *PDC_framebuf;
+static int _framebuffer_fd;
+
 void PDC_scr_close( void)
 {
    _stored_trap_mbe = SP->_trap_mbe;
@@ -91,6 +97,8 @@ void PDC_scr_close( void)
    tcsetattr( STDIN, TCSANOW, &orig_term);
    PDC_doupdate( );
    PDC_puts_to_stdout( NULL);      /* free internal cache */
+   munmap( PDC_framebuf, PDC_finfo.smem_len);
+   close( _framebuffer_fd);
    return;
 }
 
@@ -116,30 +124,27 @@ static void sigintHandler( int sig)
 #define MAX_LINES 1000
 #define MAX_COLUMNS 1000
 
-bool PDC_has_rgb_color = TRUE;
-struct fb_fix_screeninfo PDC_finfo;
-struct fb_var_screeninfo PDC_vinfo;
-uint8_t *PDC_framebuf;
-
 int PDC_scr_open(void)
 {
     struct sigaction sa;
-    int fb = open( "/dev/fb0", O_RDWR), error;
+    int error;
     extern int PDC_font_width, PDC_font_height;
 
     PDC_LOG(("PDC_scr_open called\n"));
-    if (fb < 0)
+    _framebuffer_fd = open( "/dev/fb0", O_RDWR);
+    if( _framebuffer_fd < 0)
         return( -1);
 
-    error = ioctl(fb, FBIOGET_VSCREENINFO, &PDC_vinfo);
+    error = ioctl( _framebuffer_fd, FBIOGET_VSCREENINFO, &PDC_vinfo);
     if( error)
         return( -2);
    /*  Get fixed screen information */
-    error = ioctl(fb, FBIOGET_FSCREENINFO, &PDC_finfo);
+    error = ioctl( _framebuffer_fd, FBIOGET_FSCREENINFO, &PDC_finfo);
     if( error)
         return( -3);
 
-    PDC_framebuf = mmap(NULL, PDC_finfo.smem_len, PROT_READ | PROT_WRITE, MAP_SHARED, fb, 0);
+    PDC_framebuf = mmap(NULL, PDC_finfo.smem_len, PROT_READ | PROT_WRITE, MAP_SHARED,
+                  _framebuffer_fd, 0);
     if( PDC_framebuf == MAP_FAILED)
         return( -4);
     PDC_has_rgb_color = (PDC_vinfo.bits_per_pixel > 8);
