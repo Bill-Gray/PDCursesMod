@@ -9,6 +9,8 @@
 #include <fcntl.h>
 #include <linux/fb.h>
 #include "pdcfb.h"
+#include "psf.c"
+#include "../dosvga/font.h"
 
 static struct termios orig_term;
 
@@ -88,6 +90,8 @@ struct fb_fix_screeninfo PDC_finfo;
 struct fb_var_screeninfo PDC_vinfo;
 uint8_t *PDC_framebuf;
 static int _framebuffer_fd;
+struct font_info PDC_font_info;
+static uint8_t *_loaded_font_bytes;
 
 void PDC_scr_close( void)
 {
@@ -99,6 +103,13 @@ void PDC_scr_close( void)
    PDC_puts_to_stdout( NULL);      /* free internal cache */
    munmap( PDC_framebuf, PDC_finfo.smem_len);
    close( _framebuffer_fd);
+   if( _loaded_font_bytes)
+   {
+      free( _loaded_font_bytes);
+      _loaded_font_bytes = NULL;
+   }
+   if( PDC_font_info.unicode_info)
+      free( PDC_font_info.unicode_info);
    return;
 }
 
@@ -128,7 +139,7 @@ int PDC_scr_open(void)
 {
     struct sigaction sa;
     int error;
-    extern int PDC_font_width, PDC_font_height;
+    const char *font_filename = getenv( "PDC_FONT");
 
     PDC_LOG(("PDC_scr_open called\n"));
     _framebuffer_fd = open( "/dev/fb0", O_RDWR);
@@ -156,6 +167,44 @@ int PDC_scr_open(void)
     if (!SP || PDC_init_palette( ))
         return ERR;
 
+    load_psf_or_vgafont( &PDC_font_info, font_bytes, sizeof( font_bytes));
+    if( font_filename)
+    {
+        FILE *font_fp = fopen( font_filename, "rb");
+
+        if( font_fp)
+        {
+            uint8_t *buff;
+            long n_bytes;
+
+            fseek( font_fp, 0L, SEEK_END);
+            n_bytes = ftell( font_fp);
+            fseek( font_fp, 0L, SEEK_SET);
+            buff = (uint8_t *)malloc( n_bytes + 1);
+            buff[n_bytes] = '\0';
+            if( fread( buff, 1, n_bytes, font_fp) != (size_t)n_bytes)
+                return( -5);
+            fclose( font_fp);
+            if( !load_psf_or_vgafont( &PDC_font_info, buff, n_bytes))
+            {
+                uint32_t glyph_buff_size = PDC_font_info.n_glyphs * PDC_font_info.charsize;
+
+                _loaded_font_bytes = (uint8_t *)malloc( glyph_buff_size);
+
+                memcpy( _loaded_font_bytes, PDC_font_info.glyphs, glyph_buff_size);
+                PDC_font_info.glyphs = _loaded_font_bytes;
+            }
+            free( buff);
+        }
+#ifdef DEBUG
+        else
+        {
+            fprintf( stderr, "Couldn't open %s\n", font_filename);
+            exit( -1);
+        }
+#endif
+    }
+
     setbuf( stdin, NULL);
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = 0;
@@ -165,8 +214,8 @@ int PDC_scr_open(void)
         fprintf( stderr, "Sigaction (INT) failed\n");
         return( -1);
     }
-    PDC_cols = PDC_vinfo.xres / PDC_font_width;
-    PDC_rows = PDC_vinfo.yres / PDC_font_height;
+    PDC_cols = PDC_vinfo.xres / PDC_font_info.width;
+    PDC_rows = PDC_vinfo.yres / PDC_font_info.height;
     SP->mouse_wait = PDC_CLICK_PERIOD;
     SP->visibility = 0;                /* no cursor,  by default */
     SP->curscol = SP->cursrow = 0;

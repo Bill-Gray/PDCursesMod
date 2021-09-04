@@ -9,11 +9,15 @@
 #include <sys/time.h>
 #include <unistd.h>
 
-#define USE_UNICODE_ACS_CHARS 0
+#ifdef PDC_WIDE
+    #define USE_UNICODE_ACS_CHARS 1
+#else
+    #define USE_UNICODE_ACS_CHARS 0
+#endif
 
 #include "curspriv.h"
 #include "pdcfb.h"
-#include "../dosvga/font.h"
+#include "psf.h"
 #include "../common/acs_defs.h"
 #include "../common/pdccolor.h"
 
@@ -187,7 +191,8 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
     extern struct fb_fix_screeninfo PDC_finfo;
     extern struct fb_var_screeninfo PDC_vinfo;
     extern uint8_t *PDC_framebuf;
-    const int font_char_size_in_bytes = (PDC_font_width + 7) >> 3;
+    extern struct font_info PDC_font_info;
+    const int font_char_size_in_bytes = (PDC_font_info.width + 7) >> 3;
     int cursor_to_draw = (PDC_blink_state ? SP->visibility & 0xff : (SP->visibility >> 8));
 
     assert( srcp);
@@ -222,37 +227,42 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
         if( PDC_vinfo.bits_per_pixel == 32)
         {
             const int line_len = PDC_finfo.line_length / sizeof( uint32_t);
-            uint32_t *tptr = (uint32_t *)PDC_framebuf + x * PDC_font_width
-                   + lineno * PDC_font_height * line_len;
+            uint32_t *tptr = (uint32_t *)PDC_framebuf + x * PDC_font_info.width
+                   + lineno * PDC_font_info.height * line_len;
 
             while( run_len--)
             {
-                int ch = (int)( *srcp & A_CHARTEXT);
+                int ch = (int)( *srcp & A_CHARTEXT), glyph_idx;
 
                 if( (*srcp & A_ALTCHARSET) && ch < 0x80)
                     ch = (int)acs_map[ch & 0x7f];
                 if( ch < (int)' ' || (ch >= 0x80 && ch <= 0x9f))
                     ch = ' ';
-                if( ch > 0 && ch <= 0xff)
+                glyph_idx = find_psf_or_vgafont_glyph( &PDC_font_info, ch);
+                if( glyph_idx < 0)
+                    glyph_idx = find_psf_or_vgafont_glyph( &PDC_font_info, '?');
+                if( glyph_idx < 0)
+                    glyph_idx = 0;
+//              if( ch > 0 && ch <= 0xff)
                 {
                     uint32_t *fb_ptr = tptr;
                     int i, j, shift_point;
-                    const unsigned char *fontptr = font_bytes
-                         + ch * font_char_size_in_bytes * PDC_font_height;
+                    const unsigned char *fontptr = PDC_font_info.glyphs
+                         + glyph_idx * font_char_size_in_bytes * PDC_font_info.height;
                     unsigned mask = ((*srcp & A_BOLD) ? 0x180 : 0x80);
 
                     if( *srcp & A_ITALIC)
                     {
-                        shift_point = PDC_font_height / 2;
+                        shift_point = PDC_font_info.height / 2;
                         mask <<= 1;
                     }
                     else
                         shift_point = 9999;
-                    for( i = 0; i < PDC_font_height; i++)
+                    for( i = 0; i < (int)PDC_font_info.height; i++)
                     {
-                        for( j = 0; j < PDC_font_width; j++)
-                            *fb_ptr++ = ((*fontptr << j) & mask) ? fg : bg;
-                        fb_ptr += line_len - PDC_font_width;
+                        for( j = 0; j < (int)PDC_font_info.width; j++)
+                            *fb_ptr++ = ((fontptr[j >> 3] << (j & 7)) & mask) ? fg : bg;
+                        fb_ptr += line_len - PDC_font_info.width;
                         fontptr += font_char_size_in_bytes;
                         if( i == shift_point)
                            mask >>= 1;
@@ -260,54 +270,54 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
                     if( *srcp & A_UNDERLINE)
                     {
                         fb_ptr -= line_len;
-                        for( j = PDC_font_width; j; j--)
+                        for( j = PDC_font_info.width; j; j--)
                             *fb_ptr++ = fg;
                     }
                     if( *srcp & A_OVERLINE)
                     {
-                        for( j = PDC_font_width; j; j--)
+                        for( j = PDC_font_info.width; j; j--)
                             *tptr++ = fg;
-                        tptr -= PDC_font_width;
+                        tptr -= PDC_font_info.width;
                     }
                     if( *srcp & A_LEFTLINE)
                     {
                         fb_ptr = tptr;
-                        for( i = PDC_font_height; i; i--, fb_ptr += line_len)
+                        for( i = PDC_font_info.height; i; i--, fb_ptr += line_len)
                             *fb_ptr = fg;
                     }
                     if( *srcp & A_RIGHTLINE)
                     {
-                        fb_ptr = tptr + PDC_font_width - 1;
-                        for( i = PDC_font_height; i; i--, fb_ptr += line_len)
+                        fb_ptr = tptr + PDC_font_info.width - 1;
+                        for( i = PDC_font_info.height; i; i--, fb_ptr += line_len)
                             *fb_ptr = fg;
                     }
                     if( *srcp & A_STRIKEOUT)
                     {
-                        fb_ptr = tptr + (PDC_font_height / 2) * line_len;
-                        for( j = PDC_font_width; j; j--)
+                        fb_ptr = tptr + (PDC_font_info.height / 2) * line_len;
+                        for( j = PDC_font_info.width; j; j--)
                             *fb_ptr++ = fg;
                     }
                     if( x == SP->curscol && cursor_to_draw)
                     {
-                        int n_lines = PDC_font_height;
+                        int n_lines = PDC_font_info.height;
 
                         fb_ptr = tptr;
                         if( cursor_to_draw == 1)      /* bottom two lines */
                         {
-                            fb_ptr += line_len * (PDC_font_height - 2);
+                            fb_ptr += line_len * (PDC_font_info.height - 2);
                             n_lines = 2;
                         }
                         while( n_lines--)
                         {
-                            for( j = 0; j < PDC_font_width; j++, fb_ptr++)
+                            for( j = 0; j < (int)PDC_font_info.width; j++, fb_ptr++)
                                *fb_ptr = fg + bg - *fb_ptr;
-                            fb_ptr += line_len - PDC_font_width;
+                            fb_ptr += line_len - PDC_font_info.width;
                         }
                     }
                 }
                 srcp++;
                 len--;
-                tptr += PDC_font_width;
+                tptr += PDC_font_info.width;
                 x++;
             }
         }
