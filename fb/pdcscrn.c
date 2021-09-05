@@ -10,7 +10,11 @@
 #include <linux/fb.h>
 #include "pdcfb.h"
 #include "psf.c"
-#include "../dosvga/font.h"
+#ifdef PDC_WIDE
+   #include "lat2_vga.h"
+#else
+   #include "../dosvga/font.h"
+#endif
 
 static struct termios orig_term;
 
