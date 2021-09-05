@@ -63,7 +63,9 @@ int PDC_curs_set( int visibility)
         PDC_puts_to_stdout( CURSOR_OFF);
 #endif
     SP->visibility = visibility;
-#ifndef LINUX_FRAMEBUFFER_PORT
+#ifdef LINUX_FRAMEBUFFER_PORT
+    PDC_gotoyx( SP->cursrow, SP->curscol);
+#else
     if( !PDC_is_ansi)
     {
         const int vis1 = visibility & 0xff;
