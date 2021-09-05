@@ -40,7 +40,7 @@ Defined by this header:
 #define PDC_VER_CHANGE   0
 #define PDC_VER_YEAR   2021
 #define PDC_VER_MONTH    9
-#define PDC_VER_DAY      1
+#define PDC_VER_DAY      5
 
 #define PDC_STRINGIZE( x) #x
 #define PDC_stringize( x) PDC_STRINGIZE( x)
@@ -1085,7 +1085,8 @@ Some won't work in non-wide X11 builds (see 'acs_defs.h' for details). */
 #define ALT_DEL               (KEY_OFFSET + 0xde) /* alt-delete */
 #define ALT_INS               (KEY_OFFSET + 0xdf) /* alt-insert */
 #define CTL_UP                (KEY_OFFSET + 0xe0) /* ctl-up arrow */
-#define CTL_DOWN              (KEY_OFFSET + 0xe1) /* ctl-down arrow */
+#define CTL_DOWN              (KEY_OFFSET + 0xe1) /* ctl-down arrow: orig PDCurses def */
+#define CTL_DN                (KEY_OFFSET + 0xe1) /* ctl-down arrow: ncurses def */
 #define CTL_TAB               (KEY_OFFSET + 0xe2) /* ctl-tab */
 #define ALT_TAB               (KEY_OFFSET + 0xe3)
 #define ALT_MINUS             (KEY_OFFSET + 0xe4)
