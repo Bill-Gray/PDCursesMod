@@ -216,12 +216,12 @@ int main(int argc, char **argv)
     WINDOW *win;
     chtype save[80], ch;
     time_t seed;
-    const int width = 52, height = 22, msg_line = 9;
+    const int width = 52, height = 22;
     int w, x, y, i, j;
     const char *versions_1 =
-            " DOS, DOSVGA, OS/2, Plan 9, SDL 1/2,";
+            " DOS, DOSVGA, Linux framebuffer, OS/2, Plan 9,";
     const char *versions_2 =
-            " VT, Windows console & GUI, X11";
+            " SDL 1/2, VT, Windows console & GUI, X11";
     const char *hit_any_key =
             "       Type a key to continue or ESC to quit     ";
 
@@ -324,14 +324,11 @@ int main(int argc, char **argv)
         /* Display Australia map */
 
         wattrset(win, A_BOLD);
-        i = 0;
-
-        while (*AusMap[i])
+        for( i = 0; AusMap[i][0]; i++)
         {
             mvwaddstr(win, i + 1, 3, AusMap[i]);
             wrefresh(win);
             napms(100);
-            ++i;
         }
 
         init_pair(5, COLOR_BLUE, COLOR_WHITE);
@@ -345,19 +342,19 @@ int main(int argc, char **argv)
         /* Draw running messages */
 
         init_pair(6, COLOR_BLACK, COLOR_WHITE);
-        wattrset(win, COLOR_PAIR(6));
         w = width - 2;
         nodelay(win, TRUE);
-
-        mvwhline(win, msg_line, 1, ' ', w);
 
         for (j = 0; messages[j] != NULL; j++)
         {
             char *message = messages[j];
-            int msg_len = (int)strlen(message);
+            const int msg_len = (int)strlen(message);
             int stop = 0;
             int xpos, start, count;
+            const int msg_line = 8 + j % 3;
 
+            wattrset(win, COLOR_PAIR(6));
+            mvwhline(win, msg_line, 1, ' ', w);
             for (i = 0; i <= w + msg_len; i++)
             {
                 if (i < w)
@@ -388,6 +385,10 @@ int main(int argc, char **argv)
 
                 napms(100);
             }
+            wattrset(win, COLOR_PAIR(2));
+            wattrset(win, A_BOLD);
+            mvwhline( win, msg_line, 1, ' ', w);
+            mvwaddstr(win, msg_line, 3, AusMap[msg_line - 1]);
 
             if (stop)
                 break;
@@ -413,7 +414,7 @@ int main(int argc, char **argv)
         /* Put a message up; wait for a key */
 
         wattrset(win, COLOR_PAIR(5));
-        mvwaddstr(win, msg_line, 2, hit_any_key);
+        mvwaddstr(win, 9, 2, hit_any_key);
         wrefresh(win);
 
         if (WaitForUser() == '\033')
