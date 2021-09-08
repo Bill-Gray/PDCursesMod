@@ -33,152 +33,152 @@ static const unsigned short cp437_to_unicode[256] = {
    0x25b2,        /*  30 up triangle               */
    0x25bc,        /*  31 down triangle             */
 
-   32,    33,    34,    35,    36,    37,    38,    39,
-   40,    41,    42,    43,    44,    45,    46,    47,
-   48,    49,    50,    51,    52,    53,    54,    55,
-   56,    57,    58,    59,    60,    61,    62,    63,
-   64,    65,    66,    67,    68,    69,    70,    71,
-   72,    73,    74,    75,    76,    77,    78,    79,
-   80,    81,    82,    83,    84,    85,    86,    87,
-   88,    89,    90,    91,    92,    93,    94,    95,
-   96,    97,    98,    99,   100,   101,   102,   103,
-  104,   105,   106,   107,   108,   109,   110,   111,
-  112,   113,   114,   115,   116,   117,   118,   119,
-  120,   121,   122,   123,   124,   125,   126,
+   32,    33,    34,    35,    36,    37,    38,    39, /*  !"#$%&'  */
+   40,    41,    42,    43,    44,    45,    46,    47, /* ()*+,-./  */
+   48,    49,    50,    51,    52,    53,    54,    55, /* 01234567  */
+   56,    57,    58,    59,    60,    61,    62,    63, /* 89:;<=>?  */
+   64,    65,    66,    67,    68,    69,    70,    71, /* @ABCDEFG  */
+   72,    73,    74,    75,    76,    77,    78,    79, /* HIJKLMNO  */
+   80,    81,    82,    83,    84,    85,    86,    87, /* PQRSTUVW  */
+   88,    89,    90,    91,    92,    93,    94,    95, /* XYZ[\]^_  */
+   96,    97,    98,    99,   100,   101,   102,   103, /* `abcdefg  */
+  104,   105,   106,   107,   108,   109,   110,   111, /* hijklmno  */
+  112,   113,   114,   115,   116,   117,   118,   119, /* pqrstuvw  */
+  120,   121,   122,   123,   124,   125,   126,        /* xyz{|}~   */
 
    0x2302,        /*  127                          */
-   0x00c7,        /*  128                          */
-   0x00fc,        /*  129                          */
-   0x00e9,        /*  130                          */
-   0x00e2,        /*  131                          */
-   0x00e4,        /*  132                          */
-   0x00e0,        /*  133                          */
-   0x00e5,        /*  134                          */
-   0x00e7,        /*  135                          */
-   0x00ea,        /*  136                          */
-   0x00eb,        /*  137                          */
-   0x00e8,        /*  138                          */
-   0x00ef,        /*  139                          */
-   0x00ee,        /*  140                          */
-   0x00ec,        /*  141                          */
-   0x00c4,        /*  142                          */
-   0x00c5,        /*  143                          */
+   0x00c7,        /*  128 C cedilla                */
+   0x00fc,        /*  129 u umlaut                 */
+   0x00e9,        /*  130 e acute                  */
+   0x00e2,        /*  131 a circumflex             */
+   0x00e4,        /*  132 a umlaut                 */
+   0x00e0,        /*  133 a grave                  */
+   0x00e5,        /*  134 a ring                   */
+   0x00e7,        /*  135 c cedilla                */
+   0x00ea,        /*  136 e circumflex             */
+   0x00eb,        /*  137 e umlaut                 */
+   0x00e8,        /*  138 e grave                  */
+   0x00ef,        /*  139 i umlaut                 */
+   0x00ee,        /*  140 i circumflex             */
+   0x00ec,        /*  141 i grave                  */
+   0x00c4,        /*  142 A umlaut                 */
+   0x00c5,        /*  143 A ring                   */
 
-   0x00c9,        /*  144                          */
-   0x00e6,        /*  145                          */
-   0x00c6,        /*  146                          */
-   0x00f4,        /*  147                          */
-   0x00f5,        /*  148                          */
-   0x00f2,        /*  149                          */
-   0x00fb,        /*  150                          */
-   0x00f9,        /*  151                          */
-   0x00ff,        /*  152                          */
-   0x00d6,        /*  153                          */
-   0x00dc,        /*  154                          */
-   0x00a2,        /*  155                          */
-   0x00a3,        /*  156                          */
-   0x00a5,        /*  157                          */
-   0x20a7,        /*  158                          */
-   0x0192,        /*  159                          */
+   0x00c9,        /*  144 E acute                  */
+   0x00e6,        /*  145 ae ligature/ash          */
+   0x00c6,        /*  146 AE ligature/ash          */
+   0x00f4,        /*  147 o circumflex             */
+   0x00f5,        /*  148 o umlaut                 */
+   0x00f2,        /*  149 o grave                  */
+   0x00fb,        /*  150 u circumflex             */
+   0x00f9,        /*  151 u grave                  */
+   0x00ff,        /*  152 y umlaut                 */
+   0x00d6,        /*  153 O umlaut                 */
+   0x00dc,        /*  154 U umlaut                 */
+   0x00a2,        /*  155 cent                     */
+   0x00a3,        /*  156 sterling                 */
+   0x00a5,        /*  157 yen                      */
+   0x20a7,        /*  158 peseta                   */
+   0x0192,        /*  159 f with hook              */
 
-   0x00e1,        /*  160                          */
-   0x00ed,        /*  161                          */
-   0x00f3,        /*  162                          */
-   0x00fa,        /*  163                          */
-   0x00f1,        /*  164                          */
-   0x00d1,        /*  165                          */
-   0x00aa,        /*  166                          */
-   0x00ba,        /*  167                          */
-   0x00bf,        /*  168                          */
+   0x00e1,        /*  160 a acute                  */
+   0x00ed,        /*  161 i acute                  */
+   0x00f3,        /*  162 o acute                  */
+   0x00fa,        /*  163 u acute                  */
+   0x00f1,        /*  164 n tilde                  */
+   0x00d1,        /*  165 N tilde                  */
+   0x00aa,        /*  166 a ordinal                */
+   0x00ba,        /*  167 o ordinal                */
+   0x00bf,        /*  168 inverted question mark   */
    0x2310,        /*  169                          */
    0x00ac,        /*  170                          */
-   0x00bd,        /*  171                          */
-   0x00bc,        /*  172                          */
-   0x00a1,        /*  173                          */
-   0x00ab,        /*  174                          */
-   0x00bb,        /*  175                          */
+   0x00bd,        /*  171 vulgar 1/2               */
+   0x00bc,        /*  172 vulgar 1/4               */
+   0x00a1,        /*  173 inverted exclamation     */
+   0x00ab,        /*  174 left angle quote mark    */
+   0x00bb,        /*  175 right angle quote mark   */
 
-   0x2591,        /*  176                          */
-   0x2592,        /*  177                          */
-   0x2593,        /*  178                          */
-   0x2502,        /*  179                          */
-   0x2524,        /*  180                          */
-   0x2561,        /*  181                          */
-   0x2562,        /*  182                          */
-   0x2556,        /*  183                          */
-   0x2555,        /*  184                          */
-   0x2563,        /*  185                          */
-   0x2561,        /*  186                          */
-   0x2557,        /*  187                          */
-   0x255d,        /*  188                          */
-   0x255c,        /*  189                          */
-   0x255b,        /*  190                          */
-   0x2510,        /*  191                          */
+   0x2591,        /*  176 light shade              */
+   0x2592,        /*  177 medium shade             */
+   0x2593,        /*  178 dark shade               */
+   0x2502,        /*  179 vertical line            */
+   0x2524,        /*  180 right tee                */
+   0x2561,        /*  181 SD right tee             */
+   0x2562,        /*  182 DS right tee             */
+   0x2556,        /*  183 DS upper right corner    */
+   0x2555,        /*  184 SD upper right corner    */
+   0x2563,        /*  185 D right tee              */
+   0x2551,        /*  186 D vertical line          */
+   0x2557,        /*  187 D upper right corner     */
+   0x255d,        /*  188 D lower right corner     */
+   0x255c,        /*  189 DS lower right corner    */
+   0x255b,        /*  190 SD lower right corner    */
+   0x2510,        /*  191 upper right corner       */
 
-   0x2514,        /*  192                          */
-   0x2534,        /*  193                          */
-   0x252c,        /*  194                          */
-   0x251c,        /*  195                          */
-   0x2500,        /*  196                          */
-   0x253c,        /*  197                          */
-   0x255e,        /*  198                          */
-   0x255f,        /*  199                          */
-   0x255a,        /*  200                          */
-   0x2554,        /*  201                          */
-   0x2569,        /*  202                          */
-   0x2568,        /*  203                          */
-   0x2560,        /*  204                          */
-   0x2550,        /*  205                          */
-   0x256c,        /*  206                          */
-   0x2567,        /*  207                          */
+   0x2514,        /*  192 lower left corner        */
+   0x2534,        /*  193 bottom tee               */
+   0x252c,        /*  194 top tee                  */
+   0x251c,        /*  195 left tee                 */
+   0x2500,        /*  196 horizontal line          */
+   0x253c,        /*  197 plus                     */
+   0x255e,        /*  198 SD left tee              */
+   0x255f,        /*  199 DS left tee              */
+   0x255a,        /*  200 D lower left corner      */
+   0x2554,        /*  201 D upper left corner      */
+   0x2569,        /*  202 D bottom tee             */
+   0x2566,        /*  203 D top tee                */
+   0x2560,        /*  204 D left tee               */
+   0x2550,        /*  205 D horizontal line        */
+   0x256c,        /*  206 D plus                   */
+   0x2567,        /*  207 SD bottom tee            */
 
-   0x2568,        /*  208                          */
-   0x2564,        /*  209                          */
-   0x2565,        /*  210                          */
-   0x2559,        /*  211                          */
-   0x2558,        /*  212                          */
-   0x2552,        /*  213                          */
-   0x2553,        /*  214                          */
-   0x256b,        /*  215                          */
-   0x256a,        /*  216                          */
-   0x2518,        /*  217                          */
-   0x250c,        /*  218                          */
-   0x2588,        /*  219                          */
-   0x2584,        /*  220                          */
-   0x258c,        /*  221                          */
-   0x2590,        /*  222                          */
-   0x2580,        /*  223                          */
+   0x2568,        /*  208 DS bottom tee            */
+   0x2564,        /*  209 SD top tee               */
+   0x2565,        /*  210 DS top tee               */
+   0x2559,        /*  211 DS lower left corner     */
+   0x2558,        /*  212 SD lower left corner     */
+   0x2552,        /*  213 SD upper left corner     */
+   0x2553,        /*  214 DS upper left corner     */
+   0x256b,        /*  215 DS plus                  */
+   0x256a,        /*  216 SD plus                  */
+   0x2518,        /*  217 lower right corner       */
+   0x250c,        /*  218 upper left corner        */
+   0x2588,        /*  219 full block               */
+   0x2584,        /*  220 lower half block         */
+   0x258c,        /*  221 left half block          */
+   0x2590,        /*  222 right half block         */
+   0x2580,        /*  223 top half block           */
 
-   0x03b1,        /*  224                          */
-   0x00df,        /*  225                          */
-   0x0393,        /*  226                          */
-   0x03c0,        /*  227                          */
-   0x03a3,        /*  228                          */
-   0x03c3,        /*  229                          */
-   0x00b5,        /*  230                          */
-   0x03c4,        /*  231                          */
-   0x03a6,        /*  232                          */
-   0x0398,        /*  233                          */
-   0x03a9,        /*  234                          */
-   0x03b4,        /*  235                          */
-   0x221e,        /*  236                          */
-   0x036c,        /*  237                          */
-   0x03b5,        /*  238                          */
-   0x2229,        /*  239                          */
+   0x03b1,        /*  224 alpha                    */
+   0x00df,        /*  225 beta                     */
+   0x0393,        /*  226 gamma                    */
+   0x03c0,        /*  227 pi                       */
+   0x03a3,        /*  228 Sigma                    */
+   0x03c3,        /*  229 sigma                    */
+   0x00b5,        /*  230 mu                       */
+   0x03c4,        /*  231 tau                      */
+   0x03a6,        /*  232 Phi                      */
+   0x0398,        /*  233 theta                    */
+   0x03a9,        /*  234 Omega                    */
+   0x03b4,        /*  235 delta                    */
+   0x221e,        /*  236 infinity                 */
+   0x036c,        /*  237 psi                      */
+   0x03b5,        /*  238 epsilon                  */
+   0x2229,        /*  239 intersection             */
 
-   0x2261,        /*  240                          */
-   0x00b1,        /*  241                          */
-   0x2265,        /*  242                          */
-   0x2264,        /*  243                          */
-   0x2320,        /*  244                          */
-   0x2321,        /*  245                          */
-   0x00f7,        /*  246                          */
-   0x2248,        /*  247                          */
-   0x00b0,        /*  248                          */
-   0x2219,        /*  249                          */
-   0x00b7,        /*  250                          */
-   0x221a,        /*  251                          */
-   0x207f,        /*  252                          */
-   0x00b2,        /*  253                          */
-   0x25a0,        /*  254                          */
-   0x00a0 };      /*  255                          */
+   0x2261,        /*  240 triple bar               */
+   0x00b1,        /*  241 plus/minus               */
+   0x2265,        /*  242 greater than/equal to    */
+   0x2264,        /*  243 less than/equal to       */
+   0x2320,        /*  244 upper half integral sign */
+   0x2321,        /*  245 lower half integral sign */
+   0x00f7,        /*  246 division sign            */
+   0x2248,        /*  247 wavy (approx) equals sign*/
+   0x00b0,        /*  248 degree sign              */
+   0x2219,        /*  249 large bullet             */
+   0x00b7,        /*  250 small bullet             */
+   0x221a,        /*  251 square root              */
+   0x207f,        /*  252 superscript n            */
+   0x00b2,        /*  253 superscript 2            */
+   0x25a0,        /*  254 centered square          */
+   0x00a0 };      /*  255 non-breaking space       */
