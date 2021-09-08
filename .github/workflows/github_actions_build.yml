@@ -12,6 +12,8 @@ jobs:
       run: |
          cd vt
          make demos
+         cd ../fb
+         make UTF8=Y demos
 
   buildOSX:
     runs-on: macOS-latest
@@ -32,7 +34,7 @@ jobs:
       run: |
         call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
         cd wingui
-        nmake WIDE=Y UTF8=Y DLL=Y -f Makefile.vc demos
+        nmake UTF8=Y DLL=Y -f Makefile.vc demos
         cd ..\wincon
-        nmake WIDE=Y UTF8=Y DLL=Y -f Makefile.vc demos
+        nmake DLL=Y -f Makefile.vc demos
       shell: cmd
