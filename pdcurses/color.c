@@ -211,11 +211,12 @@ static void _normalize(int *fg, int *bg)
 static int allocnum = 1;
 
 /* When a color pair is reset,  all cells of that color should be
-marked for redrawing.  (One could simply set curscr->_clear = TRUE
-and redraw everything,  but it's slightly more efficient to redraw
-only the affected characters.)  The bitmask test involving A_COLOR
-is equivalent to 'if( pair == (int)PAIR_NUMBER( *line))',  but saves
-a few cycles by not shifting.   */
+redrawn. refresh() and doupdate() don't redraw for color pair changes,
+so we have to redraw that text specifically.  The following test is
+equivalent to 'if( pair == (int)PAIR_NUMBER( *line))',  but saves a
+few cycles by not shifting.  */
+
+#define USES_TARGET_PAIR( ch)  (!(((ch) ^ mask) & A_COLOR))
 
 static void _set_cells_to_refresh_for_pair_change( const int pair)
 {
@@ -230,16 +231,22 @@ static void _set_cells_to_refresh_for_pair_change( const int pair)
             chtype *line = curscr->_y[y];
 
             assert( line);
-            for( x = 0; x < SP->cols; x++, line++)
-                if( !(( *line ^ mask) & A_COLOR))
-                    PDC_mark_cell_as_changed( curscr, y, x);
+            for( x = 0; x < SP->cols; x++)
+                if( USES_TARGET_PAIR( line[x]))
+                {
+                    const int start_x = x++;
+
+                    while( x < SP->cols && USES_TARGET_PAIR( line[x]))
+                        x++;
+                    PDC_transform_line( y, start_x, x - start_x, line + start_x);
+                }
         }
 }
 
 /* Similarly,  if PDC_set_bold(),  PDC_set_blink(),  or
 PDC_set_line_color() is called (and changes the way in which text
 with those attributes is drawn),  the corresponding text should be
-marked for rewriting.   */
+redrawn.    */
 
 void PDC_set_cells_to_refresh_for_attr_change( const chtype attr)
 {
@@ -253,15 +260,22 @@ void PDC_set_cells_to_refresh_for_attr_change( const chtype attr)
             chtype *line = curscr->_y[y];
 
             assert( line);
-            for( x = 0; x < SP->cols; x++, line++)
+            for( x = 0; x < SP->cols; x++)
                 if( !(*line & attr))
-                    PDC_mark_cell_as_changed( curscr, y, x);
+                {
+                    const int start_x = x++;
+
+                    while( x < SP->cols && !(*line & attr))
+                        x++;
+                    PDC_transform_line( y, start_x, x - start_x, line + start_x);
+                }
         }
 }
 
 static void _init_pair_core(int pair, int fg, int bg)
 {
     PDC_PAIR *p;
+    bool refresh_pair;
 
     assert( SP->atrtab);
     assert( atrtab_size_alloced);
@@ -293,14 +307,12 @@ static void _init_pair_core(int pair, int fg, int bg)
 
     _normalize(&fg, &bg);
 
-    if (p->f != UNSET_COLOR_PAIR)
-    {
-        if (p->f != fg || p->b != bg)
-            _set_cells_to_refresh_for_pair_change( pair);
-    }
+    refresh_pair = (p->f != UNSET_COLOR_PAIR && (p->f != fg || p->b != bg));
     p->f = fg;
     p->b = bg;
     p->count = allocnum++;
+    if( refresh_pair)
+        _set_cells_to_refresh_for_pair_change( pair);
 }
 
 int init_extended_pair(int pair, int fg, int bg)
