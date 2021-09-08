@@ -162,7 +162,7 @@ static const unsigned short cp437_to_unicode[256] = {
    0x03a9,        /*  234 Omega                    */
    0x03b4,        /*  235 delta                    */
    0x221e,        /*  236 infinity                 */
-   0x036c,        /*  237 psi                      */
+   0x03c6,        /*  237 phi                      */
    0x03b5,        /*  238 epsilon                  */
    0x2229,        /*  239 intersection             */
 
