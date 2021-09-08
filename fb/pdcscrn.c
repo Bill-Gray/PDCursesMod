@@ -10,10 +10,10 @@
 #include <linux/fb.h>
 #include "pdcfb.h"
 #include "psf.c"
+#include "../dosvga/font.h"
 #ifdef PDC_WIDE
-   #include "lat2_vga.h"
+   #include "uni_info.h"
 #else
-   #include "../dosvga/font.h"
 #endif
 
 static struct termios orig_term;
@@ -209,6 +209,13 @@ int PDC_scr_open(void)
 #endif
     }
 
+#ifdef PDC_WIDE
+            /* If there's no Unicode info,  the font is probably a CP437 one. */
+            /* We can use the data in uni_info.h to make the translations. */
+    if( !PDC_font_info.unicode_info)
+       PDC_font_info.unicode_info =  _decipher_psf2_unicode_table(
+               _unicode_info, sizeof( _unicode_info), &PDC_font_info.unicode_info_size);
+#endif
     setbuf( stdin, NULL);
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = 0;

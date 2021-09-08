@@ -114,10 +114,56 @@ struct psf2_header {
 
 #define IS_UTF8_STARTING_BYTE( c) (!((c) & 0x80) || ((c) > 0xc1 && (c) < 0xf5))
 
+static uint32_t *_decipher_psf2_unicode_table( const uint8_t *buff, const size_t info_len,
+                     uint32_t *unicode_info_size)
+{
+   unsigned glyph_num = 0;
+   size_t i, n1 = 0;
+   uint32_t n_references_found = 0;
+   uint32_t *unicode_info, *tptr;
+
+   for( i = 0; i < info_len; i++)
+      if( IS_UTF8_STARTING_BYTE( buff[i]))
+         n1++;
+   unicode_info = tptr = (uint32_t *)malloc( n1 * 2 * sizeof( uint32_t));
+   for( i = 0; i < info_len; i++)
+      if( buff[i] == PSF2_SEPARATOR)
+         glyph_num++;
+      else if( buff[i] != PSF2_STARTSEQ)
+         {
+         unsigned cval;    /* decipher UTF8 value */
+
+         if( !(buff[i] & 0x80))           /* plain ASCII */
+            cval = (unsigned)buff[i];
+         else if( (buff[i] & 0xe0) == 0xc0) /* two-byte UTF8 : code */
+            {                               /* points U+80 to U+7FF */
+            cval = ((buff[i] & 0x1f) << 6) | (buff[i + 1] & 0x3f);
+            i++;
+            }
+         else
+            {           /* three-byte UTF: U+800 to U+FFFF */
+            cval = ((buff[i] & 0x0f) << 12) | ((buff[i + 1] & 0x3f) << 6) | (buff[i + 2] & 0x3f);
+            if( (buff[i] & 0xf0) == 0xf0)     /* Four-byte UTF:  */
+               {                              /* U+10000 and beyond (SMP) */
+               cval = (cval << 6) | (buff[i + 3] & 0x3f);
+               i++;
+               }
+            i += 2;
+            }
+         *tptr++ = cval;
+         *tptr++ = glyph_num;
+         n_references_found++;
+         }
+   qsort( unicode_info, n_references_found, 2 * sizeof( uint32_t),
+                           _compare_unicode_info);
+   *unicode_info_size = n_references_found;
+   return( unicode_info);
+}
+
+
 static int _load_psf2( struct font_info *f, const uint8_t *buff, const long filelen)
 {
    struct psf2_header hdr;
-   int n_references_found = 0;
 
    if( buff[0] != PSF2_MAGIC0 || buff[1] != PSF2_MAGIC1
             || buff[2] != PSF2_MAGIC2 || buff[3] != PSF2_MAGIC3)
@@ -132,49 +178,16 @@ static int _load_psf2( struct font_info *f, const uint8_t *buff, const long file
    f->glyphs = buff + f->headersize;
    if( hdr.flags & PSF2_HAS_UNICODE_TABLE)
       {
-      size_t i = (size_t)( hdr.headersize + hdr.length * hdr.charsize);
-      unsigned glyph_num = 0;
-      int j, n1 = 0;
-      uint32_t *tptr;
+      uint32_t start_of_unicode_data = hdr.headersize + hdr.length * hdr.charsize;
 
-      for( j = (int)i ; j < (int)filelen; j++)
-         if( IS_UTF8_STARTING_BYTE( buff[j]))
-            n1++;
-      f->unicode_info = tptr = (uint32_t *)malloc( n1 * 2 * sizeof( uint32_t));
-      for( ; i < (size_t)filelen; i++)
-         if( buff[i] == PSF2_SEPARATOR)
-            glyph_num++;
-         else if( buff[i] != PSF2_STARTSEQ)
-            {
-            unsigned cval;    /* decipher UTF8 value */
-
-            if( !(buff[i] & 0x80))           /* plain ASCII */
-               cval = (unsigned)buff[i];
-            else if( (buff[i] & 0xe0) == 0xc0) /* two-byte UTF8 : code */
-               {                               /* points U+80 to U+7FF */
-               cval = ((buff[i] & 0x1f) << 6) | (buff[i + 1] & 0x3f);
-               i++;
-               }
-            else
-               {           /* three-byte UTF: U+800 to U+FFFF */
-               cval = ((buff[i] & 0x0f) << 12) | ((buff[i + 1] & 0x3f) << 6) | (buff[i + 2] & 0x3f);
-               if( (buff[i] & 0xf0) == 0xf0)     /* Four-byte UTF:  */
-                  {                              /* U+10000 and beyond (SMP) */
-                  cval = (cval << 6) | (buff[i + 3] & 0x3f);
-                  i++;
-                  }
-               i += 2;
-               }
-            *tptr++ = cval;
-            *tptr++ = glyph_num;
-            n_references_found++;
-            }
-      qsort( f->unicode_info, n_references_found, 2 * sizeof( uint32_t),
-                              _compare_unicode_info);
+      f->unicode_info = _decipher_psf2_unicode_table( buff + start_of_unicode_data,
+               (size_t)( filelen - start_of_unicode_data), &f->unicode_info_size);
       }
    else
+      {
       f->unicode_info = NULL;
-   f->unicode_info_size = n_references_found;
+      f->unicode_info_size = 0;
+      }
    return( 0);
 }
 
