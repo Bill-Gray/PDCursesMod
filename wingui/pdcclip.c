@@ -134,6 +134,7 @@ int PDC_setclipboard_raw( const char *contents, long length,
     else
        memcpy((char *)buff, contents, (length + 1) * sizeof( wchar_t));
 #else
+    INTENTIONALLY_UNUSED_PARAMETER( translate_multibyte_to_wide_char);
     memcpy((char *)buff, contents, length);
     buff[length] = 0;      /* ensure null termination */
 #endif
