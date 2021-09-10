@@ -5,7 +5,7 @@ This directory contains source code to support PDCurses using the Linux framebuf
 
 This is in a primitive,  but largely working,  state. Shortcomings (which should be addressable) are :
 
-- It assumes 32 bits/pixel.  It should be relatively easy to support other bit depths with suitable changes to the `PDC_transform_line()` function in `pdcdisp.c`.
+- It assumes 8 or 32 bits/pixel.  It should be relatively easy to support other bit depths with suitable changes to the `PDC_transform_line()` function in `pdcdisp.c`,  but I don't currently have a system that supports 15-, 16-, or 24-bits per pixel.
 - The mouse is not supported,  at least not on my machine.  (I've never gotten the mouse to work in the Linux console.  Almost certainly something I'm doing wrong.)
 - Italic and bold fonts are synthesized from the given font,  but it would be relatively easy to let specific fonts be used for that purpose.
 
@@ -19,7 +19,7 @@ In no order :
 - Fix the above shortcomings.
 - Possibly display on multiple monitors,  and allow for rotated monitors.
 - Fallback fonts.
-- Fullwidth characters.  For these,  we may need one font that is,  say,  8 pixels wide (for most characters) and one that is 16 pixels wide for the fullwidth characters.
+- Fullwidth characters.  For these,  we may need one font that is,  say,  8 pixels wide (for most characters) and one that is 16 pixels wide for the fullwidth characters.  That may be an extension of the above task of having fallback fonts : "Didn't find the desired glyph in the 'normal' font?  Maybe it's in a fallback font."
 - Combining characters.  This may actually not be too difficult,  if ORring glyphs together works,  as it theoretically ought.
 - Resizing by selecting a different font.  You'd probably have to specify some fonts,  and could then switch among them with Ctrl-+ and Ctrl--.
 - Programmatic resizing through `resize_term()`,  both before and after calling `initscr()`.
@@ -29,7 +29,7 @@ In no order :
 Building
 --------
 
-Run `make` or `make WIDE=Y`. Add `DLL=Y` to get a shared library (.so) on *nix builds.  Run `make install` (you'll probably need to be root for this) to install the shared library.
+Run `make`, `make WIDE=Y`, or `make UTF8=Y`. Add `DLL=Y` to get a shared library (.so) on *nix builds.  Run `make install` (you'll probably need to be root for this) to install the shared library.
 
 Caveats
 -------
