@@ -171,6 +171,20 @@ void PDC_gotoyx( int row, int col)
     }
 }
 
+static const uint8_t *_get_glyph_bytes( struct font_info *font, int unicode_point)
+{
+    int glyph_idx = find_psf_or_vgafont_glyph( font, unicode_point);
+    const int font_char_size_in_bytes = (font->width + 7) >> 3;
+
+    if( glyph_idx < 0)
+        glyph_idx = find_psf_or_vgafont_glyph( font, '?');
+    if( glyph_idx < 0)
+        glyph_idx = 0;
+    return( font->glyphs + glyph_idx * font_char_size_in_bytes * font->height);
+}
+
+#define MAX_RUN 80
+
 const chtype MAX_UNICODE = 0x110000;
 
 /* see 'addch.c' for an explanation of how combining chars are handled. */
@@ -205,8 +219,17 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
         cursor_to_draw = 0;      /* cursor won't be drawn */
     while( len)
     {
-        int run_len = 1;
+        int run_len = 0, ch[MAX_RUN], shift_point;
         PACKED_RGB fg, bg;
+        unsigned mask0 = ((*srcp & A_BOLD) ? 0x180 : 0x80);
+
+        if( *srcp & A_ITALIC)
+        {
+            shift_point = PDC_font_info.height / 2;
+            mask0 <<= 1;
+        }
+        else
+            shift_point = 9999;
 
         PDC_get_rgb_values( *srcp & ~A_REVERSE, &fg, &bg);
         if( fg == (PACKED_RGB)-1)   /* default foreground */
@@ -222,42 +245,34 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
             fg = bg;
             bg = temp_rgb;
         }
-        while( run_len < len && !((*srcp ^ srcp[run_len]) & A_ATTRIBUTES))
-            run_len++;
+        while( run_len < len && run_len < MAX_RUN
+                     && !((*srcp ^ srcp[run_len]) & A_ATTRIBUTES))
+        {
+            int c = (int)( srcp[run_len] & A_CHARTEXT);
+
+            if( (srcp[run_len] & A_ALTCHARSET) && c < 0x80)
+                c = (int)acs_map[c & 0x7f];
+            else if( c < (int)' ' || (c >= 0x80 && c <= 0x9f))
+                c = ' ';
+            ch[run_len++] = c;
+        }
         if( PDC_vinfo.bits_per_pixel == 32)
         {
             const int line_len = PDC_finfo.line_length / sizeof( uint32_t);
+            int i;
             uint32_t *tptr = (uint32_t *)PDC_framebuf + x * PDC_font_info.width
                    + lineno * PDC_font_info.height * line_len;
 
-            while( run_len--)
+            for( i = 0; i < run_len; i++)
             {
-                int ch = (int)( *srcp & A_CHARTEXT), glyph_idx;
 
-                if( (*srcp & A_ALTCHARSET) && ch < 0x80)
-                    ch = (int)acs_map[ch & 0x7f];
-                if( ch < (int)' ' || (ch >= 0x80 && ch <= 0x9f))
-                    ch = ' ';
-                glyph_idx = find_psf_or_vgafont_glyph( &PDC_font_info, ch);
-                if( glyph_idx < 0)
-                    glyph_idx = find_psf_or_vgafont_glyph( &PDC_font_info, '?');
-                if( glyph_idx < 0)
-                    glyph_idx = 0;
-//              if( ch > 0 && ch <= 0xff)
+//              if( ch[i] > 0 && ch[i] <= 0xff)
                 {
+                    const uint8_t *fontptr = _get_glyph_bytes( &PDC_font_info, ch[i]);
                     uint32_t *fb_ptr = tptr;
-                    int i, j, shift_point;
-                    const unsigned char *fontptr = PDC_font_info.glyphs
-                         + glyph_idx * font_char_size_in_bytes * PDC_font_info.height;
-                    unsigned mask = ((*srcp & A_BOLD) ? 0x180 : 0x80);
+                    int i, j;
+                    unsigned mask = mask0;
 
-                    if( *srcp & A_ITALIC)
-                    {
-                        shift_point = PDC_font_info.height / 2;
-                        mask <<= 1;
-                    }
-                    else
-                        shift_point = 9999;
                     for( i = 0; i < (int)PDC_font_info.height; i++)
                     {
                         for( j = 0; j < (int)PDC_font_info.width; j++)
