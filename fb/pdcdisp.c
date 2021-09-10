@@ -336,6 +336,104 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
                 x++;
             }
         }
+        if( PDC_vinfo.bits_per_pixel == 8)
+        {
+            const int line_len = PDC_finfo.line_length; /* / sizeof( uint8_t); */
+            int i, integer_fg_idx, integer_bg_idx;
+            uint8_t fg_idx, bg_idx;
+            uint8_t *tptr = PDC_framebuf + x * PDC_font_info.width
+                   + lineno * PDC_font_info.height * line_len;
+            bool reverse_colors = ((*srcp & A_REVERSE) ? TRUE : FALSE);
+
+            extended_pair_content( (*srcp & A_COLOR) >> PDC_COLOR_SHIFT,
+                                   &integer_fg_idx, &integer_bg_idx);
+            if( *srcp & A_BLINK)
+            {
+//              if( !(SP->termattrs & A_BLINK))   /* convert 'blinking' to 'bold' */
+//                  intensify_backgnd = TRUE;
+                if( PDC_blink_state)
+                    reverse_colors ^= 1;
+            }
+            if( reverse_colors)
+            {
+            const int swapval = integer_fg_idx;
+            integer_fg_idx = integer_bg_idx;
+            integer_bg_idx = swapval;
+         }
+            fg_idx = (uint8_t)integer_fg_idx;
+            bg_idx = (uint8_t)integer_bg_idx;
+            for( i = 0; i < run_len; i++)
+            {
+//              if( ch[i] > 0 && ch[i] <= 0xff)
+                {
+                    const uint8_t *fontptr = _get_glyph_bytes( &PDC_font_info, ch[i]);
+                    uint8_t *fb_ptr = tptr;
+                    int i, j;
+                    unsigned mask = mask0;
+
+                    for( i = 0; i < (int)PDC_font_info.height; i++)
+                    {
+                        for( j = 0; j < (int)PDC_font_info.width; j++)
+                            *fb_ptr++ = ((fontptr[j >> 3] << (j & 7)) & mask) ? fg_idx : bg_idx;
+                        fb_ptr += line_len - PDC_font_info.width;
+                        fontptr += font_char_size_in_bytes;
+                        if( i == shift_point)
+                           mask >>= 1;
+                    }
+                    if( *srcp & A_UNDERLINE)
+                    {
+                        fb_ptr -= line_len;
+                        for( j = PDC_font_info.width; j; j--)
+                            *fb_ptr++ = fg_idx;
+                    }
+                    if( *srcp & A_OVERLINE)
+                    {
+                        for( j = PDC_font_info.width; j; j--)
+                            *tptr++ = fg_idx;
+                        tptr -= PDC_font_info.width;
+                    }
+                    if( *srcp & A_LEFTLINE)
+                    {
+                        fb_ptr = tptr;
+                        for( i = PDC_font_info.height; i; i--, fb_ptr += line_len)
+                            *fb_ptr = fg_idx;
+                    }
+                    if( *srcp & A_RIGHTLINE)
+                    {
+                        fb_ptr = tptr + PDC_font_info.width - 1;
+                        for( i = PDC_font_info.height; i; i--, fb_ptr += line_len)
+                            *fb_ptr = fg_idx;
+                    }
+                    if( *srcp & A_STRIKEOUT)
+                    {
+                        fb_ptr = tptr + (PDC_font_info.height / 2) * line_len;
+                        for( j = PDC_font_info.width; j; j--)
+                            *fb_ptr++ = fg_idx;
+                    }
+                    if( x == SP->curscol && cursor_to_draw)
+                    {
+                        int n_lines = PDC_font_info.height;
+
+                        fb_ptr = tptr;
+                        if( cursor_to_draw == 1)      /* bottom two lines */
+                        {
+                            fb_ptr += line_len * (PDC_font_info.height - 2);
+                            n_lines = 2;
+                        }
+                        while( n_lines--)
+                        {
+                            for( j = 0; j < (int)PDC_font_info.width; j++, fb_ptr++)
+                               *fb_ptr = fg_idx + bg_idx - *fb_ptr;
+                            fb_ptr += line_len - PDC_font_info.width;
+                        }
+                    }
+                }
+                srcp++;
+                len--;
+                tptr += PDC_font_info.width;
+                x++;
+            }
+        }
    }
 }
 

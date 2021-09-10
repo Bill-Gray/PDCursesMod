@@ -251,6 +251,16 @@ int PDC_scr_open(void)
     }
 
     SP->_preserve = (getenv("PDC_PRESERVE_SCREEN") != NULL);
+    if( PDC_vinfo.bits_per_pixel == 8)        /* 256 color palette */
+    {
+        int i, r, g, b;
+
+        for( i = 0; i < 256; i++)
+        {
+        PDC_color_content( i, &r, &g, &b);
+        PDC_init_color( i, r, g, b);
+        }
+    }
     PDC_reset_prog_mode();
     PDC_LOG(("PDC_scr_open exit\n"));
     return( 0);
@@ -300,5 +310,21 @@ int PDC_init_color( int color, int red, int green, int blue)
 
     if( !PDC_set_palette_entry( color, new_rgb))
         curscr->_clear = TRUE;
+    if( PDC_vinfo.bits_per_pixel == 8)        /* 256 color palette */
+    {
+        struct fb_cmap pal;
+        uint16_t r = (uint16_t)( red * 131 / 2);
+        uint16_t g = (uint16_t)( green * 131 / 2);
+        uint16_t b = (uint16_t)( blue * 131 / 2);
+
+        pal.start = color;
+        pal.len = 1;
+        pal.red   = &r;
+        pal.green = &g;
+        pal.blue  = &b;
+        pal.transp = NULL;
+        if( ioctl( _framebuffer_fd, FBIOPUTCMAP, &pal))
+            fprintf( stderr, "Error setting palette.\n");
+    }
     return OK;
 }
