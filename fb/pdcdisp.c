@@ -183,6 +183,35 @@ static const uint8_t *_get_glyph_bytes( struct font_info *font, int unicode_poin
     return( font->glyphs + glyph_idx * font_char_size_in_bytes * font->height);
 }
 
+extern struct fb_fix_screeninfo PDC_finfo;
+extern struct fb_var_screeninfo PDC_vinfo;
+extern uint8_t *PDC_framebuf;
+
+static void _draw_rectangle( const int xpix, const int ypix,
+                  const int xsize, const int ysize, const uint32_t color)
+{
+    const int line_len = PDC_finfo.line_length * 8 / PDC_vinfo.bits_per_pixel;
+    int x, y;
+    const long video_offset = xpix + ypix * line_len;
+
+    if( PDC_vinfo.bits_per_pixel == 32)
+    {
+        uint32_t *tptr = (uint32_t *)PDC_framebuf + video_offset;
+
+        for( y = ysize; y; y--, tptr += line_len - xsize)
+            for( x = xsize; x; x--)
+                *tptr++ = color;
+    }
+    if( PDC_vinfo.bits_per_pixel == 8)
+    {
+        uint8_t *tptr = PDC_framebuf + video_offset;
+
+        for( y = ysize; y; y--, tptr += line_len - xsize)
+            for( x = xsize; x; x--)
+                *tptr++ = color;
+    }
+}
+
 #define MAX_RUN 80
 
 const chtype MAX_UNICODE = 0x110000;
@@ -198,13 +227,11 @@ int PDC_wc_to_utf8( char *dest, const int32_t code);
 /* The framebuffer appears to store red,  green,  and blue in the opposite
 order from what the other platforms expect : */
 
+#define LINE_ATTRIBS (A_UNDERLINE | A_OVERLINE | A_LEFTLINE | A_RIGHTLINE | A_STRIKEOUT)
 #define SWAP_RED_AND_BLUE( rgb) (((rgb) & 0xff00) | ((rgb) >> 16) | (((rgb) & 0xff) << 16))
 
 void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
 {
-    extern struct fb_fix_screeninfo PDC_finfo;
-    extern struct fb_var_screeninfo PDC_vinfo;
-    extern uint8_t *PDC_framebuf;
     extern struct font_info PDC_font_info;
     const int font_char_size_in_bytes = (PDC_font_info.width + 7) >> 3;
     int cursor_to_draw = (PDC_blink_state ? SP->visibility & 0xff : (SP->visibility >> 8));
@@ -282,36 +309,6 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
                         fontptr += font_char_size_in_bytes;
                         if( i == shift_point)
                            mask >>= 1;
-                    }
-                    if( *srcp & A_UNDERLINE)
-                    {
-                        fb_ptr -= line_len;
-                        for( j = PDC_font_info.width; j; j--)
-                            *fb_ptr++ = fg;
-                    }
-                    if( *srcp & A_OVERLINE)
-                    {
-                        for( j = PDC_font_info.width; j; j--)
-                            *tptr++ = fg;
-                        tptr -= PDC_font_info.width;
-                    }
-                    if( *srcp & A_LEFTLINE)
-                    {
-                        fb_ptr = tptr;
-                        for( i = PDC_font_info.height; i; i--, fb_ptr += line_len)
-                            *fb_ptr = fg;
-                    }
-                    if( *srcp & A_RIGHTLINE)
-                    {
-                        fb_ptr = tptr + PDC_font_info.width - 1;
-                        for( i = PDC_font_info.height; i; i--, fb_ptr += line_len)
-                            *fb_ptr = fg;
-                    }
-                    if( *srcp & A_STRIKEOUT)
-                    {
-                        fb_ptr = tptr + (PDC_font_info.height / 2) * line_len;
-                        for( j = PDC_font_info.width; j; j--)
-                            *fb_ptr++ = fg;
                     }
                     if( x == SP->curscol && cursor_to_draw)
                     {
@@ -433,6 +430,30 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
                 tptr += PDC_font_info.width;
                 x++;
             }
+        }
+        if( srcp[-1] & LINE_ATTRIBS)
+        {
+            const int xpixel = (x - run_len) * PDC_font_info.width;
+            const int ypixel = lineno * PDC_font_info.height;
+            int i;
+
+            if( srcp[-1] & A_UNDERLINE)
+               _draw_rectangle( xpixel, ypixel + PDC_font_info.height - 1,
+                              run_len * PDC_font_info.width, 1, fg);
+            if( srcp[-1] & A_OVERLINE)
+               _draw_rectangle( xpixel, ypixel,
+                              run_len * PDC_font_info.width, 1, fg);
+            if( srcp[-1] & A_STRIKEOUT)
+               _draw_rectangle( xpixel, ypixel + PDC_font_info.height / 2,
+                              run_len * PDC_font_info.width, 1, fg);
+            if( srcp[-1] & A_LEFTLINE)
+                for( i = 0; i < run_len; i++)
+                   _draw_rectangle( xpixel + i * PDC_font_info.width, ypixel,
+                              1, PDC_font_info.height, fg);
+            if( srcp[-1] & A_RIGHTLINE)
+                for( i = 1; i <= run_len; i++)
+                   _draw_rectangle( xpixel + i * PDC_font_info.width - 1, ypixel,
+                              1, PDC_font_info.height, fg);
         }
     }
 }
