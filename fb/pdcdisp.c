@@ -377,36 +377,6 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
                         if( i == shift_point)
                            mask >>= 1;
                     }
-                    if( *srcp & A_UNDERLINE)
-                    {
-                        fb_ptr -= line_len;
-                        for( j = PDC_font_info.width; j; j--)
-                            *fb_ptr++ = fg_idx;
-                    }
-                    if( *srcp & A_OVERLINE)
-                    {
-                        for( j = PDC_font_info.width; j; j--)
-                            *tptr++ = fg_idx;
-                        tptr -= PDC_font_info.width;
-                    }
-                    if( *srcp & A_LEFTLINE)
-                    {
-                        fb_ptr = tptr;
-                        for( i = PDC_font_info.height; i; i--, fb_ptr += line_len)
-                            *fb_ptr = fg_idx;
-                    }
-                    if( *srcp & A_RIGHTLINE)
-                    {
-                        fb_ptr = tptr + PDC_font_info.width - 1;
-                        for( i = PDC_font_info.height; i; i--, fb_ptr += line_len)
-                            *fb_ptr = fg_idx;
-                    }
-                    if( *srcp & A_STRIKEOUT)
-                    {
-                        fb_ptr = tptr + (PDC_font_info.height / 2) * line_len;
-                        for( j = PDC_font_info.width; j; j--)
-                            *fb_ptr++ = fg_idx;
-                    }
                     if( x == SP->curscol && cursor_to_draw)
                     {
                         int n_lines = PDC_font_info.height;
