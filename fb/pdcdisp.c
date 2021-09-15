@@ -208,6 +208,7 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
     extern struct font_info PDC_font_info;
     const int font_char_size_in_bytes = (PDC_font_info.width + 7) >> 3;
     int cursor_to_draw = (PDC_blink_state ? SP->visibility & 0xff : (SP->visibility >> 8));
+    const int line_len = PDC_finfo.line_length * 8 / PDC_vinfo.bits_per_pixel;
 
     assert( srcp);
     assert( x >= 0);
@@ -222,6 +223,8 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
         int run_len = 0, ch[MAX_RUN], shift_point;
         PACKED_RGB fg, bg;
         unsigned mask0 = ((*srcp & A_BOLD) ? 0x180 : 0x80);
+        const long video_offset = x * PDC_font_info.width
+                     + lineno * PDC_font_info.height * line_len;
 
         if( *srcp & A_ITALIC)
         {
@@ -258,10 +261,8 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
         }
         if( PDC_vinfo.bits_per_pixel == 32)
         {
-            const int line_len = PDC_finfo.line_length / sizeof( uint32_t);
             int i;
-            uint32_t *tptr = (uint32_t *)PDC_framebuf + x * PDC_font_info.width
-                   + lineno * PDC_font_info.height * line_len;
+            uint32_t *tptr = (uint32_t *)PDC_framebuf + video_offset;
 
             for( i = 0; i < run_len; i++)
             {
@@ -341,8 +342,7 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
             const int line_len = PDC_finfo.line_length; /* / sizeof( uint8_t); */
             int i, integer_fg_idx, integer_bg_idx;
             uint8_t fg_idx, bg_idx;
-            uint8_t *tptr = PDC_framebuf + x * PDC_font_info.width
-                   + lineno * PDC_font_info.height * line_len;
+            uint8_t *tptr = PDC_framebuf + video_offset;
             bool reverse_colors = ((*srcp & A_REVERSE) ? TRUE : FALSE);
 
             extended_pair_content( (*srcp & A_COLOR) >> PDC_COLOR_SHIFT,
@@ -356,10 +356,10 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
             }
             if( reverse_colors)
             {
-            const int swapval = integer_fg_idx;
-            integer_fg_idx = integer_bg_idx;
-            integer_bg_idx = swapval;
-         }
+                const int swapval = integer_fg_idx;
+                integer_fg_idx = integer_bg_idx;
+                integer_bg_idx = swapval;
+            }
             fg_idx = (uint8_t)integer_fg_idx;
             bg_idx = (uint8_t)integer_bg_idx;
             for( i = 0; i < run_len; i++)
@@ -434,7 +434,7 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
                 x++;
             }
         }
-   }
+    }
 }
 
 void PDC_doupdate(void)
