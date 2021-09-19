@@ -330,6 +330,13 @@ int PDC_get_key( void)
             if( rval == ALT_LBRACKET && check_key( NULL))
                rval = -1;
             }
+#ifdef LINUX_FRAMEBUFFER_PORT
+         if( rval == ALT_MINUS)
+            {
+            PDC_cycle_font( );
+            rval = -1;
+            }
+#endif
          if( !count)             /* Escape hit */
             rval = 27;
          count--;
