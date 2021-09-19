@@ -97,6 +97,21 @@ static int _framebuffer_fd;
 struct font_info PDC_font_info;
 static uint8_t *_loaded_font_bytes;
 
+static void _unload_font( void)
+{
+   if( _loaded_font_bytes)
+   {
+      free( _loaded_font_bytes);
+      _loaded_font_bytes = NULL;
+   }
+   if( PDC_font_info.unicode_info)
+   {
+      free( PDC_font_info.unicode_info);
+      PDC_font_info.unicode_info = NULL;
+   }
+}
+
+
 void PDC_scr_close( void)
 {
    _stored_trap_mbe = SP->_trap_mbe;
@@ -107,13 +122,7 @@ void PDC_scr_close( void)
    PDC_puts_to_stdout( NULL);      /* free internal cache */
    munmap( PDC_framebuf, PDC_finfo.smem_len);
    close( _framebuffer_fd);
-   if( _loaded_font_bytes)
-   {
-      free( _loaded_font_bytes);
-      _loaded_font_bytes = NULL;
-   }
-   if( PDC_font_info.unicode_info)
-      free( PDC_font_info.unicode_info);
+   _unload_font( );
    return;
 }
 
@@ -136,6 +145,99 @@ static void sigintHandler( int sig)
     }
 }
 
+static int curr_font;
+
+static int _load_psf_font( const int font_num)
+{
+    int rval;
+
+    _unload_font( );
+    PDC_font_info.glyphs = NULL;
+    if( !font_num)
+        load_psf_or_vgafont( &PDC_font_info, font_bytes, sizeof( font_bytes));
+    else
+    {
+        char env_var[20];
+        const char *font_filename;
+
+        strcpy( env_var, "PDC_FONT");
+        if( font_num > 1)
+        {
+            env_var[8] = (char)( font_num + '0');
+            env_var[9] = '\0';
+        }
+        font_filename = getenv( env_var);
+        if( font_filename)
+        {
+            FILE *font_fp = fopen( font_filename, "rb");
+
+            if( font_fp)
+            {
+                uint8_t *buff;
+                long n_bytes;
+
+                fseek( font_fp, 0L, SEEK_END);
+                n_bytes = ftell( font_fp);
+                fseek( font_fp, 0L, SEEK_SET);
+                buff = (uint8_t *)malloc( n_bytes + 1);
+                buff[n_bytes] = '\0';
+                if( fread( buff, 1, n_bytes, font_fp) != (size_t)n_bytes)
+                    return( -5);
+                fclose( font_fp);
+                if( !load_psf_or_vgafont( &PDC_font_info, buff, n_bytes))
+                {
+                    uint32_t glyph_buff_size = PDC_font_info.n_glyphs * PDC_font_info.charsize;
+
+                    _loaded_font_bytes = (uint8_t *)malloc( glyph_buff_size);
+
+                    memcpy( _loaded_font_bytes, PDC_font_info.glyphs, glyph_buff_size);
+                    PDC_font_info.glyphs = _loaded_font_bytes;
+                }
+                free( buff);
+            }
+        }
+    }
+
+#ifdef PDC_WIDE
+            /* If there's no Unicode info,  the font is probably a CP437 one. */
+            /* We can use the data in uni_info.h to make the translations. */
+    if( !PDC_font_info.unicode_info)
+       PDC_font_info.unicode_info =  _decipher_psf2_unicode_table(
+               _unicode_info, sizeof( _unicode_info), &PDC_font_info.unicode_info_size);
+#endif
+    if( PDC_font_info.glyphs)
+    {
+        const int new_cols = PDC_vinfo.xres / PDC_font_info.width;
+        const int new_rows = PDC_vinfo.yres / PDC_font_info.height;
+        static bool first_load = true;
+
+        if( PDC_rows != new_rows || PDC_cols != new_cols)
+        {
+            PDC_rows = new_rows;
+            PDC_cols = new_cols;
+            if( !first_load)
+            {
+                PDC_resize_occurred = TRUE;
+                if (SP)
+                    SP->resized = TRUE;
+            }
+            first_load = false;
+        }
+        rval = 0;
+        curr_font = font_num;
+    }
+    else
+        rval = -1;
+    return( rval);
+}
+
+int PDC_cycle_font( void)
+{
+   if( _load_psf_font( curr_font + 1))
+       _load_psf_font( 0);
+   return( 0);
+}
+
 #define MAX_LINES 1000
 #define MAX_COLUMNS 1000
 
@@ -143,7 +245,6 @@ int PDC_scr_open(void)
 {
     struct sigaction sa;
     int error;
-    const char *font_filename = getenv( "PDC_FONT");
 
     PDC_LOG(("PDC_scr_open called\n"));
     _framebuffer_fd = open( "/dev/fb0", O_RDWR);
@@ -170,52 +271,6 @@ int PDC_scr_open(void)
     assert( SP);
     if (!SP || PDC_init_palette( ))
         return ERR;
-
-    load_psf_or_vgafont( &PDC_font_info, font_bytes, sizeof( font_bytes));
-    if( font_filename)
-    {
-        FILE *font_fp = fopen( font_filename, "rb");
-
-        if( font_fp)
-        {
-            uint8_t *buff;
-            long n_bytes;
-
-            fseek( font_fp, 0L, SEEK_END);
-            n_bytes = ftell( font_fp);
-            fseek( font_fp, 0L, SEEK_SET);
-            buff = (uint8_t *)malloc( n_bytes + 1);
-            buff[n_bytes] = '\0';
-            if( fread( buff, 1, n_bytes, font_fp) != (size_t)n_bytes)
-                return( -5);
-            fclose( font_fp);
-            if( !load_psf_or_vgafont( &PDC_font_info, buff, n_bytes))
-            {
-                uint32_t glyph_buff_size = PDC_font_info.n_glyphs * PDC_font_info.charsize;
-
-                _loaded_font_bytes = (uint8_t *)malloc( glyph_buff_size);
-
-                memcpy( _loaded_font_bytes, PDC_font_info.glyphs, glyph_buff_size);
-                PDC_font_info.glyphs = _loaded_font_bytes;
-            }
-            free( buff);
-        }
-#ifdef DEBUG
-        else
-        {
-            fprintf( stderr, "Couldn't open %s\n", font_filename);
-            exit( -1);
-        }
-#endif
-    }
-
-#ifdef PDC_WIDE
-            /* If there's no Unicode info,  the font is probably a CP437 one. */
-            /* We can use the data in uni_info.h to make the translations. */
-    if( !PDC_font_info.unicode_info)
-       PDC_font_info.unicode_info =  _decipher_psf2_unicode_table(
-               _unicode_info, sizeof( _unicode_info), &PDC_font_info.unicode_info_size);
-#endif
     setbuf( stdin, NULL);
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = 0;
@@ -225,8 +280,8 @@ int PDC_scr_open(void)
         fprintf( stderr, "Sigaction (INT) failed\n");
         return( -1);
     }
-    PDC_cols = PDC_vinfo.xres / PDC_font_info.width;
-    PDC_rows = PDC_vinfo.yres / PDC_font_info.height;
+    if( _load_psf_font( 1))
+        _load_psf_font( 0);
     SP->mouse_wait = PDC_CLICK_PERIOD;
     SP->visibility = 0;                /* no cursor,  by default */
     SP->curscol = SP->cursrow = 0;
