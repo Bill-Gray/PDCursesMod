@@ -234,7 +234,7 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
 {
     extern struct font_info PDC_font_info;
     const int font_char_size_in_bytes = (PDC_font_info.width + 7) >> 3;
-    int cursor_to_draw = (PDC_blink_state ? SP->visibility & 0xff : (SP->visibility >> 8));
+    int cursor_to_draw = 0;
     const int line_len = PDC_finfo.line_length * 8 / PDC_vinfo.bits_per_pixel;
 
     assert( srcp);
@@ -243,8 +243,21 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
     assert( lineno >= 0);
     assert( lineno < SP->lines);
     assert( len > 0);
-    if( lineno != SP->cursrow || x > SP->curscol || x + len < SP->curscol)
-        cursor_to_draw = 0;      /* cursor won't be drawn */
+    if( lineno == SP->cursrow && x <= SP->curscol && x + len > SP->curscol)
+    {
+        cursor_to_draw = (PDC_blink_state ? SP->visibility & 0xff : (SP->visibility >> 8));
+        if( cursor_to_draw)   /* if there's a cursor appearing in this run of text... */
+        {
+            if( x < SP->curscol)  /* ...draw the part _before_ the cursor (if any)... */
+                PDC_transform_line( lineno, x, SP->curscol - x, srcp);
+            len -= SP->curscol - x;
+            srcp += SP->curscol - x;
+            x = SP->curscol;
+            if( len > 1)          /* ...then the part _after the cursor (if any)... */
+                PDC_transform_line( lineno, x + 1, len - 1, srcp + 1);
+            len = 1;    /* ... then fall through and just draw the cell with the cursor */
+        }
+    }
     while( len)
     {
         int run_len = 0, ch[MAX_RUN], shift_point;
@@ -310,7 +323,7 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
                         if( i == shift_point)
                            mask >>= 1;
                     }
-                    if( x == SP->curscol && cursor_to_draw)
+                    if( cursor_to_draw)
                     {
                         int n_lines = PDC_font_info.height;
 
@@ -377,7 +390,7 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
                         if( i == shift_point)
                            mask >>= 1;
                     }
-                    if( x == SP->curscol && cursor_to_draw)
+                    if( cursor_to_draw)
                     {
                         int n_lines = PDC_font_info.height;
 
