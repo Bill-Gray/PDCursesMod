@@ -187,7 +187,7 @@ extern struct fb_fix_screeninfo PDC_finfo;
 extern struct fb_var_screeninfo PDC_vinfo;
 extern uint8_t *PDC_framebuf;
 
-static void _draw_rectangle( const int xpix, const int ypix,
+void PDC_draw_rectangle( const int xpix, const int ypix,
                   const int xsize, const int ysize, const uint32_t color)
 {
     const int line_len = PDC_finfo.line_length * 8 / PDC_vinfo.bits_per_pixel;
@@ -408,21 +408,21 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
             int i;
 
             if( srcp[-1] & A_UNDERLINE)
-               _draw_rectangle( xpixel, ypixel + PDC_font_info.height - 1,
+               PDC_draw_rectangle( xpixel, ypixel + PDC_font_info.height - 1,
                               run_len * PDC_font_info.width, 1, fg);
             if( srcp[-1] & A_OVERLINE)
-               _draw_rectangle( xpixel, ypixel,
+               PDC_draw_rectangle( xpixel, ypixel,
                               run_len * PDC_font_info.width, 1, fg);
             if( srcp[-1] & A_STRIKEOUT)
-               _draw_rectangle( xpixel, ypixel + PDC_font_info.height / 2,
+               PDC_draw_rectangle( xpixel, ypixel + PDC_font_info.height / 2,
                               run_len * PDC_font_info.width, 1, fg);
             if( srcp[-1] & A_LEFTLINE)
                 for( i = 0; i < run_len; i++)
-                   _draw_rectangle( xpixel + i * PDC_font_info.width, ypixel,
+                   PDC_draw_rectangle( xpixel + i * PDC_font_info.width, ypixel,
                               1, PDC_font_info.height, fg);
             if( srcp[-1] & A_RIGHTLINE)
                 for( i = 1; i <= run_len; i++)
-                   _draw_rectangle( xpixel + i * PDC_font_info.width - 1, ypixel,
+                   PDC_draw_rectangle( xpixel + i * PDC_font_info.width - 1, ypixel,
                               1, PDC_font_info.height, fg);
         }
     }

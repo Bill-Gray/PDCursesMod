@@ -145,6 +145,9 @@ static void sigintHandler( int sig)
     }
 }
 
+void PDC_draw_rectangle( const int xpix, const int ypix,  /* pdcdisp.c */
+                  const int xsize, const int ysize, const uint32_t color);
+
 static int curr_font;
 
 static int _load_psf_font( const int font_num)
@@ -225,6 +228,12 @@ static int _load_psf_font( const int font_num)
         }
         rval = 0;
         curr_font = font_num;
+               /* Clear area below last row : */
+        PDC_draw_rectangle( 0, new_rows * PDC_font_info.height,
+               PDC_vinfo.xres, PDC_vinfo.yres - new_rows * PDC_font_info.height, 0);
+               /* And area after last column : */
+        PDC_draw_rectangle( new_cols * PDC_font_info.width, 0,
+               PDC_vinfo.xres - new_cols * PDC_font_info.width, PDC_vinfo.yres, 0);
     }
     else
         rval = -1;
