@@ -450,6 +450,7 @@ int PDC_init_atrtab(void)
     {
        atrtab_size_alloced = 1;
        SP->atrtab = calloc( atrtab_size_alloced, sizeof(PDC_PAIR));
+       SP->atrtab[0].f = SP->atrtab[0].b = UNSET_COLOR_PAIR;
        if( !SP->atrtab)
            return -1;
     }
