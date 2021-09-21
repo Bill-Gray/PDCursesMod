@@ -171,7 +171,7 @@ void PDC_gotoyx( int row, int col)
     }
 }
 
-static const uint8_t *_get_glyph_bytes( struct font_info *font, int unicode_point)
+static const uint8_t *_get_raw_glyph_bytes( struct font_info *font, int unicode_point)
 {
     int glyph_idx = find_psf_or_vgafont_glyph( font, unicode_point);
     const int font_char_size_in_bytes = (font->width + 7) >> 3;
@@ -212,8 +212,6 @@ void PDC_draw_rectangle( const int xpix, const int ypix,
     }
 }
 
-#define MAX_RUN 80
-
 const chtype MAX_UNICODE = 0x110000;
 
 /* see 'addch.c' for an explanation of how combining chars are handled. */
@@ -224,10 +222,68 @@ const chtype MAX_UNICODE = 0x110000;
 
 int PDC_wc_to_utf8( char *dest, const int32_t code);
 
+#define LINE_ATTRIBS (A_UNDERLINE | A_OVERLINE | A_LEFTLINE | A_RIGHTLINE | A_STRIKEOUT)
+
+/* Usually,  we can just return a pointer to the glyph data from the PSF
+file (using _get_raw_glyph_bytes()).  If the glyph has to be modified
+for line drawings or a cursor,  or it's a combined character,  we build
+the glyph in the scratch space and return 'scratch' instead.  */
+
+static const uint8_t *_get_glyph( const chtype ch, const int cursor_type,
+                                 uint8_t *scratch)
+{
+    extern struct font_info PDC_font_info;
+    const uint8_t *rval;
+    int c = (int)( ch & A_CHARTEXT);
+
+    if( (ch & A_ALTCHARSET) && c < 0x80)
+        c = (int)acs_map[c & 0x7f];
+    else if( c < (int)' ' || (c >= 0x80 && c <= 0x9f))
+        c = ' ';
+    rval = _get_raw_glyph_bytes( &PDC_font_info, c);
+    if( cursor_type || (ch & LINE_ATTRIBS))
+    {
+        const int font_char_size_in_bytes = (PDC_font_info.width + 7) >> 3;
+        int i, j;
+
+        memcpy( scratch, rval, PDC_font_info.charsize);
+        rval = (const uint8_t *)scratch;
+        if( cursor_type)
+        {
+            i = (cursor_type == 1 ? PDC_font_info.height - 2 : 0);
+            scratch += i * font_char_size_in_bytes;
+            for( ; i < (int)PDC_font_info.height; i++)
+               for( j = 0; j < font_char_size_in_bytes; j++)
+                   *scratch++ ^= 0xff;
+            scratch -= PDC_font_info.charsize;
+        }
+        if( ch & (A_UNDERLINE | A_OVERLINE | A_STRIKEOUT))
+        {
+            if( ch & A_OVERLINE)
+                memset( scratch, 0xff, font_char_size_in_bytes);
+            if( ch & A_STRIKEOUT)
+                memset( scratch + (PDC_font_info.height / 2) * font_char_size_in_bytes,
+                            0xff, font_char_size_in_bytes);
+            if( ch & A_UNDERLINE)
+                memset( scratch + (PDC_font_info.height - 1) * font_char_size_in_bytes,
+                            0xff, font_char_size_in_bytes);
+        }
+        if( ch & A_LEFTLINE)
+            for( i = 0; i < (int)PDC_font_info.height; i++)
+               scratch[i * font_char_size_in_bytes] |= 0x80;
+        if( ch & A_RIGHTLINE)
+        {
+            scratch += font_char_size_in_bytes - 1;
+            for( i = 0; i < (int)PDC_font_info.height; i++)
+               scratch[i * font_char_size_in_bytes] |= (0x80 >> ((PDC_font_info.width - 1) & 7));
+        }
+    }
+    return( rval);
+}
+
 /* The framebuffer appears to store red,  green,  and blue in the opposite
 order from what the other platforms expect : */
 
-#define LINE_ATTRIBS (A_UNDERLINE | A_OVERLINE | A_LEFTLINE | A_RIGHTLINE | A_STRIKEOUT)
 #define SWAP_RED_AND_BLUE( rgb) (((rgb) & 0xff00) | ((rgb) >> 16) | (((rgb) & 0xff) << 16))
 
 void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
@@ -236,6 +292,7 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
     const int font_char_size_in_bytes = (PDC_font_info.width + 7) >> 3;
     int cursor_to_draw = 0;
     const int line_len = PDC_finfo.line_length * 8 / PDC_vinfo.bits_per_pixel;
+    uint8_t scratch[300];
 
     assert( srcp);
     assert( x >= 0);
@@ -260,7 +317,7 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
     }
     while( len)
     {
-        int run_len = 0, ch[MAX_RUN], shift_point;
+        int run_len = 0, shift_point;
         PACKED_RGB fg, bg;
         unsigned mask0 = ((*srcp & A_BOLD) ? 0x180 : 0x80);
         const long video_offset = x * PDC_font_info.width
@@ -288,17 +345,8 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
             fg = bg;
             bg = temp_rgb;
         }
-        while( run_len < len && run_len < MAX_RUN
-                     && !((*srcp ^ srcp[run_len]) & A_ATTRIBUTES))
-        {
-            int c = (int)( srcp[run_len] & A_CHARTEXT);
-
-            if( (srcp[run_len] & A_ALTCHARSET) && c < 0x80)
-                c = (int)acs_map[c & 0x7f];
-            else if( c < (int)' ' || (c >= 0x80 && c <= 0x9f))
-                c = ' ';
-            ch[run_len++] = c;
-        }
+        while( run_len < len && !((*srcp ^ srcp[run_len]) & A_ATTRIBUTES))
+            run_len++;
         if( PDC_vinfo.bits_per_pixel == 32)
         {
             int i;
@@ -306,40 +354,19 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
 
             for( i = 0; i < run_len; i++)
             {
+                const uint8_t *fontptr = _get_glyph( *srcp, cursor_to_draw, scratch);
+                uint32_t *fb_ptr = tptr;
+                int i, j;
+                unsigned mask = mask0;
 
-//              if( ch[i] > 0 && ch[i] <= 0xff)
+                for( i = 0; i < (int)PDC_font_info.height; i++)
                 {
-                    const uint8_t *fontptr = _get_glyph_bytes( &PDC_font_info, ch[i]);
-                    uint32_t *fb_ptr = tptr;
-                    int i, j;
-                    unsigned mask = mask0;
-
-                    for( i = 0; i < (int)PDC_font_info.height; i++)
-                    {
-                        for( j = 0; j < (int)PDC_font_info.width; j++)
-                            *fb_ptr++ = ((fontptr[j >> 3] << (j & 7)) & mask) ? fg : bg;
-                        fb_ptr += line_len - PDC_font_info.width;
-                        fontptr += font_char_size_in_bytes;
-                        if( i == shift_point)
-                           mask >>= 1;
-                    }
-                    if( cursor_to_draw)
-                    {
-                        int n_lines = PDC_font_info.height;
-
-                        fb_ptr = tptr;
-                        if( cursor_to_draw == 1)      /* bottom two lines */
-                        {
-                            fb_ptr += line_len * (PDC_font_info.height - 2);
-                            n_lines = 2;
-                        }
-                        while( n_lines--)
-                        {
-                            for( j = 0; j < (int)PDC_font_info.width; j++, fb_ptr++)
-                               *fb_ptr = fg + bg - *fb_ptr;
-                            fb_ptr += line_len - PDC_font_info.width;
-                        }
-                    }
+                    for( j = 0; j < (int)PDC_font_info.width; j++)
+                        *fb_ptr++ = ((fontptr[j >> 3] << (j & 7)) & mask) ? fg : bg;
+                    fb_ptr += line_len - PDC_font_info.width;
+                    fontptr += font_char_size_in_bytes;
+                    if( i == shift_point)
+                       mask >>= 1;
                 }
                 srcp++;
                 len--;
@@ -374,69 +401,25 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
             bg_idx = (uint8_t)integer_bg_idx;
             for( i = 0; i < run_len; i++)
             {
-//              if( ch[i] > 0 && ch[i] <= 0xff)
+                const uint8_t *fontptr = _get_glyph( *srcp, cursor_to_draw, scratch);
+                uint8_t *fb_ptr = tptr;
+                int i, j;
+                unsigned mask = mask0;
+
+                for( i = 0; i < (int)PDC_font_info.height; i++)
                 {
-                    const uint8_t *fontptr = _get_glyph_bytes( &PDC_font_info, ch[i]);
-                    uint8_t *fb_ptr = tptr;
-                    int i, j;
-                    unsigned mask = mask0;
-
-                    for( i = 0; i < (int)PDC_font_info.height; i++)
-                    {
-                        for( j = 0; j < (int)PDC_font_info.width; j++)
-                            *fb_ptr++ = ((fontptr[j >> 3] << (j & 7)) & mask) ? fg_idx : bg_idx;
-                        fb_ptr += line_len - PDC_font_info.width;
-                        fontptr += font_char_size_in_bytes;
-                        if( i == shift_point)
-                           mask >>= 1;
-                    }
-                    if( cursor_to_draw)
-                    {
-                        int n_lines = PDC_font_info.height;
-
-                        fb_ptr = tptr;
-                        if( cursor_to_draw == 1)      /* bottom two lines */
-                        {
-                            fb_ptr += line_len * (PDC_font_info.height - 2);
-                            n_lines = 2;
-                        }
-                        while( n_lines--)
-                        {
-                            for( j = 0; j < (int)PDC_font_info.width; j++, fb_ptr++)
-                               *fb_ptr = fg_idx + bg_idx - *fb_ptr;
-                            fb_ptr += line_len - PDC_font_info.width;
-                        }
-                    }
+                    for( j = 0; j < (int)PDC_font_info.width; j++)
+                        *fb_ptr++ = ((fontptr[j >> 3] << (j & 7)) & mask) ? fg_idx : bg_idx;
+                    fb_ptr += line_len - PDC_font_info.width;
+                    fontptr += font_char_size_in_bytes;
+                    if( i == shift_point)
+                       mask >>= 1;
                 }
                 srcp++;
                 len--;
                 tptr += PDC_font_info.width;
                 x++;
             }
-        }
-        if( srcp[-1] & LINE_ATTRIBS)
-        {
-            const int xpixel = (x - run_len) * PDC_font_info.width;
-            const int ypixel = lineno * PDC_font_info.height;
-            int i;
-
-            if( srcp[-1] & A_UNDERLINE)
-               PDC_draw_rectangle( xpixel, ypixel + PDC_font_info.height - 1,
-                              run_len * PDC_font_info.width, 1, fg);
-            if( srcp[-1] & A_OVERLINE)
-               PDC_draw_rectangle( xpixel, ypixel,
-                              run_len * PDC_font_info.width, 1, fg);
-            if( srcp[-1] & A_STRIKEOUT)
-               PDC_draw_rectangle( xpixel, ypixel + PDC_font_info.height / 2,
-                              run_len * PDC_font_info.width, 1, fg);
-            if( srcp[-1] & A_LEFTLINE)
-                for( i = 0; i < run_len; i++)
-                   PDC_draw_rectangle( xpixel + i * PDC_font_info.width, ypixel,
-                              1, PDC_font_info.height, fg);
-            if( srcp[-1] & A_RIGHTLINE)
-                for( i = 1; i <= run_len; i++)
-                   PDC_draw_rectangle( xpixel + i * PDC_font_info.width - 1, ypixel,
-                              1, PDC_font_info.height, fg);
         }
     }
 }
