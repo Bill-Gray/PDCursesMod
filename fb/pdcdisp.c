@@ -186,6 +186,7 @@ static const uint8_t *_get_raw_glyph_bytes( struct font_info *font, int unicode_
 extern struct fb_fix_screeninfo PDC_finfo;
 extern struct fb_var_screeninfo PDC_vinfo;
 extern uint8_t *PDC_framebuf;
+extern struct font_info PDC_font_info;
 
 void PDC_draw_rectangle( const int xpix, const int ypix,
                   const int xsize, const int ysize, const uint32_t color)
@@ -218,9 +219,16 @@ const chtype MAX_UNICODE = 0x110000;
 
 #ifdef USING_COMBINING_CHARACTER_SCHEME
    int PDC_expand_combined_characters( const cchar_t c, cchar_t *added);  /* addch.c */
-#endif
 
-int PDC_wc_to_utf8( char *dest, const int32_t code);
+static void _add_combining_character_glyph( uint8_t *glyph, const int code_point)
+{
+    const uint8_t *add_in = _get_raw_glyph_bytes( &PDC_font_info, code_point);
+    int i;
+
+    for( i = 0; i < (int)PDC_font_info.charsize; i++)
+        glyph[i] ^= add_in[i];
+}
+#endif
 
 #define LINE_ATTRIBS (A_UNDERLINE | A_OVERLINE | A_LEFTLINE | A_RIGHTLINE | A_STRIKEOUT)
 
@@ -232,22 +240,47 @@ the glyph in the scratch space and return 'scratch' instead.  */
 static const uint8_t *_get_glyph( const chtype ch, const int cursor_type,
                                  uint8_t *scratch)
 {
-    extern struct font_info PDC_font_info;
     const uint8_t *rval;
     int c = (int)( ch & A_CHARTEXT);
+#ifdef USING_COMBINING_CHARACTER_SCHEME
+    cchar_t root, newchar;
+
+    if( c > (int)MAX_UNICODE)      /* chars & fullwidth supported */
+    {
+        root = c;
+        while( (c = PDC_expand_combined_characters( c,
+                           &newchar)) > (int)MAX_UNICODE)
+            ;
+    }
+    else
+        root = 0;
+#endif
 
     if( (ch & A_ALTCHARSET) && c < 0x80)
         c = (int)acs_map[c & 0x7f];
     else if( c < (int)' ' || (c >= 0x80 && c <= 0x9f))
         c = ' ';
     rval = _get_raw_glyph_bytes( &PDC_font_info, c);
+#ifdef USING_COMBINING_CHARACTER_SCHEME
+    if( cursor_type || (ch & LINE_ATTRIBS) || root)
+#else
     if( cursor_type || (ch & LINE_ATTRIBS))
+#endif
     {
         const int font_char_size_in_bytes = (PDC_font_info.width + 7) >> 3;
         int i, j;
 
         memcpy( scratch, rval, PDC_font_info.charsize);
         rval = (const uint8_t *)scratch;
+#ifdef USING_COMBINING_CHARACTER_SCHEME
+        if( root)
+        {
+            while( (root = PDC_expand_combined_characters( root,
+                           &newchar)) > (int)MAX_UNICODE)
+                _add_combining_character_glyph( scratch, (int)newchar);
+            _add_combining_character_glyph( scratch, (int)newchar);
+        }
+#endif
         if( cursor_type)
         {
             i = (cursor_type == 1 ? PDC_font_info.height - 2 : 0);
@@ -288,7 +321,6 @@ order from what the other platforms expect : */
 
 void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
 {
-    extern struct font_info PDC_font_info;
     const int font_char_size_in_bytes = (PDC_font_info.width + 7) >> 3;
     int cursor_to_draw = 0;
     const int line_len = PDC_finfo.line_length * 8 / PDC_vinfo.bits_per_pixel;
