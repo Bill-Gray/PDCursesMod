@@ -186,6 +186,7 @@ Only 32 are used in ncurses.  So caution is advised. */
 #define CENTERED_SQUARE                   CHOOSE( 0xfe,  0x25a0,  TBD)
 #define NON_BREAKING_SPACE                CHOOSE( 0xff,  0x00a0, 0xa0)
 
+#ifdef NOT_CURRENTLY_IMPLEMENTED
 /* The following four characters are not currently implemented. However,
 they would enable rounded box corners when Unicode is available.
 (Otherwise,  the 'traditional' unrounded corner character is used.) */
@@ -210,6 +211,7 @@ _could_ put them in the first eleven entries of the acs_map[] array. */
 #define BOX_T_HLINE                       CHOOSE( 0xc4,  0x2501,   18)
 #define BOX_T_VLINE                       CHOOSE( 0xb3,  0x2503,   25)
 #define BOX_T_PLUS                        CHOOSE( 0xc5,  0x254b,   15)
+#endif         /* #ifdef NOT_CURRENTLY_IMPLEMENTED */
 
       /* It says at http://unicode.org/charts/PDF/U2300.pdf */
       /* that '...the scan line numbers here refer to old,  */
