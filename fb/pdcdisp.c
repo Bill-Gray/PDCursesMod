@@ -332,6 +332,14 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
     assert( lineno >= 0);
     assert( lineno < SP->lines);
     assert( len > 0);
+    if( lineno > (int)( PDC_vinfo.yres / PDC_font_info.height))
+        return;
+    if( x + len > (int)( PDC_vinfo.xres / PDC_font_info.width))
+    {
+        len = (int)( PDC_vinfo.xres / PDC_font_info.width) - x;
+        if( len <= 0)
+            return;
+    }
     if( lineno == SP->cursrow && x <= SP->curscol && x + len > SP->curscol)
     {
         cursor_to_draw = (PDC_blink_state ? SP->visibility & 0xff : (SP->visibility >> 8));
