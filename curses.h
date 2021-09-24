@@ -53,8 +53,6 @@ Defined by this header:
                     PDC_stringize( PDC_VER_MONTH) "-" \
                     PDC_stringize( PDC_VER_DAY)
 
-#define CHTYPE_LONG     1      /* chtype >= 32 bits */
-
 #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
 # define PDC_99         1
 #endif

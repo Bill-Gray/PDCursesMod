@@ -1,7 +1,6 @@
 #include <curspriv.h>
 #include "pdcplan9.h"
 
-#ifdef CHTYPE_LONG
 # define A(x) ((chtype)x | A_ALTCHARSET)
 chtype acs_map[128] = {
 	A(0), A(1), A(2), A(3), A(4), A(5), A(6), A(7), A(8), A(9),
@@ -34,8 +33,6 @@ chtype acs_map[128] = {
 };
 
 # undef A
-#endif
-
 
 void PDC_gotoyx(int y, int x)
 {
