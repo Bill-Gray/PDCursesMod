@@ -114,12 +114,8 @@ typedef unsigned char bool;
 #endif
 
 #if defined( CHTYPE_32)
-   #if defined( CHTYPE_64)
-       #error CHTYPE cannot be both CHTYPE_32 and CHTYPE_64
-   #endif
    typedef uint32_t chtype;       /* chtypes will be 32 bits */
 #else
-   #define CHTYPE_64
    typedef uint64_t chtype;       /* chtypes will be 64 bits */
    #ifdef PDC_WIDE
       #define USING_COMBINING_CHARACTER_SCHEME
@@ -503,7 +499,7 @@ capability.
 
 #define A_NORMAL      (chtype)0
 
-#ifdef CHTYPE_64
+#ifndef CHTYPE_32
     # define PDC_CHARTEXT_BITS   21
     # define A_CHARTEXT   (chtype)( ((chtype)0x1 << PDC_CHARTEXT_BITS) - 1)
     # define A_ALTCHARSET ((chtype)0x001 << PDC_CHARTEXT_BITS)

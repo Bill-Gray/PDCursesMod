@@ -339,7 +339,7 @@ int main( int argc, char **argv)
             move( 4, COL2);
             text_in_a_box( "Text in a box");
 
-#if defined( CHTYPE_64) && defined( A_STRIKEOUT)
+#if !defined( CHTYPE_32) && defined( A_STRIKEOUT)
             attrset( COLOR_PAIR( 6));
             attron( A_STRIKEOUT);
             mvaddstr( 10, 40, "Strikeout");
@@ -437,7 +437,7 @@ int main( int argc, char **argv)
 
                 mvaddwstr( 15 + i / 2, 2 + 20 * (i % 2), texts[i]);
             }
-#ifdef CHTYPE_64
+#ifndef CHTYPE_32
              mvaddch( 17, 41, (chtype)0x1d11e);
 #endif            /* U+1D11E = musical symbol G clef */
 #endif
