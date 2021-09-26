@@ -426,8 +426,10 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
                                    &integer_fg_idx, &integer_bg_idx);
             if( *srcp & A_BLINK)
             {
-//              if( !(SP->termattrs & A_BLINK))   /* convert 'blinking' to 'bold' */
-//                  intensify_backgnd = TRUE;
+#ifdef TO_FIGURE_OUT
+                if( !(SP->termattrs & A_BLINK))   /* convert 'blinking' to 'bold' */
+                    intensify_backgnd = TRUE;
+#endif
                 if( PDC_blink_state)
                     reverse_colors ^= 1;
             }
