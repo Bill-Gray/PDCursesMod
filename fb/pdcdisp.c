@@ -9,15 +9,16 @@
 #include <sys/time.h>
 #include <unistd.h>
 
+#include "curspriv.h"
+#include "pdcfb.h"
+#include "psf.h"
+
 #ifdef PDC_WIDE
     #define USE_UNICODE_ACS_CHARS 1
 #else
     #define USE_UNICODE_ACS_CHARS 0
 #endif
 
-#include "curspriv.h"
-#include "pdcfb.h"
-#include "psf.h"
 #include "../common/acs_defs.h"
 #include "../common/pdccolor.h"
 
@@ -232,10 +233,11 @@ static void _add_combining_character_glyph( uint8_t *glyph, const int code_point
 
 #define LINE_ATTRIBS (A_UNDERLINE | A_OVERLINE | A_LEFTLINE | A_RIGHTLINE | A_STRIKEOUT)
 
-/* Usually,  we can just return a pointer to the glyph data from the PSF
-file (using _get_raw_glyph_bytes()).  If the glyph has to be modified
-for line drawings or a cursor,  or it's a combined character,  we build
-the glyph in the scratch space and return 'scratch' instead.  */
+/* Usually,  we can just return a pointer to the glyph data from
+the PSF file (using _get_raw_glyph_bytes()).  If the glyph has to
+be modified for line drawings or a cursor,  or it's a combined
+character,  or it's bold or italic,  we build the glyph in the
+scratch space and return 'scratch' instead.  */
 
 static const uint8_t *_get_glyph( const chtype ch, const int cursor_type,
                                  uint8_t *scratch)
@@ -262,9 +264,9 @@ static const uint8_t *_get_glyph( const chtype ch, const int cursor_type,
         c = ' ';
     rval = _get_raw_glyph_bytes( &PDC_font_info, c);
 #ifdef USING_COMBINING_CHARACTER_SCHEME
-    if( cursor_type || (ch & LINE_ATTRIBS) || root)
+    if( cursor_type || (ch & (LINE_ATTRIBS | A_BOLD | A_ITALIC)) || root)
 #else
-    if( cursor_type || (ch & LINE_ATTRIBS))
+    if( cursor_type || (ch & (LINE_ATTRIBS | A_BOLD | A_ITALIC)))
 #endif
     {
         const int font_char_size_in_bytes = (PDC_font_info.width + 7) >> 3;
@@ -272,6 +274,20 @@ static const uint8_t *_get_glyph( const chtype ch, const int cursor_type,
 
         memcpy( scratch, rval, PDC_font_info.charsize);
         rval = (const uint8_t *)scratch;
+        if( ch & A_BOLD)
+            for( i = PDC_font_info.charsize - 1; i >= 0; i--)
+            {
+                scratch[i] |= (scratch[i] >> 1);
+                if( (i % font_char_size_in_bytes) && (scratch[i - 1] & 1))
+                   scratch[i] |= 0x80;
+            }
+        if( ch & A_ITALIC)  /* shift half top of glyph by one pixel right */
+            for( i = (PDC_font_info.height / 2) * font_char_size_in_bytes; i >= 0; i--)
+            {
+                scratch[i] >>= 1;
+                if( (i % font_char_size_in_bytes) && (scratch[i - 1] & 1))
+                   scratch[i] |= 0x80;
+            }
 #ifdef USING_COMBINING_CHARACTER_SCHEME
         if( root)
         {
@@ -357,19 +373,10 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
     }
     while( len)
     {
-        int run_len = 0, shift_point;
+        int run_len = 0;
         PACKED_RGB fg, bg;
-        unsigned mask0 = ((*srcp & A_BOLD) ? 0x180 : 0x80);
         const long video_offset = x * PDC_font_info.width
                      + lineno * PDC_font_info.height * line_len;
-
-        if( *srcp & A_ITALIC)
-        {
-            shift_point = PDC_font_info.height / 2;
-            mask0 <<= 1;
-        }
-        else
-            shift_point = 9999;
 
         PDC_get_rgb_values( *srcp & ~A_REVERSE, &fg, &bg);
         if( fg == (PACKED_RGB)-1)   /* default foreground */
@@ -397,16 +404,13 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
                 const uint8_t *fontptr = _get_glyph( *srcp, cursor_to_draw, scratch);
                 uint32_t *fb_ptr = tptr;
                 int i, j;
-                unsigned mask = mask0;
 
                 for( i = 0; i < (int)PDC_font_info.height; i++)
                 {
                     for( j = 0; j < (int)PDC_font_info.width; j++)
-                        *fb_ptr++ = ((fontptr[j >> 3] << (j & 7)) & mask) ? fg : bg;
+                        *fb_ptr++ = ((fontptr[j >> 3] << (j & 7)) & 0x80) ? fg : bg;
                     fb_ptr += line_len - PDC_font_info.width;
                     fontptr += font_char_size_in_bytes;
-                    if( i == shift_point)
-                       mask >>= 1;
                 }
                 srcp++;
                 len--;
@@ -446,16 +450,13 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
                 const uint8_t *fontptr = _get_glyph( *srcp, cursor_to_draw, scratch);
                 uint8_t *fb_ptr = tptr;
                 int i, j;
-                unsigned mask = mask0;
 
                 for( i = 0; i < (int)PDC_font_info.height; i++)
                 {
                     for( j = 0; j < (int)PDC_font_info.width; j++)
-                        *fb_ptr++ = ((fontptr[j >> 3] << (j & 7)) & mask) ? fg_idx : bg_idx;
+                        *fb_ptr++ = ((fontptr[j >> 3] << (j & 7)) & 0x80) ? fg_idx : bg_idx;
                     fb_ptr += line_len - PDC_font_info.width;
                     fontptr += font_char_size_in_bytes;
-                    if( i == shift_point)
-                       mask >>= 1;
                 }
                 srcp++;
                 len--;
