@@ -150,7 +150,7 @@ static void colorbox(WINDOW *win, chtype color, int hasbox)
     werase(win);
 
     maxy = getmaxy(win);
-//  getmaxyx(win, maxy, maxx);
+/*  getmaxyx(win, maxy, maxx);   */
     if (hasbox && (maxy > 2))
         box(win, 0, 0);
 
