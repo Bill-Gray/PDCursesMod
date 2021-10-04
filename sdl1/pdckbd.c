@@ -307,6 +307,11 @@ int PDC_get_key(void)
         {
             pdc_sheight = event.resize.h;
             pdc_swidth = event.resize.w;
+            if( curscr)
+            {
+                touchwin( curscr);
+                wrefresh( curscr);
+            }
 
             if (!SP->resized)
             {
