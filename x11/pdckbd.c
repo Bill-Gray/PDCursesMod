@@ -524,7 +524,7 @@ static unsigned long _process_mouse_event( const XEvent *event)
         last_button_no = button_no;
 
         napms(SP->mouse_wait);
-        while (XtAppPending(pdc_app_context))
+        while (PDC_check_key())
         {
             XEvent rel;
             XtAppNextEvent(pdc_app_context, &rel);
@@ -600,11 +600,18 @@ static unsigned long _process_mouse_event( const XEvent *event)
 
 bool PDC_check_key(void)
 {
-    XtInputMask s = XtAppPending(pdc_app_context);
+    const XtInputMask s = XtAppPending(pdc_app_context);
 
-    PDC_LOG(("PDC_check_key() - returning %s\n", s ? "TRUE" : "FALSE"));
+    if (s & XtIMTimer)
+        XtAppProcessEvent(pdc_app_context, XtIMTimer);
+    if (s & XtIMSignal)
+        XtAppProcessEvent(pdc_app_context, XtIMSignal);
+    if (s & XtIMAlternateInput)
+        XtAppProcessEvent(pdc_app_context, XtIMAlternateInput);
 
-    return pdc_resize_now || !!s;
+    PDC_LOG(("PDC_check_key() - returning %s\n", (s & XtIMXEvent) ? "TRUE" : "FALSE"));
+
+    return pdc_resize_now || !!(s & XtIMXEvent);
 }
 
 /* return the next available key or mouse event */
