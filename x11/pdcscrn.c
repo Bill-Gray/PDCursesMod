@@ -667,6 +667,14 @@ int PDC_scr_open(void)
         XtDispatchEvent(&event);
     }
 
+    if (SP->resized)
+    {
+        pdc_wwidth = resize_window_width;
+        pdc_wheight = resize_window_height;
+        pdc_resize_now = FALSE;
+        SP->resized = FALSE;
+    }
+
     PDC_init_palette( );
 
     SP->orig_attr = FALSE;
