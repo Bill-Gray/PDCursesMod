@@ -1,0 +1,308 @@
+Fonts: greek.f06,greek.f07,greek.f08,greek.f14,greek.f16
+Designer: Angelos Karageorgiou 
+E-mail: karage@insci.com, karage@scus1.ctstateu.edu
+Surface: 21 Locust St., E. Norwalk CT 06855, USA
+Tel: +1 (212) 962-1937 ext 327
+Package: VGAGREEK.ZIP
+Site: 
+Date: 1 Sep 1992
+Shareware: $10.
+------------------------------------------------------------------------
+Fonts: heblarge.f14,hebboldk.f16,hebktav1.f16,hebktav2.f16,heblarge.f16
+Designer: Aaron Schmiedel (AFS Ltd.)
+E-mail:  FIDO: 124/4106, KESHERNET: 8130/1
+Surface: c/o KESHERworks LT,7815 La Cabeza Drive,Dallas, Texas 75248,USA
+Tel: +1 (214) 239-1941
+Data: +1 (214) 239-7607
+Package: HEBDRV20.ZIP
+Site: israel.nyserent.org
+Date: 1 Sep 1992
+Registration: $18
+------------------------------------------------------------------------
+Fonts: tex-math.f14,tex-math.f16
+Designer: Dov Grobgeld
+E-mail: cfgrob@weizmann.weizmann.ac.il
+Surface: Deptartment of Chemical Physics, The Weizmann Institute of Science,
+         Rehovot,Israel
+Fax: +972-8-344 123
+Package: POPINPUT.ZIP
+Site: israel.nyserent.org
+Date: 2 Sep 1992
+Registration: Donation of $30 would be appreciated.
+------------------------------------------------------------------------
+Fonts: thinasci.f07,runic.f16,oldeng-f.f16
+Designer: Aaron M. Williams
+E-mail:           
+Tel: +1 (415) 792-0340; after 6:00  p.m. Pacific Standard Time, all week
+Surface: 35900 Turpin Way, Fremont, California 94536, USA
+Package: E G A  F o n t; Version 2.25
+Site: ?
+Date: 3 Sep 1992
+Registration: Donation of $30 would be appreciated.
+------------------------------------------------------------------------
+Fonts: persian.f14,persian.f16
+Designer: ?
+E-mail: ?
+Tel: ?
+Surface: From the help facility-
+	IRAN SYSTEM Co. 821069-821074,	
+	P.O. BOX  15875-5357 ???
+Package: aria.zip.  There is no other information other than the fact
+	that they are in the process of producing a commercial
+	wordprocessor with a number of new features such as windowing,
+	extra fonts, better menu systems (pop-up etc), WYSIWYG user
+	interface and much more.
+Site: tehran.stanford.edu
+Date: 4 Sep 1992
+Registration: ?
+------------------------------------------------------------------------
+Fonts: hercules.f10, hercules.f08, hercital.f08, hercules.f14, bigserif.f16,
+       block.f14, bigsf.f14, bold.f14, computer.f14, broadway.f14,
+       sanserif.f14, courier.f14, future.f14, hollow.f14, lcd.f14,
+       medieval.f14, script.f14, slant.f14, standard.f14, hrkgreek.f14,
+       blcksnsf.10
+Origin: Fonts supplied with the Hercules+ card.
+Design: Edited, debugged and imroved by Yossi Gil.
+Date: 6 Sep 1992
+------------------------------------------------------------------------
+Fonts: armenian.f08, armenian.f14, armenian.f16, 
+       russian.f08, russian.f14, russian.f16, 
+Package: Armenian.zip
+Site: garbo.uwasa.fi
+Designer: Andrey V. Kalantarian
+Organization: Yerevan, Armenian Academy of Sciences, Computing Center                       
+Tel: 28-30-26
+Date: 18 Sep 1992
+------------------------------------------------------------------------
+Fonts: spranto.f14,spranto1.f16,spranto2.f16
+Designer: Pierre Jelenc
+Email:  Internet:  pcj1@cunixf.cc.columbia.edu   Compuserve:   71022,1726
+Archive: ekran20.zip
+Site: garbo.uwasa.fi
+Date: 18 Sep 1992
+------------------------------------------------------------------------
+Fonts: cp111.f08,cp112.f08,cp113.f08,cp851.f08,cp853.f08,cp861.f08,cp111.f14,
+	cp112.f14,cp113.f14,cp851.f14,cp853.f14,cp861.f14,cp111.f16,cp112.f16,
+	cp113.f16,cp851.f16,cp853.f16,cp861.f16,cp111.f19,cp112.f19,cp113.f19,
+	cp437.f19,cp850.f19,cp851.f19,cp852.f19,cp853.f19,cp860.f19,cp861.f19,
+	cp863.f19,cp865.f19
+Designer: ???
+Source: AST Premium Exec DOS 5.00
+Surface: AST Research, Inc. 16215 Alton Parkway, P.O.Box 19658, 
+	Irvine,CA 9271-9658.
+Tel: 1-714-727-4141
+Fax: 1-714-727-9362
+Date: Apr 1 1993
+------------------------------------------------------------------------
+Fonts: cp864.f08,cp864.f14,cp864.f16
+Designer: ???
+Source: MS DOS 5.00
+Date: Apr 1 1993
+------------------------------------------------------------------------
+Fonts: arabdrft.f14,arabkufi.f14,arbnaskh.f14     
+Source: "ArabWord" wordprocessor. "Bilingual Word Processor" 
+Surface: Gulf Star System, W.L.L. Kuwait, 1990
+Source: MS DOS 5.00
+Date: Apr 1 1993
+------------------------------------------------------------------------
+Fonts: arabnaf.f14
+Archive: nafdemo.zip
+Surface: NAFITHA (c) 01 Systems, P.O.Box 2065, Manama, Bahrain 
+Date: Apr 1 1993
+------------------------------------------------------------------------
+Fonts: cp866.f08,rimrock.f08,rimrock.f10,backward.f14,rmrkbold.f14,
+	cp866.f14,icons.f14,inverted.f14,italics.f14,thindemo.f14,
+	cp866.f16
+Designer: Michael Burton 
+Archive: dfe104.zip
+Site: garbo.uwasa.fi
+Surface: Rimrock Software, P.O. Box 2406, Hayden, ID  83835
+Tel: (208) 772-9347 (after 6 pm Pacific Time)
+BBS:  Tech Board BBS, (208) 765-0180
+CompuServe:   71211,70
+Date: Apr 1 1993
+------------------------------------------------------------------------
+Fonts: grckssrf.f16, grckssrf.f14, grckssrf.f08 
+Archive: grkfonts.zip
+Date: Apr 1 1993
+------------------------------------------------------------------------
+Fonts: apeaus.f08, apeaus.f14, apeaus.f16
+Archive: apeau11.zip
+Site: Simtel20
+Designer: Babak Sehari
+Surface:  P. O. Box 1418; Welch Ave Station.,  Ames,  Iowa 50010 USA
+Email: sehari@iastate.edu
+------------------------------------------------------------------------
+Fonts:  2_hebrew.f16,bigserif.f14,roman.f14,thai.f14      
+	antique.f14,cyrillic.f14,stretch.f14,norway.f14,norway2.f14     
+	reverse.f14,thin.f10,hylas.f14,super.f16,finnish.f14     
+Archive: vgafonts.zip
+------------------------------------------------------------------------
+Fonts: readabl7.f16, readabl8.f16, readable.f08, readable.f10
+Designer: Miguel Farah.
+Archive: Fonts.zip (as mailed to me by the designer)
+Description: Those fonts are slightly wider than the VGA-ROM included ones, 
+	and without serifs, hence easier to read. This is particularly true 
+	when screen sizes bigger than 25x80 are used (try to use 60x132 with 
+	a standard font, and then with READABLE.F08 - you'll *note* the 
+	difference).
+Legal Stuff: The designer includes the following disclaimer, which I happily 
+	quote: "Since this is PD, there is no a warranty of any kind and I 
+	take no responsibility for the damage that these files may do to 
+	your computer/peripherals (although I'm 99.9999999999% sure that 
+	there can't possibly be any damage)."
+E-mail: mbfarah@isluga.puc.cl
+Surface Address:  Miguel Farah, Regina Pacis 1305, Santiago, Chile.
+------------------------------------------------------------------------
+Fonts: &yugosla.f14 &russian.f14 &hebrew.f14 &gaelic.f14 &europe.f14 
+	&urdu.f14 &polish.f14 &greek.f14 &farsi.f14 &arabic.f14 &turkish.f14 
+Archive: Intext Multilingual Wordprocessor Version 1.2 shareware distributor 
+	disk, which includes 14 or more language files, most of which 
+	indicating a particular language (for example, &ARABIC.ZIP, 
+	&EUROPE.ZIP, etc).
+Prepared by: Glaude David [Glu] 
+E-mail: dglaude@is1.vub.ac.be
+Designer: INTEX SOFTWARE SYSTEMS INTERNATIONAL LTD.
+Address: PO Box 3068, Stamford, CT 06905-0068.
+Tel: (203) 975-7412.  
+Fax: (203) 975-7317.
+Tlx: 287960 INTEX UR
+Comment: Please contact Intext directly for their fine multi-lingual
+	word processor and for a list of many mulilingual 
+	software products, including:
+     - MS-DOS in Arabic, Chinese, Hebrew, Japanese, Korean, Russian.
+     - Multilingual Spelling checkers, dictionaries, thesauruses.
+     - Wordprocessors supporting: Amharic, Aramaic, Armenian, Bengali,
+       Bulgarian, Chinese, Coptic, Czech, Devanagari, Georgian, Gujarati,
+       Gurkakhi, Hieroglyphics, Hindi, Hungarian, Icelandic, Inuktitut,
+       IPA, Kannada, Japanese, Khmer, Lao, Lithuanian, Malayalam,
+       Phoenician, Punjabi, Sanskrit, Sinhalese, Syriac, Tamil, Telugu,
+       Thai, Tibetan, Ugaritic, Ukranian, Viet.
+     - Desktop Publishing in Arabic, Bulgarian, Chinese, Croatian,
+       European, Greek, Hebrew, Hungarian, Japanese, Lithuanian, Persian
+       (Farsi), Polish, Russian, Serbian, Slovak, Tagalog, Turkish,
+       Ukranian.
+     - Foreign language versions of dBase, Ventura Publisher, Wordperfect,
+       WordStar.
+     - Multilingual printer fonts, including HP LaserJet and dot-matrix.
+     - Translation software for French, German, Spanish, Russian.
+------------------------------------------------------------------------
+Fonts: voynich.f16
+Archive: voyed.zip (THE VOYNICH EDITOR -- This version: 8 January 1993)
+Prepared by: Glaude David [Glu] <dglaude@is1.vub.ac.be>
+Designer: Jacques Guy <j.guy@trl.oz.au>
+Address: AIS/CSS
+	Telecom Research Laboratories
+	PO Box 249
+	Clayton 3168
+	Australia
+Comments: A special font designed to represent the letters of the Voynich 
+	manuscript, a medieval manuscript written in an unknown language, 
+	never deciphered.
+Licensing: (Quote from manual) This software is released under the 
+	concept of giftware. Dom Perignon, foie gras, truffles, Chateau 
+	Yquem, dancing girls of easy virtue, partridges in pear trees 
+	welcome. Gifts of raw uncut diamonds, gold bars, even 
+	500-Deutschemark banknotes, will be looked upon favourably.
+------------------------------------------------------------------------
+Fonts: kana.f14, kana.f16
+Prepared by: A.Weeks%bath.ac.uk@ib.rl.ac.uk
+	(converted from X11R5 .bdf fonts.)
+------------------------------------------------------------------------
+Fonts: heb-big.f14, heb-big.f14, heb-ktab.f14, heb-med.f14, heb-snsf.f14
+Archive: Simtel20 <msdos.notabene>nb-hgc*.zip
+Designers: Itamar Even-Zohar and Nimrod Gil-Ad 
+E-mail:    itiez@ccsg.tau.ac.il or (NB stuff): b10@vm.tau.ac.il  
+Address: Porter Chair of Semiotics, 
+	Tel Aviv University, 
+	Tel Aviv 69978, Israel.       
+Tel:  (+972)-3-6427233 
+Fax:  (+972)-3-6408980 
+-------------------------------------------------------------------------
+Fonts: cafe.f10,cafe.f12,police.f16,pp_roman.f16,pp_sser.f16
+Distribution as: CAFE- a mouse controlled Editor for textmode fonts 
+Designer: TBH-Softworx (Oliver Fromme)
+Address: Klingestr. 2, 3380 Goslar, Germany
+         (after 1-Jul-1993: 38640 Goslar, Germany)
+Email: inof@asterix.rz.tu-clausthal.de
+[[
+	Thanks to Jean-Marc Lasgouttes <Jean-Marc.Lasgouttes@inria.fr>
+	for sending these fonts to me!
+]]
+-------------------------------------------------------------------------
+Fonts: bdeclo.f14, bhex*.f14, smalcaps, and maybe thincaps/demo/scrp
+Origin: Font editor called CHET.
+[[
+	Thanks to Mike Threepoint <linhart@remus.rutgers.edu> 
+	for providing this information
+]]
+--------------------------------------------------------------------------
+Fonts: madrid.f10, georgian.f14, apls.f08, boxround.f16, cntdown.f16,
+	side.f10, lbitalic.f14, cp437bgr.f08, lbitalic.f16, lb_ocr.f16
+	lbarabic.f14, cp437alt.f08, pc.f24, thin_ss.f16, boxround.f14, 
+	pc_7.f14, rom8pix.f08, cyril_b.f08, lb_misc.f14, cntdown.f14, 
+	pc_6.f14, thin_ss.f08, thin_ss.f14, lb_large.f16, fractur.f14, 
+	oldeng.f14, lbscript.f14, lb_ocr.f14, gaelic.f14 
+Origin: Font editor for Nantucket TOOLS II, Lothar Bongartz 1989 - 1991
+Prepared by: Glaude David [Glu] <dglaude@is1.vub.ac.be>
+Thanks to:  Vivian Tramasure who wrote a small program in clipper 
+	to help in the decompression.
+-------------------------------------------------------------------------
+Fonts: ascii.f14, bway2.f14, draw.f14, drawhi.f14, iso.f14, iso2.f14,
+	iso3.f14, iso4.f14, mac.f08, security.f14, smcapnum.f14, 
+	cyril2.f14, greek2.f14
+Designer:  Mike Threepoint 
+E-Mail: linhart@trident.usacs.rutgers.edu
+
+Here is some more information on the contributed fonts in the words
+of the designer:
+
+	bway2.f14: I edited BROADWAY.F14 so that the high-bit characters 
+		with diacritical marks (accents, etc.) would be in the 
+		same style.
+
+	smcapnum.f14: The small capitals font with book-style numerals 
+		(descending 2's and so forth).
+
+	ascii.f14: Replace the non-standard IBM control character symbols 
+		with the ASCII standard symbols for control characters 
+		(a standard only a couple manufacturers observe, but...)
+
+	draw.f14: ANSI ESC (0 Ruling Character Set, with the Latin-1 
+		high-bit characters.
+
+	drawhi.f14: ANSI ESC )3 Supplementary Character Set.
+
+	security.f14: VT securities & exchange character set, with the 
+		Latin-1 high-bit characters.
+
+
+	iso.f14, iso2.f14, iso3.f14, iso4.f14, greek2.f14, cyril2.f14:
+		Fonts made from a draft of the ISO 8859 character set 
+		standard.
+
+	mac.f08: Standard Macintosh font characters.
+-------------------------------------------------------------------------
+Fonts:  scrwl~~~.f16, scrwl---.f16, swissav2.f16, swissbx2.f16
+Archive: vfont.zip  (V F O N T   V4.36)
+Copyright: Program and Documentation are Copyright 1989 by clySmic software.
+	All rights reserved. released as "Freeware".
+Designer: Ralph B Smith Jr
+Address: clySmic software
+	P.O. Box 2271
+	Empire State Plaza
+	Albany, NY 12220
+	USA
+Diskette distributed by:
+	Public (software) Library
+	P.O.Box 35705 - F
+	Houston, TX 77235-5705
+	Tel: 1-800-2424-PSL Outside of U.S. or in Texas or for general 
+	information, Call 1-713-524-6394
+[[ 
+	Thanks to Patrick Arzul (Email: c/o andrewd@cs.uct.ac.za)
+	for providing this information
+]]
+
+
+

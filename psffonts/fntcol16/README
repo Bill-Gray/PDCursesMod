@@ -1,0 +1,285 @@
+Here are most of the fonts from fntcol16.zip, converted to BMP format 
+for use with PDCurses for SDL. They've been renamed, such that files 
+with the extension ".f08" would now end in "-08.bmp", and so on. I've 
+also removed the ampersands. The original descriptions follow (in 
+alphabetical order, not the original order):
+
+2_hebrew-14.bmp	old/modern heb. chars nonstd ranges.
+antique-14.bmp	Rusty old characters.
+apeaus-08.bmp	Persian-English-Arabic-Urdu font
+apeaus-14.bmp	Persian-English-Arabic-Urdu font
+apeaus-16.bmp	Persian-English-Arabic-Urdu font
+apls-08.bmp	Lothar Bongartz: thin fnt/special math 
+arabdrft-14.bmp	Arabic draft font for EGA
+arabic-14.bmp	INTEX font: Arabic at height 14
+arabkufi-14.bmp	Arabic Kufi style (?) style font for EGA
+arabnaf-14.bmp	Arabic/Naftih font at height 14
+arbnaskh-14.bmp	Arabic Naskh style font for EGA
+armenian-08.bmp	Armenian font; chars 128-175, 224-253.
+armenian-14.bmp	Armenian font; chars 128-175, 224-253.
+armenian-16.bmp	Armenian font; chars 128-175, 224-253
+art-16.bmp	Artistic letters, styled symbols font 
+ascii-14.bmp	True ASCII standard for control chars
+backward-14.bmp	Rimrock Software: Mirror image font.
+bdeclo-14.bmp	Block chars + dec code for ctrls
+bhexall-14.bmp	Block chars + hex code for non-ascii 
+bhexbox-14.bmp	Block /hex for non-ascii non-draw chars 
+bhexhi-14.bmp	Block chars + hex code for meta-ascii 
+bhexlo-14.bmp	Block chars + hex code for ctrls
+bigserif-14.bmp	Big san-serif letters
+bigserif-16.bmp	Hercules+ font: Big SanSerif chars
+bigsf-14.bmp	Hercules+ font: Big SansSerif chars
+binaryed-14.bmp	Binaries editing font: Ctrls show hex 
+blcksnsf-10.bmp	Hercules+ font: Block sanserif chars
+block-14.bmp	Hercules+ font: Nice block large chars
+bold-14.bmp	Hercules+ font: Bold chrs, visible ^ctrl
+boxround-14.bmp	L. Bongartz: Rounded box chars (cp437)
+boxround-16.bmp	Lothar Bongartz: 
+broadway-14.bmp	Hercules+ font: ``Broadway'' neon chars
+bthin-14.bmp	Very thin block chars at height 14
+bway2-14.bmp	BROADWAY-14.bmp edited to span Europ. chars
+cafe-10.bmp	Like evga-alt-10.bmp. Different diactricts.
+cafe-12.bmp	Like evga-alt-12.bmp. Different diactricts.
+cntdown-14.bmp	Minor variations on macntsh-14.bmp.
+cntdown-16.bmp	Lothar Bongartz: Broadway like font
+computer-14.bmp	Hercules+ font: Computer/Checks style
+courier-14.bmp	Hercules+ font: Courier - like LateX \tt
+cp111-08.bmp	Greek code page at height 8
+cp111-14.bmp	Greek code page at height 14
+cp111-16.bmp	Greek code page at height 16
+cp111-19.bmp	Greek code page at height 19
+cp112-08.bmp	Turkish code page at height 8
+cp112-14.bmp	Turkish code page at height 14
+cp112-16.bmp	Turkish code page at height 16
+cp112-19.bmp	Turkish code page at height 19
+cp113-08.bmp	Yugoslavian code page at height 8
+cp113-14.bmp	Yugoslavian code page at height 14
+cp113-16.bmp	Yugoslavian code page at height 16
+cp113-19.bmp	Yugoslavian code page at height 19
+cp437-08.bmp	United States code page at height 8
+cp437-14.bmp	United States code page at height 14 
+cp437-16.bmp	United States code page at height 16 
+cp437-19.bmp	United States code page at height 19
+cp437alt-08.bmp	Bongartz: Diacritivariations on cp437 
+cp437bgr-08.bmp	Bongartz: Like cp437 + Thin bsns. graph
+cp850-08.bmp	Multilingual code page at height 8
+cp850-14.bmp	Multilingual code page at height 14
+cp850-16.bmp	Multilingual code page at height 16
+cp850-19.bmp	Multilingual code page at height 19
+cp851-08.bmp	Greek code page at height 8
+cp851-14.bmp	Greek code page at height 14
+cp851-16.bmp	Greek code page at height 16
+cp851-19.bmp	Greek code page at height 19
+cp852-08.bmp	Cyrillic code page at height 8 
+cp852-14.bmp	Cyrillic code page at height 14 
+cp852-16.bmp	Cyrillic code page at height 16 
+cp852-19.bmp	Slavic/LATIN II code page at height 19
+cp853-08.bmp	Turkish/LATIN II code page at height 8
+cp853-14.bmp	Turkish/LATIN II code page at height 14
+cp853-16.bmp	Turkish/LATIN II code page at height 16
+cp853-19.bmp	Turkish/LATIN II code page at height 19
+cp860-08.bmp	Portuguese code page at height 8
+cp860-14.bmp	Portuguese code page at height 14
+cp860-16.bmp	Portuguese code page at height 16
+cp860-19.bmp	Portuguese code page at height 19
+cp861-08.bmp	Icelandic code page at height 8
+cp861-14.bmp	Icelandic code page at height 14
+cp861-16.bmp	Icelandic code page at height 16
+cp861-19.bmp	Icelandic code page at height 19
+cp862-08.bmp	Hebrew code page at height 8 
+cp862-14.bmp	Hebrew code page at height 14 
+cp862-16.bmp	Hebrew code page at height 16 
+cp863-08.bmp	Canadian-French code page at height 8 
+cp863-14.bmp	Canadian-French code page at height 14 
+cp863-16.bmp	Canadian-French code page at height 16 
+cp863-19.bmp	French-Candadian code page at height 19
+cp864-08.bmp	Arabic code page (DOS 5) at height 
+cp864-14.bmp	Arabic code page (DOS 5) at height 
+cp864-16.bmp	Arabic code page (DOS 5) at height 
+cp865-08.bmp	Nordic code page at height 8 
+cp865-14.bmp	Nordic code page at height 14 
+cp865-16.bmp	Nordic code page at height 16 
+cp865-19.bmp	Nordic code page at height 19
+cp866-08.bmp	Rimrock Software: Cyrillic code page
+cp866-14.bmp	Rimrock Software: Cyrillic code page
+cp866-16.bmp	Rimrock Software: Cyrillic code page 
+cp880-08.bmp	Cyrillic 8859-5 code page at height 8 
+cp880-14.bmp	Cyrillic 8859-5 code page at height 14 
+cp880-16.bmp	Cyrillic 8859-5 code page at height 16 
+cp881-08.bmp	Latin #1 code page at height 8 
+cp881-14.bmp	Latin #1 code page at height 14 
+cp881-16.bmp	Latin #1 code page at height 16 
+cp882-08.bmp	Latin #2 code page at height 8 
+cp882-14.bmp	Latin #2 code page at height 14 
+cp882-16.bmp	Latin #2 code page at height 16 
+cp883-08.bmp	Latin #3 code page at height 8 
+cp883-14.bmp	Latin #3 code page at height 14 
+cp883-16.bmp	Latin #3 code page at ht 16
+cp884-08.bmp	Latin #4 code page at height 8 
+cp884-14.bmp	Latin #4 code page at height 14 
+cp884-16.bmp	Latin #4 code page at height 16 
+cp885-08.bmp	Latin #5 code page at height 8 
+cp885-14.bmp	Latin #5 code page at height 14 
+cp885-16.bmp	Latin #5 code page at height 16 
+cyril2-14.bmp	Based on draft of ISO 8859 standard
+cyril_b-08.bmp	Lothar Bongartz: Cyrillic chars
+cyrill1-08.bmp	Variations on Cyrillic font (1/3)
+cyrill1-14.bmp	Variations on Cyrillic font (1/3)
+cyrill1-16.bmp	Variations on Cyrillic font (1/3)
+cyrill2-08.bmp	Variations on Cyrillic font (2/3)
+cyrill2-14.bmp	Variations on Cyrillic font (2/3)
+cyrill2-16.bmp	Variations on Cyrillic font (2/3)
+cyrill3-08.bmp	Variations on Cyrillic font (3/3)
+cyrill3-14.bmp	Variations on Cyrillic font (3/3)
+cyrill3-16.bmp	Variations on Cyrillic font (3/3)
+cyrillic-14.bmp	Cyrillic characters lin lower ascii 
+decorate-16.bmp	Decorative chars/symbols font 
+draw-14.bmp	ANSI ESC (0 Ruling Char Set / Latin-1
+drawhi-14.bmp	ANSI ESC )3 Supplementary Char Set.
+europe-14.bmp	INTEX font: Yugoslavian at height 14
+evga-alt-08.bmp	Alternate ega/vga font at height 8
+evga-alt-09.bmp	Alternate ega/vga font at height 9
+evga-alt-10.bmp	Alternate ega/vga font at height 10
+evga-alt-11.bmp	Alternate ega/vga font at height 11
+evga-alt-12.bmp	Alternate ega/vga font at height 12
+evga-alt-13.bmp	Alternate ega/vga font at height 13
+farsi-14.bmp	INTEX font: Farsi at height 14
+finnish-14.bmp	Font useful for finnish
+fractur-14.bmp	Lothar Bongartz: Fractur style Eng Chars
+future-14.bmp	Hercules+ font: Stylistic future chars
+gaelic1-14.bmp	INTEX font: Gaelic at height 14
+gaelic-14.bmp	Lothar Bongartz: Gaelic style Eng. chars
+georgian-14.bmp	Lothar Bongartz: Georgian language font
+grckssrf-08.bmp	Greek sanserif, with curved double lines
+grckssrf-14.bmp	Greek sanserif, with curved double lines
+grckssrf-16.bmp	Greek sanserif, with curved double lines
+greek-06.bmp	Modern Greek ANSI font at height 6
+greek-07.bmp	Modern Greek ANSI font at height 7
+greek-08.bmp	Modern Greek ANSI font at height 8
+greek1-14.bmp	INTEX font: Greek at height 14
+greek-14.bmp	Modern Greek ANSI font at height 14
+greek-16.bmp	Modern Greek ANSI font at height 16
+greek2-14.bmp	Based on draft of ISO 8859 standard
+hack4th-16.bmp	M. Marcelais Character tiles for Nethack
+handugly-16.bmp	Very bad hand writing font at height 16 
+handwrit-14.bmp	Hand writing like font at height 14
+handwrit-16.bmp	Hand writing like font at height 16
+heb-7bit-16.bmp	Low Ascii Heb: Back-Quote to z (SINIT)
+heb-big-14.bmp	Hebrew Big chars font (I. Even Zohar)
+heb-bold-16.bmp	Bold font with Hebrew chars for lcds.
+hebboldk-16.bmp	Hebrew Block Bold chars
+hebclrgf-14.bmp	Calligraphic Hebrew font. Heb at 224:255
+heb-ktab-14.bmp	Hebrew Hand-writing (I. Even Zohar)
+hebktav1-16.bmp	Hebrew script (Ktav Yad) thin letters 
+hebktav2-16.bmp	Hebrew script (Ktav Yad) thick letters 
+heblarge-14.bmp	Hebrew large bold font at height 14
+heblarge-16.bmp	Hebrew large bold font at height 16
+heb-med-14.bmp	Hebrew Mid-sized font (I. Even Zohar)
+hebrew-14.bmp	INTEX font: Old fasioned Hebrew. hgt 14
+heb-snsf-14.bmp	Hebrew Sanserif font (I. Even Zohar)
+hebugly-16.bmp	Huge and ugly Hebrew font at height 16 
+hebyogi-16.bmp	DOS CP 862 improved (?) by Yossi Gil
+hercital-08.bmp	Hercules+ Card font: italics ascii.
+hercules-08.bmp	Hercules+ Card font: plain chars hgt 8
+hercules-10.bmp	Hercules+ Card font: plain (sanserif)
+hercules-14.bmp	Hercules+ Card font: plain chars hgt 14
+hollow-14.bmp	Hercules+ font: Like Macintosh outline
+hrkgreek-14.bmp	Hercules+ font: Greek chars in [a-zA-Z]
+hylas-14.bmp	Thin characters
+icons-14.bmp	Rimrock Software: GUI font. 2chars=>icon
+inverted-14.bmp	Rimrock Software: Up-side-down font
+iso-14.bmp	Based on draft of ISO 8859 standard
+iso2-14.bmp	Based on draft of ISO 8859 standard
+iso3-14.bmp	Based on draft of ISO 8859 standard
+iso4-14.bmp	Based on draft of ISO 8859 standard
+italics-14.bmp	Rimrock Software: Italic characters font
+kana-14.bmp	Roman/japanese katakana fnt (from X11R5)
+kana-16.bmp	Roman/japanese katakana fnt (from X11R5)
+lbarabic-14.bmp	Lothar Bongartz: Fancy arabic chars
+lbitalic-14.bmp	Lothar Bongartz's italics (European inc)
+lbitalic-16.bmp	Lothar Bongartz's italics (European inc)
+lb_large-16.bmp	L. Bongartz: Very large font.
+lb_misc-14.bmp	Bongartz: Misc: Greek/Cyrill/ram
+lb_ocr-14.bmp	Lothar Bongartz: OCR (?) like font
+lb_ocr-16.bmp	Lothar Bongartz: OCR (?) like font
+lbscript-14.bmp	L. Bongartz script. Small. European inc.
+lcd-14.bmp	Hercules+ font: Like calculator lcd disp
+mac-08.bmp	Standard Macintosh font characters.
+macntosh-14.bmp	Apple's Macintosh style font height 14 
+macntosh-16.bmp	Apple's Macintosh style font height 16 
+madrid-10.bmp	Alt. design + some special math symbols
+medieval-14.bmp	Hercules+ font: Medieval != old english!
+modern-16.bmp	Straight and simple font at height 16 
+norway-14.bmp	Nordic font.
+norway2-14.bmp	Another nordic font
+oldeng-14.bmp	L. Bongartz: Old English fancy chars
+oldeng-f-16.bmp	Fancy old English font. Not all meta's
+old-engl-14.bmp	Old English font at height 14 
+old-engl-16.bmp	Old English font at height 16 
+pc_6-14.bmp	Lothar Bongartz: 6x14 matrix font
+pc_7-14.bmp	Lothar Bongartz: 7x16 matrix font
+persian-14.bmp	Font for Iranian incl digits at 128:255
+persian-16.bmp	Font for Iranian incl digits at 128:255
+police-16.bmp	Like thinscrp-14.bmp but at height 16
+polish1-14.bmp	INTEX font: Polish at height 14
+polish-14.bmp	L. Bongartz polish.Zz+dot,Ll+slash. 
+pp_roman-16.bmp	Like cp437-16.bmp. Different diactricts.
+pp_sser-16.bmp	A little better than sanserif-16.bmp
+readabl7-16.bmp	Farah's easy to read font for 16x8 grid
+readabl8-16.bmp	Farah's easy to read font for 16x9 grid
+readable-08.bmp	Farah's easy to read fnt e.g for 132x60
+readable-10.bmp	Farah's easy to read font at Height 10
+reverse-14.bmp	Inverse video but otherwise regular font
+rimrock-10.bmp	Rimrock Software: Best font at height 10
+rmrkbold-14.bmp	Rimrock Software: full bold font
+rom8pix-08.bmp	Bongartz: Yet another minor 437 variant
+roman-14.bmp	Another roman/latin font
+roman-16.bmp	Latin should be written using this font 
+runic-14.bmp	Vickings font for lower case chars
+russian-08.bmp	Russian font; chars 128-175, 224-239
+russian1-14.bmp	INTEX font: Russian at height 14
+russian-14.bmp	Russian font; chars 128-175, 224-239
+russian-16.bmp	Russian font; chars 128-175, 224-239
+sanserif-14.bmp	Hercules+ Card font: SanSerif chars
+sanserif-16.bmp	Modern slim characters font height 16
+script-14.bmp	Hercules+ font: Handwriting chars.
+scrwl----16.bmp	Addam's family font. Straight block char
+scrwl~~~-16.bmp	Addam's family font. Wiggledblock chars 
+security-14.bmp	VT securities & exchange / Latin-1
+side-10.bmp	Bongartz's Sideways font at height 10.
+slant-14.bmp	Hercules+ font: 45/90 deg font.
+smalcaps-14.bmp	small caps fonts at height 14 
+smcapnum-14.bmp	Small capitals + book-style numerals
+spranto1-16.bmp	Esperanto font (skewed) at height 16
+spranto-14.bmp	Esperanto font (skewed) at height 14
+spranto2-16.bmp	Esperanto font (non-skewed) at height 16
+square-12.bmp	45/90 degrees comp font at height 12 
+standard-14.bmp	Hercules+ font: Standard rom like chars
+standard-16.bmp	Rom like font. Includes o/ and O/ chars 
+stretch-14.bmp	Wide font
+subsup-16.bmp	Block chars + hex code for non-ascii 
+super-16.bmp	Font with superscript characters
+swiss-16.bmp	Helevetica like font; anon-ascii
+swiss-av-16.bmp	Helevetica like font; improved A and V 
+swissav2-16.bmp	Minor variations on swissav2-16.bmp
+swissbox-16.bmp	Helevetica like font incl block chars 
+swissbx2-16.bmp	Minor variations on SwissBox-16.bmp
+tex-math-14.bmp	La/TeX font: math, symbols, greek, etc.
+tex-math-16.bmp	La/TeX font: math, symbols, greek, etc.
+thai-14.bmp	Thai characters font. [1-127]==[128-255]
+thin-08.bmp	Thin chars font. previously thin-10.bmp
+thinasci-07.bmp	Thin letters. Ascii + block chars only
+thincaps-14.bmp	Thin small caps font at height 14
+thindemo-14.bmp	Rimrock Software: A thin demo font
+thinscrp-14.bmp	Thin script like font at height 14
+thin_ss-08.bmp	Lothar Bongartz: Thin Sanserif font
+thin_ss-14.bmp	L. Bongartz: Thin sanserif font
+thin_ss-16.bmp	Lothar Bongartz: Thin sanserif font
+turkish-14.bmp	INTEX font: Turkish at height 14
+urdu-14.bmp	INTEX font: Urdu at height 14
+vga-rom-08.bmp	VGA builtin font at height 8 
+vga-rom-14.bmp	VGA builtin font at height 14 
+vga-rom-16.bmp	VGA builtin font at height 16 
+voynich-16.bmp	For the undeciphered medieval manuscipt
+wiggly-16.bmp	Curved letters font at height 16
+yugosla-14.bmp	INTEX font: Yugoslavian at height 14

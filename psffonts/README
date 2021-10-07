@@ -1,0 +1,38 @@
+Fonts for PDCurses for SDL
+==========================
+
+Since PDCurses for SDL uses its own font format, you probably don't have 
+any ready to use. Here are a few to get you started. The ones in the 
+top-level directory are as follows:
+
+10x20.bmp	- From the 10x20 font that comes with Xorg
+6x12.bmp	- From Xorg
+9x18.bmp	- From Xorg
+default.bmp	- PDCurses' default font, from pc8x16s.bdf in the
+		  vgafonts.tar.gz package
+lc12x20.bmp	- Lucida Console at 12x20
+18x18.bmp	- From Xorg
+8x13.bmp	- From Xorg
+cour11x17.bmp	- From Xorg -- Courier
+dosemu.bmp	- DOSEmu's default font (8x16)
+medieval2.bmp	- I always liked the "medieval" font (see fntcol16); 
+		  this is an enlarged (16x28), smoothed version
+4x6.bmp		- From Xorg
+9x15.bmp	- From Xorg
+cour20x29.bmp	- From Xorg -- Courier
+vga11x19.bmp	- From vgafonts, which says it's Lucida Sans Typewriter
+
+In addition, the fntcol16 directory contains most of the fonts from the 
+fntcol16.zip package. These are all 8 pixels wide, with the height given 
+in the filename (e.g., modern-16.bmp).
+
+
+Distribution Status
+-------------------
+
+I'll let copyleft.txt in the fntcol16 directory explain the situation, 
+and just add that I don't claim any copyright on the compilation, 
+either.
+
+-- William McBrine
+   July 11, 2007
