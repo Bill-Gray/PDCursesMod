@@ -2,8 +2,9 @@
 
 ncurses_testdir = $(HOME)/ncurses-6.2/test
 
-NCURSES_TESTS	= bs$(E) demo_new_pair$(E)  gdc$(E) hanoi$(E) knight$(E) lrtest$(E) \
-ncurses$(E) tclock$(E)
+NCURSES_TESTS	= bs$(E) demo_new_pair$(E) demo_panels$(E) gdc$(E) \
+hanoi$(E) ins_wide$(E) knight$(E) lrtest$(E) \
+ncurses$(E) tclock$(E) test_add_wchstr$(E) test_addwstr$(E)
 
 ncurses_tests: $(NCURSES_TESTS)
 
@@ -18,11 +19,17 @@ bs$(E): $(ncurses_testdir)/bs.c
 demo_new_pair$(E): $(ncurses_testdir)/demo_new_pair.c $(ncurses_testdir)/popup_msg.c $(srcdir)/terminfo.c
 	$(BUILD) $(NCFLAGS) -o $@ $^ $(LDFLAGS)
 
+demo_panels$(E): $(ncurses_testdir)/demo_panels.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
 gdc$(E): $(ncurses_testdir)/gdc.c
 	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
 
 hanoi$(E): $(ncurses_testdir)/hanoi.c
 	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS) -lm
+
+ins_wide$(E): $(ncurses_testdir)/ins_wide.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
 
 knight$(E): $(ncurses_testdir)/knight.c
 	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
@@ -35,3 +42,9 @@ ncurses$(E): $(ncurses_testdir)/ncurses.c
 
 tclock$(E): $(ncurses_testdir)/tclock.c
 	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS) -lm
+
+test_add_wchstr$(E): $(ncurses_testdir)/test_add_wchstr.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+test_addwstr$(E): $(ncurses_testdir)/test_addwstr.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
