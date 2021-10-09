@@ -330,7 +330,7 @@ static struct combined_char
     int32_t root, added;
 } *combos = NULL;
 
-static int find_combined_char_idx( const cchar_t root, const cchar_t added)
+int PDC_find_combined_char_idx( const cchar_t root, const cchar_t added)
 {
     int i;
 
@@ -406,7 +406,7 @@ int waddch( WINDOW *win, const chtype ch)
             x = win->_maxx - 1;
         }
         text = COMBINED_CHAR_START
-                     + find_combined_char_idx( win->_y[y][x], text);
+                     + PDC_find_combined_char_idx( win->_y[y][x], text);
     }
 #endif
 
