@@ -350,6 +350,9 @@ int PDC_find_combined_char_idx( const cchar_t root, const cchar_t added)
     return( i);
 }
 
+#define IS_LOW_SURROGATE( c) ((c) >= 0xdc00 && (c) < 0xe000)
+#define IS_HIGH_SURROGATE( c) ((c) >= 0xd800 && (c) < 0xdc00)
+
 int PDC_expand_combined_characters( const cchar_t c, cchar_t *added)
 {
     if( !c)    /* flag to free up memory */
@@ -396,17 +399,31 @@ int waddch( WINDOW *win, const chtype ch)
 #ifdef USING_COMBINING_CHARACTER_SCHEME
     text_width = PDC_wcwidth( (int)text);
 
-    if( !text_width && text && (x || y))
-    {          /* it's a combining char;  combine w/prev char */
-        if( x)
-            x--;
-        else
+    if( x || y)
+    {
+        const bool is_combining = (text && !text_width);
+        const bool is_low_surrogate = IS_LOW_SURROGATE( text);
+
+        if( is_combining || is_low_surrogate)
         {
-            y--;
-            x = win->_maxx - 1;
+            chtype prev_char;
+
+            if( x)
+                x--;
+            else
+            {
+                y--;
+                x = win->_maxx - 1;
+            }
+            prev_char = win->_y[y][x] & A_CHARTEXT;
+            if( is_combining)
+                text = COMBINED_CHAR_START
+                         + PDC_find_combined_char_idx( prev_char, text);
+            else if( IS_HIGH_SURROGATE( prev_char))
+                text = 0x10000 + ((prev_char - 0xd800) << 10) + (text - 0xdc00);
+            else     /* low surrogate after a non-high surrogate;  not */
+                text = prev_char;   /* supposed to happen */
         }
-        text = COMBINED_CHAR_START
-                     + PDC_find_combined_char_idx( win->_y[y][x], text);
     }
 #endif
 
