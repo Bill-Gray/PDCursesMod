@@ -1466,6 +1466,10 @@ static void supergradient(int tmarg)
 
     attrset( COLOR_PAIR( 0));
     mvaddstr(tmarg, 3, " Generalized gradients ");
+    mvaddstr( 0, 1, "Black");
+    mvaddstr( 0, COLS - 4, "Red");
+    mvaddstr( LINES - 1, COLS - 7, "Yellow");
+    mvaddstr( LINES - 1, 1, "Green");
 
     mvaddstr(tmarg + 19, 3, "Press any key to continue");
     getch();
