@@ -21,6 +21,8 @@
    #include <curses.h>
 #endif
 
+#define INTENTIONALLY_UNUSED_PARAMETER( param) (void)(param)
+
 #include <string.h>
 #include <stdio.h>
 #include <locale.h>
@@ -45,6 +47,8 @@ static void slk_setup( const int slk_format)
     if( slk_format != old_format)
        slk_init( slk_format);
     old_format = slk_format;
+#else
+    INTENTIONALLY_UNUSED_PARAMETER( slk_format);
 #endif
     for( i = 0; labels[i]; i++)
        slk_set( i + 1, labels[i], 1);
