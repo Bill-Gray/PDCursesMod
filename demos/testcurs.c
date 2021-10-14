@@ -983,42 +983,33 @@ void acsTest(WINDOW *win)
         "ACS_ULCORNER", "ACS_URCORNER", "ACS_LLCORNER", "ACS_LRCORNER",
         "ACS_LTEE", "ACS_RTEE", "ACS_TTEE", "ACS_BTEE", "ACS_HLINE",
         "ACS_VLINE", "ACS_PLUS",
-
-#ifdef ACS_D_ULCORNER
         "ACS_D_ULCORNER", "ACS_D_URCORNER", "ACS_D_LLCORNER", "ACS_D_LRCORNER",
         "ACS_D_LTEE", "ACS_D_RTEE", "ACS_D_TTEE", "ACS_D_BTEE", "ACS_D_HLINE",
         "ACS_D_VLINE", "ACS_D_PLUS",
-#endif
-#ifdef ACS_SD_ULCORNER
+
+        "ACS_T_ULCORNER", "ACS_T_URCORNER", "ACS_T_LLCORNER", "ACS_T_LRCORNER",
+        "ACS_T_LTEE", "ACS_T_RTEE", "ACS_T_TTEE", "ACS_T_BTEE", "ACS_T_HLINE",
+        "ACS_T_VLINE", "ACS_T_PLUS",
+
         "ACS_SD_ULCORNER", "ACS_SD_URCORNER", "ACS_SD_LLCORNER",
         "ACS_SD_LRCORNER", "ACS_SD_LTEE",
         "ACS_SD_RTEE", "ACS_SD_TTEE", "ACS_SD_BTEE", "ACS_SD_PLUS",
         "ACS_DS_ULCORNER", "ACS_DS_URCORNER", "ACS_DS_LLCORNER",
         "ACS_DS_LRCORNER", "ACS_DS_LTEE", "ACS_DS_RTEE", "ACS_DS_TTEE",
         "ACS_DS_BTEE", "ACS_DS_PLUS",
-#endif
         "ACS_S1",
-#ifdef ACS_S3
         "ACS_S3", "ACS_S7",
-#endif
         "ACS_S9", "ACS_DIAMOND",
-#ifdef ACS_CLUB
         "ACS_CLUB", "ACS_SPADE", "ACS_HEART",
         "ACS_LTBOARD",
-#endif
         "ACS_BOARD", "ACS_CKBOARD", "ACS_DEGREE", "ACS_PLMINUS",
         "ACS_BULLET",
-#ifdef ACS_SM_BULLET
         "ACS_SM_BULLET", "ACS_MED_BULLET", "ACS_WHITE_BULLET",
         "ACS_PILCROW", "ACS_SECTION", "ACS_SMILE", "ACS_REV_SMILE",
-#endif
         "ACS_LARROW", "ACS_RARROW", "ACS_UARROW", "ACS_DARROW",
         "ACS_LANTERN", "ACS_BLOCK",
-#ifdef ACS_LEQUAL
         "ACS_LEQUAL", "ACS_GEQUAL", "ACS_NEQUAL",
         "ACS_PI",  "ACS_STERLING",
-#endif
-#ifdef ACS_CENT
         "ACS_CENT", "ACS_YEN", "ACS_PESETA",
         "ACS_ALPHA", "ACS_BETA", "ACS_GAMMA", "ACS_UP_SIGMA",
         "ACS_LO_SIGMA", "ACS_MU", "ACS_TAU", "ACS_UP_PHI", "ACS_LO_PHI",
@@ -1032,8 +1023,7 @@ void acsTest(WINDOW *win)
         "ACS_A_ORDINAL", "ACS_O_ORDINAL",
         "ACS_INV_BANG", "ACS_INV_QUERY",
         "ACS_LEFT_ANG_QU", "ACS_RIGHT_ANG_QU",
-        "ACS_CENTER_SQU", "ACS_F_WITH_HOOK",
-#endif
+        "ACS_CENTER_SQU", "ACS_F_WITH_HOOK"
     };
 
     const chtype acs_values[] =
@@ -1046,7 +1036,18 @@ void acsTest(WINDOW *win)
         ACS_D_ULCORNER, ACS_D_URCORNER, ACS_D_LLCORNER, ACS_D_LRCORNER,
         ACS_D_LTEE, ACS_D_RTEE, ACS_D_TTEE, ACS_D_BTEE, ACS_D_HLINE,
         ACS_D_VLINE, ACS_D_PLUS,
+#else
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 #endif
+
+#ifdef ACS_T_ULCORNER
+        ACS_T_ULCORNER, ACS_T_URCORNER, ACS_T_LLCORNER, ACS_T_LRCORNER,
+        ACS_T_LTEE, ACS_T_RTEE, ACS_T_TTEE, ACS_T_BTEE, ACS_T_HLINE,
+        ACS_T_VLINE, ACS_T_PLUS,
+#else
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+#endif
+
 #ifdef ACS_SD_ULCORNER
         ACS_SD_ULCORNER, ACS_SD_URCORNER, ACS_SD_LLCORNER,
         ACS_SD_LRCORNER, ACS_SD_LTEE,
@@ -1054,25 +1055,36 @@ void acsTest(WINDOW *win)
         ACS_DS_ULCORNER, ACS_DS_URCORNER, ACS_DS_LLCORNER,
         ACS_DS_LRCORNER, ACS_DS_LTEE, ACS_DS_RTEE, ACS_DS_TTEE,
         ACS_DS_BTEE, ACS_DS_PLUS,
+#else
+        0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0,
 #endif
         ACS_S1,
 #ifdef ACS_S3
         ACS_S3, ACS_S7,
+#else
+        0, 0,
 #endif
         ACS_S9, ACS_DIAMOND,
 #ifdef ACS_CLUB
         ACS_CLUB, ACS_SPADE, ACS_HEART, ACS_LTBOARD,
+#else
+        0, 0, 0, 0,
 #endif
         ACS_BOARD, ACS_CKBOARD, ACS_DEGREE, ACS_PLMINUS, ACS_BULLET,
 #ifdef ACS_SM_BULLET
         ACS_SM_BULLET, ACS_MED_BULLET, ACS_WHITE_BULLET,
         ACS_PILCROW, ACS_SECTION, ACS_SMILE, ACS_REV_SMILE,
+#else
+        0, 0, 0, 0, 0, 0, 0,
 #endif
         ACS_LARROW, ACS_RARROW, ACS_UARROW, ACS_DARROW,
         ACS_LANTERN, ACS_BLOCK,
 #ifdef ACS_LEQUAL
         ACS_LEQUAL, ACS_GEQUAL, ACS_NEQUAL,
         ACS_PI,  ACS_STERLING,
+#else
+        0, 0, 0, 0, 0,
 #endif
 #ifdef ACS_CENT
         ACS_CENT, ACS_YEN, ACS_PESETA,
@@ -1088,7 +1100,7 @@ void acsTest(WINDOW *win)
         ACS_A_ORDINAL, ACS_O_ORDINAL,
         ACS_INV_BANG, ACS_INV_QUERY,
         ACS_LEFT_ANG_QU, ACS_RIGHT_ANG_QU,
-        ACS_CENTER_SQU, ACS_F_WITH_HOOK,
+        ACS_CENTER_SQU, ACS_F_WITH_HOOK
 #endif
     };
 
@@ -1103,7 +1115,18 @@ void acsTest(WINDOW *win)
         WACS_D_ULCORNER, WACS_D_URCORNER, WACS_D_LLCORNER, WACS_D_LRCORNER,
         WACS_D_LTEE, WACS_D_RTEE, WACS_D_TTEE, WACS_D_BTEE, WACS_D_HLINE,
         WACS_D_VLINE, WACS_D_PLUS,
+#else
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 #endif
+
+#ifdef WACS_T_ULCORNER
+        WACS_T_ULCORNER, WACS_T_URCORNER, WACS_T_LLCORNER, WACS_T_LRCORNER,
+        WACS_T_LTEE, WACS_T_RTEE, WACS_T_TTEE, WACS_T_BTEE, WACS_T_HLINE,
+        WACS_T_VLINE, WACS_T_PLUS,
+#else
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+#endif
+
 #ifdef WACS_SD_ULCORNER
         WACS_SD_ULCORNER, WACS_SD_URCORNER, WACS_SD_LLCORNER,
         WACS_SD_LRCORNER, WACS_SD_LTEE,
@@ -1111,25 +1134,36 @@ void acsTest(WINDOW *win)
         WACS_DS_ULCORNER, WACS_DS_URCORNER, WACS_DS_LLCORNER,
         WACS_DS_LRCORNER, WACS_DS_LTEE, WACS_DS_RTEE, WACS_DS_TTEE,
         WACS_DS_BTEE, WACS_DS_PLUS,
+#else
+        0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0,
 #endif
         WACS_S1,
 #ifdef WACS_S3
         WACS_S3, WACS_S7,
+#else
+        0, 0,
 #endif
         WACS_S9, WACS_DIAMOND,
 #ifdef WACS_CLUB
         WACS_CLUB, WACS_SPADE, WACS_HEART, WACS_LTBOARD,
+#else
+        0, 0, 0, 0,
 #endif
         WACS_BOARD, WACS_CKBOARD, WACS_DEGREE, WACS_PLMINUS, WACS_BULLET,
 #ifdef WACS_SM_BULLET
         WACS_SM_BULLET, WACS_MED_BULLET, WACS_WHITE_BULLET,
         WACS_PILCROW, WACS_SECTION, WACS_SMILE, WACS_REV_SMILE,
+#else
+        0, 0, 0, 0, 0, 0, 0,
 #endif
         WACS_LARROW, WACS_RARROW, WACS_UARROW, WACS_DARROW,
         WACS_LANTERN, WACS_BLOCK,
 #ifdef WACS_LEQUAL
         WACS_LEQUAL, WACS_GEQUAL, WACS_NEQUAL,
         WACS_PI,  WACS_STERLING,
+#else
+        0, 0, 0, 0, 0,
 #endif
 #ifdef WACS_CENT
         WACS_CENT, WACS_YEN, WACS_PESETA,
@@ -1145,7 +1179,7 @@ void acsTest(WINDOW *win)
         WACS_A_ORDINAL, WACS_O_ORDINAL,
         WACS_INV_BANG, WACS_INV_QUERY,
         WACS_LEFT_ANG_QU, WACS_RIGHT_ANG_QU,
-        WACS_CENTER_SQU, WACS_F_WITH_HOOK,
+        WACS_CENTER_SQU, WACS_F_WITH_HOOK
 #endif               /* #if WACS_CENT */
     };
 #endif               /* #ifdef WACS_S1   */
@@ -1171,13 +1205,16 @@ void acsTest(WINDOW *win)
 
 #endif
 
-    int i, tmarg = 1, ncols = (COLS - 4) / 19;
+    int i, idx, tmarg = 1, ncols = (COLS - 4) / 19;
     int col_size = (COLS - 4) / ncols;
-    int n_items = sizeof( acs_names) / sizeof( acs_names[0]);
+    int n_items = 0;
     int n_rows = LINES / 2 - 4;
 
     INTENTIONALLY_UNUSED_PARAMETER( win);
-    i = 0;
+    for( i = 0; i < (int)( sizeof( acs_values) / sizeof( acs_values[0])); i++)
+       if( acs_values[i])
+          n_items++;
+    i = idx = 0;
     while( i < n_items)
     {
         int j, xloc = 3;
@@ -1191,8 +1228,11 @@ void acsTest(WINDOW *win)
             for( j = 0; i < n_items && j < n_rows; j++, i++)
             {
                 move( j * 2 + tmarg, xloc);
-                addch(acs_values[i]);
-                printw(" %s", acs_names[i]);
+                while( !acs_values[idx])
+                    idx++;
+                addch(acs_values[idx]);
+                printw(" %s", acs_names[idx]);
+                idx++;
             }
             xloc += col_size;
         }
@@ -1207,7 +1247,11 @@ void acsTest(WINDOW *win)
     }
 
 #if HAVE_WIDE
-    i = 0;
+    n_items = 0;
+    for( i = 0; i < (int)( sizeof( wacs_values) / sizeof( wacs_values[0])); i++)
+       if( wacs_values[i])
+          n_items++;
+    i = idx = 0;
     while( i < n_items)
     {
         int j, xloc = 3;
@@ -1222,8 +1266,11 @@ void acsTest(WINDOW *win)
             for( j = 0; i < n_items && j < n_rows; j++, i++)
             {
                 move( j * 2 + tmarg, xloc);
-                add_wch( wacs_values[i]);
-                printw(" W%s", acs_names[i]);
+                while( !wacs_values[idx])
+                    idx++;
+                add_wch( wacs_values[idx]);
+                printw(" W%s", acs_names[idx]);
+                idx++;
             }
             xloc += col_size;
         }
