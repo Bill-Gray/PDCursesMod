@@ -192,6 +192,7 @@ int _get_displaynum(void)
 
 int PDC_scr_open(void)
 {
+    SDL_Event event;
     int displaynum = 0;
 
     PDC_LOG(("PDC_scr_open() - called\n"));
@@ -343,6 +344,13 @@ int PDC_scr_open(void)
        initial modifiers (e.g. numlock) will be ignored and out-of-sync. */
 
     SDL_PumpEvents();
+
+    /* Wait until window is exposed before getting surface */
+
+    while (SDL_PollEvent(&event))
+        if (SDL_WINDOWEVENT == event.type &&
+            SDL_WINDOWEVENT_EXPOSED == event.window.event)
+            break;
 
     if( !pdc_screen)
     {
