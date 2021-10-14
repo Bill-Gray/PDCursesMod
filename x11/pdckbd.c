@@ -4,6 +4,7 @@
 
 #include <keysym.h>
 #include <assert.h>
+#include <stdlib.h>
 
 #ifdef HAVE_DECKEYSYM_H
 # include <DECkeysym.h>
@@ -440,6 +441,9 @@ static unsigned long _process_key_event(XEvent *event)
         if (key >= '0' && key <= '9')
             key += ALT_0 - '0';
     }
+
+    if( key == 3 && !SP->raw_inp)
+        exit( 0);
 
     /* After all that, send the key back to the application if is
        NOT zero. */

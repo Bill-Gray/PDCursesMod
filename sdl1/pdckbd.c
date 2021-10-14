@@ -188,6 +188,8 @@ static int _process_key_event(void)
         if (key >= '0' && key <= '9')
             key += ALT_0 - '0';
     }
+    if( key == 3 && !SP->raw_inp)
+        exit( 0);
 
     return key ? key : -1;
 }

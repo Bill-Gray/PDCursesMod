@@ -156,6 +156,8 @@ static int _handle_alt_keys(int key)
     {
         if (key >= 'A' && key <= 'Z') key -= 64;
         if (key >= 'a' && key <= 'z') key -= 96;
+        if( key == 3 && !SP->raw_inp)
+            exit( 0);
     }
     else if (SP->key_modifiers & PDC_KEY_MODIFIER_ALT)
     {
