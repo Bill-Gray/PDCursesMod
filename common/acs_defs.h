@@ -195,10 +195,7 @@ they would enable rounded box corners when Unicode is available.
 #define BOX_LLROUNDED                     CHOOSE( 0xc0,  0x2570,   14)
 #define BOX_LRROUNDED                     CHOOSE( 0xd9,  0x256f,   11)
 #define BOX_ULROUNDED                     CHOOSE( 0xda,  0x256d,   13)
-
-/* The following 'thick' box characters are also not currently implemented
-in PDCursesMod.  They are implemented (WACS only) in ncurses.  We
-_could_ put them in the first eleven entries of the acs_map[] array. */
+#endif         /* #ifdef NOT_CURRENTLY_IMPLEMENTED */
 
 #define BOX_T_URCORNER                    CHOOSE( 0xbf,  0x2513,   12)
 #define BOX_T_LRCORNER                    CHOOSE( 0xd9,  0x251b,   11)
@@ -211,7 +208,6 @@ _could_ put them in the first eleven entries of the acs_map[] array. */
 #define BOX_T_HLINE                       CHOOSE( 0xc4,  0x2501,   18)
 #define BOX_T_VLINE                       CHOOSE( 0xb3,  0x2503,   25)
 #define BOX_T_PLUS                        CHOOSE( 0xc5,  0x254b,   15)
-#endif         /* #ifdef NOT_CURRENTLY_IMPLEMENTED */
 
       /* It says at http://unicode.org/charts/PDF/U2300.pdf */
       /* that '...the scan line numbers here refer to old,  */
@@ -235,8 +231,10 @@ _could_ put them in the first eleven entries of the acs_map[] array. */
 
 chtype acs_map[128] =
 {
-   A(0), A(1), A(2), A(3), A(4), A(5), A(6), A(7), A(8),
-   A(9), A(10),
+   BOX_T_LRCORNER, BOX_T_URCORNER, BOX_T_ULCORNER,             /* 0 1 2 */
+   BOX_T_LLCORNER, BOX_T_PLUS,                                 /* 3 4 */
+   BOX_T_LTEE, BOX_T_RTEE, BOX_T_BTEE, BOX_T_TTEE,             /* 5 6 7 8 */
+   BOX_T_HLINE, BOX_T_VLINE,                                   /* 9 10 */
    CLUB, HEART, SPADE, SMILE, REV_SMILE,                      /* 11 12 13 14 15 */
    MEDIUM_BULLET, WHITE_BULLET, PILCROW, SECTION_SIGN,        /* 16 17 18 19 */
    A_ORDINAL, O_ORDINAL, LOWERCASE_PHI,                       /* 20 21 22 */

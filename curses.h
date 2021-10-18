@@ -33,7 +33,6 @@ Defined by this header:
 
 **man-end****************************************************************/
 
-
 #define PDCURSES        1
 #define PDC_BUILD (PDC_VER_MAJOR*1000 + PDC_VER_MINOR *100 + PDC_VER_CHANGE)
 #define PDC_VER_MAJOR    4
@@ -41,7 +40,7 @@ Defined by this header:
 #define PDC_VER_CHANGE   0
 #define PDC_VER_YEAR   2021
 #define PDC_VER_MONTH    10
-#define PDC_VER_DAY      01
+#define PDC_VER_DAY      17
 
 #define PDC_STRINGIZE( x) #x
 #define PDC_stringize( x) PDC_STRINGIZE( x)
@@ -722,7 +721,11 @@ Some won't work in non-wide X11 builds (see 'acs_defs.h' for details). */
 #define ACS_NEQUAL        PDC_ACS('%')
 #define ACS_STERLING      PDC_ACS('~')
 
-/* Box char aliases */
+/* Box char aliases.  The four characters tell you if a Single
+line points up, right, down,  and/or left from the center;
+or if it's Blank;  or if it's Thick or Double.  The Thick
+ones are an ncurses extension;  the Double and Single/Double
+ones are a PDCursesMod extension. */
 
 #define ACS_BSSB      ACS_ULCORNER
 #define ACS_SSBB      ACS_LLCORNER
@@ -828,6 +831,18 @@ Some won't work in non-wide X11 builds (see 'acs_defs.h' for details). */
 # define WACS_D_BTEE        (&(acs_map['K']))
 # define WACS_D_TTEE        (&(acs_map['L']))
 
+# define WACS_T_LRCORNER    (&(acs_map[0]))
+# define WACS_T_URCORNER    (&(acs_map[1]))
+# define WACS_T_ULCORNER    (&(acs_map[2]))
+# define WACS_T_LLCORNER    (&(acs_map[3]))
+# define WACS_T_PLUS        (&(acs_map[4]))
+# define WACS_T_LTEE        (&(acs_map[5]))
+# define WACS_T_RTEE        (&(acs_map[6]))
+# define WACS_T_BTEE        (&(acs_map[7]))
+# define WACS_T_TTEE        (&(acs_map[8]))
+# define WACS_T_HLINE       (&(acs_map[9]))
+# define WACS_T_VLINE       (&(acs_map[10]))
+
 # define WACS_DS_LRCORNER   (&(acs_map['M']))
 # define WACS_DS_URCORNER   (&(acs_map['N']))
 # define WACS_DS_ULCORNER   (&(acs_map['O']))
@@ -875,6 +890,18 @@ Some won't work in non-wide X11 builds (see 'acs_defs.h' for details). */
 # define WACS_BSBS     WACS_HLINE
 # define WACS_SBSB     WACS_VLINE
 # define WACS_SSSS     WACS_PLUS
+
+# define WACS_BTTB     WACS_T_ULCORNER
+# define WACS_TTBB     WACS_T_LLCORNER
+# define WACS_BBTT     WACS_T_URCORNER
+# define WACS_TBBT     WACS_T_LRCORNER
+# define WACS_TBTT     WACS_T_RTEE
+# define WACS_TTTB     WACS_T_LTEE
+# define WACS_TTBT     WACS_T_BTEE
+# define WACS_BTTS     WACS_T_TTEE
+# define WACS_BTBT     WACS_T_HLINE
+# define WACS_TBTB     WACS_T_VLINE
+# define WACS_TTTT     WACS_T_PLUS
 #endif
 
 /*** Color macros ***/
