@@ -131,13 +131,15 @@ int main( const int argc, const char *argv[])
     mvaddstr( line++, 2, "Blue on default background.");
     attrset( COLOR_PAIR( 0));
     mvaddstr( line++, 2, "Hit a key");
-    getch( );
+    while( getch( ) == KEY_RESIZE)
+        resize_term( 0, 0);
     line++;
 
     assume_default_colors( COLOR_RED, COLOR_CYAN); /* light blue background */
     mvaddstr( line++, 2, "Red on cyan (default foreground is now red; def back is cyan)");
     mvaddstr( line++, 2, "Hit a key");
-    getch( );
+    while( getch( ) == KEY_RESIZE)
+        resize_term( 0, 0);
 
 #ifdef __PDCURSESMOD__
     reset_color_pairs( );
@@ -146,7 +148,8 @@ int main( const int argc, const char *argv[])
     mvaddstr( line++, 2, "(i.e.,  not color pair 0) text will become black (in ncurses)");
     mvaddstr( line++, 2, "or red on blue (in PDCurses).");
     mvaddstr( line++, 2, "Hit a key");
-    getch( );
+    while( getch( ) == KEY_RESIZE)
+        resize_term( 0, 0);
 #endif
 
     endwin( );
