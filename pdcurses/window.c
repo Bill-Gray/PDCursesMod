@@ -481,6 +481,7 @@ WINDOW *resize_window(WINDOW *win, int nlines, int ncols)
         if (!new)
             return (WINDOW *)NULL;
 
+        new->_bkgd = win->_bkgd;
         werase(new);
 
         copywin(win, new, 0, 0, 0, 0, min(win->_maxy, new->_maxy) - 1,
@@ -508,7 +509,6 @@ WINDOW *resize_window(WINDOW *win, int nlines, int ncols)
 
     new->_curx = save_curx;
     new->_cury = save_cury;
-
     free(win->_firstch);
     free(win->_y);
 
