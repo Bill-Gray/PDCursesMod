@@ -158,103 +158,112 @@ then hold off for SP->mouse_wait to see if we get a release event.  */
 
 typedef struct
 {
-   int key_code;
+   unsigned short key_code;
+   unsigned char modifiers;
    const char *xlation;
 } xlate_t;
 
-static int xlate_vt_codes( const int *c, const int count)
+/* Short versions of the 'modifier' #defines,  to keep the columns
+below reasonably short. */
+
+#define SHF             PDC_KEY_MODIFIER_SHIFT
+#define CTL             PDC_KEY_MODIFIER_CONTROL
+#define ALT             PDC_KEY_MODIFIER_ALT
+
+static int xlate_vt_codes( const int *c, const int count, int *modifiers)
 {
    static const xlate_t xlates[] =  {
-             { KEY_END,     "OF"      },
-             { KEY_HOME,    "OH"      },
-             { KEY_F(1),    "OP"      },
-             { KEY_F(2),    "OQ"      },
-             { KEY_F(3),    "OR"      },
-             { KEY_F(4),    "OS"      },
-             { KEY_F(1),    "[11~"    },
-             { KEY_F(2),    "[12~"    },
-             { KEY_F(3),    "[13~"    },
-             { KEY_F(4),    "[14~"    },
-             { KEY_F(17),   "[15;2~"  },   /* shift-f5 */
-             { KEY_F(5),    "[15~"    },
-             { KEY_F(18),   "[17;2~"  },
-             { KEY_F(6),    "[17~"    },
-             { KEY_F(19),   "[18;2~"  },
-             { KEY_F(7),    "[18~"    },
-             { KEY_F(20),   "[19;2~"  },
-             { KEY_F(8),    "[19~"    },
-             { KEY_SUP,     "[1;2A"   },
-             { KEY_SDOWN,   "[1;2B"   },
-             { KEY_SRIGHT,  "[1;2C"   },
-             { KEY_SLEFT,   "[1;2D"   },
-             { KEY_F(13),   "[1;2P"   },   /* shift-f1 */
-             { KEY_F(14),   "[1;2Q"   },
-             { KEY_F(15),   "[1;2R"   },
-             { KEY_F(16),   "[1;2S"   },
-             { ALT_UP,      "[1;3A"   },
-             { ALT_DOWN,    "[1;3B"   },
-             { ALT_RIGHT,   "[1;3C"   },
-             { ALT_LEFT,    "[1;3D"   },
-             { ALT_PAD5,    "[1;3E"   },
-             { ALT_END,     "[1;3F"   },
-             { ALT_HOME,    "[1;3H"   },
-             { CTL_UP,      "[1;5A"   },
-             { CTL_DOWN,    "[1;5B"   },
-             { CTL_RIGHT,   "[1;5C"   },
-             { CTL_LEFT,    "[1;5D"   },
-             { CTL_END,     "[1;5F"   },
-             { CTL_HOME,    "[1;5H"   },
-             { KEY_HOME,    "[1~"     },
-             { KEY_F(21),   "[20;2~"  },
-             { KEY_F(9),    "[20~"    },
-             { KEY_F(22),   "[21;2~"  },
-             { KEY_F(10),   "[21~"    },
-             { KEY_F(23),   "[23$"    },   /* shift-f11 on rxvt */
-             { KEY_F(23),   "[23;2~"  },   /* shift-f11 */
-             { KEY_F(11),   "[23~"    },
-             { KEY_F(24),   "[24$"    },   /* shift-f12 on rxvt */
-             { KEY_F(24),   "[24;2~"  },
-             { KEY_F(12),   "[24~"    },
-             { KEY_F(15),   "[25~"    },   /* shift-f3 on rxvt */
-             { KEY_F(16),   "[26~"    },   /* shift-f4 on rxvt */
-             { KEY_F(17),   "[28~"    },   /* shift-f5 on rxvt */
-             { KEY_F(18),   "[29~"    },   /* shift-f6 on rxvt */
-             { ALT_INS,     "[2;3~"   },
-             { KEY_IC,      "[2~"     },
-             { KEY_F(19),   "[31~"    },   /* shift-f7 on rxvt */
-             { KEY_F(20),   "[32~"    },   /* shift-f8 on rxvt */
-             { KEY_F(21),   "[33~"    },   /* shift-f9 on rxvt */
-             { KEY_F(22),   "[34~"    },   /* shift-f10 on rxvt */
-             { ALT_DEL,     "[3;3~"   },
-             { CTL_DEL,     "[3;5~"   },
-             { KEY_DC,      "[3~"     },
-             { KEY_END,     "[4~"     },
-             { ALT_PGUP,    "[5;3~"   },
-             { CTL_PGUP,    "[5;5~"   },
-             { KEY_PPAGE,   "[5~"     },
-             { ALT_PGDN,    "[6;3~"   },
-             { CTL_PGDN,    "[6;5~"   },
-             { KEY_NPAGE,   "[6~"     },
-             { KEY_HOME,    "[7~"     },    /* rxvt */
-             { KEY_END,     "[8~"     },    /* rxvt */
-             { KEY_UP,      "[A"      },
-             { KEY_DOWN,    "[B"      },
-             { KEY_RIGHT,   "[C"      },
-             { KEY_LEFT,    "[D"      },
-             { KEY_B2,      "[E"      },
-             { KEY_END,     "[F"      },
-             { KEY_HOME,    "[H"      },
-             { KEY_BTAB,    "[Z"      },    /* Shift-Tab */
-             { KEY_F(1),    "[[A"     },    /* Linux console */
-             { KEY_F(2),    "[[B"     },
-             { KEY_F(3),    "[[C"     },
-             { KEY_F(4),    "[[D"     },
-             { KEY_F(5),    "[[E"     },
+             { KEY_END,    0,        "OF"      },
+             { KEY_HOME,   0,        "OH"      },
+             { KEY_F(1),   0,        "OP"      },
+             { KEY_F(2),   0,        "OQ"      },
+             { KEY_F(3),   0,        "OR"      },
+             { KEY_F(4),   0,        "OS"      },
+             { KEY_F(1),   0,        "[11~"    },
+             { KEY_F(2),   0,        "[12~"    },
+             { KEY_F(3),   0,        "[13~"    },
+             { KEY_F(4),   0,        "[14~"    },
+             { KEY_F(17),  SHF,      "[15;2~"  },   /* shift-f5 */
+             { KEY_F(5),   0,        "[15~"    },
+             { KEY_F(18),  SHF,      "[17;2~"  },
+             { KEY_F(6),   0,        "[17~"    },
+             { KEY_F(19),  SHF,      "[18;2~"  },
+             { KEY_F(7),   0,        "[18~"    },
+             { KEY_F(20),  SHF,      "[19;2~"  },
+             { KEY_F(8),   0,        "[19~"    },
+             { KEY_SUP,    SHF,      "[1;2A"   },
+             { KEY_SDOWN,  SHF,      "[1;2B"   },
+             { KEY_SRIGHT, SHF,      "[1;2C"   },
+             { KEY_SLEFT,  SHF,      "[1;2D"   },
+             { KEY_F(13),  SHF,      "[1;2P"   },   /* shift-f1 */
+             { KEY_F(14),  SHF,      "[1;2Q"   },
+             { KEY_F(15),  SHF,      "[1;2R"   },
+             { KEY_F(16),  SHF,      "[1;2S"   },
+             { ALT_UP,     ALT,      "[1;3A"   },
+             { ALT_DOWN,   ALT,      "[1;3B"   },
+             { ALT_RIGHT,  ALT,      "[1;3C"   },
+             { ALT_LEFT,   ALT,      "[1;3D"   },
+             { ALT_PAD5,   ALT,      "[1;3E"   },
+             { ALT_END,    ALT,      "[1;3F"   },
+             { ALT_HOME,   ALT,      "[1;3H"   },
+             { CTL_UP,     CTL,      "[1;5A"   },
+             { CTL_DOWN,   CTL,      "[1;5B"   },
+             { CTL_RIGHT,  CTL,      "[1;5C"   },
+             { CTL_LEFT,   CTL,      "[1;5D"   },
+             { CTL_END,    CTL,      "[1;5F"   },
+             { CTL_HOME,   CTL,      "[1;5H"   },
+             { KEY_HOME,   0,        "[1~"     },
+             { KEY_F(21),  SHF,      "[20;2~"  },
+             { KEY_F(9),   0,        "[20~"    },
+             { KEY_F(22),  SHF,      "[21;2~"  },
+             { KEY_F(10),  0,        "[21~"    },
+             { KEY_F(23),  SHF,      "[23$"    },   /* shift-f11 on rxvt */
+             { KEY_F(23),  SHF,      "[23;2~"  },   /* shift-f11 */
+             { KEY_F(11),  0,        "[23~"    },
+             { KEY_F(24),  SHF,      "[24$"    },   /* shift-f12 on rxvt */
+             { KEY_F(24),  SHF,      "[24;2~"  },
+             { KEY_F(12),  0,        "[24~"    },
+             { KEY_F(15),  SHF,      "[25~"    },   /* shift-f3 on rxvt */
+             { KEY_F(16),  SHF,      "[26~"    },   /* shift-f4 on rxvt */
+             { KEY_F(17),  SHF,      "[28~"    },   /* shift-f5 on rxvt */
+             { KEY_F(18),  SHF,      "[29~"    },   /* shift-f6 on rxvt */
+             { ALT_INS,    ALT,      "[2;3~"   },
+             { KEY_IC,     0,        "[2~"     },
+             { KEY_F(19),  SHF,      "[31~"    },   /* shift-f7 on rxvt */
+             { KEY_F(20),  SHF,      "[32~"    },   /* shift-f8 on rxvt */
+             { KEY_F(21),  SHF,      "[33~"    },   /* shift-f9 on rxvt */
+             { KEY_F(22),  SHF,      "[34~"    },   /* shift-f10 on rxvt */
+             { ALT_DEL,    ALT,      "[3;3~"   },
+             { CTL_DEL,    CTL,      "[3;5~"   },
+             { KEY_DC,     0,        "[3~"     },
+             { KEY_END,    0,        "[4~"     },
+             { ALT_PGUP,   ALT,      "[5;3~"   },
+             { CTL_PGUP,   CTL,      "[5;5~"   },
+             { KEY_PPAGE,  0,        "[5~"     },
+             { ALT_PGDN,   ALT,      "[6;3~"   },
+             { CTL_PGDN,   CTL,      "[6;5~"   },
+             { KEY_NPAGE,  0,        "[6~"     },
+             { KEY_HOME,   0,        "[7~"     },    /* rxvt */
+             { KEY_END,    0,        "[8~"     },    /* rxvt */
+             { KEY_UP,     0,        "[A"      },
+             { KEY_DOWN,   0,        "[B"      },
+             { KEY_RIGHT,  0,        "[C"      },
+             { KEY_LEFT,   0,        "[D"      },
+             { KEY_B2,     0,        "[E"      },
+             { KEY_END,    0,        "[F"      },
+             { KEY_HOME,   0,        "[H"      },
+             { KEY_BTAB,   SHF,      "[Z"      },    /* Shift-Tab */
+             { KEY_F(1),   0,        "[[A"     },    /* Linux console */
+             { KEY_F(2),   0,        "[[B"     },
+             { KEY_F(3),   0,        "[[C"     },
+             { KEY_F(4),   0,        "[[D"     },
+             { KEY_F(5),   0,        "[[E"     },
              };
    const size_t n_keycodes = sizeof( xlates) / sizeof( xlates[0]);
    size_t i;
    int rval = -1;
 
+   *modifiers = 0;
    if( count == 1)
       {
       if( c[0] >= 'a' && c[0] <= 'z')
@@ -273,6 +282,7 @@ static int xlate_vt_codes( const int *c, const int count)
          if( tptr)
              rval = codes[tptr - text];
          }
+      *modifiers = ALT;
       }
    else if( count == 5 && c[0] == '[' && c[1] == 'M')
       rval = KEY_MOUSE;
@@ -288,7 +298,10 @@ static int xlate_vt_codes( const int *c, const int count)
                                && xlates[i].xlation[j] == c[j])
             j++;
          if( j == count && !xlates[i].xlation[j])
+            {
             rval = xlates[i].key_code;
+            *modifiers = xlates[i].modifiers;
+            }
          }
    return( rval);
 }
@@ -304,7 +317,7 @@ int PDC_get_key( void)
       }
    if( check_key( &rval))
       {
-      int c[MAX_COUNT];
+      int c[MAX_COUNT], modifiers = 0;
 
 #ifdef USE_CONIO
       if( rval == 0 || rval == 224)
@@ -326,7 +339,7 @@ int PDC_get_key( void)
          while( rval == -1 && count < MAX_COUNT && check_key( &c[count]))
             {
             count++;
-            rval = xlate_vt_codes( c, count);
+            rval = xlate_vt_codes( c, count, &modifiers);
             if( rval == ALT_LBRACKET && check_key( NULL))
                rval = -1;
             }
@@ -478,6 +491,25 @@ int PDC_get_key( void)
          }
       else if( rval == 127)
          rval = 8;
+      else if( rval > 0 && rval < 127)
+         {
+               /* The following 128 bits indicate which keys require Shift */
+               /* on a US keyboard with no CapsLock on.  The hack is strong */
+               /* in this one.  Lower-level keyboard access might let us */
+               /* avoid this problem,  _and_ allow access to other keys */
+               /* that are currently filtered out before the code 'sees' them. */
+         static const unsigned short shifted_keys[8] = {
+                  0, 0,                   /* keys 0-31 */
+                  0x0f7e, 0xd400,         /* keys 32-63 */
+                  0xffff, 0xc7ff,         /* keys 64-95 */
+                  0, 0x7800 };            /* keys 96-127 */
+
+         if( rval < 32 && rval != 13 && rval != 10 && rval != 9)
+            modifiers = CTL;
+         if( shifted_keys[rval >> 4] & (1 << (rval & 0xf)))
+            modifiers = SHF;
+         }
+      SP->key_modifiers = modifiers;
       }
    return( rval);
 }
