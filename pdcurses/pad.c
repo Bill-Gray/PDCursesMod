@@ -239,7 +239,19 @@ int pnoutrefresh(WINDOW *w, int py, int px, int sy1, int sx1, int sy2, int sx2)
         curscr->_curx = (w->_curx - px) + sx1;
     }
 
+    save_pminrow = py;
+    save_pmincol = px;
+    save_sminrow = sy1;
+    save_smincol = sx1;
+    save_smaxrow = sy2;
+    save_smaxcol = sx2;
     return OK;
+}
+
+int PDC_refresh_pad_with_stored_params( WINDOW *pad)
+{
+    return prefresh(pad, save_pminrow, save_pmincol, save_sminrow,
+                    save_smincol, save_smaxrow, save_smaxcol);
 }
 
 int pechochar(WINDOW *pad, chtype ch)
@@ -249,8 +261,7 @@ int pechochar(WINDOW *pad, chtype ch)
     if (waddch(pad, ch) == ERR)
         return ERR;
 
-    return prefresh(pad, save_pminrow, save_pmincol, save_sminrow,
-                    save_smincol, save_smaxrow, save_smaxcol);
+    return PDC_refresh_pad_with_stored_params( pad);
 }
 
 #ifdef PDC_WIDE
@@ -262,8 +273,7 @@ int pecho_wchar(WINDOW *pad, const cchar_t *wch)
     if (!wch || (waddch(pad, *wch) == ERR))
         return ERR;
 
-    return prefresh(pad, save_pminrow, save_pmincol, save_sminrow,
-                    save_smincol, save_smaxrow, save_smaxcol);
+    return PDC_refresh_pad_with_stored_params( pad);
 }
 #endif
 

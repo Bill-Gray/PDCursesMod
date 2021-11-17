@@ -70,6 +70,8 @@ static void _normalize_cursor( WINDOW *win)
         win->_curx = win->_maxx - 1;
 }
 
+int PDC_refresh_pad_with_stored_params( WINDOW *pad);       /* pad.c */
+
 int wnoutrefresh(WINDOW *win)
 {
     int begy, begx;     /* window's place on screen   */
@@ -78,8 +80,10 @@ int wnoutrefresh(WINDOW *win)
     PDC_LOG(("wnoutrefresh() - called: win=%p\n", win));
 
     assert( win);
-    if ( !win || (win->_flags & (_PAD|_SUBPAD)) )
+    if ( !win)
         return ERR;
+    if( is_pad( win))
+        return PDC_refresh_pad_with_stored_params( win);
 
     begy = win->_begy;
     begx = win->_begx;
