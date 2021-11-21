@@ -248,7 +248,7 @@ int pnoutrefresh(WINDOW *w, int py, int px, int sy1, int sx1, int sy2, int sx2)
     return OK;
 }
 
-int PDC_refresh_pad_with_stored_params( WINDOW *pad)
+int PDC_pnoutrefresh_with_stored_params( WINDOW *pad)
 {
     return prefresh(pad, save_pminrow, save_pmincol, save_sminrow,
                     save_smincol, save_smaxrow, save_smaxcol);
@@ -257,23 +257,31 @@ int PDC_refresh_pad_with_stored_params( WINDOW *pad)
 int pechochar(WINDOW *pad, chtype ch)
 {
     PDC_LOG(("pechochar() - called\n"));
+    int rval;
 
     if (waddch(pad, ch) == ERR)
         return ERR;
 
-    return PDC_refresh_pad_with_stored_params( pad);
+    rval = PDC_pnoutrefresh_with_stored_params( pad);
+    if( rval == OK)
+        doupdate( );
+    return( rval);
 }
 
 #ifdef PDC_WIDE
 int pecho_wchar(WINDOW *pad, const cchar_t *wch)
 {
     PDC_LOG(("pecho_wchar() - called\n"));
+    int rval;
 
     assert( wch);
     if (!wch || (waddch(pad, *wch) == ERR))
         return ERR;
 
-    return PDC_refresh_pad_with_stored_params( pad);
+    rval = PDC_pnoutrefresh_with_stored_params( pad);
+    if( rval == OK)
+        doupdate( );
+    return( rval);
 }
 #endif
 
