@@ -256,8 +256,9 @@ int PDC_pnoutrefresh_with_stored_params( WINDOW *pad)
 
 int pechochar(WINDOW *pad, chtype ch)
 {
-    PDC_LOG(("pechochar() - called\n"));
     int rval;
+
+    PDC_LOG(("pechochar() - called\n"));
 
     if (waddch(pad, ch) == ERR)
         return ERR;
