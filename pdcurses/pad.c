@@ -272,8 +272,9 @@ int pechochar(WINDOW *pad, chtype ch)
 #ifdef PDC_WIDE
 int pecho_wchar(WINDOW *pad, const cchar_t *wch)
 {
-    PDC_LOG(("pecho_wchar() - called\n"));
     int rval;
+
+    PDC_LOG(("pecho_wchar() - called\n"));
 
     assert( wch);
     if (!wch || (waddch(pad, *wch) == ERR))
