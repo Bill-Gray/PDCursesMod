@@ -115,8 +115,11 @@ typedef unsigned char bool;
 
 #if defined( CHTYPE_32)
    typedef uint32_t chtype;       /* chtypes will be 32 bits */
+   typedef uint32_t mmask_t;
 #else
    typedef uint64_t chtype;       /* chtypes will be 64 bits */
+   typedef uint64_t mmask_t;
+   #define PDC_LONG_MMASK
    #ifdef PDC_WIDE
       #define USING_COMBINING_CHARACTER_SCHEME
    #endif
@@ -180,12 +183,6 @@ enum
  */
 
 #define PDC_MAX_MOUSE_BUTTONS          9
-
-#if _LP64
-typedef unsigned int mmask_t;
-#else
-typedef unsigned long mmask_t;
-#endif
 
 typedef struct
 {
@@ -257,21 +254,34 @@ typedef struct
 #define BUTTON1_CLICKED         0x00000004L
 #define BUTTON1_DOUBLE_CLICKED  0x00000008L
 #define BUTTON1_TRIPLE_CLICKED  0x00000010L
-#define BUTTON1_MOVED           0x00000010L /* PDCurses */
 
-#define BUTTON2_RELEASED        0x00000020L
-#define BUTTON2_PRESSED         0x00000040L
-#define BUTTON2_CLICKED         0x00000080L
-#define BUTTON2_DOUBLE_CLICKED  0x00000100L
-#define BUTTON2_TRIPLE_CLICKED  0x00000200L
-#define BUTTON2_MOVED           0x00000200L /* PDCurses */
+/* With the "traditional" 32-bit mmask_t,  mouse move and triple-clicks
+share the same bit and can't be distinguished.  64-bit mmask_ts allow us
+to make the distinction,  and will allow other events to be added later. */
 
-#define BUTTON3_RELEASED        0x00000400L
-#define BUTTON3_PRESSED         0x00000800L
-#define BUTTON3_CLICKED         0x00001000L
-#define BUTTON3_DOUBLE_CLICKED  0x00002000L
-#define BUTTON3_TRIPLE_CLICKED  0x00004000L
-#define BUTTON3_MOVED           0x00004000L /* PDCurses */
+#ifdef PDC_LONG_MMASK
+   #define BUTTON1_MOVED           0x00000020L /* PDCurses */
+   #define PDC_BITS_PER_BUTTON     6
+#else
+   #define BUTTON1_MOVED           0x00000010L /* PDCurses */
+   #define PDC_BITS_PER_BUTTON     5
+#endif
+
+#define PDC_SHIFTED_BUTTON( button, n)  ((mmask_t)(button) << (((n) - 1) * PDC_BITS_PER_BUTTON))
+
+#define BUTTON2_RELEASED       PDC_SHIFTED_BUTTON( BUTTON1_RELEASED,       2)
+#define BUTTON2_PRESSED        PDC_SHIFTED_BUTTON( BUTTON1_PRESSED,        2)
+#define BUTTON2_CLICKED        PDC_SHIFTED_BUTTON( BUTTON1_CLICKED,        2)
+#define BUTTON2_DOUBLE_CLICKED PDC_SHIFTED_BUTTON( BUTTON1_DOUBLE_CLICKED, 2)
+#define BUTTON2_TRIPLE_CLICKED PDC_SHIFTED_BUTTON( BUTTON1_TRIPLE_CLICKED, 2)
+#define BUTTON2_MOVED          PDC_SHIFTED_BUTTON( BUTTON1_MOVED,          2)
+
+#define BUTTON3_RELEASED       PDC_SHIFTED_BUTTON( BUTTON1_RELEASED,       3)
+#define BUTTON3_PRESSED        PDC_SHIFTED_BUTTON( BUTTON1_PRESSED,        3)
+#define BUTTON3_CLICKED        PDC_SHIFTED_BUTTON( BUTTON1_CLICKED,        3)
+#define BUTTON3_DOUBLE_CLICKED PDC_SHIFTED_BUTTON( BUTTON1_DOUBLE_CLICKED, 3)
+#define BUTTON3_TRIPLE_CLICKED PDC_SHIFTED_BUTTON( BUTTON1_TRIPLE_CLICKED, 3)
+#define BUTTON3_MOVED          PDC_SHIFTED_BUTTON( BUTTON1_MOVED,          3)
 
 /* For the ncurses-compatible functions only, BUTTON4_PRESSED and
    BUTTON5_PRESSED are returned for mouse scroll wheel up and down;
@@ -279,25 +289,27 @@ typedef struct
    as described above for WinGUI,  and perhaps to be extended to
    other PDCurses flavors  */
 
-#define BUTTON4_RELEASED        0x00008000L
-#define BUTTON4_PRESSED         0x00010000L
-#define BUTTON4_CLICKED         0x00020000L
-#define BUTTON4_DOUBLE_CLICKED  0x00040000L
-#define BUTTON4_TRIPLE_CLICKED  0x00080000L
+#define BUTTON4_RELEASED       PDC_SHIFTED_BUTTON( BUTTON1_RELEASED,       4)
+#define BUTTON4_PRESSED        PDC_SHIFTED_BUTTON( BUTTON1_PRESSED,        4)
+#define BUTTON4_CLICKED        PDC_SHIFTED_BUTTON( BUTTON1_CLICKED,        4)
+#define BUTTON4_DOUBLE_CLICKED PDC_SHIFTED_BUTTON( BUTTON1_DOUBLE_CLICKED, 4)
+#define BUTTON4_TRIPLE_CLICKED PDC_SHIFTED_BUTTON( BUTTON1_TRIPLE_CLICKED, 4)
+#define BUTTON4_MOVED          PDC_SHIFTED_BUTTON( BUTTON1_MOVED,          4)
 
-#define BUTTON5_RELEASED        0x00100000L
-#define BUTTON5_PRESSED         0x00200000L
-#define BUTTON5_CLICKED         0x00400000L
-#define BUTTON5_DOUBLE_CLICKED  0x00800000L
-#define BUTTON5_TRIPLE_CLICKED  0x01000000L
+#define BUTTON5_RELEASED       PDC_SHIFTED_BUTTON( BUTTON1_RELEASED,       5)
+#define BUTTON5_PRESSED        PDC_SHIFTED_BUTTON( BUTTON1_PRESSED,        5)
+#define BUTTON5_CLICKED        PDC_SHIFTED_BUTTON( BUTTON1_CLICKED,        5)
+#define BUTTON5_DOUBLE_CLICKED PDC_SHIFTED_BUTTON( BUTTON1_DOUBLE_CLICKED, 5)
+#define BUTTON5_TRIPLE_CLICKED PDC_SHIFTED_BUTTON( BUTTON1_TRIPLE_CLICKED, 5)
+#define BUTTON5_MOVED          PDC_SHIFTED_BUTTON( BUTTON1_MOVED,          5)
 
-#define MOUSE_WHEEL_SCROLL      0x02000000L /* PDCurses */
-#define BUTTON_MODIFIER_SHIFT   0x04000000L /* PDCurses */
-#define BUTTON_MODIFIER_CONTROL 0x08000000L /* PDCurses */
-#define BUTTON_MODIFIER_ALT     0x10000000L /* PDCurses */
+#define MOUSE_WHEEL_SCROLL      PDC_SHIFTED_BUTTON( BUTTON1_RELEASED,       6)
+#define BUTTON_MODIFIER_SHIFT   (MOUSE_WHEEL_SCROLL << 1)
+#define BUTTON_MODIFIER_CONTROL (MOUSE_WHEEL_SCROLL << 2)
+#define BUTTON_MODIFIER_ALT     (MOUSE_WHEEL_SCROLL << 3)
+#define REPORT_MOUSE_POSITION   (MOUSE_WHEEL_SCROLL << 4)
 
-#define ALL_MOUSE_EVENTS        0x1fffffffL
-#define REPORT_MOUSE_POSITION   0x20000000L
+#define ALL_MOUSE_EVENTS        (REPORT_MOUSE_POSITION - 1)
 
 /* ncurses mouse interface */
 

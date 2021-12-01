@@ -314,8 +314,6 @@ mmask_t mousemask(mmask_t mask, mmask_t *oldmask)
     return SP->_trap_mbe;
 }
 
-#define BITS_PER_BUTTON       5
-
 int nc_getmouse(MEVENT *event)
 {
     int i;
@@ -342,7 +340,7 @@ int nc_getmouse(MEVENT *event)
     {
         if (Mouse_status.changes & (1 << i))
         {
-            const int shf = i * BITS_PER_BUTTON;
+            const int shf = i * PDC_BITS_PER_BUTTON;
             const short button = Mouse_status.button[i] & BUTTON_ACTION_MASK;
 
             if (button == BUTTON_RELEASED)
