@@ -1,10 +1,58 @@
-Changes as of 2021 September 02
-===============================
+PDCursesMod 4.2.1 - 2020 November 28
+====================================
 
 Major new features
 ------------------
 
 -  Added a Linux framebuffer port.   dd5b99ce81 and many others.
+
+Minor new features
+------------------
+
+-  Added the ncurses extension WACS_T_* (thick-line box character)
+   alternate character set defines.     5cefe5fa00
+
+-  Added four ncurses demos.  948f4cf41d
+
+-  Eliminated CHTYPE_LONG and CHTYPE_64.  Neither is really needed
+   anymore;  we just have CHTYPE_32.  e275cadd78  91b0b0dd5d
+
+-  It should now be difficult,  if not impossible,  to link code for
+   one PDCursesMod binary API to code for another.  7e06e8c264
+
+-  Palette changes are redrawn immediately.  That was already true for
+   DOS and 8-bit framebuffer ports,  where the palette has a hardware
+   meaning;  it's now true in X11,  VT,  WinGUI,  etc.   e73cae9b2c
+
+-  mmask_t can now be 64 bits (and by default,  it is).  This enables
+   some unsnarling of mouse mask #defines and gets rid of the collision
+   of triple-clicks with mouse move events,  and provides bits for
+   future use.  908f1b3d32
+
+Bug fixes
+---------
+
+-  Pads were incorrectly refreshed (issue wmcbrine/PDCurses#124).
+   41da0b2fb8  9de6c83cd9
+
+-  Odd input issue in WinCon (and presumably WinGUI);  see issue
+   wmcbrine/PDCurses#126.  This may be revisited.   64d727571e
+
+-  Background was improperly refreshed in pads.  See wmcbrine/PDCurses#122.
+   b31f19f477
+
+-  SDL2 window could be shown improperly initialized at startup.  9d30ffa6db
+
+-  Ctrl-C stops the program in X11 and SDLn if noraw() has been called.  The
+   framebuffer,  VT,  and WinGUI ports already did this.  210d49f48a
+
+-  Surrogate pairs and combining characters are now handled correctly in the
+   setcchar() and getcchar() functions.  3ef0592cfe  422bb2152e
+
+-  X11 could block on getch() if nodelay() and PDC_set_blink() were both set
+   to TRUE.  Fixes issue #216.  e20301ae19
+
+-  Fixed assert errors in SDL2 at startup.  See issue #215.  5ee7cc0722
 
 PDCursesMod 4.3 - 2021 August 25
 ========================================
@@ -126,7 +174,7 @@ Bug fixes
    in PDCurses e28e705d17438ffd (q.v.).   83dcf79672
 
 PDCursesMod 4.2 - 2020 Oct 03
-=========================
+=============================
 
 Major new features
 ------------------
