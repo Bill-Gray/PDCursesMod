@@ -37,10 +37,10 @@ Defined by this header:
 #define PDC_BUILD (PDC_VER_MAJOR*1000 + PDC_VER_MINOR *100 + PDC_VER_CHANGE)
 #define PDC_VER_MAJOR    4
 #define PDC_VER_MINOR    3
-#define PDC_VER_CHANGE   0
+#define PDC_VER_CHANGE   1
 #define PDC_VER_YEAR   2021
 #define PDC_VER_MONTH    11
-#define PDC_VER_DAY      27
+#define PDC_VER_DAY      28
 
 #define PDC_STRINGIZE( x) #x
 #define PDC_stringize( x) PDC_STRINGIZE( x)
@@ -356,6 +356,9 @@ typedef struct _win       /* definition of a window */
     int   _delayms;       /* milliseconds of delay for getch() */
     int   _parx, _pary;   /* coords relative to parent (0,0) */
     struct _win *_parent; /* subwin's pointer to parent win */
+    int   _pminrow, _pmincol;    /* saved position used only for pads */
+    int   _sminrow, _smaxrow;    /* saved position used only for pads */
+    int   _smincol, _smaxcol;    /* saved position used only for pads */
 } WINDOW;
 
 /* Color pair structure */

@@ -78,9 +78,6 @@ pad
 
 /* save values for pechochar() */
 
-static int save_pminrow, save_pmincol;
-static int save_sminrow, save_smincol, save_smaxrow, save_smaxcol;
-
 WINDOW *newpad(int nlines, int ncols)
 {
     WINDOW *win;
@@ -101,12 +98,12 @@ WINDOW *newpad(int nlines, int ncols)
     /* save default values in case pechochar() is the first call to
        prefresh(). */
 
-    save_pminrow = 0;
-    save_pmincol = 0;
-    save_sminrow = 0;
-    save_smincol = 0;
-    save_smaxrow = min(LINES, nlines) - 1;
-    save_smaxcol = min(COLS, ncols) - 1;
+    win->_pminrow = 0;
+    win->_pmincol = 0;
+    win->_sminrow = 0;
+    win->_smincol = 0;
+    win->_smaxrow = min(LINES, nlines) - 1;
+    win->_smaxcol = min(COLS, ncols) - 1;
 
     return win;
 }
@@ -157,12 +154,12 @@ WINDOW *subpad(WINDOW *orig, int nlines, int ncols, int begy, int begx)
     /* save default values in case pechochar() is the first call
        to prefresh(). */
 
-    save_pminrow = 0;
-    save_pmincol = 0;
-    save_sminrow = 0;
-    save_smincol = 0;
-    save_smaxrow = min(LINES, nlines) - 1;
-    save_smaxcol = min(COLS, ncols) - 1;
+    win->_pminrow = 0;
+    win->_pmincol = 0;
+    win->_sminrow = 0;
+    win->_smincol = 0;
+    win->_smaxrow = min(LINES, nlines) - 1;
+    win->_smaxcol = min(COLS, ncols) - 1;
 
     return win;
 }
@@ -239,19 +236,19 @@ int pnoutrefresh(WINDOW *w, int py, int px, int sy1, int sx1, int sy2, int sx2)
         curscr->_curx = (w->_curx - px) + sx1;
     }
 
-    save_pminrow = py;
-    save_pmincol = px;
-    save_sminrow = sy1;
-    save_smincol = sx1;
-    save_smaxrow = sy2;
-    save_smaxcol = sx2;
+    w->_pminrow = py;
+    w->_pmincol = px;
+    w->_sminrow = sy1;
+    w->_smincol = sx1;
+    w->_smaxrow = sy2;
+    w->_smaxcol = sx2;
     return OK;
 }
 
 int PDC_pnoutrefresh_with_stored_params( WINDOW *pad)
 {
-    return prefresh(pad, save_pminrow, save_pmincol, save_sminrow,
-                    save_smincol, save_smaxrow, save_smaxcol);
+    return prefresh(pad, pad->_pminrow, pad->_pmincol, pad->_sminrow,
+                    pad->_smincol, pad->_smaxrow, pad->_smaxcol);
 }
 
 int pechochar(WINDOW *pad, chtype ch)
