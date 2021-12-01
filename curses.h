@@ -1309,22 +1309,22 @@ PDCEX  int     init_pair(short, short, short);
 #ifdef PDC_WIDE
    #ifdef PDC_FORCE_UTF8
       #ifdef CHTYPE_32
-         #define initscr initscr_u32
+         #define initscr initscr_u32_4301
       #else
-         #define initscr initscr_u64
+         #define initscr initscr_u64_4301
       #endif
    #else
       #ifdef CHTYPE_32
-         #define initscr initscr_w32
+         #define initscr initscr_w32_4301
       #else
-         #define initscr initscr_w64
+         #define initscr initscr_w64_4301
       #endif
    #endif
 #else       /* 8-bit chtypes */
    #ifdef CHTYPE_32
-      #define initscr initscr_x32
+      #define initscr initscr_x32_4301
    #else
-      #define initscr initscr_x64
+      #define initscr initscr_x64_4301
    #endif
 #endif
 
