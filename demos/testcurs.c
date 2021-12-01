@@ -509,6 +509,9 @@ void inputTest(WINDOW *win)
             else if ((BUTTON_STATUS(button) &
                 BUTTON_ACTION_MASK) == BUTTON_DOUBLE_CLICKED)
                 waddstr(win, "double: ");
+            else if ((BUTTON_STATUS(button) &
+                BUTTON_ACTION_MASK) == BUTTON_TRIPLE_CLICKED)
+                waddstr(win, "triple: ");
             else
                 waddstr(win, "released: ");
 
