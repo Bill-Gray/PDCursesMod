@@ -6,16 +6,17 @@
 # [all|demos|testcurs]...
 
 ifeq ($(WIDE),Y)
- CFLAGS = -Wall -pedantic -O3 -D_XOPEN_SOURCE_EXTENDED -DHAVE_NCURSESW
+ CFLAGS = -Wall -Wextra -Werror -pedantic -O3 -D_XOPEN_SOURCE_EXTENDED -DHAVE_NCURSESW
  LIBCURSES = -lpanelw -lncursesw
 else
- CFLAGS = -Wall -pedantic -O3 -D_XOPEN_SOURCE_EXTENDED
+ CFLAGS = -Wall -Wextra -Werror -pedantic -O3 -D_XOPEN_SOURCE_EXTENDED
  LIBCURSES = -lpanel -lncurses
 endif
 
 demodir = ../demos
 
-DEMOS    = firework init_col newtest ozdemo picsview ptest rain speed testcurs test_pan worm xmas
+DEMOS    = firework init_col newtest ozdemo picsview ptest  \
+    rain speed testcurs test_pan widetest worm xmas
 
 all: $(DEMOS) tuidemo
 
