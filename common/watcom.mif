@@ -102,7 +102,7 @@ PDCOBJS = pdcclip.obj pdcdisp.obj pdcgetsc.obj pdckbd.obj pdcscrn.obj &
     pdcsetsc.obj pdcutil.obj
 
 DEMOS = firework$(E) init_col$(E) newtest$(E) ozdemo$(E) picsview$(E) ptest$(E) &
-    rain$(E) speed$(E) test_pan$(E) testcurs$(E) tuidemo$(E) worm$(E) xmas$(E)
+    rain$(E) speed$(E) test_pan$(E) testcurs$(E) tuidemo$(E) widetest$(E) worm$(E) xmas$(E)
 
 PDCNAME = pdcurses
 
@@ -146,6 +146,7 @@ build_dll_test_pan	= no
 build_dll_testcurs	= no
 build_dll_tui		= no
 build_dll_tuidemo	= no
+build_dll_widetest	= no
 build_dll_worm		= no
 build_dll_xmas		= no
 
@@ -158,6 +159,7 @@ ptest$(E):	ptest.obj $(PDCNAME).lib
 rain$(E):	rain.obj $(PDCNAME).lib
 testcurs$(E):	testcurs.obj $(PDCNAME).lib
 test_pan$(E):	test_pan.obj $(PDCNAME).lib
+widetest$(E):	widetest.obj $(PDCNAME).lib
 worm$(E):	worm.obj $(PDCNAME).lib
 xmas$(E):	xmas.obj $(PDCNAME).lib
 
