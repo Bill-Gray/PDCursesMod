@@ -243,8 +243,12 @@ static int _int32_to_wchar_array( wchar_t *obuff, const int obuffsize, const int
     return( i);
 }
 
-int PDC_expand_combined_characters( const cchar_t c, cchar_t *added);
-#define COMBINED_CHAR_START          0x110001
+#ifdef USING_COMBINING_CHARACTER_SCHEME
+   int PDC_expand_combined_characters( const cchar_t c, cchar_t *added);
+   int PDC_find_combined_char_idx( const cchar_t root, const cchar_t added);
+
+   #define COMBINED_CHAR_START          0x110001
+#endif
 
 int getcchar(const cchar_t *wcval, wchar_t *wch, attr_t *attrs,
              short *color_pair, void *opts)
@@ -260,6 +264,7 @@ int getcchar(const cchar_t *wcval, wchar_t *wch, attr_t *attrs,
             /* TODO: if c[0] == 0x110000,  it's a placeholder with a
             fullwidth character to its left.  If c[0] > 0x110001,  it's
             a marker for a combining character string. */
+#ifdef USING_COMBINING_CHARACTER_SCHEME
     while( n < 10 && c[n] >= COMBINED_CHAR_START)
     {
         cchar_t added;
@@ -268,6 +273,7 @@ int getcchar(const cchar_t *wcval, wchar_t *wch, attr_t *attrs,
         c[n] = (int32_t)added;
         n++;
     }
+#endif
     c[++n] = 0;
     if( !wch)
         return( c[0] ? _int32_to_wchar_array( NULL, 0, c) : -1);
@@ -294,14 +300,13 @@ int getcchar(const cchar_t *wcval, wchar_t *wch, attr_t *attrs,
     }
 }
 
-#define COMBINED_CHAR_START         0x110001
-int PDC_find_combined_char_idx( const cchar_t root, const cchar_t added);
-
 int setcchar(cchar_t *wcval, const wchar_t *wch, const attr_t attrs,
              short color_pair, const void *opts)
 {
     int32_t ochar[20], rval;
+#ifdef USING_COMBINING_CHARACTER_SCHEME
     int i;
+#endif
 
     INTENTIONALLY_UNUSED_PARAMETER( opts);
     assert( wcval);
@@ -312,8 +317,10 @@ int setcchar(cchar_t *wcval, const wchar_t *wch, const attr_t attrs,
     rval = ochar[0];
          /* If len_out > 1,  we have combining characters.  See */
          /* 'addch.c' for a discussion of how we handle those.  */
+#ifdef USING_COMBINING_CHARACTER_SCHEME
     for( i = 1; ochar[i]; i++)
         rval = COMBINED_CHAR_START + PDC_find_combined_char_idx( rval, ochar[i]);
+#endif
     *wcval = rval | attrs | COLOR_PAIR(color_pair);
     return OK;
 }
