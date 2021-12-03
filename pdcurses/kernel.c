@@ -221,7 +221,9 @@ int curs_set(int visibility)
 
     PDC_LOG(("curs_set() - called: visibility=%d\n", visibility));
 
-    if ((visibility < 0) || (visibility > 0x10000))
+    assert( visibility >= 0);
+    assert( !(visibility & ~0xf0f));
+    if ((visibility < 0) || (visibility & ~0xf0f))
         return ERR;
 
     ret_vis = PDC_curs_set(visibility);
