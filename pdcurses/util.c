@@ -127,33 +127,47 @@ int PDC_wc_to_utf8( char *dest, const int32_t code)
 {
    int n_bytes_out;
 
-   if (code < 0x80)
+   if( code < 0)
+       n_bytes_out = 0;
+   else if (code < 0x80)
    {
-       dest[0] = (char)code;
+       if( dest)
+           dest[0] = (char)code;
        n_bytes_out = 1;
    }
    else
        if (code < 0x800)
        {
-           dest[0] = (char) (((code >> 6) & 0x1f) | 0xc0);
-           dest[1] = (char) ((code & 0x3f) | 0x80);
+           if( dest)
+           {
+               dest[0] = (char) (((code >> 6) & 0x1f) | 0xc0);
+               dest[1] = (char) ((code & 0x3f) | 0x80);
+           }
            n_bytes_out = 2;
        }
        else if( code < 0x10000)
        {
-           dest[0] = (char) (((code >> 12) & 0x0f) | 0xe0);
-           dest[1] = (char) (((code >> 6) & 0x3f) | 0x80);
-           dest[2] = (char) ((code & 0x3f) | 0x80);
+           if( dest)
+           {
+               dest[0] = (char) (((code >> 12) & 0x0f) | 0xe0);
+               dest[1] = (char) (((code >> 6) & 0x3f) | 0x80);
+               dest[2] = (char) ((code & 0x3f) | 0x80);
+           }
            n_bytes_out = 3;
        }
-       else       /* Unicode past 64K,  i.e.,  SMP */
+       else if( code < 0x110000)      /* Unicode past 64K,  i.e.,  SMP */
        {
-           dest[0] = (char) (((code >> 18) & 0x0f) | 0xf0);
-           dest[1] = (char) (((code >> 12) & 0x3f) | 0x80);
-           dest[2] = (char) (((code >> 6) & 0x3f) | 0x80);
-           dest[3] = (char) ((code & 0x3f) | 0x80);
+           if( dest)
+           {
+               dest[0] = (char) (((code >> 18) & 0x0f) | 0xf0);
+               dest[1] = (char) (((code >> 12) & 0x3f) | 0x80);
+               dest[2] = (char) (((code >> 6) & 0x3f) | 0x80);
+               dest[3] = (char) ((code & 0x3f) | 0x80);
+           }
            n_bytes_out = 4;
        }
+       else                      /* not valid Unicode */
+           n_bytes_out = 0;
    return( n_bytes_out);
 }
 
