@@ -444,7 +444,7 @@ typedef const char *(CDECL *wine_version_func)(void);
 
 static bool running_under_wine( void)
 {
-    int rval = -1;
+    static int rval = -1;
 
     if( -1 == rval)
     {
