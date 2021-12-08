@@ -115,7 +115,7 @@ static int _restore_mode(int i)
 {
     if (ctty[i].been_set == TRUE)
     {
-        PDC_PAIR *atrtab = SP->atrtab;
+        void *atrtab = SP->atrtab;
 
         memcpy(SP, &(ctty[i].saved), sizeof(SCREEN));
         SP->atrtab = atrtab;

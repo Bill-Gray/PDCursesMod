@@ -146,6 +146,15 @@ color
 #include <limits.h>
 #include <assert.h>
 
+/* Color pair structure */
+
+typedef struct
+{
+    int f;                /* foreground color */
+    int b;                /* background color */
+    int count;            /* allocation order */
+} PDC_PAIR;
+
 int COLORS = 0;
 int COLOR_PAIRS = PDC_COLOR_PAIRS;
 static int atrtab_size_alloced;
@@ -286,9 +295,9 @@ static void _init_pair_core(int pair, int fg, int bg)
 
         while( pair >= new_size)
             new_size += new_size;
-        SP->atrtab = (PDC_PAIR *)realloc( SP->atrtab, new_size * sizeof( PDC_PAIR));
+        SP->atrtab = (void *)realloc( SP->atrtab, new_size * sizeof( PDC_PAIR));
         assert( SP->atrtab);
-        p = SP->atrtab + atrtab_size_alloced;
+        p = (PDC_PAIR *)SP->atrtab + atrtab_size_alloced;
         for( i = new_size - atrtab_size_alloced; i; i--, p++)
         {
             p->f = p->b = UNSET_COLOR_PAIR;
@@ -299,7 +308,7 @@ static void _init_pair_core(int pair, int fg, int bg)
 
     assert( pair >= 0);
     assert( pair < atrtab_size_alloced);
-    p = SP->atrtab + pair;
+    p = (PDC_PAIR *)SP->atrtab + pair;
 
     /* To allow the PDC_PRESERVE_SCREEN option to work, we only reset
        curscr if this call to init_pair() alters a color pair created by
@@ -384,20 +393,22 @@ bool can_change_color(void)
 
 int extended_pair_content(int pair, int *fg, int *bg)
 {
+    PDC_PAIR *p = (PDC_PAIR *)SP->atrtab + pair;
+
     PDC_LOG(("pair_content() - called\n"));
 
     if (pair < 0 || pair >= COLOR_PAIRS || !fg || !bg)
         return ERR;
 
-    if( pair >= atrtab_size_alloced || (pair && SP->atrtab[pair].f == UNSET_COLOR_PAIR))
+    if( pair >= atrtab_size_alloced || (pair && p->f == UNSET_COLOR_PAIR))
     {
         *fg = COLOR_RED;      /* signal use of uninitialized pair */
         *bg = COLOR_BLUE;     /* with visible,  but odd,  colors  */
     }
     else
     {
-        *fg = SP->atrtab[pair].f;
-        *bg = SP->atrtab[pair].b;
+        *fg = p->f;
+        *bg = p->b;
     }
     return OK;
 }
@@ -448,11 +459,14 @@ int PDC_init_atrtab(void)
     assert( SP);
     if( !SP->atrtab)
     {
+       PDC_PAIR *p;
+
        atrtab_size_alloced = 1;
        SP->atrtab = calloc( atrtab_size_alloced, sizeof(PDC_PAIR));
-       SP->atrtab[0].f = SP->atrtab[0].b = UNSET_COLOR_PAIR;
        if( !SP->atrtab)
            return -1;
+       p = (PDC_PAIR *)SP->atrtab;
+       p->f = p->b = UNSET_COLOR_PAIR;
     }
     _init_pair_core( 0,
             (SP->orig_attr ? SP->orig_fore : _default_foreground_idx),
@@ -499,13 +513,15 @@ int color_content( short color, short *red, short *green, short *blue)
 
 int find_pair( int fg, int bg)
 {
+    PDC_PAIR *p;
     int i;
 
     assert( SP);
     assert( SP->atrtab);
     assert( atrtab_size_alloced);
-    for( i = 1; i < atrtab_size_alloced; i++)
-        if( SP->atrtab[i].f == fg && SP->atrtab[i].b == bg)
+    p = (PDC_PAIR *)SP->atrtab;
+    for( i = 1; i < atrtab_size_alloced; i++, p++)
+        if( p->f == fg && p->b == bg)
             return( i);
     return( -1);
 }
@@ -534,9 +550,10 @@ int alloc_pair( int fg, int bg)
     if( -1 == rval)        /* pair isn't already allocated.  First,  look */
     {                      /* for an unset color pair. */
         int i;
+        PDC_PAIR *p = (PDC_PAIR *)SP->atrtab;
 
         for( i = 1; rval < 0 && i < atrtab_size_alloced; i++)
-            if( SP->atrtab[i].f == UNSET_COLOR_PAIR)
+            if( p[i].f == UNSET_COLOR_PAIR)
                 rval = i;
         if( -1 == rval)
         {
@@ -545,7 +562,7 @@ int alloc_pair( int fg, int bg)
                  rval = 1;
                  assert( atrtab_size_alloced >= COLOR_PAIRS);
                  for( i = 2; i < atrtab_size_alloced; i++)
-                     if( SP->atrtab[i].count < SP->atrtab[rval].count)
+                     if( p[i].count < p[rval].count)
                          rval = i;
             }
             else     /* still have more colors;  just need to realloc tbl */
@@ -560,11 +577,14 @@ int alloc_pair( int fg, int bg)
 
 int free_pair( int pair)
 {
+    PDC_PAIR *p;
+
     assert( SP && SP->atrtab);
     assert( pair >= 1 && pair < atrtab_size_alloced);
-    assert( SP->atrtab[pair].f != UNSET_COLOR_PAIR);
+    p = (PDC_PAIR *)SP->atrtab + pair;
+    assert( p->f != UNSET_COLOR_PAIR);
     if (!SP || !SP->color_started || pair < 1 || pair >= atrtab_size_alloced
-               || SP->atrtab[pair].f == UNSET_COLOR_PAIR)
+               || p->f == UNSET_COLOR_PAIR)
         return ERR;
 
     _init_pair_core(pair, UNSET_COLOR_PAIR, UNSET_COLOR_PAIR);
@@ -574,7 +594,7 @@ int free_pair( int pair)
 void reset_color_pairs( void)
 {
     assert( SP && SP->atrtab);
-    SP->atrtab = (PDC_PAIR *)realloc( SP->atrtab, sizeof( PDC_PAIR));
+    SP->atrtab = realloc( SP->atrtab, sizeof( PDC_PAIR));
     atrtab_size_alloced = 1;
     curscr->_clear = TRUE;
 }
