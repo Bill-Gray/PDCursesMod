@@ -279,7 +279,7 @@ static int _mouse_key(void)
     {
         if (changes & (1 << i))
         {
-            int shf = i * 5;
+            int shf = i * PDC_BITS_PER_BUTTON;
             short button = SP->mouse_status.button[i] & BUTTON_ACTION_MASK;
 
             if (   (!(mbe & (BUTTON1_PRESSED << shf)) &&
