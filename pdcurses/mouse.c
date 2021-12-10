@@ -365,7 +365,7 @@ int nc_getmouse(MEVENT *event)
                      /* 'Moves' (i.e.,  button is pressed) and 'position reports' */
                      /* (mouse moved with no button down) are all reported as     */
                      /* 'position reports' in NCurses,  which lacks 'move' events. */
-    if( (MOUSE_MOVED || MOUSE_POS_REPORT) && (SP->_trap_mbe & REPORT_MOUSE_POSITION))
+    if( MOUSE_MOVED && (SP->_trap_mbe & REPORT_MOUSE_POSITION))
         bstate |= REPORT_MOUSE_POSITION;
 
     for( i = 0; i < 3; i++)
@@ -406,7 +406,7 @@ int ungetmouse(MEVENT *event)
 
     for (i = 0; i < 3; i++)
     {
-        int shf = i * 5;
+        int shf = i * PDC_BITS_PER_BUTTON;
         short button = 0;
 
         if (bstate & ((BUTTON1_RELEASED | BUTTON1_PRESSED |
