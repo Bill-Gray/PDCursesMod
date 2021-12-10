@@ -304,10 +304,12 @@ mmask_t mousemask(mmask_t mask, mmask_t *oldmask)
     if (oldmask)
         *oldmask = SP->_trap_mbe;
 
-    /* The ncurses interface doesn't work with our move events, so
-       filter them here */
+    /* The ncurses interface doesn't work with our move events
+       when using 32-bit mmask_ts,  so filter them here */
 
+#if !defined( PDC_LONG_MMASK)
     mask &= ~(BUTTON1_MOVED | BUTTON2_MOVED | BUTTON3_MOVED);
+#endif
 
     mouse_set(mask);
 
