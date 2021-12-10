@@ -249,21 +249,21 @@ typedef struct
 
 /* mouse bit-masks */
 
-#define BUTTON1_RELEASED        0x00000001L
-#define BUTTON1_PRESSED         0x00000002L
-#define BUTTON1_CLICKED         0x00000004L
-#define BUTTON1_DOUBLE_CLICKED  0x00000008L
-#define BUTTON1_TRIPLE_CLICKED  0x00000010L
+#define BUTTON1_RELEASED        (mmask_t)0x01
+#define BUTTON1_PRESSED         (mmask_t)0x02
+#define BUTTON1_CLICKED         (mmask_t)0x04
+#define BUTTON1_DOUBLE_CLICKED  (mmask_t)0x08
+#define BUTTON1_TRIPLE_CLICKED  (mmask_t)0x10
 
 /* With the "traditional" 32-bit mmask_t,  mouse move and triple-clicks
 share the same bit and can't be distinguished.  64-bit mmask_ts allow us
 to make the distinction,  and will allow other events to be added later. */
 
 #ifdef PDC_LONG_MMASK
-   #define BUTTON1_MOVED           0x00000020L /* PDCurses */
+   #define BUTTON1_MOVED           (mmask_t)0x20      /* PDCurses */
    #define PDC_BITS_PER_BUTTON     6
 #else
-   #define BUTTON1_MOVED           0x00000010L /* PDCurses */
+   #define BUTTON1_MOVED           (mmask_t)0x10      /* PDCurses */
    #define PDC_BITS_PER_BUTTON     5
 #endif
 
