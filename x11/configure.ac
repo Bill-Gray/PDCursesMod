@@ -83,9 +83,9 @@ else
 fi
 if test "$ac_cv_prog_CC" = "gcc"; then
 	if test "$enable_debug" = "yes"; then
-		CFLAGS="${CFLAGS} -Wall"
+		CFLAGS="${CFLAGS} -Wall -Wextra -pedantic -Werror"
 	else
-		CFLAGS="-O2 -Wall -fomit-frame-pointer"
+		CFLAGS="-O2 -Wall -Wextra -pedantic -Werror -fomit-frame-pointer"
 	fi
 fi
 if test "$on_qnx" = yes; then

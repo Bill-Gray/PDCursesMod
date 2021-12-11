@@ -2845,15 +2845,15 @@ if test "$ac_test_CFLAGS" = set; then
   CFLAGS=$ac_save_CFLAGS
 elif test $ac_cv_prog_cc_g = yes; then
   if test "$GCC" = yes; then
-    CFLAGS="-g -O2"
+    CFLAGS="-g -O2 -Wall -Wextra -pedantic -Werror"
   else
-    CFLAGS="-g"
+    CFLAGS="-g -Wall -Wextra -pedantic -Werror"
   fi
 else
   if test "$GCC" = yes; then
-    CFLAGS="-O2"
+    CFLAGS="-O2 -Wall -Wextra -pedantic -Werror"
   else
-    CFLAGS=
+    CFLAGS="-Wall -Wextra -pedantic -Werror"
   fi
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $CC option to accept ISO C89" >&5
@@ -4350,9 +4350,9 @@ else
 fi
 if test "$ac_cv_prog_CC" = "gcc"; then
 	if test "$enable_debug" = "yes"; then
-		CFLAGS="${CFLAGS} -Wall"
+		CFLAGS="${CFLAGS} -Wall -Wextra -pedantic -Werror"
 	else
-		CFLAGS="-O2 -Wall -fomit-frame-pointer"
+		CFLAGS="-O2 -Wall -Wextra -pedantic -Werror -fomit-frame-pointer"
 	fi
 fi
 if test "$on_qnx" = yes; then
