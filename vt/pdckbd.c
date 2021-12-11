@@ -484,8 +484,10 @@ int PDC_get_key( void)
                {              /* (Supplemental Multilingual Plane) */
                check_key( &c[2]);
                assert( (c[2] & 0xc0) == 0x80);
+#if WCHAR_MAX > 65535
                c[2] &= 0x3f;
                rval = (c[2] | (c[1] << 6) | (c[0] << 12) | ((rval & 0xf) << 18));
+#endif
                }
             }
          }
