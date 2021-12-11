@@ -118,7 +118,7 @@ int main(int argc, char *argv[])
 
     setlocale(LC_ALL, "");
 
-#ifdef PDCURSES
+#ifdef __PDCURSESMOD__
 #ifdef PDC_VER_MAJOR   /* so far only seen in 4.0+ */
     PDC_set_resize_limits( 20, 50, 70, 200);
 #endif
@@ -134,7 +134,7 @@ int main(int argc, char *argv[])
                 case 'l': case 'L':
                     setlocale( LC_ALL, argv[i] + 2);
                     break;
-#ifdef PDCURSES
+#ifdef __PDCURSESMOD__
                 case 'b': case 'B':
                     PDC_set_blink( TRUE);
                     break;
@@ -490,8 +490,6 @@ void inputTest(WINDOW *win)
                 if( !button)
                     button = 1;     /* to allow button modifiers to be read */
             }
-            else if (MOUSE_POS_REPORT)
-                waddstr(win, "Posn report:");
             else if (MOUSE_WHEEL_UP)
                 waddstr(win, "wheel up: ");
             else if (MOUSE_WHEEL_DOWN)
@@ -1488,7 +1486,7 @@ void extended(int tmarg)
     curTest();
 }
 
-#if defined( PDCURSES)
+#if defined( __PDCURSESMOD__)
 static void supergradient(int tmarg)
 {
     int i, j, pair_num = 256;
@@ -1681,7 +1679,7 @@ void colorTest(WINDOW *win)
     if (COLORS >= 256)
         extended(tmarg);
 
-#if defined( PDCURSES)
+#if defined( __PDCURSESMOD__)
     if (can_change_color() && (long)COLORS == ((1L << 24) + 256L)
                       && (unsigned)COLOR_PAIRS > 32768)
         supergradient( tmarg);
