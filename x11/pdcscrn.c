@@ -344,6 +344,9 @@ static void _handle_expose(Widget w, XtPointer client_data, XEvent *event,
 {
     PDC_LOG(("_handle_expose() - called\n"));
 
+    INTENTIONALLY_UNUSED_PARAMETER( w);
+    INTENTIONALLY_UNUSED_PARAMETER( client_data);
+    INTENTIONALLY_UNUSED_PARAMETER( unused);
     /* ignore all Exposes except last */
 
     if (event->xexpose.count)
@@ -362,6 +365,9 @@ static void _handle_nonmaskable(Widget w, XtPointer client_data, XEvent *event,
 
     PDC_LOG(("_handle_nonmaskable called: event %d\n", event->type));
 
+    INTENTIONALLY_UNUSED_PARAMETER( w);
+    INTENTIONALLY_UNUSED_PARAMETER( client_data);
+    INTENTIONALLY_UNUSED_PARAMETER( unused);
     if (event->type == ClientMessage)
     {
         PDC_LOG(("ClientMessage received\n"));
@@ -380,6 +386,9 @@ static void _handle_enter_leave(Widget w, XtPointer client_data,
 {
     PDC_LOG(("_handle_enter_leave called\n"));
 
+    INTENTIONALLY_UNUSED_PARAMETER( w);
+    INTENTIONALLY_UNUSED_PARAMETER( client_data);
+    INTENTIONALLY_UNUSED_PARAMETER( unused);
     switch(event->type)
     {
     case EnterNotify:
@@ -409,6 +418,9 @@ static void _handle_structure_notify(Widget w, XtPointer client_data,
 {
     PDC_LOG(("_handle_structure_notify() - called\n"));
 
+    INTENTIONALLY_UNUSED_PARAMETER( w);
+    INTENTIONALLY_UNUSED_PARAMETER( client_data);
+    INTENTIONALLY_UNUSED_PARAMETER( unused);
     switch(event->type)
     {
     case ConfigureNotify:
@@ -730,10 +742,12 @@ void PDC_reset_shell_mode(void)
 
 void PDC_restore_screen_mode(int i)
 {
+    INTENTIONALLY_UNUSED_PARAMETER( i);
 }
 
 void PDC_save_screen_mode(int i)
 {
+    INTENTIONALLY_UNUSED_PARAMETER( i);
 }
 
 bool PDC_can_change_color(void)

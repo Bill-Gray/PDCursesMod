@@ -90,7 +90,7 @@ int PDC_set_blink(bool blinkon)
 
 int PDC_set_bold(bool boldon)
 {
-    int old_attrs;
+    attr_t old_attrs;
 
     assert( SP);
     if (!SP)

@@ -22,6 +22,7 @@
 #include <stdio.h>
 
 #include "scrlbox.h"
+#include "curspriv.h"      /* for INTENTIONALLY_UNUSED_PARAMETER() */
 
 #define INITIAL_WIDTH 300
 #define INITIAL_HEIGHT 300
@@ -218,6 +219,8 @@ static XtGeometryResult GeometryManager(Widget w, XtWidgetGeometry *request,
 {
     XtWidgetGeometry allowed;
 
+    INTENTIONALLY_UNUSED_PARAMETER( reply);
+
     if (request->request_mode & ~(XtCWQueryOnly | CWWidth | CWHeight))
         return XtGeometryNo;
 
@@ -259,6 +262,7 @@ static XtGeometryResult QueryGeometry(Widget w, XtWidgetGeometry *request,
 {
     XtGeometryResult result=XtGeometryNo;
 
+    INTENTIONALLY_UNUSED_PARAMETER( w);
     request->request_mode &= CWWidth | CWHeight;
 
     /* parent isn't going to change w or h, so nothing to re-compute */
@@ -313,6 +317,10 @@ static void Initialize(Widget request, Widget new,
 {
     ScrollBoxWidget newsbw = (ScrollBoxWidget)new;
 
+    INTENTIONALLY_UNUSED_PARAMETER( request);
+    INTENTIONALLY_UNUSED_PARAMETER( args);
+    INTENTIONALLY_UNUSED_PARAMETER( num_args);
+
     if (newsbw->core.width == 0)
         newsbw->core.width = INITIAL_WIDTH;
 
@@ -327,6 +335,9 @@ static Boolean SetValues(Widget current, Widget request, Widget new,
     ScrollBoxWidget sbwcurrent = (ScrollBoxWidget)current;
     ScrollBoxWidget sbwnew = (ScrollBoxWidget)new;
 
+    INTENTIONALLY_UNUSED_PARAMETER( request);
+    INTENTIONALLY_UNUSED_PARAMETER( args);
+    INTENTIONALLY_UNUSED_PARAMETER( num_args);
     /* need to relayout if h_space or v_space change */
 
     if ((sbwnew->scrollBox.h_space != sbwcurrent->scrollBox.h_space) ||

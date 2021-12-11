@@ -68,6 +68,7 @@ static void _scroll_up_down(Widget w, XtPointer client_data,
     int viewport_y = sb_viewport_y * pdc_fheight;
     int cur_y = sb_cur_y * pdc_fheight;
 
+    INTENTIONALLY_UNUSED_PARAMETER( client_data);
     /* When pixels is negative, right button pressed, move data down,
        thumb moves up.  Otherwise, left button pressed, pixels positive,
        move data up, thumb down. */
@@ -98,6 +99,7 @@ static void _scroll_left_right(Widget w, XtPointer client_data,
 
     cur_x += pixels;
 
+    INTENTIONALLY_UNUSED_PARAMETER( client_data);
     /* limit panning to size of overall */
 
     if (cur_x < 0)
@@ -120,6 +122,7 @@ static void _thumb_up_down(Widget w, XtPointer client_data,
     double viewport_y = (double) sb_viewport_y;
     int cur_y = sb_cur_y;
 
+    INTENTIONALLY_UNUSED_PARAMETER( client_data);
     /* If the size of the viewport is > overall area simply return,
        as no scrolling is permitted. */
 
@@ -142,6 +145,7 @@ static void _thumb_left_right(Widget w, XtPointer client_data,
     double viewport_x = (double) sb_viewport_x;
     int cur_x = sb_cur_x;
 
+    INTENTIONALLY_UNUSED_PARAMETER( client_data);
     if (sb_viewport_x >= sb_total_x)
         return;
 

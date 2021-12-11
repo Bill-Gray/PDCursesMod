@@ -533,7 +533,7 @@ static unsigned long _process_mouse_event( const XEvent *event)
             XEvent rel;
             XtAppNextEvent(pdc_app_context, &rel);
 
-            if (rel.type == ButtonRelease && rel.xbutton.button == button_no)
+            if (rel.type == ButtonRelease && rel.xbutton.button == (unsigned)button_no)
             {
                 SP->mouse_status.button[button_no - 1] = BUTTON_CLICKED;
                 last_button_no = 0;
@@ -663,6 +663,7 @@ int PDC_get_key(void)
 void PDC_set_keyboard_binary(bool on)
 {
     PDC_LOG(("PDC_set_keyboard_binary() - called\n"));
+    INTENTIONALLY_UNUSED_PARAMETER( on);
 }
 
 /* discard any pending keyboard or mouse input -- this is the core
@@ -694,6 +695,10 @@ int PDC_modifiers_set(void)
 static void _dummy_handler(Widget w, XtPointer client_data,
                            XEvent *event, Boolean *unused)
 {
+    INTENTIONALLY_UNUSED_PARAMETER( w);
+    INTENTIONALLY_UNUSED_PARAMETER( client_data);
+    INTENTIONALLY_UNUSED_PARAMETER( event);
+    INTENTIONALLY_UNUSED_PARAMETER( unused);
 }
 
 int PDC_kb_setup(void)
