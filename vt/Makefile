@@ -21,7 +21,7 @@ RM		= rm -f
 # If your system doesn't have these, remove the defines here
 SFLAGS		= -DHAVE_VSNPRINTF -DHAVE_VSSCANF
 
-CFLAGS  = -Wall -Wextra -pedantic
+CFLAGS  = -Wall -Wextra -pedantic -Werror
 ifeq ($(DEBUG),Y)
 	CFLAGS  += -g -DPDCDEBUG
 else
@@ -156,6 +156,9 @@ test_pan$(E) : $(demodir)/test_pan.c
 
 tuidemo$(E) : tuidemo.o tui.o
 	$(LINK) tui.o tuidemo.o -o $@ $(LDFLAGS)
+
+widetest$(E) : $(demodir)/widetest.c
+	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
 
 worm$(E) : $(demodir)/worm.c
 	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
