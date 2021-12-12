@@ -1560,7 +1560,7 @@ int PDC_get_mouse_event_from_queue( void)
     if( mouse_queue->action == BUTTON_MOVED)
     {
         if( mouse_queue->button < 0)
-            SP->mouse_status.changes = PDC_MOUSE_POSITION;
+            SP->mouse_status.changes = PDC_MOUSE_MOVED;
         else
         {
             SP->mouse_status.changes = PDC_MOUSE_MOVED | (1 << mouse_queue->button);
