@@ -10,10 +10,10 @@
 #include <linux/fb.h>
 #include "pdcfb.h"
 #include "psf.c"
-#include "../dosvga/font.h"
 #ifdef PDC_WIDE
-   #include "uni_info.h"
+   #include "psf_wide.h"
 #else
+   #include "../dosvga/font.h"
 #endif
 
 static struct termios orig_term;
@@ -206,7 +206,8 @@ static int _load_psf_font( const int font_num)
             /* We can use the data in uni_info.h to make the translations. */
     if( !PDC_font_info.unicode_info)
        PDC_font_info.unicode_info =  _decipher_psf2_unicode_table(
-               _unicode_info, sizeof( _unicode_info), &PDC_font_info.unicode_info_size);
+               font_bytes + UNICODE_INFO_OFFSET, UNICODE_INFO_SIZE,
+               &PDC_font_info.unicode_info_size);
 #endif
     if( PDC_font_info.glyphs)
     {
