@@ -241,14 +241,14 @@ static int _int32_to_wchar_array( wchar_t *obuff, const int obuffsize, const int
 #ifdef WCHAR_T_IS_16_BITS
         if( *wint >= 0x10000)    /* make surrogate pair */
         {
-            obuff[i++] = (wchar_t)0xd800 + (*wint >> 10);
+            obuff[i++] = (wchar_t)( 0xd800 + (*wint >> 10));
             if( i < obuffsize)
-                obuff[i++] = (wchar_t)0xdc00 + (*wint & 0x3ff);
+                obuff[i++] = (wchar_t)( 0xdc00 + (*wint & 0x3ff));
             wint++;
         }
         else
 #endif
-            obuff[i++] = *wint++;
+            obuff[i++] = (wchar_t)*wint++;
     }
     if( i < obuffsize)
         obuff[i++] = '\0';
