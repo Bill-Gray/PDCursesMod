@@ -177,7 +177,7 @@ static const uint8_t *_get_raw_glyph_bytes( struct font_info *font, int unicode_
     int glyph_idx = find_psf_or_vgafont_glyph( font, unicode_point);
     const int font_char_size_in_bytes = (font->width + 7) >> 3;
 
-    if( glyph_idx < 0)
+    if( glyph_idx < 0 || glyph_idx >= (int)font->n_glyphs)
         glyph_idx = find_psf_or_vgafont_glyph( font, '?');
     if( glyph_idx < 0)
         glyph_idx = 0;
