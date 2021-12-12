@@ -39,8 +39,8 @@ Defined by this header:
 #define PDC_VER_MINOR    3
 #define PDC_VER_CHANGE   1
 #define PDC_VER_YEAR   2021
-#define PDC_VER_MONTH    11
-#define PDC_VER_DAY      28
+#define PDC_VER_MONTH    12
+#define PDC_VER_DAY      12
 
 #define PDC_STRINGIZE( x) #x
 #define PDC_stringize( x) PDC_STRINGIZE( x)
@@ -217,7 +217,7 @@ typedef struct
  *                                10 <- button 2 has changed   1
  *                               100 <- button 3 has changed   2
  *                              1000 <- mouse has moved        3
- *                             10000 <- mouse position report  4
+ * (Not actually used!)        10000 <- mouse position report  4
  *                            100000 <- mouse wheel up         5
  *                           1000000 <- mouse wheel down       6
  *                          10000000 <- mouse wheel left       7
@@ -231,7 +231,7 @@ typedef struct
  */
 
 #define PDC_MOUSE_MOVED         0x0008
-#define PDC_MOUSE_POSITION      0x0010
+#define PDC_MOUSE_UNUSED_BIT    0x0010
 #define PDC_MOUSE_WHEEL_UP      0x0020
 #define PDC_MOUSE_WHEEL_DOWN    0x0040
 #define PDC_MOUSE_WHEEL_LEFT    0x0080
@@ -239,7 +239,6 @@ typedef struct
 
 #define A_BUTTON_CHANGED        (Mouse_status.changes & 7)
 #define MOUSE_MOVED             (Mouse_status.changes & PDC_MOUSE_MOVED)
-#define MOUSE_POS_REPORT        (Mouse_status.changes & PDC_MOUSE_POSITION)
 #define BUTTON_CHANGED(x)       (Mouse_status.changes & (1 << ((x) - ((x)<4 ? 1 : -5))))
 #define BUTTON_STATUS(x)        (Mouse_status.button[(x) - 1])
 #define MOUSE_WHEEL_UP          (Mouse_status.changes & PDC_MOUSE_WHEEL_UP)
