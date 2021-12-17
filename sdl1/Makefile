@@ -130,6 +130,9 @@ test_pan: $(demodir)/test_pan.c
 tuidemo: tuidemo.o tui.o
 	$(LINK) tui.o tuidemo.o -o $@ $(LDFLAGS)
 
+widetest: $(demodir)/widetest.c
+	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
+
 worm: $(demodir)/worm.c
 	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
 
