@@ -213,7 +213,7 @@ static void _normalize(int *fg, int *bg)
     if (*fg == -1 || *fg == UNSET_COLOR_PAIR)
         *fg = using_defaults ? SP->orig_fore : _default_foreground_idx;
 
-    if (*bg == -1 || *bg == UNSET_COLOR_PAIR)
+    if (*bg == -1 || *fg == UNSET_COLOR_PAIR)
         *bg = using_defaults ? SP->orig_back : _default_background_idx;
 }
 
@@ -300,7 +300,7 @@ static void _init_pair_core(int pair, int fg, int bg)
         p = (PDC_PAIR *)SP->atrtab + atrtab_size_alloced;
         for( i = new_size - atrtab_size_alloced; i; i--, p++)
         {
-            p->f = p->b = UNSET_COLOR_PAIR;
+            p->f = UNSET_COLOR_PAIR;
             p->count = 0;
         }
         atrtab_size_alloced = new_size;
@@ -466,7 +466,7 @@ int PDC_init_atrtab(void)
        if( !SP->atrtab)
            return -1;
        p = (PDC_PAIR *)SP->atrtab;
-       p->f = p->b = UNSET_COLOR_PAIR;
+       p->f = UNSET_COLOR_PAIR;
     }
     _init_pair_core( 0,
             (SP->orig_attr ? SP->orig_fore : _default_foreground_idx),
@@ -587,7 +587,7 @@ int free_pair( int pair)
                || p->f == UNSET_COLOR_PAIR)
         return ERR;
 
-    _init_pair_core(pair, UNSET_COLOR_PAIR, UNSET_COLOR_PAIR);
+    _init_pair_core(pair, UNSET_COLOR_PAIR, 0);
     return OK;
 }
 
