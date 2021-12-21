@@ -566,6 +566,11 @@ that as of 2021 Dec 21,  only WinGUI,  VT,  X11, and SDLn have COLOR_PAIRS
 #define A_PROTECT    (A_UNDERLINE | A_LEFT | A_RIGHT)
 #define A_STANDOUT    (A_REVERSE | A_BOLD) /* X/Open */
 
+#define A_HORIZONTAL  A_NORMAL
+#define A_LOW         A_NORMAL
+#define A_TOP         A_NORMAL
+#define A_VERTICAL    A_NORMAL
+
 #define CHR_MSK       A_CHARTEXT           /* Obsolete */
 #define ATR_MSK       A_ATTRIBUTES         /* Obsolete */
 #define ATR_NRM       A_NORMAL             /* Obsolete */
