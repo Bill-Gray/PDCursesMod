@@ -196,7 +196,9 @@ int start_color(void)
         else
             COLOR_PAIRS = INT_MAX;
     }
-#endif
+#else
+    COLOR_PAIRS = (1 << PDC_COLOR_BITS);
+#endif           /* will be 256 (wide-char builds) or 4096 (8-bit chars) */
     return OK;
 }
 

@@ -40,7 +40,7 @@ Defined by this header:
 #define PDC_VER_CHANGE   1
 #define PDC_VER_YEAR   2021
 #define PDC_VER_MONTH    12
-#define PDC_VER_DAY      12
+#define PDC_VER_DAY      21
 
 #define PDC_STRINGIZE( x) #x
 #define PDC_stringize( x) PDC_STRINGIZE( x)
@@ -467,36 +467,50 @@ PDCEX  char         ttytype[];    /* terminal name/description */
 Text Attributes
 ===============
 
-If CHTYPE_32 is #defined,  PDCurses uses a 32-bit integer for its chtype:
+By default,  PDCurses uses 64-bit integers for its chtype.  All chtypes
+have bits devoted to character data,  attribute data,  and color pair data.
+There are three configurations supported :
 
-    +--------------------------------------------------------------------+
-    |31|30|29|28|27|26|25|24|23|22|21|20|19|18|17|16|15|14|13|..| 2| 1| 0|
-    +--------------------------------------------------------------------+
-          color pair        |     modifiers         |   character eg 'a'
-
-There are 256 color pairs (8 bits), 8 bits for modifiers, and 16 bits
-for character data. The modifiers are bold, underline, right-line,
-left-line, italic, reverse and blink, plus the alternate character set
-indicator.  (This is the scheme used in 'traditional' PDCurses.)
-
-   By default,  PDCursesMod uses 64-bit chtype :
-
+Default, 64-bit chtype,  both wide- and 8-bit character builds:
 -------------------------------------------------------------------------------
 |63|62|..|53|52|..|34|33|32|31|30|29|28|..|22|21|20|19|18|17|16|..| 3| 2| 1| 0|
 -------------------------------------------------------------------------------
   unused    |color pair |        modifiers      |         character eg 'a'
 
-   We take five more bits for the character (thus allowing Unicode values
-past 64K;  the full range of Unicode goes up to 0x10ffff,  requiring 21 bits
-total),  and four more bits for attributes.  Three are currently used as
-A_OVERLINE, A_DIM, and A_STRIKEOUT;  one more is reserved for future use.
-Bits 33-52 are used to specify a color pair.  In theory,  there can be
-2^20 = 1048576 color pairs,  but as of 2021 May 27,  only WinGUI,  VT,  X11,
-and SDLn have COLOR_PAIRS = 1048576.  Other platforms (DOSVGA,  Plan9,
-WinCon) may join them,  but some (DOS,  OS/2) simply do not have full-color
-capability.
+   21 character bits (0-20),  enough for full Unicode coverage
+   12 attribute bits (21-32)
+   20 color pair bits (33-52),  enough for 1048576 color pairs
+   11 currently unused bits (53-63)
 
-   Bits 53-63 are currently unused.
+32-bit chtypes with wide characters (CHTYPE_32 and PDC_WIDE are #defined):
+    +--------------------------------------------------------------------+
+    |31|30|29|28|27|26|25|24|23|22|21|20|19|18|17|16|15|14|13|..| 2| 1| 0|
+    +--------------------------------------------------------------------+
+          color pair        |     modifiers         |   character eg 'a'
+   16 character bits (0-16),  enough for BMP (Unicode below 64K)
+   8 attribute bits (16-23)
+   8 color pair bits (24-31),  for 256 color pairs
+
+32-bit chtypes with narrow characters (CHTYPE_32 #defined,  PDC_WIDE is not):
+    +--------------------------------------------------------------------+
+    |31|30|29|28|..|22|21|20|19|18|17|16|..|12|11|10| 9| 8| 7| 6|..| 1| 0|
+    +--------------------------------------------------------------------+
+          color pair        |     modifiers               |character
+   8 character bits (0-7);  only 8-bit charsets will work
+   12 attribute bits (8-19)
+   12 color pair bits (20-31),  for 4096 pairs
+
+All attribute modifier schemes include eight "basic" bits:  bold, underline,
+right-line, left-line, italic, reverse and blink attributes,  plus the
+alternate character set indicator. For default and 32-bit narrow builds,
+three more bits are used for underlined, dimmed, and strikeout attributes;
+a fourth bit is reserved.
+
+Default chtypes have enough character bits to support the full range of
+Unicode,  all attributes,  and 2^20 = 1048576 color pairs.  Note,  though,
+that as of 2021 Dec 21,  only WinGUI,  VT,  X11, and SDLn have COLOR_PAIRS
+= 1048576.  Other platforms (DOSVGA,  Plan9, WinCon) may join them.  Some
+(DOS,  OS/2) simply do not have full-color capability.
 
 **man-end****************************************************************/
 
@@ -505,47 +519,47 @@ capability.
 #define A_NORMAL      (chtype)0
 
 #ifndef CHTYPE_32
+            /* 64-bit chtypes,  both wide- and narrow */
     # define PDC_CHARTEXT_BITS   21
-    # define A_CHARTEXT   (chtype)( ((chtype)0x1 << PDC_CHARTEXT_BITS) - 1)
-    # define A_ALTCHARSET ((chtype)0x001 << PDC_CHARTEXT_BITS)
-    # define A_RIGHT      ((chtype)0x002 << PDC_CHARTEXT_BITS)
-    # define A_LEFT       ((chtype)0x004 << PDC_CHARTEXT_BITS)
-    # define A_INVIS      ((chtype)0x008 << PDC_CHARTEXT_BITS)
-    # define A_UNDERLINE  ((chtype)0x010 << PDC_CHARTEXT_BITS)
-    # define A_REVERSE    ((chtype)0x020 << PDC_CHARTEXT_BITS)
-    # define A_BLINK      ((chtype)0x040 << PDC_CHARTEXT_BITS)
-    # define A_BOLD       ((chtype)0x080 << PDC_CHARTEXT_BITS)
-    # define A_OVERLINE   ((chtype)0x100 << PDC_CHARTEXT_BITS)
-    # define A_STRIKEOUT  ((chtype)0x200 << PDC_CHARTEXT_BITS)
-    # define A_DIM        ((chtype)0x400 << PDC_CHARTEXT_BITS)
-    # define PDC_COLOR_SHIFT (PDC_CHARTEXT_BITS + 12)
-    # define A_COLOR      ((chtype)0xfffff << PDC_COLOR_SHIFT)
-    # define A_ATTRIBUTES (((chtype)0xfff << PDC_CHARTEXT_BITS) | A_COLOR)
-# else         /* plain ol' 32-bit chtypes */
-    # define PDC_CHARTEXT_BITS      16
-    # define A_ALTCHARSET (chtype)0x00010000
-    # define A_RIGHT      (chtype)0x00020000
-    # define A_LEFT       (chtype)0x00040000
-    # define A_INVIS      (chtype)0x00080000
-    # define A_UNDERLINE  (chtype)0x00100000
-    # define A_REVERSE    (chtype)0x00200000
-    # define A_BLINK      (chtype)0x00400000
-    # define A_BOLD       (chtype)0x00800000
-    # define A_COLOR      (chtype)0xff000000
-    # define PDC_COLOR_SHIFT 24
+    # define PDC_ATTRIBUTE_BITS  12
+    # define PDC_COLOR_BITS      20
+# else
 #ifdef PDC_WIDE
-    # define A_CHARTEXT   (chtype)0x0000ffff
-    # define A_ATTRIBUTES (chtype)0xffff0000
+            /* 32-bit chtypes,  wide character */
+    # define PDC_CHARTEXT_BITS      16
+    # define PDC_ATTRIBUTE_BITS      8
+    # define PDC_COLOR_BITS          8
+#else
+            /* 32-bit chtypes,  narrow (8-bit) characters */
+    # define PDC_CHARTEXT_BITS      8
+    # define PDC_ATTRIBUTE_BITS    12
+    # define PDC_COLOR_BITS        12
+#endif
+#endif
+
+# define PDC_COLOR_SHIFT (PDC_CHARTEXT_BITS + PDC_ATTRIBUTE_BITS)
+# define A_COLOR       ((((chtype)1 << PDC_COLOR_BITS) - 1) << PDC_COLOR_SHIFT)
+# define A_ATTRIBUTES (((((chtype)1 << PDC_ATTRIBUTE_BITS) - 1) << PDC_CHARTEXT_BITS) | A_COLOR)
+# define A_CHARTEXT     (((chtype)1 << PDC_CHARTEXT_BITS) - 1)
+
+#define PDC_ATTRIBUTE_BIT( N)  ((chtype)1 << (N))
+# define A_ALTCHARSET   PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS)
+# define A_RIGHT        PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 1)
+# define A_LEFT         PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 2)
+# define A_INVIS        PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 3)
+# define A_UNDERLINE    PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 4)
+# define A_REVERSE      PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 5)
+# define A_BLINK        PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 6)
+# define A_BOLD         PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 7)
+#if PDC_COLOR_BITS >= 11
+    # define A_OVERLINE   PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 8)
+    # define A_STRIKEOUT  PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 9)
+    # define A_DIM        PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 10)
+/*  Reserved bit :        PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 11) */
+#else
     # define A_DIM        A_NORMAL
     # define A_OVERLINE   A_NORMAL
     # define A_STRIKEOUT  A_NORMAL
-#else          /* with 8-bit chars,  we have bits for these attribs : */
-    # define A_CHARTEXT   (chtype)0x000000ff
-    # define A_ATTRIBUTES (chtype)0xffffe000
-    # define A_DIM        (chtype)0x00008000
-    # define A_OVERLINE   (chtype)0x00004000
-    # define A_STRIKEOUT  (chtype)0x00002000
-#endif
 #endif
 
 #define A_ITALIC      A_INVIS
@@ -1324,9 +1338,9 @@ PDCEX  int     init_pair(short, short, short);
    #endif
 #else       /* 8-bit chtypes */
    #ifdef CHTYPE_32
-      #define initscr initscr_x32_4301
+      #define initscr initscr_x32_4301a
    #else
-      #define initscr initscr_x64_4301
+      #define initscr initscr_x64_4301a
    #endif
 #endif
 

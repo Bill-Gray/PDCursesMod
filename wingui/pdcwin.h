@@ -80,21 +80,6 @@ the PDC_CURSOR macro for this,  as in...
 #define PDC_CURSOR_IS_BLINKING    \
           ((SP->visibility >> 8) != (SP->visibility & 0xff))
 
-/* With 64-bit chtypes,  we're allowing 20 bits for the character
-(thus Unicode values up to 0xffffff) plus one bit to indicate the
-alternate character set.  With 32-bit chtypes,  we don't have so
-many bits to play with and limit ourselves to 16-bit characters
-(i.e.,  Unicode past 0xffff can't be shown),  plus that one bit
-for alternate chars.  With 16-bit chtypes,  there are only eight
-bits available to the character.  PDC_REAL_ATTR_SHIFT gives the
-number of low bits devoted to storing characters. */
-
-# ifdef CHTYPE_32
-    # define PDC_REAL_ATTR_SHIFT  17
-#else          /* 64-bit chtypes */
-    # define PDC_REAL_ATTR_SHIFT  21
-#endif
-
  /* The PDC_set_function_key() function allows one to set a 'shut down'
 key,  and reassign hotkeys used for pasting from the clipboard and
 enlarging and decreasing the font size,  and for using the font selection

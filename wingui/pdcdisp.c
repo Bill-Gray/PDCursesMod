@@ -389,7 +389,7 @@ void PDC_transform_line_given_hdc( const HDC hdc, const int lineno,
 
     while( len)
     {
-        const attr_t attrib = (attr_t)( *srcp >> PDC_REAL_ATTR_SHIFT);
+        const attr_t attrib = (attr_t)( *srcp & ~A_CHARTEXT);
         const int color = (int)(( *srcp & A_COLOR) >> PDC_COLOR_SHIFT);
         attr_t new_font_attrib = (*srcp & (A_BOLD | A_ITALIC));
         RECT clip_rect;
@@ -405,7 +405,7 @@ void PDC_transform_line_given_hdc( const HDC hdc, const int lineno,
                   && (in_font == character_is_in_font( srcp[i])
                               || (srcp[i] & A_CHARTEXT) == MAX_UNICODE)
 #endif
-                  && attrib == (attr_t)( srcp[i] >> PDC_REAL_ATTR_SHIFT); i++)
+                  && attrib == (attr_t)( srcp[i] & ~A_CHARTEXT); i++)
         {
             chtype ch = srcp[i] & A_CHARTEXT;
 
