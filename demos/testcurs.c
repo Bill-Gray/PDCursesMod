@@ -1367,6 +1367,15 @@ void attrTest(WINDOW *win)
     }
 #endif
 
+#ifdef A_DIM
+    if( A_DIM)
+    {
+        attrset(A_DIM);
+        mvaddstr(tmarg + 17, col2, "A_DIM");
+        attrset(A_NORMAL);
+    }
+#endif
+
     attrset(A_BOLD|A_UNDERLINE);
     mvaddstr(tmarg + 5, col2, "Underlined Bold");
     attrset(A_NORMAL);
@@ -1681,7 +1690,7 @@ void colorTest(WINDOW *win)
 
 #if defined( __PDCURSESMOD__)
     if (can_change_color() && (long)COLORS == ((1L << 24) + 256L)
-                      && (unsigned)COLOR_PAIRS > 32768)
+               && LINES * COLS + 256 < COLOR_PAIRS)
         supergradient( tmarg);
 #endif
 
