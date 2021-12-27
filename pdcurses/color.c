@@ -120,9 +120,6 @@ color
    find_pair() return a pair number, or -1 on error.
 
 
-
-
-
 ### Portability
                              X/Open  ncurses  NetBSD
     has_colors                  Y       Y       Y
@@ -152,7 +149,7 @@ typedef struct
 {
     int f;                /* foreground color */
     int b;                /* background color */
-    int count;            /* allocation order */
+    int prev, next;       /* doubly-linked list indices */
 } PDC_PAIR;
 
 int COLORS = 0;
@@ -167,6 +164,25 @@ static int _default_background_idx = COLOR_BLACK;
 static void _init_pair_core(int pair, int fg, int bg);
 
 #define UNSET_COLOR_PAIR      -2
+
+static void _unlink_color_pair( const int pair_no)
+{
+    PDC_PAIR *p = (PDC_PAIR *)SP->atrtab;
+    PDC_PAIR *curr = p + pair_no;
+
+    p[curr->next].prev = curr->prev;
+    p[curr->prev].next = curr->next;
+}
+
+static void _link_color_pair( const int pair_no, const int head)
+{
+    PDC_PAIR *p = (PDC_PAIR *)SP->atrtab;
+    PDC_PAIR *curr = p + pair_no;
+
+    curr->next = p[head].next;
+    curr->prev = head;
+    p[head].next = p[curr->next].prev = pair_no;
+}
 
 int start_color(void)
 {
@@ -218,8 +234,6 @@ static void _normalize(int *fg, int *bg)
     if (*bg == -1 || *fg == UNSET_COLOR_PAIR)
         *bg = using_defaults ? SP->orig_back : _default_background_idx;
 }
-
-static int allocnum = 1;
 
 /* When a color pair is reset,  all cells of that color should be
 redrawn. refresh() and doupdate() don't redraw for color pair changes,
@@ -297,13 +311,13 @@ static void _init_pair_core(int pair, int fg, int bg)
 
         while( pair >= new_size)
             new_size += new_size;
-        SP->atrtab = (void *)realloc( SP->atrtab, new_size * sizeof( PDC_PAIR));
+        SP->atrtab = (void *)realloc( SP->atrtab, (new_size + 1) * sizeof( PDC_PAIR));
         assert( SP->atrtab);
-        p = (PDC_PAIR *)SP->atrtab + atrtab_size_alloced;
-        for( i = new_size - atrtab_size_alloced; i; i--, p++)
+        for( i = atrtab_size_alloced + 1; i <= new_size; i++)
         {
+            p = (PDC_PAIR *)SP->atrtab + i;
             p->f = UNSET_COLOR_PAIR;
-            p->count = 0;
+            _link_color_pair( i, atrtab_size_alloced);
         }
         atrtab_size_alloced = new_size;
     }
@@ -319,9 +333,12 @@ static void _init_pair_core(int pair, int fg, int bg)
     _normalize(&fg, &bg);
 
     refresh_pair = (p->f != UNSET_COLOR_PAIR && (p->f != fg || p->b != bg));
+    if( pair)
+       _unlink_color_pair( pair);
     p->f = fg;
     p->b = bg;
-    p->count = allocnum++;
+    if( pair)
+       _link_color_pair( pair, (p->f == UNSET_COLOR_PAIR ? atrtab_size_alloced : 0));
     if( refresh_pair)
         _set_cells_to_refresh_for_pair_change( pair);
 }
@@ -464,11 +481,14 @@ int PDC_init_atrtab(void)
        PDC_PAIR *p;
 
        atrtab_size_alloced = 1;
-       SP->atrtab = calloc( atrtab_size_alloced, sizeof(PDC_PAIR));
+       SP->atrtab = calloc( 2, sizeof(PDC_PAIR));
+       assert( SP->atrtab);
        if( !SP->atrtab)
            return -1;
        p = (PDC_PAIR *)SP->atrtab;
-       p->f = UNSET_COLOR_PAIR;
+       p[0].f = p[1].f = UNSET_COLOR_PAIR;
+       p[0].prev = p[0].next = 0;
+       p[1].prev = p[1].next = 1;
     }
     _init_pair_core( 0,
             (SP->orig_attr ? SP->orig_fore : _default_foreground_idx),
@@ -513,6 +533,12 @@ int color_content( short color, short *red, short *green, short *blue)
     return( rval);
 }
 
+/* At present,  find_pair( ) finds the desired pair,  if it exists,
+by doing a linear search of the table.  If enough pairs are in use
+(hundreds/thousands),  this can become slow.  ncurses uses a "fast
+indexing" scheme here (balanced binary tree);  we may follow suit.
+See 'pairs.txt' for further discussion.        */
+
 int find_pair( int fg, int bg)
 {
     PDC_PAIR *p;
@@ -530,20 +556,12 @@ int find_pair( int fg, int bg)
 
 /* alloc_pair() first simply looks to see if the desired pair is
 already allocated.  If it has been,  we're done.
-   Otherwise,  we look within the allocated colors for an unused
-pair.  If we find one,  we'll use that.
-   Otherwise... it's still possible the allocated color table
-hasn't reached the COLOR_PAIRS size yet.  (Quite likely,  if
-COLOR_PAIRS = 2^20.)  In which case we'll use the next available
-color,  forcing the pair table to be resized in the process.
-   However,  we may simply have run out of color pairs (the
-"all pairs are in use" case commented below).  In that case,
-we look for the eldest pair (the one with the lowest allocation
-count).
-   ncurses does all this with a fast lookup table.  I don't
-really see much point to that,  but there are certainly ways
-this code could be more efficient if we came across a situation
-where performance was an issue.        */
+
+   If it hasn't been,  the doubly-linked list of free color
+pairs (see 'pairs.txt') will indicate an available node.  If
+we've actually run out of free color pairs,  the doubly-linked
+list of used color pairs will link to the oldest inserted node.
+*/
 
 int alloc_pair( int fg, int bg)
 {
@@ -551,25 +569,12 @@ int alloc_pair( int fg, int bg)
 
     if( -1 == rval)        /* pair isn't already allocated.  First,  look */
     {                      /* for an unset color pair. */
-        int i;
         PDC_PAIR *p = (PDC_PAIR *)SP->atrtab;
 
-        for( i = 1; rval < 0 && i < atrtab_size_alloced; i++)
-            if( p[i].f == UNSET_COLOR_PAIR)
-                rval = i;
-        if( -1 == rval)
-        {
-            if( COLOR_PAIRS == i)
-            {         /* all color pairs are in use */
-                 rval = 1;
-                 assert( atrtab_size_alloced >= COLOR_PAIRS);
-                 for( i = 2; i < atrtab_size_alloced; i++)
-                     if( p[i].count < p[rval].count)
-                         rval = i;
-            }
-            else     /* still have more colors;  just need to realloc tbl */
-               rval = i;
-        }
+        rval = p[atrtab_size_alloced].prev;
+        assert( rval);
+        if( COLOR_PAIRS == rval)       /* all color pairs are in use */
+            rval = p[0].prev;
         if( ERR == init_extended_pair( rval, fg, bg))
             rval = -1;
         assert( rval != -1);
@@ -596,7 +601,63 @@ int free_pair( int pair)
 void reset_color_pairs( void)
 {
     assert( SP && SP->atrtab);
-    SP->atrtab = realloc( SP->atrtab, sizeof( PDC_PAIR));
-    atrtab_size_alloced = 1;
+    free( SP->atrtab);
+    SP->atrtab = NULL;
+    PDC_init_atrtab( );
     curscr->_clear = TRUE;
 }
+
+#ifdef PDC_COLOR_PAIR_DEBUGGING_FUNCTIONS
+
+/* The following is solely for testing the color pair table,  and
+specifically its two doubly-linked lists (one of 'used' pairs,
+one of 'free' pairs).  The elements in both lists are counted.
+The total should equal the number of allocated pairs.  All pairs
+in the first linked list are checked to make sure they're really
+used;  all in the second to make sure they're really free.  We
+also check that the links are consistent.  The return value is
+0 if the table checks out,  -1 if it does not.  'results' contains
+the number of used pairs,  the number of free pairs,  and the
+number of allocated pairs (which should be the sum of the first
+two numbers.)  See 'pairs.txt' for more details.   */
+
+int PDC_check_color_pair_table( int *results)
+{
+    int idx, n_used = 1, n_free = 1;
+    PDC_PAIR *p;
+
+    assert( SP && SP->atrtab);
+    p = (PDC_PAIR *)SP->atrtab;
+    idx = 0;
+    while( n_used < atrtab_size_alloced + 10 && p[idx].next)
+    {                /* loop through all _used_ color pairs */
+        const int next = p[idx].next;
+
+        assert( p[idx].f != UNSET_COLOR_PAIR);
+        assert( next >= 0 && next < atrtab_size_alloced);
+        assert( p[next].prev == idx);
+        idx = p[idx].next;
+        n_used++;
+    }
+
+    idx = atrtab_size_alloced;
+    while( n_free < atrtab_size_alloced + 10 && p[idx].next != atrtab_size_alloced)
+    {                /* loop through all _free_ color pairs */
+        const int next = p[idx].next;
+
+        assert( p[idx].f == UNSET_COLOR_PAIR);
+        assert( next > 0 && next <= atrtab_size_alloced);
+        assert( p[next].prev == idx);
+        idx = p[idx].next;
+        n_free++;
+    }
+
+    if( results)
+    {
+        results[0] = n_used;
+        results[1] = n_free;
+        results[2] = atrtab_size_alloced + 1;      /* include the 'dummy' pair */
+    }
+    return( (n_used + n_free == atrtab_size_alloced + 1) ? 0 : -1);
+}
+#endif   /*  #ifdef PDC_COLOR_PAIR_DEBUGGING_FUNCTIONS */
