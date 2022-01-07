@@ -58,7 +58,7 @@ else()
         
     endif()
 
-    if(UNIX OR WATCOM)
+    if(UNIX)
         add_subdirectory(vt)
     endif()
 
@@ -66,6 +66,7 @@ else()
     
         add_subdirectory(wincon)
         add_subdirectory(wingui)
+        add_subdirectory(vt)
         
     endif()
    
