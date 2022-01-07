@@ -344,6 +344,9 @@ static void _handle_expose(Widget w, XtPointer client_data, XEvent *event,
 {
     PDC_LOG(("_handle_expose() - called\n"));
 
+    INTENTIONALLY_UNUSED_PARAMETER( w);
+    INTENTIONALLY_UNUSED_PARAMETER( client_data);
+    INTENTIONALLY_UNUSED_PARAMETER( unused);
     /* ignore all Exposes except last */
 
     if (event->xexpose.count)
@@ -362,6 +365,9 @@ static void _handle_nonmaskable(Widget w, XtPointer client_data, XEvent *event,
 
     PDC_LOG(("_handle_nonmaskable called: event %d\n", event->type));
 
+    INTENTIONALLY_UNUSED_PARAMETER( w);
+    INTENTIONALLY_UNUSED_PARAMETER( client_data);
+    INTENTIONALLY_UNUSED_PARAMETER( unused);
     if (event->type == ClientMessage)
     {
         PDC_LOG(("ClientMessage received\n"));
@@ -380,6 +386,9 @@ static void _handle_enter_leave(Widget w, XtPointer client_data,
 {
     PDC_LOG(("_handle_enter_leave called\n"));
 
+    INTENTIONALLY_UNUSED_PARAMETER( w);
+    INTENTIONALLY_UNUSED_PARAMETER( client_data);
+    INTENTIONALLY_UNUSED_PARAMETER( unused);
     switch(event->type)
     {
     case EnterNotify:
@@ -409,6 +418,9 @@ static void _handle_structure_notify(Widget w, XtPointer client_data,
 {
     PDC_LOG(("_handle_structure_notify() - called\n"));
 
+    INTENTIONALLY_UNUSED_PARAMETER( w);
+    INTENTIONALLY_UNUSED_PARAMETER( client_data);
+    INTENTIONALLY_UNUSED_PARAMETER( unused);
     switch(event->type)
     {
     case ConfigureNotify:
@@ -520,22 +532,19 @@ int PDC_scr_open(void)
 
     /* Check application resource values here */
 
-    pdc_fwidth = pdc_app_data.normalFont->max_bounds.rbearing -
-                 pdc_app_data.normalFont->min_bounds.lbearing;
+    pdc_fwidth = pdc_app_data.normalFont->max_bounds.width;
 
-    pdc_fascent = pdc_app_data.normalFont->max_bounds.ascent;
-    pdc_fdescent = pdc_app_data.normalFont->max_bounds.descent;
+    pdc_fascent = pdc_app_data.normalFont->ascent;
+    pdc_fdescent = pdc_app_data.normalFont->descent;
     pdc_fheight = pdc_fascent + pdc_fdescent;
 
     /* Check that the italic font and normal fonts are the same size */
 
     italic_font_valid = pdc_fwidth ==
-        pdc_app_data.italicFont->max_bounds.rbearing -
-        pdc_app_data.italicFont->min_bounds.lbearing;
+        pdc_app_data.italicFont->max_bounds.width;
 
     bold_font_valid = pdc_fwidth ==
-        pdc_app_data.boldFont->max_bounds.rbearing -
-        pdc_app_data.boldFont->min_bounds.lbearing;
+        pdc_app_data.boldFont->max_bounds.width;
 
     /* Calculate size of display window */
 
@@ -670,6 +679,14 @@ int PDC_scr_open(void)
         XtDispatchEvent(&event);
     }
 
+    if (SP->resized)
+    {
+        pdc_wwidth = resize_window_width;
+        pdc_wheight = resize_window_height;
+        pdc_resize_now = FALSE;
+        SP->resized = FALSE;
+    }
+
     PDC_init_palette( );
 
     SP->orig_attr = FALSE;
@@ -725,10 +742,12 @@ void PDC_reset_shell_mode(void)
 
 void PDC_restore_screen_mode(int i)
 {
+    INTENTIONALLY_UNUSED_PARAMETER( i);
 }
 
 void PDC_save_screen_mode(int i)
 {
+    INTENTIONALLY_UNUSED_PARAMETER( i);
 }
 
 bool PDC_can_change_color(void)
@@ -745,9 +764,9 @@ int PDC_color_content(int color, int *red, int *green, int *blue)
     tmp.pixel = PDC_get_pixel( color);
     XQueryColor(XCURSESDISPLAY, cmap, &tmp);
 
-    *red = ((double)(tmp.red) * 1000 / 65535) + 0.5;
-    *green = ((double)(tmp.green) * 1000 / 65535) + 0.5;
-    *blue = ((double)(tmp.blue) * 1000 / 65535) + 0.5;
+    *red   = (int)( ((long)tmp.red   * 1000L + 32767L) / 65535L);
+    *green = (int)( ((long)tmp.green * 1000L + 32767L) / 65535L);
+    *blue  = (int)( ((long)tmp.blue  * 1000L + 32767L) / 65535L);
 
     return OK;
 }
@@ -756,9 +775,9 @@ int PDC_init_color(int color, int red, int green, int blue)
 {
     XColor tmp;
 
-    tmp.red = ((double)red * 65535 / 1000) + 0.5;
-    tmp.green = ((double)green * 65535 / 1000) + 0.5;
-    tmp.blue = ((double)blue * 65535 / 1000) + 0.5;
+    tmp.red    = (unsigned short)( ((long)red   * 65535L + 500L) / 1000L);
+    tmp.green  = (unsigned short)( ((long)green * 65535L + 500L) / 1000L);
+    tmp.blue   = (unsigned short)( ((long)blue  * 65535L + 500L) / 1000L);
 
     Colormap cmap = DefaultColormap(XCURSESDISPLAY,
                                     DefaultScreen(XCURSESDISPLAY));

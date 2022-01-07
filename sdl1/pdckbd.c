@@ -100,14 +100,11 @@ static int _process_key_event(void)
     int i, key = 0;
 
     SP->key_modifiers = 0L;
-    SP->key_code = FALSE;
 
     if (event.type == SDL_KEYUP)
     {
         if (SP->return_key_modifiers && event.key.keysym.sym == oldkey)
         {
-            SP->key_code = TRUE;
-
             switch (oldkey)
             {
             case SDLK_RSHIFT:
@@ -125,8 +122,6 @@ static int _process_key_event(void)
             default:
                 break;
             }
-
-            SP->key_code = FALSE;
         }
 
         return -1;
@@ -168,8 +163,6 @@ static int _process_key_event(void)
 
             else
                 key = key_table[i].normal;
-
-            SP->key_code = (key > 0x100);
             break;
         }
     }
@@ -187,23 +180,16 @@ static int _process_key_event(void)
     if (event.key.keysym.mod & KMOD_ALT)
     {
         if (key >= 'A' && key <= 'Z')
-        {
             key += ALT_A - 'A';
-            SP->key_code = TRUE;
-        }
 
         if (key >= 'a' && key <= 'z')
-        {
             key += ALT_A - 'a';
-            SP->key_code = TRUE;
-        }
 
         if (key >= '0' && key <= '9')
-        {
             key += ALT_0 - '0';
-            SP->key_code = TRUE;
-        }
     }
+    if( key == 3 && !SP->raw_inp)
+        exit( 0);
 
     return key ? key : -1;
 }
@@ -274,7 +260,6 @@ static int _process_mouse_event(void)
                 SP->mouse_status.changes = PDC_MOUSE_WHEEL_RIGHT;
             }
 
-            SP->key_code = TRUE;
             return KEY_MOUSE;
         }
 
@@ -306,7 +291,6 @@ static int _process_mouse_event(void)
 
     old_mouse_status = SP->mouse_status;
 
-    SP->key_code = TRUE;
     return KEY_MOUSE;
 }
 
@@ -325,11 +309,15 @@ int PDC_get_key(void)
         {
             pdc_sheight = event.resize.h;
             pdc_swidth = event.resize.w;
+            if( curscr)
+            {
+                touchwin( curscr);
+                wrefresh( curscr);
+            }
 
             if (!SP->resized)
             {
                 SP->resized = TRUE;
-                SP->key_code = TRUE;
                 return KEY_RESIZE;
             }
         }

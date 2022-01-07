@@ -48,8 +48,6 @@ pdcsetsc
 #define CURSOR_ON           "\033[?25h"
 #define CURSOR_OFF          "\033[?25l"
 
-void PDC_puts_to_stdout( const char *buff);
-
 int PDC_curs_set( int visibility)
 {
     int ret_vis;
@@ -58,11 +56,16 @@ int PDC_curs_set( int visibility)
 
     ret_vis = SP->visibility;
 
+#ifndef LINUX_FRAMEBUFFER_PORT
     if( !SP->visibility && visibility)    /* turn cursor back on */
         PDC_puts_to_stdout( CURSOR_ON);
     else if( SP->visibility && !visibility)
         PDC_puts_to_stdout( CURSOR_OFF);
+#endif
     SP->visibility = visibility;
+#ifdef LINUX_FRAMEBUFFER_PORT
+    PDC_gotoyx( SP->cursrow, SP->curscol);
+#else
     if( !PDC_is_ansi)
     {
         const int vis1 = visibility & 0xff;
@@ -108,6 +111,7 @@ int PDC_curs_set( int visibility)
 
         PDC_puts_to_stdout( command);
     }
+#endif
     return ret_vis;
 }
 
@@ -141,12 +145,14 @@ void PDC_set_title( const char *title)
 {
     PDC_LOG(("PDC_set_title() - called:<%s>\n", title));
 
-#ifndef DOS
+#if !defined( DOS) && !defined( LINUX_FRAMEBUFFER_PORT)
     if( !PDC_is_ansi)
     {
         PDC_puts_to_stdout( "\033]2;");
         PDC_puts_to_stdout( title);
         PDC_puts_to_stdout( "\a");
     }
+#else
+    INTENTIONALLY_UNUSED_PARAMETER( title);
 #endif
 }

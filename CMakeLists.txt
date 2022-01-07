@@ -62,7 +62,7 @@ else()
         
     endif()
 
-    if(UNIX OR WATCOM)
+    if(UNIX)
         add_subdirectory(vt)
     endif()
 
@@ -72,6 +72,9 @@ else()
         endif()
         if (PDC_WINGUI_BUILD)
             add_subdirectory(wingui)
+        endif()
+        if (PDC_VT_BUILD)
+            add_subdirectory(vt)
         endif()
     endif()
    

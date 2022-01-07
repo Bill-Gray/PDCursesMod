@@ -1,6 +1,6 @@
 # GNU Makefile for PDCurses - DOS
 #
-# Usage: make [-f path\Makefile] [DEBUG=Y] [target]
+# Usage: [g]make [-f path\Makefile] [DEBUG=Y] [target]
 #
 # where target can be any of:
 # [all|libs|demos|pdcurses.a|testcurs.exe...]
@@ -13,19 +13,22 @@ ifndef PDCURSES_SRCDIR
 	PDCURSES_SRCDIR = ..
 endif
 
-include $(PDCURSES_SRCDIR)/common/libobjs.mif
-
 osdir		= $(PDCURSES_SRCDIR)/dos
+common		= $(PDCURSES_SRCDIR)/common
+
+include $(common)/libobjs.mif
 
 PDCURSES_DOS_H	= $(osdir)/pdcdos.h
 
 CC		= gcc
+STRIP	= strip
 
+CFLAGS  = -Wall
 ifeq ($(DEBUG),Y)
-	CFLAGS  = -g -Wall -DPDCDEBUG
+	CFLAGS  += -g -DPDCDEBUG
 	LDFLAGS = -g
 else
-	CFLAGS  = -O2 -Wall
+	CFLAGS  += -O2
 	LDFLAGS =
 endif
 
@@ -51,7 +54,7 @@ clean:
 
 demos:	$(DEMOS)
 ifneq ($(DEBUG),Y)
-	strip *.exe
+	$(STRIP) *.exe
 endif
 
 $(LIBCURSES) : $(LIBOBJS) $(PDCOBJS)

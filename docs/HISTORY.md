@@ -1,5 +1,180 @@
+PDCursesMod 4.3.1 - 2021 November 28
+====================================
+
+Major new features
+------------------
+
+-  Added a Linux framebuffer port.   dd5b99ce81 and many others.
+
+Minor new features
+------------------
+
+-  Added the ncurses extension WACS_T_* (thick-line box character)
+   alternate character set defines.     5cefe5fa00
+
+-  Added four ncurses demos.  948f4cf41d
+
+-  Eliminated CHTYPE_LONG and CHTYPE_64.  Neither is really needed
+   anymore;  we just have CHTYPE_32.  e275cadd78  91b0b0dd5d
+
+-  It should now be difficult,  if not impossible,  to link code for
+   one PDCursesMod binary API to code for another.  7e06e8c264
+
+-  Palette changes are redrawn immediately.  That was already true for
+   DOS and 8-bit framebuffer ports,  where the palette has a hardware
+   meaning;  it's now true in X11,  VT,  WinGUI,  etc.   e73cae9b2c
+
+-  mmask_t can now be 64 bits (and by default,  it is).  This enables
+   some unsnarling of mouse mask #defines and gets rid of the collision
+   of triple-clicks with mouse move events,  and provides bits for
+   future use.  908f1b3d32
+
+Bug fixes
+---------
+
+-  Pads were incorrectly refreshed (issue wmcbrine/PDCurses#124).
+   41da0b2fb8  9de6c83cd9
+
+-  Odd input issue in WinCon (and presumably WinGUI);  see issue
+   wmcbrine/PDCurses#126.  This may be revisited.   64d727571e
+
+-  Background was improperly refreshed in pads.  See wmcbrine/PDCurses#122.
+   b31f19f477
+
+-  SDL2 window could be shown improperly initialized at startup.  9d30ffa6db
+
+-  Ctrl-C stops the program in X11 and SDLn if noraw() has been called.  The
+   framebuffer,  VT,  and WinGUI ports already did this.  210d49f48a
+
+-  Surrogate pairs and combining characters are now handled correctly in the
+   setcchar() and getcchar() functions.  3ef0592cfe  422bb2152e
+
+-  X11 could block on getch() if nodelay() and PDC_set_blink() were both set
+   to TRUE.  Fixes issue #216.  e20301ae19
+
+-  Fixed assert errors in SDL2 at startup.  See issue #215.  5ee7cc0722
+
+PDCursesMod 4.3 - 2021 August 25
+========================================
+
+Major new features
+------------------
+
+-  SDLs and X11 ports now support full colors,  a la WinGUI and VT.
+   a266f923ee, b63b36f9b8, fee4af28c8, 8606b96111
+
+Minor new features
+------------------
+
+-  ncurses tests build correctly again.  Moved to ncurses-6.2 tests,
+   and they can now be built on VT,  WinCon,  and WinGUI (they already
+   worked with X11 and SDLn).  f8dd18c0f2 4a71b26dd1 c8b67969d6
+   edd97f38fd 68f1f1c299
+
+-  Added ncurses extension functions find_pair(), alloc_pair(), free_pair()
+   (see commit 19c14525e2) and reset_color_pairs() (534f24f547).
+
+-  To test the above ncurses extensions,  added support to build
+   'demo_new_pair' from the ncurses tests (commit d8951fadc9) and
+   a new PDCursesMod-specific 'init_col' demo (commit 7b4d38a0ee).
+   The latter also tests out handling of default colors and the
+   ability to preserve the screen background... which appears to
+   only work in the VT flavor,  and imperfectly there.
+
+-  SDLs now have strikeout and overlined text.  91b280f442  So does X11
+   5e5cd29617
+
+-  SDLs now recognize some 'extended' media keys.  5e10ef17fc
+
+-  SDLs and VT can be compiled as shared libraries and installed/uninstalled.
+   b78cd8a33f bb8d408675 d0309c2963
+
+-  VT has strikeout text in xterm,  some (not many) others.
+   05af0c6810
+
+-  Removed unnecessary 'extended' key definitions.  b9fafe60f1
+
+-  Code compiles with -Wextra -pedantic on many flavors without warnings.
+   674512453a, 6ad85268c5, 2648cdf5cd, others.
+
+-  Some tests done using GitHub's CI.  3cb1b5f1bf,  several following
+   commits.
+
+-  New PDC_set_box_type( ) function to allow boxes/lines to be drawn using
+   the doubled-line characters.  Modified 'test_pan.c' to demonstrate the
+   new function.  ab7bad3981  dd981b0e78
+
+-  WinGUI,  WinCon beep() is now in a separate thread,  so we don't
+   hang the program while the beeping takes place.  a6212d94d2
+
+-  WinCon can be compiled for 32-bit chtypes.
+
+-  Added a PDC_set_default_colors( ) function.  Some platforms expect
+   particular background/foreground colors by default.  This lets you set
+   those colors.   b642c91279
+
+-  In Windows,  one can use Ctrl-C/Ctrl-V to copy/paste,  instead of
+   Ctrl-Shift-C/Ctrl-Shift-V.   9f487d4fea
+
+-  Added assert()s on many NULL parameters.  Calling with such parameters
+   is permitted,  but usually indicates bugs that should result in an assertion
+   when in debugging mode.  96f4984f9f
+
+-  In DOSVGA,  as in X11,  WinGUI,  and the SDLs,  you can specify an
+   initial screen size using resize_screen() before actually starting PDCurses.
+   0623c44ff0
+
+-  _tracef(), trace(), curses_trace() added for ncurses compatibility.  This
+   doesn't (as yet) actually add any capabilities;  it just lets you access
+   existing capabilities in the same way you would if using ncurses.
+
+Bug fixes
+---------
+
+-  WinCon and WinGUI key tables didn't go far enough and could crash if some
+   unusual key codes were received.  See wmcbrine/PDCurses issue #118 (this
+   is mostly a copy of wmcbrine's fix as suggested by zingchen).   fe124295be
+   59aa2afce9
+
+-  SDL2 display did not update after restoring from iconified form.
+   2bb4284597
+
+-  Both SDLs crashed if a background image was shown,  due to an out-of-bounds
+   array access.  e19ea211fc fbf4ea1fec
+
+-  DOS PDC_napms() failed for times greater than 18 minutes (would round
+   time down to nearest multiple of 18 min).  acc1fa72fa
+
+-  Buffer could overrun on extremely large (more than 512 column) displays
+   in X11 (91b280f442), WinCon (51327cad4d)
+
+-  Certain extended keys could crash WinCon, WinGUI.  d747d35ed8
+
+-  Plugged some memory leaks in X11.  Much more to be done.  cb4344a163
+
+-  In VT flavor,  the mix of printfs() and (unbuffered) write() calls
+   wasn't interrupt-safe,  and led to some corruption in the output.  This
+   is now fixed. 365b6cce79
+
+-  Some cursor shapes in VT were mixed up.  1f1bbe7d8a
+
+-  Fixes for SDL2 font colors when using non-mono bitmaps.  e2b2874e76
+   d9306c09db
+
+-  Computation of the font width in X11 was wrong,  leading to misaligned
+   text.  This also mangled the code that checks that the bold and italic
+   fonts are the same size as the 'normal' font.   54d721cafe
+
+-  X11 mouse handling ignored mouse moves,  sometimes suppressed Ctrl/Alt/
+   Shift modifiers,  and the logic was confusing;  other bugs may have
+   lurked in there.   cfd7f64b95
+
+-  Input in WinCon,  when compiled in narrow (8-bit,  non-PDC_WIDE) mode,
+   could be mangled.  Shamelessly copied wmcbrine's fix from the commit
+   in PDCurses e28e705d17438ffd (q.v.).   83dcf79672
+
 PDCursesMod 4.2 - 2020 Oct 03
-=========================
+=============================
 
 Major new features
 ------------------

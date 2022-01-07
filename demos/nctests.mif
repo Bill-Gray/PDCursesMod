@@ -1,9 +1,25 @@
 # This provides for compiling and linking the ncurses test programs.
 
-ncurses_testdir = $(HOME)/ncurses-6.1/test
+ncurses_testdir = $(HOME)/ncurses-6.3/test
 
-NCURSES_TESTS   = bs$(E) gdc$(E) hanoi$(E) knight$(E) tclock$(E) \
-lrtest$(E) ncurses$(E)
+NCURSES_TESTS	= back_ground$(E) background$(E) blue$(E) \
+bs$(E) cardfile$(E) chgat$(E) clip_printw$(E) color_content$(E) \
+color_set$(E) demo_altkeys$(E) demo_defkey$(E) demo_forms$(E) \
+demo_keyok$(E) demo_menus$(E) demo_new_pair$(E)  \
+demo_panels$(E) demo_termcap$(E) demo_terminfo$(E) ditto$(E) \
+dots$(E) dots_curses$(E) dots_mvcur$(E) dots_termcap$(E) \
+dots_xcurses$(E) dup_field$(E) echochar$(E)  extended_color$(E) \
+filter$(E) firstlast$(E) foldkeys$(E) form_driver_w$(E) gdc$(E) \
+hanoi$(E) hashtest$(E) inchs$(E) inch_wide$(E) insdelln$(E) \
+inserts$(E) ins_wide$(E) key_names$(E) keynames$(E) knight$(E) \
+list_keys$(E) lrtest$(E) move_field$(E) \
+movewindow$(E) ncurses$(E) newdemo$(E) padview$(E) pair_content$(E) \
+picsmap$(E) railroad$(E) redraw$(E) savescreen$(E) sp_tinfo$(E) \
+tclock$(E) testaddch$(E) test_addchstr$(E) test_addstr$(E) \
+test_add_wchstr$(E) test_addwstr$(E)\
+test_arrays$(E) test_getstr$(E) test_get_wstr$(E) test_instr$(E) \
+test_opaque$(E) testscanw$(E) test_setupterm$(E) test_sgr$(E) test_termattrs$(E) \
+test_tparm$(E) test_vid_puts$(E) test_vidputs$(E) view$(E)
 
 ncurses_tests: $(NCURSES_TESTS)
 
@@ -12,7 +28,100 @@ ncurses_clean:
 
 NCFLAGS         = $(DEMOFLAGS) -I$(demodir) -I$(ncurses_testdir)
 
+back_ground$(E): $(ncurses_testdir)/back_ground.c $(ncurses_testdir)/dump_window.c
+	$(BUILD) $(NCFLAGS) -o $@ $^ $(LDFLAGS)
+
+background$(E): $(ncurses_testdir)/background.c $(ncurses_testdir)/dump_window.c
+	$(BUILD) $(NCFLAGS) -o $@ $^ $(LDFLAGS)
+
+blue$(E): $(ncurses_testdir)/blue.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
 bs$(E): $(ncurses_testdir)/bs.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+cardfile$(E): $(ncurses_testdir)/cardfile.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+chgat$(E): $(ncurses_testdir)/chgat.c $(ncurses_testdir)/popup_msg.c
+	$(BUILD) $(NCFLAGS) -o $@ $^ $(LDFLAGS)
+
+clip_printw$(E): $(ncurses_testdir)/clip_printw.c $(ncurses_testdir)/popup_msg.c
+	$(BUILD) $(NCFLAGS) -o $@ $^ $(LDFLAGS)
+
+color_content$(E): $(ncurses_testdir)/color_content.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+color_set$(E): $(ncurses_testdir)/color_set.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+demo_altkeys$(E): $(ncurses_testdir)/demo_altkeys.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+demo_defkey$(E): $(ncurses_testdir)/demo_defkey.c $(ncurses_testdir)/popup_msg.c
+	$(BUILD) $(NCFLAGS) -o $@ $^ $(LDFLAGS)
+
+demo_forms$(E): $(ncurses_testdir)/demo_forms.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+demo_keyok$(E): $(ncurses_testdir)/demo_keyok.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+demo_menus$(E): $(ncurses_testdir)/demo_menus.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+demo_new_pair$(E): $(ncurses_testdir)/demo_new_pair.c $(ncurses_testdir)/popup_msg.c $(srcdir)/terminfo.c
+	$(BUILD) $(NCFLAGS) -o $@ $^ $(LDFLAGS)
+
+demo_panels$(E): $(ncurses_testdir)/demo_panels.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+demo_tabs$(E): $(ncurses_testdir)/demo_tabs.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+demo_termcap$(E): $(ncurses_testdir)/demo_termcap.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+demo_terminfo$(E): $(ncurses_testdir)/demo_terminfo.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+ditto$(E): $(ncurses_testdir)/ditto.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+dots$(E): $(ncurses_testdir)/dots.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+dots_curses$(E): $(ncurses_testdir)/dots_curses.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+dots_mvcur$(E): $(ncurses_testdir)/dots_mvcur.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+dots_termcap$(E): $(ncurses_testdir)/dots_termcap.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+dots_xcurses$(E): $(ncurses_testdir)/dots_xcurses.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+dup_field$(E): $(ncurses_testdir)/dup_field.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+echochar$(E): $(ncurses_testdir)/echochar.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+extended_color$(E): $(ncurses_testdir)/extended_color.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+filter$(E): $(ncurses_testdir)/filter.c $(ncurses_testdir)/popup_msg.c
+	$(BUILD) $(NCFLAGS) -o $@ $^ $(LDFLAGS)
+
+firstlast$(E): $(ncurses_testdir)/firstlast.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+foldkeys$(E): $(ncurses_testdir)/foldkeys.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+form_driver_w$(E): $(ncurses_testdir)/form_driver_w.c
 	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
 
 gdc$(E): $(ncurses_testdir)/gdc.c
@@ -21,14 +130,125 @@ gdc$(E): $(ncurses_testdir)/gdc.c
 hanoi$(E): $(ncurses_testdir)/hanoi.c
 	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS) -lm
 
+hashtest$(E): $(ncurses_testdir)/hashtest.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+inchs$(E): $(ncurses_testdir)/inchs.c $(ncurses_testdir)/popup_msg.c
+	$(BUILD) $(NCFLAGS) -o $@ $^ $(LDFLAGS)
+
+inch_wide$(E): $(ncurses_testdir)/inch_wide.c $(ncurses_testdir)/popup_msg.c
+	$(BUILD) $(NCFLAGS) -o $@ $^ $(LDFLAGS)
+
+insdelln$(E): $(ncurses_testdir)/insdelln.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+inserts$(E): $(ncurses_testdir)/inserts.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+ins_wide$(E): $(ncurses_testdir)/ins_wide.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+key_names$(E): $(ncurses_testdir)/key_names.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+keynames$(E): $(ncurses_testdir)/keynames.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
 knight$(E): $(ncurses_testdir)/knight.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+list_keys$(E): $(ncurses_testdir)/list_keys.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+lrtest$(E): $(ncurses_testdir)/lrtest.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+move_field$(E): $(ncurses_testdir)/move_field.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+movewindow$(E): $(ncurses_testdir)/movewindow.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+ncurses$(E): $(ncurses_testdir)/ncurses.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+newdemo$(E): $(ncurses_testdir)/newdemo.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+padview$(E): $(ncurses_testdir)/padview.c $(ncurses_testdir)/popup_msg.c
+	$(BUILD) $(NCFLAGS) -o $@ $^ $(LDFLAGS)
+
+pair_content$(E): $(ncurses_testdir)/pair_content.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+picsmap$(E): $(ncurses_testdir)/picsmap.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+railroad$(E): $(ncurses_testdir)/railroad.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+redraw$(E): $(ncurses_testdir)/redraw.c $(ncurses_testdir)/popup_msg.c
+	$(BUILD) $(NCFLAGS) -o $@ $^ $(LDFLAGS)
+
+savescreen$(E): $(ncurses_testdir)/savescreen.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+sp_tinfo$(E): $(ncurses_testdir)/sp_tinfo.c
 	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
 
 tclock$(E): $(ncurses_testdir)/tclock.c
 	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS) -lm
 
-lrtest$(E): $(ncurses_testdir)/lrtest.c
+testaddch$(E): $(ncurses_testdir)/testaddch.c
 	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
 
-ncurses$(E): $(ncurses_testdir)/ncurses.c
+test_addchstr$(E): $(ncurses_testdir)/test_addchstr.c
 	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+test_addstr$(E): $(ncurses_testdir)/test_addstr.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+test_add_wchstr$(E): $(ncurses_testdir)/test_add_wchstr.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+test_addwstr$(E): $(ncurses_testdir)/test_addwstr.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+test_arrays$(E): $(ncurses_testdir)/test_arrays.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+test_getstr$(E): $(ncurses_testdir)/test_getstr.c $(ncurses_testdir)/popup_msg.c
+	$(BUILD) $(NCFLAGS) -o $@ $^ $(LDFLAGS)
+
+test_get_wstr$(E): $(ncurses_testdir)/test_get_wstr.c $(ncurses_testdir)/popup_msg.c
+	$(BUILD) $(NCFLAGS) -o $@ $^ $(LDFLAGS)
+
+test_instr$(E): $(ncurses_testdir)/test_instr.c $(ncurses_testdir)/popup_msg.c
+	$(BUILD) $(NCFLAGS) -o $@ $^ $(LDFLAGS)
+
+test_opaque$(E): $(ncurses_testdir)/test_opaque.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+testscanw$(E): $(ncurses_testdir)/testscanw.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+test_setupterm$(E): $(ncurses_testdir)/test_setupterm.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+test_sgr$(E): $(ncurses_testdir)/test_sgr.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+test_termattrs$(E): $(ncurses_testdir)/test_termattrs.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+test_tparm$(E): $(ncurses_testdir)/test_tparm.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+test_vid_puts$(E): $(ncurses_testdir)/test_vid_puts.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+test_vidputs$(E): $(ncurses_testdir)/test_vidputs.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+view$(E): $(ncurses_testdir)/view.c
+	$(BUILD) $(NCFLAGS) -o $@ $^ $(LDFLAGS) $(ncurses_testdir)/popup_msg.c

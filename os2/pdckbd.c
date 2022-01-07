@@ -279,7 +279,6 @@ static int _process_mouse_events(void)
     old_shift = kbdinfo.fsState;
     key_pressed = TRUE;
 
-    SP->key_code = TRUE;
     return KEY_MOUSE;
 }
 
@@ -348,7 +347,6 @@ int PDC_get_key(void)
         key_pressed = FALSE;
         old_shift = kbdinfo.fsState;
 
-        SP->key_code = TRUE;
         return key;
     }
 
@@ -423,7 +421,6 @@ int PDC_get_key(void)
     }
 
     key_pressed = TRUE;
-    SP->key_code = ((unsigned)key >= 256);
 
     return key;
 }

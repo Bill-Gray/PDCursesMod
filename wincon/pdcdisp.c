@@ -139,16 +139,107 @@ static void _set_ansi_color(short f, short b, attr_t attr)
     }
 }
 
+#define MAX_PACKET_SIZE 128
+
 #ifdef PDC_WIDE
 const chtype MAX_UNICODE = 0x10ffff;
 const chtype DUMMY_CHAR_NEXT_TO_FULLWIDTH = 0x110000;
+
 #endif
 
-#define MAX_PACKET_SIZE 128
+static void _show_run_of_ansi_characters( const attr_t attr,
+                           const int fore, const int back, const bool blink,
+                           const int lineno, const int x, const chtype *srcp, const int len)
+{
+#ifdef PDC_WIDE
+    WCHAR buffer[MAX_PACKET_SIZE];
+#else
+    char buffer[MAX_PACKET_SIZE];
+#endif
+    int j, n_out;
+
+    for (j = n_out = 0; j < len; j++)
+    {
+        chtype ch = srcp[j];
+
+        if (ch & A_ALTCHARSET && !(ch & 0xff80))
+            ch = acs_map[ch & 0x7f];
+
+        if (blink && blinked_off)
+            ch = ' ';
+
+#ifdef PDC_WIDE
+        if( (ch & A_CHARTEXT) != DUMMY_CHAR_NEXT_TO_FULLWIDTH)
+            buffer[n_out++] = (WCHAR)( ch & A_CHARTEXT);
+#else
+        buffer[n_out++] = (char)( ch & A_CHARTEXT);
+#endif
+    }
+
+    PDC_gotoyx(lineno, x);
+    _set_ansi_color(fore, back, attr);
+#ifdef PDC_WIDE
+    WriteConsoleW(pdc_con_out, buffer, n_out, NULL, NULL);
+#else
+    WriteConsoleA(pdc_con_out, buffer, n_out, NULL, NULL);
+#endif
+}
+
+static void _show_run_of_nonansi_characters( const attr_t attr,
+                           int fore, int back, const bool blink,
+                           const int lineno, const int x, const chtype *srcp, const int len)
+{
+    CHAR_INFO buffer[MAX_PACKET_SIZE];
+    COORD bufSize, bufPos;
+    SMALL_RECT sr;
+    WORD mapped_attr;
+    int j, n_out;;
+
+    fore = pdc_curstoreal[fore];
+    back = pdc_curstoreal[back];
+
+    if (attr & A_REVERSE)
+        mapped_attr = back | (fore << 4);
+    else
+        mapped_attr = fore | (back << 4);
+
+    if (attr & A_UNDERLINE)
+        mapped_attr |= 0x8000; /* COMMON_LVB_UNDERSCORE */
+    if (attr & A_LEFT)
+        mapped_attr |= 0x0800; /* COMMON_LVB_GRID_LVERTICAL */
+    if (attr & A_RIGHT)
+        mapped_attr |= 0x1000; /* COMMON_LVB_GRID_RVERTICAL */
+
+    for (j = n_out = 0; j < len; j++)
+    {
+        chtype ch = srcp[j];
+
+        if (ch & A_ALTCHARSET && !(ch & 0xff80))
+            ch = acs_map[ch & 0x7f];
+
+        if (blink && blinked_off)
+            ch = ' ';
+
+        buffer[n_out].Attributes = mapped_attr;
+#ifdef PDC_WIDE
+            if( (ch & A_CHARTEXT) != DUMMY_CHAR_NEXT_TO_FULLWIDTH)
+#endif
+           buffer[n_out++].Char.UnicodeChar = (WCHAR)( ch & A_CHARTEXT);
+    }
+
+    bufPos.X = bufPos.Y = 0;
+    bufSize.X = n_out;
+    bufSize.Y = 1;
+
+    sr.Top = sr.Bottom = lineno;
+    sr.Left = x;
+    sr.Right = x + len - 1;
+
+    WriteConsoleOutput(pdc_con_out, buffer, bufSize, bufPos, &sr);
+}
 
 static void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
 {
-    int j;
     int fore, back;
     bool blink, ansi;
 
@@ -189,90 +280,9 @@ static void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *s
         back |= 8;
 
     if (ansi)
-    {
-#ifdef PDC_WIDE
-        WCHAR buffer[MAX_PACKET_SIZE];
-#else
-        char buffer[MAX_PACKET_SIZE];
-#endif
-        int n_out;
-
-        for (j = n_out = 0; j < len; j++)
-        {
-            chtype ch = srcp[j];
-
-            if (ch & A_ALTCHARSET && !(ch & 0xff80))
-                ch = acs_map[ch & 0x7f];
-
-            if (blink && blinked_off)
-                ch = ' ';
-
-#ifdef PDC_WIDE
-            if( (ch & A_CHARTEXT) != DUMMY_CHAR_NEXT_TO_FULLWIDTH)
-                buffer[n_out++] = (WCHAR)( ch & A_CHARTEXT);
-#else
-            buffer[n_out++] = (char)( ch & A_CHARTEXT);
-#endif
-        }
-
-        PDC_gotoyx(lineno, x);
-        _set_ansi_color(fore, back, attr);
-#ifdef PDC_WIDE
-        WriteConsoleW(pdc_con_out, buffer, n_out, NULL, NULL);
-#else
-        WriteConsoleA(pdc_con_out, buffer, n_out, NULL, NULL);
-#endif
-    }
+        _show_run_of_ansi_characters( attr, fore, back, blink, lineno, x, srcp, len);
     else
-    {
-        CHAR_INFO buffer[MAX_PACKET_SIZE];
-        COORD bufSize, bufPos;
-        SMALL_RECT sr;
-        WORD mapped_attr;
-        int n_out = 0;
-
-        fore = pdc_curstoreal[fore];
-        back = pdc_curstoreal[back];
-
-        if (attr & A_REVERSE)
-            mapped_attr = back | (fore << 4);
-        else
-            mapped_attr = fore | (back << 4);
-
-        if (attr & A_UNDERLINE)
-            mapped_attr |= 0x8000; /* COMMON_LVB_UNDERSCORE */
-        if (attr & A_LEFT)
-            mapped_attr |= 0x0800; /* COMMON_LVB_GRID_LVERTICAL */
-        if (attr & A_RIGHT)
-            mapped_attr |= 0x1000; /* COMMON_LVB_GRID_RVERTICAL */
-
-        for (j = n_out = 0; j < len; j++)
-        {
-            chtype ch = srcp[j];
-
-            if (ch & A_ALTCHARSET && !(ch & 0xff80))
-                ch = acs_map[ch & 0x7f];
-
-            if (blink && blinked_off)
-                ch = ' ';
-
-            buffer[n_out].Attributes = mapped_attr;
-#ifdef PDC_WIDE
-            if( (ch & A_CHARTEXT) != DUMMY_CHAR_NEXT_TO_FULLWIDTH)
-#endif
-               buffer[n_out++].Char.UnicodeChar = (WCHAR)( ch & A_CHARTEXT);
-        }
-
-        bufPos.X = bufPos.Y = 0;
-        bufSize.X = n_out;
-        bufSize.Y = 1;
-
-        sr.Top = sr.Bottom = lineno;
-        sr.Left = x;
-        sr.Right = x + len - 1;
-
-        WriteConsoleOutput(pdc_con_out, buffer, bufSize, bufPos, &sr);
-    }
+        _show_run_of_nonansi_characters( attr, fore, back, blink, lineno, x, srcp, len);
 }
 
 /* update the given physical line to look like the corresponding line in
@@ -306,7 +316,17 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
 
 void PDC_blink_text(void)
 {
+    CONSOLE_CURSOR_INFO cci;
     int i, j, k;
+    bool oldvis;
+
+    GetConsoleCursorInfo(pdc_con_out, &cci);
+    oldvis = cci.bVisible;
+    if (oldvis)
+    {
+        cci.bVisible = FALSE;
+        SetConsoleCursorInfo(pdc_con_out, &cci);
+    }
 
     if (!(SP->termattrs & A_BLINK))
         blinked_off = FALSE;
@@ -329,6 +349,12 @@ void PDC_blink_text(void)
     }
 
     PDC_gotoyx(SP->cursrow, SP->curscol);
+    if (oldvis)
+    {
+        cci.bVisible = TRUE;
+        SetConsoleCursorInfo(pdc_con_out, &cci);
+    }
+
     pdc_last_blink = GetTickCount();
 }
 

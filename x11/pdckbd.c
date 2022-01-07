@@ -4,6 +4,7 @@
 
 #include <keysym.h>
 #include <assert.h>
+#include <stdlib.h>
 
 #ifdef HAVE_DECKEYSYM_H
 # include <DECkeysym.h>
@@ -305,7 +306,6 @@ static unsigned long _process_key_event(XEvent *event)
     int buflen = 40;
     int i, count;
     unsigned long modifier = 0;
-    bool key_code = FALSE;
 
     PDC_LOG(("_process_key_event() - called\n"));
 
@@ -346,7 +346,6 @@ static unsigned long _process_key_event(XEvent *event)
 
             if (key)
             {
-                SP->key_code = TRUE;
                 return key;
             }
         }
@@ -414,7 +413,6 @@ static unsigned long _process_key_event(XEvent *event)
             else
                 key = key_table[i].normal;
 
-            key_code = (key > 0x100);
             break;
         }
     }
@@ -435,23 +433,17 @@ static unsigned long _process_key_event(XEvent *event)
     if (event->xkey.state & Mod1Mask)
     {
         if (key >= 'A' && key <= 'Z')
-        {
             key += ALT_A - 'A';
-            key_code = TRUE;
-        }
 
         if (key >= 'a' && key <= 'z')
-        {
             key += ALT_A - 'a';
-            key_code = TRUE;
-        }
 
         if (key >= '0' && key <= '9')
-        {
             key += ALT_0 - '0';
-            key_code = TRUE;
-        }
     }
+
+    if( key == 3 && !SP->raw_inp)
+        exit( 0);
 
     /* After all that, send the key back to the application if is
        NOT zero. */
@@ -460,11 +452,23 @@ static unsigned long _process_key_event(XEvent *event)
     {
         SP->key_modifiers = modifier;
 
-        SP->key_code = key_code;
         return key;
     }
 
     return -1;
+}
+
+static void _set_mouse_modifier_flags( const int button_no,
+                  const int state)
+{
+    SP->mouse_status.button[button_no - 1] &=
+               ~(BUTTON_SHIFT | BUTTON_CONTROL | BUTTON_ALT);
+    if (state & ShiftMask)
+        SP->mouse_status.button[button_no - 1] |= BUTTON_SHIFT;
+    if (state & ControlMask)
+        SP->mouse_status.button[button_no - 1] |= BUTTON_CONTROL;
+    if (state & Mod1Mask)
+        SP->mouse_status.button[button_no - 1] |= BUTTON_ALT;
 }
 
 static unsigned long _process_mouse_event( const XEvent *event)
@@ -493,8 +497,6 @@ static unsigned long _process_mouse_event( const XEvent *event)
            mouse scroll up and down, and button 6 and 7, which are
            normally mapped to the wheel mouse scroll left and right */
 
-        last_button_no = button_no;
-
         if (button_no >= 4 && button_no <= 7)
         {
             /* Send the KEY_MOUSE to curses program */
@@ -515,23 +517,27 @@ static unsigned long _process_mouse_event( const XEvent *event)
                case 7:
                   SP->mouse_status.changes = PDC_MOUSE_WHEEL_RIGHT;
             }
+            _set_mouse_modifier_flags( 1, event->xbutton.state);
 
-            SP->key_code = TRUE;
             return KEY_MOUSE;
         }
 
         MOUSE_LOG(("\nButtonPress\n"));
 
         SP->mouse_status.button[button_no - 1] = BUTTON_PRESSED;
+        last_button_no = button_no;
 
         napms(SP->mouse_wait);
-        while (XtAppPending(pdc_app_context))
+        while (PDC_check_key())
         {
             XEvent rel;
             XtAppNextEvent(pdc_app_context, &rel);
 
-            if (rel.type == ButtonRelease && rel.xbutton.button == button_no)
+            if (rel.type == ButtonRelease && rel.xbutton.button == (unsigned)button_no)
+            {
                 SP->mouse_status.button[button_no - 1] = BUTTON_CLICKED;
+                last_button_no = 0;
+            }
             else
                 XSendEvent(XtDisplay(pdc_toplevel),
                            RootWindowOfScreen(XtScreen(pdc_toplevel)),
@@ -546,7 +552,6 @@ static unsigned long _process_mouse_event( const XEvent *event)
                    pdc_fwidth, pdc_fheight));
 
         button_no = last_button_no;
-
         SP->mouse_status.changes |= PDC_MOUSE_MOVED;
         break;
 
@@ -555,28 +560,29 @@ static unsigned long _process_mouse_event( const XEvent *event)
 
         /* ignore "releases" of scroll buttons */
 
+        last_button_no = 0;
         if (button_no >= 4 && button_no <= 7)
             return -1;
 
         SP->mouse_status.button[button_no - 1] = BUTTON_RELEASED;
     }
 
-    assert( button_no >= 1 && button_no <= PDC_MAX_MOUSE_BUTTONS);
+    assert( button_no >= 0 && button_no <= PDC_MAX_MOUSE_BUTTONS);
     /* Set up the mouse status fields in preparation for sending */
 
-    SP->mouse_status.changes |= 1 << (button_no - 1);
+    if( button_no > 0)
+    {
+        SP->mouse_status.changes |= 1 << (button_no - 1);
 
-    if (SP->mouse_status.changes & PDC_MOUSE_MOVED &&
-        (SP->mouse_status.button[button_no - 1] &
-         BUTTON_ACTION_MASK) == BUTTON_PRESSED)
-        SP->mouse_status.button[button_no - 1] = BUTTON_MOVED;
+        if( (SP->mouse_status.changes & PDC_MOUSE_MOVED) &&
+            (SP->mouse_status.button[button_no - 1] &
+             BUTTON_ACTION_MASK) == BUTTON_PRESSED)
+            SP->mouse_status.button[button_no - 1] = BUTTON_MOVED;
 
-    if (event->xbutton.state & ShiftMask)
-        SP->mouse_status.button[button_no - 1] |= BUTTON_SHIFT;
-    if (event->xbutton.state & ControlMask)
-        SP->mouse_status.button[button_no - 1] |= BUTTON_CONTROL;
-    if (event->xbutton.state & Mod1Mask)
-        SP->mouse_status.button[button_no - 1] |= BUTTON_ALT;
+    }
+    else if( event->type == MotionNotify &&
+                 !(SP->_trap_mbe & REPORT_MOUSE_POSITION))
+        return( -1);   /* i.e.,  we're ignoring 'plain' mouse moves */
 
     /* If we are ignoring the event, or the mouse position is outside
        the bounds of the screen, return here */
@@ -585,9 +591,12 @@ static unsigned long _process_mouse_event( const XEvent *event)
         SP->mouse_status.y < 0 || SP->mouse_status.y >= SP->lines)
         return -1;
 
+    if( !button_no)           /* mouse move event */
+        button_no = 1;
+
+    _set_mouse_modifier_flags( button_no, event->xbutton.state);
     /* Send the KEY_MOUSE to curses program */
 
-    SP->key_code = TRUE;
     return KEY_MOUSE;
 }
 
@@ -595,11 +604,18 @@ static unsigned long _process_mouse_event( const XEvent *event)
 
 bool PDC_check_key(void)
 {
-    XtInputMask s = XtAppPending(pdc_app_context);
+    const XtInputMask s = XtAppPending(pdc_app_context);
 
-    PDC_LOG(("PDC_check_key() - returning %s\n", s ? "TRUE" : "FALSE"));
+    if (s & XtIMTimer)
+        XtAppProcessEvent(pdc_app_context, XtIMTimer);
+    if (s & XtIMSignal)
+        XtAppProcessEvent(pdc_app_context, XtIMSignal);
+    if (s & XtIMAlternateInput)
+        XtAppProcessEvent(pdc_app_context, XtIMAlternateInput);
 
-    return pdc_resize_now || !!s;
+    PDC_LOG(("PDC_check_key() - returning %s\n", (s & XtIMXEvent) ? "TRUE" : "FALSE"));
+
+    return pdc_resize_now || !!(s & XtIMXEvent);
 }
 
 /* return the next available key or mouse event */
@@ -613,7 +629,6 @@ int PDC_get_key(void)
     if (pdc_resize_now)
     {
         pdc_resize_now = FALSE;
-        SP->key_code = TRUE;
         return KEY_RESIZE;
     }
 
@@ -648,6 +663,7 @@ int PDC_get_key(void)
 void PDC_set_keyboard_binary(bool on)
 {
     PDC_LOG(("PDC_set_keyboard_binary() - called\n"));
+    INTENTIONALLY_UNUSED_PARAMETER( on);
 }
 
 /* discard any pending keyboard or mouse input -- this is the core
@@ -679,6 +695,10 @@ int PDC_modifiers_set(void)
 static void _dummy_handler(Widget w, XtPointer client_data,
                            XEvent *event, Boolean *unused)
 {
+    INTENTIONALLY_UNUSED_PARAMETER( w);
+    INTENTIONALLY_UNUSED_PARAMETER( client_data);
+    INTENTIONALLY_UNUSED_PARAMETER( event);
+    INTENTIONALLY_UNUSED_PARAMETER( unused);
 }
 
 int PDC_kb_setup(void)
@@ -701,7 +721,7 @@ int PDC_kb_setup(void)
         /* Add in the mouse events */
 
         im_event_mask |= ButtonPressMask | ButtonReleaseMask |
-                         ButtonMotionMask;
+                         PointerMotionMask;
 
         XtAddEventHandler(pdc_drawing, im_event_mask, False,
                           _dummy_handler, NULL);

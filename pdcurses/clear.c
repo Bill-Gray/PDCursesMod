@@ -73,10 +73,7 @@ int wclrtoeol(WINDOW *win)
     for (minx = x, ptr = &win->_y[y][x]; minx < win->_maxx; minx++, ptr++)
         *ptr = blank;
 
-    if (x < win->_firstch[y] || win->_firstch[y] == _NO_CHANGE)
-        win->_firstch[y] = x;
-
-    win->_lastch[y] = win->_maxx - 1;
+    PDC_mark_cells_as_changed( win, y, x, win->_maxx - 1);
 
     PDC_sync(win);
     return OK;

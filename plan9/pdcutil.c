@@ -127,7 +127,6 @@ static void setms(Mouse m)
 			ms.changes |= PDC_MOUSE_WHEEL_UP;
 		else
 			ms.changes |= PDC_MOUSE_WHEEL_DOWN;
-		SP->key_code = TRUE;
 		return;
 	}
 	but = 0;
@@ -176,7 +175,6 @@ static void setms(Mouse m)
 		m = emouse();
 
 	ms.changes |= 1 << (but - 1);
-	SP->key_code = FALSE;
 }
 #undef ms
 

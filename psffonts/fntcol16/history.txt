@@ -1,0 +1,45 @@
+Ver 1.1
+-------
+First public release.
+
+Ver 1.2
+-------
+1) Greek fonts by Angelos Karageorgiou.
+2) Hebrew script and others by Aaron Schmiedel (AFS Ltd.)
+3) TeX/Math/Symbols font by Dov Grobgeld.
+
+Ver 1.3
+-------
+1) Hercules plus card fonts. Debugged by Yossi Gil
+2) Runic and other fonts "egafon" archive. Communicated by Dov Grobgeld.
+3) Persian fonts from the "aria.zip" archive.
+
+Ver 1.4
+-------
+1) Esperanto font
+2) Armenian font
+3) Turkish/Greek/Yugoslavian/Icelandic code pages.
+4) Code pages at height 19
+5) Arabic fonts.
+6) Arabic code page fonts.
+7) Updated the persian.f14 font
+8) Greek fonts
+9) Persian-English-Arabic-Urdu font (APEAUS)
+10) Thai font
+
+Ver 1.5
+-------
+1) Miguel Farah very readable fonts. I can attest that these fonts 
+indeed very eye pleasant when high text resolutions are used.
+
+Ver 1.6
+-------
+1) Oliver Fromme fonts (from the CAFE editor).
+2) Itamar Even-Zohar and Nimrod Gil-Ad Hebrew fonts.
+3) Kana fonts.
+4) Voynich font
+5) INTEX fonts for many languages.
+6) Mike Threepoint fonts.
+7) Vfont fonts
+8) Font utilities are included with the font collection
+

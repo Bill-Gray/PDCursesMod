@@ -19,7 +19,7 @@ static int menu_shown = 1;
 static int min_lines = 25, max_lines = 25;
 static int min_cols = 80, max_cols = 80;
 
-#if defined( CHTYPE_64) && defined( PDC_WIDE)
+#if !defined( CHTYPE_32) && defined( PDC_WIDE)
     #define USING_COMBINING_CHARACTER_SCHEME
     int PDC_expand_combined_characters( const cchar_t c, cchar_t *added);  /* addch.c */
 #endif
@@ -376,18 +376,18 @@ static const KPTAB kptab[] =
 
     /* 124 through 218 */
 
-    {0, 0, 0, 0, 0},  /* 124 VK_F13 */
-    {0, 0, 0, 0, 0},  /* 125 VK_F14 */
-    {0, 0, 0, 0, 0},  /* 126 VK_F15 */
-    {0, 0, 0, 0, 0},  /* 127 VK_F16 */
-    {0, 0, 0, 0, 0},  /* 128 VK_F17 */
-    {0, 0, 0, 0, 0},  /* 129 VK_F18 */
-    {0, 0, 0, 0, 0},  /* 130 VK_F19 */
-    {0, 0, 0, 0, 0},  /* 131 VK_F20 */
-    {0, 0, 0, 0, 0},  /* 132 VK_F21 */
-    {0, 0, 0, 0, 0},  /* 133 VK_F22 */
-    {0, 0, 0, 0, 0},  /* 134 VK_F23 */
-    {0, 0, 0, 0, 0},  /* 135 VK_F24 */
+    {0,       0,      0,        0,       0   },  /* 7c 124 VK_F13 */
+    {0,       0,      0,        0,       0   },  /* 7d 125 VK_F14 */
+    {0,       0,      0,        0,       0   },  /* 7e 126 VK_F15 */
+    {0,       0,      0,        0,       0   },  /* 7f 127 VK_F16 */
+    {0,       0,      0,        0,       0   },  /* 80 128 VK_F17 */
+    {0,       0,      0,        0,       0   },  /* 81 129 VK_F18 */
+    {0,       0,      0,        0,       0   },  /* 82 130 VK_F19 */
+    {0,       0,      0,        0,       0   },  /* 83 131 VK_F20 */
+    {0,       0,      0,        0,       0   },  /* 84 132 VK_F21 */
+    {0,       0,      0,        0,       0   },  /* 85 133 VK_F22 */
+    {0,       0,      0,        0,       0   },  /* 86 134 VK_F23 */
+    {0,       0,      0,        0,       0   },  /* 87 135 VK_F24 */
     {0, 0, 0, 0, 0},  /* 136 unassigned */
     {0, 0, 0, 0, 0},  /* 137 unassigned */
     {0, 0, 0, 0, 0},  /* 138 unassigned */
@@ -477,7 +477,36 @@ static const KPTAB kptab[] =
     {'\'',       '"',       0x27,        ALT_FQUOTE, 0   }, /* 222 VK_OEM_7 */
     {0,          0,         0,           0,          0   }, /* 223 VK_OEM_8 */
     {0,          0,         0,           0,          0   }, /* 224 */
-    {0,          0,         0,           0,          0   }  /* 225 */
+    {0,          0,         0,           0,          0   }, /* 225 */
+    {0,          0,         0,           0,          0   }, /* 226 E2 VK_OEM_102 */
+    {0,          0,         0,           0,          0   }, /* 227 E3 OEM-specific */
+    {0,          0,         0,           0,          0   }, /* 228 E4 OEM-specific */
+    {0,          0,         0,           0,          0   }, /* 229 E5 VK_PROCESSKEY */
+    {0,          0,         0,           0,          0   }, /* 230 E6 OEM-specific */
+    {0,          0,         0,           0,          0   }, /* 231 E7 VK_PACKET */
+    {0,          0,         0,           0,          0   }, /* 232 E8 Unassigned */
+    {0,          0,         0,           0,          0   }, /* 233 E9 OEM-specific */
+    {0,          0,         0,           0,          0   }, /* 234 EA OEM-specific */
+    {0,          0,         0,           0,          0   }, /* 235 EB OEM-specific */
+    {0,          0,         0,           0,          0   }, /* 236 EC OEM-specific */
+    {0,          0,         0,           0,          0   }, /* 237 ED OEM-specific */
+    {0,          0,         0,           0,          0   }, /* 238 EE OEM-specific */
+    {0,          0,         0,           0,          0   }, /* 239 EF OEM-specific */
+    {0,          0,         0,           0,          0   }, /* 240 F0 OEM-specific */
+    {0,          0,         0,           0,          0   }, /* 241 F1 OEM-specific */
+    {0,          0,         0,           0,          0   }, /* 242 F2 OEM-specific */
+    {0,          0,         0,           0,          0   }, /* 243 F3 OEM-specific */
+    {0,          0,         0,           0,          0   }, /* 244 F4 OEM-specific */
+    {0,          0,         0,           0,          0   }, /* 245 F5 OEM-specific */
+    {0,          0,         0,           0,          0   }, /* 246 F6 VK_ATTN */
+    {0,          0,         0,           0,          0   }, /* 247 F7 VK_CRSEL */
+    {0,          0,         0,           0,          0   }, /* 248 F8 VK_EXSEL */
+    {0,          0,         0,           0,          0   }, /* 249 F9 VK_EREOF */
+    {0,          0,         0,           0,          0   }, /* 250 FA VK_PLAY */
+    {0,          0,         0,           0,          0   }, /* 251 FB VK_ZOOM */
+    {0,          0,         0,           0,          0   }, /* 252 FC VK_NONAME */
+    {0,          0,         0,           0,          0   }, /* 253 FD VK_PA1 */
+    {0,          0,         0,           0,          0   }  /* 254 FE VK_OEM_CLEAR */
 };
 /* End of kptab[] */
 
@@ -1352,29 +1381,23 @@ static void HandleSyskeyDown( const WPARAM wParam, const LPARAM lParam,
 
     if( !key)           /* it's not a shift, ctl, alt handled above */
     {
-        if( wParam >= sizeof( kptab) / sizeof( kptab[0]))
-            return;
-        else
+        const KPTAB *kptr = kptab + wParam;
+
+        assert( wParam < sizeof( kptab) / sizeof( kptab[0]));
+        if( extended && kptr->extended != 999)
         {
-            const KPTAB *kptr = kptab + wParam;
-
-            if( extended && kptr->extended != 999)
-            {
-            if( kptr->extended >= sizeof( ext_kptab) / sizeof( ext_kptab[0]))
-                return;
-            else
-                kptr = ext_kptab + kptr->extended;
-            }
-
-            if( alt_pressed)
-                key = kptr->alt;
-            else if( ctrl_pressed)
-                key = kptr->control;
-            else if( shift_pressed)
-                key = kptr->shift;
-            else
-                key = kptr->normal;
+            assert( kptr->extended < sizeof( ext_kptab) / sizeof( ext_kptab[0]));
+            kptr = ext_kptab + kptr->extended;
         }
+
+        if( alt_pressed)
+            key = kptr->alt;
+        else if( ctrl_pressed)
+            key = kptr->control;
+        else if( shift_pressed)
+            key = kptr->shift;
+        else
+            key = kptr->normal;
     }
 
     /* On non-US keyboards,  people hit Alt-Gr ("Alt-Ctrl" to */
@@ -1537,7 +1560,7 @@ int PDC_get_mouse_event_from_queue( void)
     if( mouse_queue->action == BUTTON_MOVED)
     {
         if( mouse_queue->button < 0)
-            SP->mouse_status.changes = PDC_MOUSE_POSITION;
+            SP->mouse_status.changes = PDC_MOUSE_MOVED;
         else
         {
             SP->mouse_status.changes = PDC_MOUSE_MOVED | (1 << mouse_queue->button);

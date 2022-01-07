@@ -401,8 +401,7 @@ WINDOW *dupwin(WINDOW *win)
              ptr < new->_y[i] + ncols; ptr++, ptr1++)
             *ptr = *ptr1;
 
-        new->_firstch[i] = 0;
-        new->_lastch[i] = ncols - 1;
+        PDC_mark_line_as_changed( new, i);
     }
 
     new->_curx = win->_curx;
@@ -482,6 +481,7 @@ WINDOW *resize_window(WINDOW *win, int nlines, int ncols)
         if (!new)
             return (WINDOW *)NULL;
 
+        new->_bkgd = win->_bkgd;
         werase(new);
 
         copywin(win, new, 0, 0, 0, 0, min(win->_maxy, new->_maxy) - 1,
@@ -509,7 +509,6 @@ WINDOW *resize_window(WINDOW *win, int nlines, int ncols)
 
     new->_curx = save_curx;
     new->_cury = save_cury;
-
     free(win->_firstch);
     free(win->_y);
 

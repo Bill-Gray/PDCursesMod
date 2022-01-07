@@ -567,6 +567,7 @@ int PDC_resize_screen(int nlines, int ncols)
     PDC_LOG(("PDC_resize_screen() - called. Lines: %d Cols: %d\n",
              nlines, ncols));
 
+    INTENTIONALLY_UNUSED_PARAMETER( ncols);
     if( !stdscr)     /* We're trying to specify an initial screen size */
     {                /* before calling initscr().  This works on some  */
         return OK;   /* some platforms,  but not this one.             */
@@ -701,6 +702,10 @@ details of what it does on platforms that do support user resizing. */
 void PDC_set_resize_limits( const int new_min_lines, const int new_max_lines,
                   const int new_min_cols, const int new_max_cols)
 {
+   INTENTIONALLY_UNUSED_PARAMETER( new_min_lines);
+   INTENTIONALLY_UNUSED_PARAMETER( new_max_lines);
+   INTENTIONALLY_UNUSED_PARAMETER( new_min_cols);
+   INTENTIONALLY_UNUSED_PARAMETER( new_max_cols);
 }
 
 /* PDC_set_function_key() does nothing on this platform */

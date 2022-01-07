@@ -79,6 +79,8 @@ void PDC_set_keyboard_binary(bool on)
 #ifdef __DJGPP__
     setmode(fileno(stdin), on ? O_BINARY : O_TEXT);
     signal(SIGINT, on ? SIG_IGN : SIG_DFL);
+#else
+   INTENTIONALLY_UNUSED_PARAMETER( on);
 #endif
 }
 
@@ -192,7 +194,6 @@ static int _process_mouse_events(void)
 
     key_pressed = TRUE;
     old_shift = shift_status;
-    SP->key_code = TRUE;
 
     /* Set shift modifiers */
 
@@ -328,7 +329,6 @@ int PDC_get_key(void)
         key_pressed = FALSE;
         old_shift = shift_status;
 
-        SP->key_code = TRUE;
         return key;
     }
 
@@ -403,7 +403,6 @@ int PDC_get_key(void)
     }
 
     key_pressed = TRUE;
-    SP->key_code = ((unsigned)key >= 256);
 
     return key;
 }

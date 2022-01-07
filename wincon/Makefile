@@ -1,7 +1,7 @@
 # GNU MAKE Makefile for PDCurses library - WIN32 MinGW GCC
 #
-# Usage: make -f [path\]Makefile.mng [DEBUG=Y] [DLL=Y] [WIDE=Y] [UTF8=Y]
-#        [INFOEX=N] [tgt]
+# Usage: [g]make [-f path\Makefile] [DEBUG=Y] [DLL=Y] [WIDE=Y] [UTF8=Y]
+#        [INFOEX=N] [target]
 #
 # where target can be any of:
 # [all|demos|pdcurses.a|testcurs.exe...]
@@ -13,6 +13,7 @@ ifndef PDCURSES_SRCDIR
 	PDCURSES_SRCDIR = ..
 endif
 
+osdir		= $(PDCURSES_SRCDIR)/wincon
 common		= $(PDCURSES_SRCDIR)/common
 
 include $(common)/version.mif
@@ -20,11 +21,11 @@ include $(common)/libobjs.mif
 
 uname_S := $(shell uname -s 2>/dev/null)
 
-CAT = cat
-PREFIX =
-PATH_SEP = /
-CP = cp
-DELETE = rm -f
+CAT		= cat
+PREFIX		=
+PATH_SEP		= /
+CP		= cp
+RM		= rm -f
 
 # It appears we have three cases:  we're running in Cygwin/MSYS;  or we're
 # running in command.com on Windows with MinGW;  or we're on Linux or BSD
@@ -46,8 +47,8 @@ endif
 ifeq ($(uname_S),)
 	CAT = type
 	PATH_SEP = \\
-	CP = -copy
-	DELETE = -del
+	CP = copy
+	RM = cmd /c del
 	ON_WINDOWS = 1
 endif
 
@@ -62,8 +63,6 @@ ifndef ON_WINDOWS
 	endif
 endif
 
-osdir	   = $(PDCURSES_SRCDIR)/wincon
-
 PDCURSES_WIN_H	= $(osdir)/pdcwin.h
 
 CC	= $(PREFIX)gcc
@@ -71,11 +70,12 @@ CC	= $(PREFIX)gcc
 AR	= ar
 STRIP	= strip
 
+CFLAGS  = -Wall -Wextra -pedantic
 ifeq ($(DEBUG),Y)
-	CFLAGS  = -g -Wall -DPDCDEBUG
+	CFLAGS  += -g -DPDCDEBUG
 	LDFLAGS = -g
 else
-	CFLAGS  = -O4 -Wall -pedantic
+	CFLAGS  += -O4
 	LDFLAGS =
 endif
 
@@ -113,7 +113,7 @@ else
 ifeq ($(PREFIX),)
 	LIBFLAGS = rcv
 else
-	LIBFLAGS	= rv
+	LIBFLAGS = rv
 endif
 	LIBCURSES = pdcurses.a
 	LIBDEPS = $(LIBOBJS) $(PDCOBJS)
@@ -129,10 +129,10 @@ all:	libs
 libs:	$(LIBCURSES)
 
 clean:
-	$(DELETE) *.o
-	$(DELETE) *.exe
-	$(DELETE) *.dll
-	$(DELETE) $(CLEAN)
+	-$(RM) *.o
+	-$(RM) *.exe
+	-$(RM) *.dll
+	-$(RM) $(CLEAN)
 
 demos:	$(DEMOS)
 ifneq ($(DEBUG),Y)
@@ -154,9 +154,9 @@ $(LIBOBJS) : %.o: $(srcdir)/%.c
 $(PDCOBJS) : %.o: $(osdir)/%.c
 	$(CC) -c $(CFLAGS) $(PDCCFLAGS) $<
 
-firework.exe newtest.exe ozdemo.exe picsview.exe \
+firework.exe init_col.exe newtest.exe ozdemo.exe picsview.exe \
 ptest.exe rain.exe speed.exe testcurs.exe test_pan.exe \
-version.exe worm.exe xmas.exe: %.exe: $(demodir)/%.c
+version.exe widetest.exe worm.exe xmas.exe: %.exe: $(demodir)/%.c
 	$(CC) $(CFLAGS) -o$@ $< $(LIBCURSES) $(EXELIBS)
 
 tuidemo.exe: tuidemo.o tui.o
@@ -171,4 +171,6 @@ tuidemo.o: $(demodir)/tuidemo.c $(PDCURSES_CURSES_H)
 PLATFORM1 = MinGW WinCon
 PLATFORM2 = MinGW for WinCon
 ARCNAME = pdc$(VER)_ming_wcon
+BUILD		= $(CC) $(CFLAGS) -I$(PDCURSES_SRCDIR) -mwindows $(LIBCURSES)
 
+include $(PDCURSES_SRCDIR)/demos/nctests.mif

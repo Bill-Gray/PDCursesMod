@@ -7,6 +7,7 @@ Define before inclusion (only those needed):
     PDC_RGB         if you want to use RGB color definitions
                     (Red = 1, Green = 2, Blue = 4) instead of BGR
     PDC_WIDE        if building / built with wide-character support
+    PDC_FORCE_UTF8  if forcing use of UTF8
     PDC_DLL_BUILD   if building / built as a Windows DLL
     PDC_NCMOUSE     to use the ncurses mouse API instead
                     of PDCurses' traditional mouse API
@@ -17,6 +18,10 @@ Defined by this header:
     PDC_BUILD       API build version
     PDC_VER_MAJOR   major version number
     PDC_VER_MINOR   minor version number
+    PDC_VER_CHANGE  version change number
+    PDC_VER_YEAR    year of version
+    PDC_VER_MONTH   month of version
+    PDC_VER_DAY     day of month of version
     PDC_VERDOT      version string
 
 
@@ -37,24 +42,26 @@ If CHTYPE_32 is #defined,  PDCurses uses a 32-bit integer for its chtype:
 There are 256 color pairs (8 bits), 8 bits for modifiers, and 16 bits
 for character data. The modifiers are bold, underline, right-line,
 left-line, italic, reverse and blink, plus the alternate character set
-indicator.
+indicator.  (This is the scheme used in 'traditional' PDCurses.)
 
-   By default,  a 64-bit chtype is used :
+   By default,  PDCursesMod uses 64-bit chtype :
 
 -------------------------------------------------------------------------------
-|63|62|61|60|59|..|34|33|32|31|30|29|28|..|22|21|20|19|18|17|16|..| 3| 2| 1| 0|
+|63|62|..|53|52|..|34|33|32|31|30|29|28|..|22|21|20|19|18|17|16|..| 3| 2| 1| 0|
 -------------------------------------------------------------------------------
-         color number   |        modifiers      |         character eg 'a'
+  unused    |color pair |        modifiers      |         character eg 'a'
 
    We take five more bits for the character (thus allowing Unicode values
 past 64K;  the full range of Unicode goes up to 0x10ffff,  requiring 21 bits
 total),  and four more bits for attributes.  Three are currently used as
 A_OVERLINE, A_DIM, and A_STRIKEOUT;  one more is reserved for future use.
-On some platforms,  bits 33-40 are used to select a color pair (can run from
-0 to 255). Bits 41 and 42 have been added to this to get 1024 color pairs.
-On some platforms (as of 2020 May 17,  WinGUI and VT),  bits 33-52 are used,
-allowing 2^20 = 1048576 color pairs.  That should be enough for anybody, and
-leaves twelve bits for other uses.
+Bits 33-52 are used to specify a color pair.  In theory,  there can be
+2^20 = 1048576 color pairs,  but as of 2021 May 27,  only WinGUI,  VT,  X11,
+and SDLn have COLOR_PAIRS = 1048576.  Other platforms (DOSVGA,  Plan9,
+WinCon) may join them,  but some (DOS,  OS/2) simply do not have full-color
+capability.
+
+   Bits 53-63 are currently unused.
 
 
 
@@ -555,6 +562,7 @@ border
     int mvvline_set(int y, int x, const cchar_t *wch, int n);
     int mvwhline_set(WINDOW *win, int y, int x, const cchar_t *wch, int n);
     int mvwvline_set(WINDOW *win, int y, int x, const cchar_t *wch, int n);
+    int PDC_set_box_type( const int box_type);
 
 ### Description
 
@@ -569,6 +577,11 @@ border
     tr    top right corner of border      ACS_URCORNER
     bl    bottom left corner of border    ACS_LLCORNER
     br    bottom right corner of border   ACS_LRCORNER
+
+   PDC_set_box_type() can reset these defaults to use the double-line
+   characters.  'box_type' can include the bitflag constants.
+   PDC_BOX_DOUBLED_V and/or PDC_BOX_DOUBLED_H.  The previously set
+   default box type is returned.
 
    hline() and whline() draw a horizontal line, using ch, starting from
    the current cursor position. The cursor position does not change. The
@@ -684,8 +697,13 @@ color
     int init_extended_color(int color, int red, int green, int blue);
     int extended_color_content(int color, int *red, int *green, int *blue);
 
+    int alloc_pair( int fg, int bg);
     int assume_default_colors(int f, int b);
+    int find_pair( int fg, int bg);
+    int free_pair( int pair);
     int use_default_colors(void);
+    void reset_color_pairs(void);
+    void PDC_set_default_colors( const int fg_idx, const int bg_idx);
 
     int PDC_set_line_color(short color);
 
@@ -743,6 +761,27 @@ color
    variable PDC_ORIGINAL_COLORS is set at the time start_color() is
    called, that's equivalent to calling use_default_colors().
 
+   alloc_pair(), find_pair() and free_pair() are also from ncurses.
+   free_pair() marks a pair as unused; find_pair() returns an existing
+   pair with the specified foreground and background colors, if one
+   exists. And alloc_pair() returns such a pair whether or not it was
+   previously set, overwriting the oldest initialized pair if there are
+   no free pairs.
+
+   reset_color_pairs(),  also from ncurses,  discards all color pair
+   information that was set with init_pair().  In practice,  this means
+   all color pairs except pair 0 become undefined.
+
+   VT and WinCon define 'default' colors to be those inherited from
+   the terminal;  SDLn defines them to be the colors of the background
+   image,  if any.  On all other platforms,  and on SDLn if there's no
+   background images,  the default background is black;  the default
+   foreground is white.  PDC_set_default_colors(),  a PDCursesMod-
+   specific function,  allows you to override this and define default
+   colors before calling initscr().  This was added for the Plan9
+   platform,  where the desired default is black text on a white
+   background,  but it can be used with any platform.
+
    PDC_set_line_color() is used to set the color, globally, for the
    color of the lines drawn for the attributes: A_UNDERLINE, A_LEFT and
    A_RIGHT. A value of -1 (the default) indicates that the current
@@ -752,8 +791,13 @@ color
 
 ### Return Value
 
-   All functions return OK on success and ERR on error, except for
-   has_colors() and can_change_colors(), which return TRUE or FALSE.
+   Most functions return OK on success and ERR on error. has_colors()
+   and can_change_colors() return TRUE or FALSE. alloc_pair() and
+   find_pair() return a pair number, or -1 on error.
+
+
+
+
 
 ### Portability
                              X/Open  ncurses  NetBSD
@@ -764,7 +808,10 @@ color
     can_change_color            Y       Y       Y
     init_color                  Y       Y       Y
     color_content               Y       Y       Y
+    alloc_pair                  -       Y       -
     assume_default_colors       -       Y       Y
+    find_pair                   -       Y       -
+    free_pair                   -       Y       -
     use_default_colors          -       Y       Y
     PDC_set_line_color          -       -       -
 
@@ -780,16 +827,31 @@ debug
 
     void traceon(void);
     void traceoff(void);
+    unsigned curses_trace( const unsigned);
+    void trace( const unsigned);
     void PDC_debug(const char *, ...);
+    void _tracef(const char *, ...);
 
 ### Description
 
    traceon() and traceoff() toggle the recording of debugging
    information to the file "trace". Although not standard, similar
-   functions are in some other curses implementations.
+   functions are in some other curses implementations (e.g., SVr4).
+
+   curses_trace() turns tracing on if called with a non-zero value and
+   off if called with zero.  At some point,  the input value will be
+   used to set flags for more nuanced trace output,  a la ncurses;  but
+   at present,  debugging is simply on or off.  The previous tracing
+   flags are returned.
+
+   trace() is a duplicate of curses_trace(),  but returns nothing.  It
+   is deprecated because it often conflicts with application names.
 
    PDC_debug() is the function that writes to the file, based on whether
    traceon() has been called. It's used from the PDC_LOG() macro.
+
+   _tracef() is an ncurses alias for PDC_debug,  and is added solely
+   for compatibility.
 
    The environment variable PDC_TRACE_FLUSH controls whether the trace
    file contents are fflushed after each write. The default is not. Set
@@ -799,7 +861,10 @@ debug
                              X/Open  ncurses  NetBSD
     traceon                     -       -       -
     traceoff                    -       -       -
+    trace                       -       Y       -
+    curses_trace                -       Y       -
     PDC_debug                   -       -       -
+    _tracef                     -       Y       -
 
 
 
@@ -927,7 +992,7 @@ getch
    If keypad() is TRUE, and a function key is pressed, the token for
    that function key will be returned instead of the raw characters.
    Possible function keys are defined in <curses.h> with integers
-   beginning with 0401, whose names begin with KEY_.
+   starting at KEY_OFFSET, whose names begin with KEY_.
 
    If nodelay(win, TRUE) has been called on the window and no input is
    waiting, the value ERR is returned.
@@ -942,8 +1007,9 @@ getch
    PDCurses is built with the PDC_WIDE option. It takes a pointer to a
    wint_t rather than returning the key as an int, and instead returns
    KEY_CODE_YES if the key is a function key. Otherwise, it returns OK
-   or ERR. It's important to check for KEY_CODE_YES, since regular wide
-   characters can have the same values as function key codes.
+   or ERR. It's important to check for KEY_CODE_YES; on most Curses
+   implementations (not PDCursesMod),  regular wide characters can have
+   the same values as function key codes.
 
    unget_wch() puts a wide character on the input queue.
 
@@ -1014,7 +1080,8 @@ getstr
    wgetch()'d values into a multibyte string in the current locale
    before returning it. The resulting string is placed in the area
    pointed to by *str. The routines with n as the last argument read at
-   most n characters.
+   most n characters.  Note that this does not include the terminating
+   '\0' character;  be sure your buffer has room for that.
 
    Note that there's no way to know how long the buffer passed to
    wgetstr() is, so use wgetnstr() to avoid buffer overflows.
@@ -2110,6 +2177,8 @@ panel
     PANEL *new_panel(WINDOW *win);
     PANEL *panel_above(const PANEL *pan);
     PANEL *panel_below(const PANEL *pan);
+    PANEL *ground_panel(SCREEN *sp);
+    PANEL *ceiling_panel(SCREEN *sp);
     int panel_hidden(const PANEL *pan);
     const void *panel_userptr(const PANEL *pan);
     WINDOW *panel_window(const PANEL *pan);
@@ -2158,6 +2227,10 @@ panel
    or NULL if pan is the bottom panel. If the value of pan passed is
    NULL, this function returns a pointer to the top panel in the deck.
 
+   ground_panel() returns a pointer to the bottom panel in the deck.
+
+   ceiling_panel() returns a pointer to the top panel in the deck.
+
    panel_hidden() returns OK if pan is hidden and ERR if it is not.
 
    panel_userptr() - Each panel has a user pointer available for
@@ -2198,6 +2271,8 @@ panel
     new_panel                   -       Y       Y
     panel_above                 -       Y       Y
     panel_below                 -       Y       Y
+    ground_panel                -       Y       N
+    ceiling_panel               -       Y       N
     panel_hidden                -       Y       Y
     panel_userptr               -       Y       Y
     panel_window                -       Y       Y
@@ -2601,6 +2676,50 @@ termattr
     killwchar                   Y       Y       Y
     term_attrs                  Y       Y       Y
     wordchar                    -       -       -
+
+
+
+--------------------------------------------------------------------------
+
+
+terminfo
+--------
+
+### Synopsis
+
+    int vidattr(chtype attr);
+    int vid_attr(attr_t attr, short color_pair, void *opt);
+    int vidputs(chtype attr, int (*putfunc)(int));
+    int vid_puts(attr_t attr, short color_pair, void *opt,
+    int (*putfunc)(int));
+
+    int del_curterm(TERMINAL *);
+    int putp(const char *);
+    int restartterm(const char *, int, int *);
+    TERMINAL *set_curterm(TERMINAL *);
+    int setterm(const char *term);
+    int setupterm(const char *, int, int *);
+    int tgetent(char *, const char *);
+    int tgetflag(const char *);
+    int tgetnum(const char *);
+    char *tgetstr(const char *, char **);
+    char *tgoto(const char *, int, int);
+    int tigetflag(const char *);
+    int tigetnum(const char *);
+    char *tigetstr(const char *);
+    char *tparm(const char *,long, long, long, long, long, long,
+                long, long, long);
+    int tputs(const char *, int, int (*)(int));
+
+### Description
+
+   These functions are currently implemented as stubs,
+   returning the appropriate errors and doing nothing else.
+   They are only compiled and used for certain ncurses tests.
+
+### Portability
+                             X/Open    BSD    SYS V
+    mvcur                       Y       Y       Y
 
 
 

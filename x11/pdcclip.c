@@ -132,6 +132,8 @@ static void _lose_ownership(Widget w, Atom *type)
 {
     PDC_LOG(("_lose_ownership() - called\n"));
 
+    INTENTIONALLY_UNUSED_PARAMETER( w);
+    INTENTIONALLY_UNUSED_PARAMETER( type);
     if (tmpsel)
         free(tmpsel);
 
@@ -145,6 +147,11 @@ static void _get_selection(Widget w, XtPointer data, Atom *selection,
 {
     PDC_LOG(("_get_selection() - called\n"));
 
+    INTENTIONALLY_UNUSED_PARAMETER( w);
+    INTENTIONALLY_UNUSED_PARAMETER( data);
+    INTENTIONALLY_UNUSED_PARAMETER( selection);
+    INTENTIONALLY_UNUSED_PARAMETER( type);
+    INTENTIONALLY_UNUSED_PARAMETER( format);
     if (value)
     {
         xc_selection = value;

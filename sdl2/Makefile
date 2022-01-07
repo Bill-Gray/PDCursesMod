@@ -45,13 +45,15 @@ else
 endif
 
 CC		= $(PREFIX)gcc
+WINDRES		= windres
 
 PDCURSES_SDL_H	= $(osdir)/pdcsdl.h
 
+CFLAGS  = -Wall -Wextra -Werror -pedantic -fPIC
 ifeq ($(DEBUG),Y)
-	CFLAGS  = -g -Wall -Wextra -Werror -pedantic -DPDCDEBUG -fPIC
+	CFLAGS  += -g -DPDCDEBUG
 else
-	CFLAGS  += -O2 -Wall -Wextra -Werror -pedantic -fPIC
+	CFLAGS  += -O2
 endif
 
 ifeq ($(WIDE),Y)
@@ -72,7 +74,7 @@ ifeq ($(DLL),Y)
 	ifeq ($(OS),Windows_NT)
 		CFLAGS += -DPDC_DLL_BUILD
 		LIBEXE = $(CC)
-		LIBFLAGS = -Wl,--out-implib,pdcurses.a -shared -o
+		LIBFLAGS = -Wl,--out-implib,libpdcurses.a -shared -o
 		LIBCURSES = pdcurses.dll
 		CLEAN = $(LIBCURSES) *.a
 		RESOURCE = pdcurses.o
@@ -86,7 +88,7 @@ ifeq ($(DLL),Y)
 		endif
 		LIBEXE = $(CC)
 		LIBFLAGS = -shared -o
-		LIBCURSES = pdcurses$(DLL_SUFFIX)
+		LIBCURSES = libpdcurses$(DLL_SUFFIX)
 		LIBLIBS = $(SLIBS)
 		LDFLAGS = $(LIBCURSES)
 		CLEAN = *$(DLL_SUFFIX)
@@ -94,7 +96,7 @@ ifeq ($(DLL),Y)
 else
 	LIBEXE = $(AR)
 	LIBFLAGS = rcv
-	LIBCURSES = pdcurses.a
+	LIBCURSES = libpdcurses.a
 	LDFLAGS = $(LIBCURSES) $(SLIBS)
 	CLEAN = *.a
 endif
@@ -119,11 +121,23 @@ ifneq ($(DEBUG),Y)
 	strip $(DEMOS)
 endif
 
+install:
+ifneq ($(OS),Windows_NT)
+	cp libpdcurses.so /usr/local/lib
+	ldconfig /usr/local/lib
+endif
+
+uninstall:
+ifneq ($(OS),Windows_NT)
+	$(RM) /usr/local/lib/libpdcurses.so
+	ldconfig /usr/local/lib
+endif
+
 $(LIBCURSES) : $(LIBOBJS) $(PDCOBJS) $(RESOURCE)
 	$(LIBEXE) $(LIBFLAGS) $@ $? $(LIBLIBS)
 
 pdcurses.o: $(common)/pdcurses.rc
-	windres -i $(common)/pdcurses.rc pdcurses.o
+	$(WINDRES) -i $(common)/pdcurses.rc pdcurses.o
 
 $(LIBOBJS) $(PDCOBJS) : $(PDCURSES_HEADERS)
 $(PDCOBJS) : $(PDCURSES_SDL_H)
@@ -138,6 +152,9 @@ $(PDCOBJS) : %.o: $(osdir)/%.c
 	$(BUILD) $(SFLAGS) -c $<
 
 firework$(E): $(demodir)/firework.c
+	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
+
+init_col$(E): $(demodir)/init_col.c
 	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
 
 ozdemo$(E): $(demodir)/ozdemo.c
@@ -181,5 +198,8 @@ tui.o: $(demodir)/tui.c $(demodir)/tui.h
 
 tuidemo.o: $(demodir)/tuidemo.c
 	$(BUILD) -c $(DEMOFLAGS) $(demodir)/tuidemo.c
+
+widetest$(E): $(demodir)/widetest.c
+	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
 
 include $(demodir)/nctests.mif

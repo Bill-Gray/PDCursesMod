@@ -3,10 +3,13 @@
 #include "pdcsdl.h"
 
 #include <stdlib.h>
+#include <limits.h>
 #ifndef PDC_WIDE
 # include "../common/font437.h"
 #endif
 #include "../common/iconbmp.h"
+#include "../common/pdccolor.h"
+#include "../common/pdccolor.c"
 
 #ifdef PDC_WIDE
 # ifndef PDC_FONT_PATH
@@ -33,13 +36,73 @@ SDL_Surface *pdc_screen = NULL, *pdc_font = NULL, *pdc_icon = NULL,
             *pdc_back = NULL, *pdc_tileback = NULL;
 int pdc_sheight = 0, pdc_swidth = 0, pdc_yoffset = 0, pdc_xoffset = 0;
 
-SDL_Color pdc_color[PDC_MAXCOL];
-Uint32 pdc_mapped[PDC_MAXCOL];
 int pdc_fheight, pdc_fwidth, pdc_fthick, pdc_flastc;
 bool pdc_own_window;
 
 /* special purpose function keys */
 static int PDC_shutdown_key[PDC_MAX_FUNCTION_KEYS] = { 0, 0, 0, 0, 0 };
+
+#ifndef PDC_WIDE
+
+/* Load a bitmap from bmp_rw and also determine its palette size.
+   ->format->palette->ncolors may be greater than the actual size.
+   To get the real palette size, some custom bitmap parsing is needed. */
+
+static SDL_Surface *_load_bmp_and_palette_size(SDL_RWops *bmp_rw, int *palette_size)
+{
+    SDL_Surface *bmp = NULL;
+    Sint64 start_offset;
+
+    *palette_size = -1;
+    if (!bmp_rw)
+        return( NULL);
+
+    start_offset = SDL_RWtell(bmp_rw);
+
+    /* Non-monochromatic bitmaps only */
+    if( start_offset >= 0 && (bmp = SDL_LoadBMP_RW(bmp_rw, 0)) != NULL
+                            && bmp->format->palette)
+    {
+        *palette_size = bmp->format->palette->ncolors;
+
+        /* Offsets from https://en.wikipedia.org/wiki/BMP_file_format#DIB_header_(bitmap_information_header) */
+        if (SDL_RWseek(bmp_rw, start_offset + 14, RW_SEEK_SET) >= 0)
+        {
+            const Uint32 header_size = SDL_ReadLE32(bmp_rw);
+
+            /* If the info header is at least 40 bytes in size, palette size
+               information is available. */
+            if (header_size >= 40
+                    && SDL_RWseek(bmp_rw, start_offset + 46, RW_SEEK_SET) >= 0)
+            {
+                Uint32 num_colors = SDL_ReadLE32(bmp_rw);
+
+                if (num_colors > 0 && num_colors <= (Uint32)INT_MAX &&
+                    (int)num_colors <= bmp->format->palette->ncolors)
+                         *palette_size = (int)num_colors;
+                else
+                {
+                    /* Fall back to calculating num_colors from bits_per_pixel. */
+
+                    if (SDL_RWseek(bmp_rw, start_offset + 28, RW_SEEK_SET) >= 0)
+                    {
+                        const Uint16 bits_per_pixel = SDL_ReadLE16(bmp_rw);
+
+                        num_colors = (Uint32)1 << bits_per_pixel;
+                        if (num_colors > 0 && num_colors <= (Uint32)INT_MAX &&
+                            (int)num_colors <= bmp->format->palette->ncolors)
+                                      *palette_size = (int)num_colors;
+                    }
+                }
+            }
+        }
+    }
+
+    SDL_RWclose(bmp_rw);
+    return bmp;
+}
+
+#endif
 
 static void _clean(void)
 {
@@ -99,40 +162,6 @@ void PDC_scr_free(void)
 {
 }
 
-static void _initialize_colors(void)
-{
-    int i, r, g, b;
-
-    for (i = 0; i < 8; i++)
-    {
-        pdc_color[i].r = (i & COLOR_RED) ? 0xc0 : 0;
-        pdc_color[i].g = (i & COLOR_GREEN) ? 0xc0 : 0;
-        pdc_color[i].b = (i & COLOR_BLUE) ? 0xc0 : 0;
-
-        pdc_color[i + 8].r = (i & COLOR_RED) ? 0xff : 0x40;
-        pdc_color[i + 8].g = (i & COLOR_GREEN) ? 0xff : 0x40;
-        pdc_color[i + 8].b = (i & COLOR_BLUE) ? 0xff : 0x40;
-    }
-
-    /* 256-color xterm extended palette: 216 colors in a 6x6x6 color
-       cube, plus 24 shades of gray */
-
-    for (i = 16, r = 0; r < 6; r++)
-        for (g = 0; g < 6; g++)
-            for (b = 0; b < 6; b++, i++)
-            {
-                pdc_color[i].r = (r ? r * 40 + 55 : 0);
-                pdc_color[i].g = (g ? g * 40 + 55 : 0);
-                pdc_color[i].b = (b ? b * 40 + 55 : 0);
-            }
-
-    for (i = 232; i < 256; i++)
-        pdc_color[i].r = pdc_color[i].g = pdc_color[i].b = (i - 232) * 10 + 8;
-
-    for (i = 0; i < 256; i++)
-        pdc_mapped[i] = SDL_MapRGB(pdc_screen->format, pdc_color[i].r,
-                                   pdc_color[i].g, pdc_color[i].b);
-}
 
 /* find the display where the mouse pointer is */
 
@@ -163,6 +192,7 @@ int _get_displaynum(void)
 
 int PDC_scr_open(void)
 {
+    SDL_Event event;
     int displaynum = 0;
 
     PDC_LOG(("PDC_scr_open() - called\n"));
@@ -215,19 +245,32 @@ int PDC_scr_open(void)
 
     SP->mono = FALSE;
 #else
-    if (!pdc_font)
+    if (pdc_font)
     {
-        const char *fname = getenv("PDC_FONT");
-        pdc_font = SDL_LoadBMP(fname ? fname : "pdcfont.bmp");
+        if (pdc_font->format->palette)
+            pdc_flastc = pdc_font->format->palette->ncolors - 1;
     }
-
-    if (!pdc_font)
-        pdc_font = SDL_LoadBMP_RW(SDL_RWFromMem(font437, sizeof(font437)), 0);
-
-    if (!pdc_font)
+    else
     {
-        fprintf(stderr, "Could not load font\n");
-        return ERR;
+        int palette_size;
+
+        const char *fname = getenv("PDC_FONT");
+        SDL_RWops *file = SDL_RWFromFile(fname ? fname : "pdcfont.bmp", "r");
+        if (file)
+            pdc_font = _load_bmp_and_palette_size(file, &palette_size);
+
+        if (!pdc_font)
+            pdc_font = _load_bmp_and_palette_size(
+                SDL_RWFromMem(font437, sizeof(font437)), &palette_size);
+
+        if (!pdc_font)
+        {
+            fprintf(stderr, "Could not load font\n");
+            return ERR;
+        }
+
+        if (pdc_font->format->palette)
+            pdc_flastc = palette_size - 1;
     }
 
     SP->mono = !pdc_font->format->palette;
@@ -255,9 +298,6 @@ int PDC_scr_open(void)
     pdc_fheight = pdc_font->h / 8;
     pdc_fwidth = pdc_font->w / 32;
     pdc_fthick = 1;
-
-    if (!SP->mono)
-        pdc_flastc = pdc_font->format->palette->ncolors - 1;
 #endif
 
     if (pdc_own_window && !pdc_icon)
@@ -298,46 +338,40 @@ int PDC_scr_open(void)
         }
 
         SDL_SetWindowIcon(pdc_window, pdc_icon);
+    }
 
-        /* Events must be pumped before calling SDL_GetWindowSurface, or
-           initial modifiers (e.g. numlock) will be ignored and out-of-sync. */
+    /* Events must be pumped before calling SDL_GetWindowSurface, or
+       initial modifiers (e.g. numlock) will be ignored and out-of-sync. */
 
-        SDL_PumpEvents();
+    SDL_PumpEvents();
 
+    /* Wait until window is exposed before getting surface */
+
+    while (SDL_PollEvent(&event))
+        if (SDL_WINDOWEVENT == event.type &&
+            SDL_WINDOWEVENT_EXPOSED == event.window.event)
+            break;
+
+    if( !pdc_screen)
+    {
         pdc_screen = SDL_GetWindowSurface(pdc_window);
 
-        if (pdc_screen == NULL)
+        if( !pdc_screen)
         {
             fprintf(stderr, "Could not open SDL window surface: %s\n",
                     SDL_GetError());
             return ERR;
         }
-
-        pdc_sheight = pdc_screen->h;
-        pdc_swidth  = pdc_screen->w;
-    }
-    else
-    {
-        if (!pdc_screen)
-            pdc_screen = SDL_GetWindowSurface(pdc_window);
-
-        if (!pdc_sheight)
-            pdc_sheight = pdc_screen->h - pdc_yoffset;
-
-        if (!pdc_swidth)
-            pdc_swidth = pdc_screen->w - pdc_xoffset;
     }
 
-    if (!pdc_screen)
-    {
-        fprintf(stderr, "Couldn't create a surface: %s\n", SDL_GetError());
-        return ERR;
-    }
+    if (!pdc_sheight)
+        pdc_sheight = pdc_screen->h - pdc_yoffset;
+
+    if (!pdc_swidth)
+        pdc_swidth = pdc_screen->w - pdc_xoffset;
 
     if (SP->orig_attr)
         PDC_retile();
-
-    _initialize_colors();
 
     SDL_StartTextInput();
 
@@ -429,24 +463,25 @@ bool PDC_can_change_color(void)
     return TRUE;
 }
 
-int PDC_color_content(int color, int *red, int *green, int *blue)
+int PDC_color_content( int color, int *red, int *green, int *blue)
 {
-    *red = DIVROUND(pdc_color[color].r * 1000, 255);
-    *green = DIVROUND(pdc_color[color].g * 1000, 255);
-    *blue = DIVROUND(pdc_color[color].b * 1000, 255);
+    const PACKED_RGB col = PDC_get_palette_entry( color);
+
+    *red = DIVROUND( Get_RValue(col) * 1000, 255);
+    *green = DIVROUND( Get_GValue(col) * 1000, 255);
+    *blue = DIVROUND( Get_BValue(col) * 1000, 255);
 
     return OK;
 }
 
-int PDC_init_color(int color, int red, int green, int blue)
+int PDC_init_color( int color, int red, int green, int blue)
 {
-    pdc_color[color].r = DIVROUND(red * 255, 1000);
-    pdc_color[color].g = DIVROUND(green * 255, 1000);
-    pdc_color[color].b = DIVROUND(blue * 255, 1000);
+    const PACKED_RGB new_rgb = PACK_RGB(DIVROUND(red * 255, 1000),
+                                 DIVROUND(green * 255, 1000),
+                                 DIVROUND(blue * 255, 1000));
 
-    pdc_mapped[color] = SDL_MapRGB(pdc_screen->format, pdc_color[color].r,
-                                   pdc_color[color].g, pdc_color[color].b);
-
+    if( !PDC_set_palette_entry( color, new_rgb))
+        curscr->_clear = TRUE;
     return OK;
 }
 

@@ -37,7 +37,8 @@ getstr
    wgetch()'d values into a multibyte string in the current locale
    before returning it. The resulting string is placed in the area
    pointed to by *str. The routines with n as the last argument read at
-   most n characters.
+   most n characters.  Note that this does not include the terminating
+   '\0' character;  be sure your buffer has room for that.
 
    Note that there's no way to know how long the buffer passed to
    wgetstr() is, so use wgetnstr() to avoid buffer overflows.
@@ -188,15 +189,12 @@ int wgetnstr(WINDOW *win, char *str, int n)
             break;
 
         default:
-            if (chars < n)
+            if (chars < n && ch < 0x100)
             {
-                if (!SP->key_code && ch < 0x100)
-                {
-                    *p++ = (char)ch;
-                    if (oldecho)
-                        waddch(win, ch);
-                    chars++;
-                }
+                *p++ = (char)ch;
+                if (oldecho)
+                    waddch(win, ch);
+                chars++;
             }
             else
                 beep();
@@ -390,7 +388,7 @@ int wgetn_wstr(WINDOW *win, wint_t *wstr, int n)
         default:
             if (chars < n)
             {
-                if (!SP->key_code)
+                if( ch < KEY_MIN || ch >= KEY_MAX)
                 {
                     *p++ = (wint_t)ch;
                     if (oldecho)

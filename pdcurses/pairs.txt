@@ -1,0 +1,54 @@
+   This is a description of the (slightly convoluted) methods used
+for maintaining the color pair table in 'color.c'.  It is of interest
+only if you are attempting to puzzle out the code in that file.  If
+you're simply using those functions,  their inner works are irrelevant
+to you.  You can safely treat color pair management as a black box.
+
+   In theory,  we can have up to 2^20 = 1048576 color pairs (if the
+default 64-bit chtypes are used).  This is limited to 4096 pairs with
+32-bit chtypes and narrow-character builds,  or 256 pairs with 32-bit
+chtypes and wide-character builds.
+
+  In practice,  it's rare for a Curses/PDCursesMod program to use
+more than a few color pairs.  The 'testcurs' and 'picsview' provide
+somewhat contrived examples of the use of hundreds or thousands of
+color pairs.
+
+   The color pair table (SP->atrtab) is dynamically reallocated to be
+the power of two greater than or equal to the highest allocated index.
+Allocate pair 37,  and it will be reallocated to have 64 entries,  plus
+an extra 'dummy' entry.  (The color palette is similarly allocated
+dynamically;  see 'pdccolor.c' in the 'common' directory.)  For almost
+all programs,  this will result in only a small allocation.
+
+   Complexities arose when the ncurses extensions alloc_pair( ),
+find_pair( ),  and free_pair( )  were added.  If alloc_pair( ) is
+called and we don't already have a pair allocated with that foreground
+and background,  we need to find an available free pair.  If no pairs
+are free (we have used all available color pairs),  the 'oldest' pair
+allocated is used.
+
+   To do this efficiently,   we maintain a doubly-linked list of used
+color pairs, and another one of unused ('free') color pairs.  Pair 0
+is always used and is the head node for the 'used' list;  the dummy
+entry at the end is always free and is the head node for the 'free'
+list.  So we avoid the extra bookkeeping involved with empty lists.
+
+   With this,  the dummy entry will point us to an available free node.
+If we have actually run out of color pairs,  the linked list of 'used'
+color pairs will point us to the oldest used pair.
+
+   I should note that with 64-bit chtypes,  the availability of over a
+million pairs means that only the first problem (of finding a free node)
+is apt to arise.  But with 32-bit chtypes,  you can have only 256 color
+pairs (wide-character builds) or 4096 (narrow-character builds);  you
+have to build demos in those modes to test what happens when you run out
+of pairs.
+
+   The only remaining performance issue involves find_pair( ),  which
+currently just looks through the allocated colors linearly for a match.
+I have several schemes in mind that would reduce this from an O(n) task
+to at least O(log(n)),  but all are more complicated than I care to
+write code for at present.  ncurses uses the tsearch/tfind/tdelete family
+of functions,  and I may do something similar... except I'll need variants
+of those functions for the Windows,  DOS,  and OS/2 platforms.

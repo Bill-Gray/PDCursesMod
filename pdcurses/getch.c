@@ -40,7 +40,7 @@ getch
    If keypad() is TRUE, and a function key is pressed, the token for
    that function key will be returned instead of the raw characters.
    Possible function keys are defined in <curses.h> with integers
-   beginning with 0401, whose names begin with KEY_.
+   starting at KEY_OFFSET, whose names begin with KEY_.
 
    If nodelay(win, TRUE) has been called on the window and no input is
    waiting, the value ERR is returned.
@@ -55,8 +55,9 @@ getch
    PDCurses is built with the PDC_WIDE option. It takes a pointer to a
    wint_t rather than returning the key as an int, and instead returns
    KEY_CODE_YES if the key is a function key. Otherwise, it returns OK
-   or ERR. It's important to check for KEY_CODE_YES, since regular wide
-   characters can have the same values as function key codes.
+   or ERR. It's important to check for KEY_CODE_YES; on most Curses
+   implementations (not PDCursesMod),  regular wide characters can have
+   the same values as function key codes.
 
    unget_wch() puts a wide character on the input queue.
 
@@ -234,7 +235,7 @@ static int _paste(void)
 static int _mouse_key(void)
 {
     int i, key = KEY_MOUSE, changes = SP->mouse_status.changes;
-    const unsigned long mbe = SP->_trap_mbe;
+    const mmask_t mbe = SP->_trap_mbe;
     bool can_select = !(mbe & (BUTTON1_MOVED | BUTTON1_PRESSED | BUTTON1_RELEASED));
     bool can_paste = !(mbe & BUTTON2_CLICKED);
             /* really means 'can do these things without shift' */
@@ -269,7 +270,6 @@ static int _mouse_key(void)
              changes & 2 && (SP->mouse_status.button[1] &
              BUTTON_ACTION_MASK) == BUTTON_CLICKED)
     {
-        SP->key_code = FALSE;
         return _paste();
     }
 
@@ -279,7 +279,7 @@ static int _mouse_key(void)
     {
         if (changes & (1 << i))
         {
-            int shf = i * 5;
+            int shf = i * PDC_BITS_PER_BUTTON;
             short button = SP->mouse_status.button[i] & BUTTON_ACTION_MASK;
 
             if (   (!(mbe & (BUTTON1_PRESSED << shf)) &&
@@ -333,6 +333,11 @@ static int _mouse_key(void)
     }
 
     return key;
+}
+
+bool PDC_is_function_key( const int key)
+{
+   return( key >= KEY_MIN && key < KEY_MAX);
 }
 
 #define WAIT_FOREVER    -1
@@ -422,12 +427,12 @@ int wgetch(WINDOW *win)
         /* filter mouse events; translate mouse clicks in the slk
            area to function keys */
 
-        if (SP->key_code && key == KEY_MOUSE)
+        if( key == KEY_MOUSE)
             key = _mouse_key();
 
         /* filter special keys if not in keypad mode */
 
-        if (SP->key_code && !win->_use_keypad)
+        if( PDC_is_function_key( key) && !win->_use_keypad)
             key = -1;
 
         /* unwanted key? loop back */
@@ -446,7 +451,7 @@ int wgetch(WINDOW *win)
 
         /* if echo is enabled */
 
-        if (SP->echo && !SP->key_code)
+        if (SP->echo && !PDC_is_function_key( key))
         {
             waddch(win, key);
             wrefresh(win);
@@ -565,7 +570,7 @@ int wget_wch(WINDOW *win, wint_t *wch)
 
     *wch = (wint_t)key;
 
-    return SP->key_code ? KEY_CODE_YES : OK;
+    return PDC_is_function_key( key) ? KEY_CODE_YES : OK;
 }
 
 int get_wch(wint_t *wch)

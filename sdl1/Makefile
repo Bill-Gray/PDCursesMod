@@ -6,19 +6,22 @@ ifndef PDCURSES_SRCDIR
 	PDCURSES_SRCDIR	= ..
 endif
 
-include $(PDCURSES_SRCDIR)/common/libobjs.mif
-
 osdir		= $(PDCURSES_SRCDIR)/sdl1
-
-PDCURSES_SDL_H	= $(osdir)/pdcsdl.h
+include $(PDCURSES_SRCDIR)/common/libobjs.mif
 
 SFLAGS		= $(shell sdl-config --cflags)
 SLIBS		= $(shell sdl-config --libs)
 
+CC		= gcc
+RM		= rm -f
+
+PDCURSES_SDL_H	= $(osdir)/pdcsdl.h
+
+CFLAGS  = -Wall -Wextra -Werror -pedantic -fPIC
 ifeq ($(DEBUG),Y)
-	CFLAGS  = -g -Wall -Wextra -Werror -pedantic -DPDCDEBUG -fPIC
+	CFLAGS  += -g -DPDCDEBUG
 else
-	CFLAGS  = -O2 -Wall -Wextra -Werror -pedantic -fPIC
+	CFLAGS  += -O2
 endif
 
 ifeq ($(WIDE),Y)
@@ -33,14 +36,19 @@ endif
 ifdef CHTYPE_32
 	CFLAGS += -DCHTYPE_32
 endif
+ifeq ($(DLL),Y)
+	LDFLAGS		= $(LIBCURSES_SO) $(SLIBS)
+else
+	LDFLAGS		= $(LIBCURSES) $(SLIBS)
+endif
+
+RANLIB		= ranlib
+LIBCURSES	= libpdcurses.a
+LIBCURSES_SO	= libpdcurses.so
 
 BUILD		= $(CC) $(CFLAGS) -I$(PDCURSES_SRCDIR)
 
 LINK		= $(CC)
-LDFLAGS		= $(LIBCURSES) $(SLIBS)
-RANLIB		= ranlib
-LIBCURSES	= pdcurses.a
-LIBCURSES_SO	= pdcurses.so
 
 DEMOS		+= sdltest
 
@@ -51,11 +59,23 @@ all:	libs
 libs:	$(LIBCURSES) $(LIBCURSES_SO)
 
 clean:
-	-rm -rf *.o trace $(LIBCURSES) $(LIBCURSES_SO) $(DEMOS)
+	-$(RM) *.o trace $(LIBCURSES) $(LIBCURSES_SO) $(DEMOS)
 
 demos:	$(DEMOS)
 ifneq ($(DEBUG),Y)
 	strip $(DEMOS)
+endif
+
+install:
+ifneq ($(OS),Windows_NT)
+	cp $(LIBCURSES_SO) /usr/local/lib
+	ldconfig /usr/local/lib
+endif
+
+uninstall:
+ifneq ($(OS),Windows_NT)
+	rm /usr/local/lib/$(LIBCURSES_SO)
+	ldconfig /usr/local/lib
 endif
 
 $(LIBCURSES) : $(LIBOBJS) $(PDCOBJS)
@@ -78,6 +98,9 @@ $(PDCOBJS) : %.o: $(osdir)/%.c
 	$(BUILD) $(SFLAGS) -c $<
 
 firework: $(demodir)/firework.c
+	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
+
+init_col: $(demodir)/init_col.c
 	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
 
 newtest: $(demodir)/newtest.c
@@ -106,6 +129,9 @@ test_pan: $(demodir)/test_pan.c
 
 tuidemo: tuidemo.o tui.o
 	$(LINK) tui.o tuidemo.o -o $@ $(LDFLAGS)
+
+widetest: $(demodir)/widetest.c
+	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
 
 worm: $(demodir)/worm.c
 	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)

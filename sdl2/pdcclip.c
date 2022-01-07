@@ -55,7 +55,7 @@ int PDC_getclipboard(char **contents, long *length)
     if (SDL_HasClipboardText() == SDL_FALSE)
         return PDC_CLIP_EMPTY;
     *contents = SDL_GetClipboardText();
-    *length = strlen(*contents);
+    *length = (long)strlen(*contents);
 
     return PDC_CLIP_SUCCESS;
 }

@@ -1,17 +1,10 @@
-# Watcom WMAKE Makefile for PDCurses library - DOS (16 bit) or DOS/4GW Watcom C/C++ 10.6+
+# Watcom Makefile for PDCurses - DOS
 #
-# Usage: wmake -f [path/]Makefile.wcc [DEBUG=Y] [MODEL=c|h|l|m|s|f] [target]
+# Usage: wmake -f [path\]Makefile.wcc [DEBUG=Y] [WIDE=Y] [MODEL=c|h|l|m|s|f] [target]
 #
 # where target can be any of:
 # [all|demos|pdcurses.lib|testcurs.exe...]
-#
-# and MODEL specifies the memory model (16-bit compact/huge/large/medium/
-# small, or 32-bit flat)
-#
-# and CHTYPE_32 is an optional compiler flag to set the size of chtype (default
-# is 64 bits)
 
-# Change the memory MODEL here, if desired
 !ifndef MODEL
 MODEL = l
 !endif
@@ -22,10 +15,7 @@ PDCURSES_SRCDIR = $(%PDCURSES_SRCDIR)
 PDCURSES_SRCDIR = ..
 !endif
 
-!include $(common)/version.mif
-
 osdir = vt
-common		= $(PDCURSES_SRCDIR)/common
 
 TARGET = dos
 
@@ -37,18 +27,4 @@ LTARGET = dos
 
 CFLAGS =
 
-EXTRA_LIB_CMD = -$(COPY) $(PDCNAME).lib panel.lib
-
-!include $(common)/watcom.mif
-
-!ifneq MODEL f
-PLATFORM1   = Watcom C++ 16-bit DOS/VT
-PLATFORM2   = Open Watcom for 16-bit DOS/VT
-ARCNAME     = pdc$(VER)16w
-!else
-PLATFORM1   = Watcom C++ 32-bit DOS/VT
-PLATFORM2   = Open Watcom for 32-bit DOS/VT
-ARCNAME     = pdc$(VER)32w
-!endif
-
-!include $(common)/makedist.mif
+!include $(PDCURSES_SRCDIR)/common/watcom.mif

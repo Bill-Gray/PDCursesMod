@@ -21,6 +21,9 @@ Building
 
 In GNU/Linux,  run `make` or `make WIDE=Y`.  You can add `-w64` or `-w32`
 to cross-compile 64-bit or 32-bit Windows executables,  using MinGW64.
+Add `DLL=Y` to get a DLL for Windows builds,  or a shared library (.so)
+on *nix builds.  Run `make install` (you'll probably need to be root for
+this) to install the shared library.
 
 In *BSD,  use `gmake` or `gmake WIDE=Y`.  Cross-compiling to Windows
 should be possible there as well.

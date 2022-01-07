@@ -70,6 +70,8 @@ static void _normalize_cursor( WINDOW *win)
         win->_curx = win->_maxx - 1;
 }
 
+int PDC_pnoutrefresh_with_stored_params( WINDOW *pad);       /* pad.c */
+
 int wnoutrefresh(WINDOW *win)
 {
     int begy, begx;     /* window's place on screen   */
@@ -78,8 +80,10 @@ int wnoutrefresh(WINDOW *win)
     PDC_LOG(("wnoutrefresh() - called: win=%p\n", win));
 
     assert( win);
-    if ( !win || (win->_flags & (_PAD|_SUBPAD)) )
+    if ( !win)
         return ERR;
+    if( is_pad( win))
+        return PDC_pnoutrefresh_with_stored_params( win);
 
     begy = win->_begy;
     begx = win->_begx;
@@ -125,11 +129,8 @@ int wnoutrefresh(WINDOW *win)
                 if (last > curscr->_lastch[j])
                     curscr->_lastch[j] = last;
             }
-
-            win->_firstch[i] = _NO_CHANGE;  /* updated now */
         }
-
-        win->_lastch[i] = _NO_CHANGE;       /* updated now */
+        PDC_set_changed_cells_range( win, i, _NO_CHANGE, _NO_CHANGE);
     }
 
     if (win->_clear)
@@ -224,8 +225,7 @@ int doupdate(void)
                     first++;
             }
 
-            curscr->_firstch[y] = _NO_CHANGE;
-            curscr->_lastch[y] = _NO_CHANGE;
+            PDC_set_changed_cells_range( curscr, y, _NO_CHANGE, _NO_CHANGE);
         }
     }
 
@@ -284,10 +284,7 @@ int wredrawln(WINDOW *win, int start, int num)
         return ERR;
 
     for (i = start; i < start + num; i++)
-    {
-        win->_firstch[i] = 0;
-        win->_lastch[i] = win->_maxx - 1;
-    }
+        PDC_mark_line_as_changed( win, i);
 
     return OK;
 }

@@ -135,6 +135,8 @@ void PDC_blink_text(XtPointer unused, XtIntervalId *id)
     int j, k;
     chtype *ch;
 
+    INTENTIONALLY_UNUSED_PARAMETER( unused);
+    INTENTIONALLY_UNUSED_PARAMETER( id);
     PDC_LOG(("PDC_blink_text() - called:\n"));
 
     PDC_blink_state = pdc_blinked_off = !pdc_blinked_off;
@@ -216,6 +218,8 @@ void PDC_blink_cursor(XtPointer unused, XtIntervalId *id)
 {
     PDC_LOG(("PDC_blink_cursor() - called:\n"));
 
+    INTENTIONALLY_UNUSED_PARAMETER( unused);
+    INTENTIONALLY_UNUSED_PARAMETER( id);
     _toggle_cursor();
     XtAppAddTimeOut(pdc_app_context, pdc_app_data.cursorBlinkRate,
                     PDC_blink_cursor, NULL);

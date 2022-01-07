@@ -17,7 +17,19 @@ void PDC_napms(int ms)
     Sleep(ms);
 #else
 #ifndef DOS
+#ifdef LINUX_FRAMEBUFFER_PORT
+    PDC_check_for_blinking( );
+    while( ms > 0)
+    {
+        const int ms_to_nap = (ms > 50 ? 50 : ms);
+
+        usleep( 1000 * ms_to_nap);
+        ms -= ms_to_nap;
+        PDC_check_for_blinking( );
+    }
+#else
     usleep(1000 * ms);
+#endif
 #endif
 #endif
 }
@@ -25,7 +37,15 @@ void PDC_napms(int ms)
 
 const char *PDC_sysname(void)
 {
+#ifdef LINUX_FRAMEBUFFER_PORT
+   return( "LinuxFB");
+#else
    return( "VTx00");
+#endif
 }
 
+#ifdef LINUX_FRAMEBUFFER_PORT
+enum PDC_port PDC_port_val = PDC_PORT_LINUX_FB;
+#else
 enum PDC_port PDC_port_val = PDC_PORT_VT;
+#endif
