@@ -14,6 +14,7 @@ option(PDC_NCURSES_BUILD "Build ncurses project" ON)
 option(PDC_DEMOS_BUILD "Build demo applications" ON)
 option(PDC_WINCON_BUILD "Build WinCon project" ON)
 option(PDC_WINGUI_BUILD "Build WinGUI project" ON)
+option(PDC_VT_BUILD "Build VT Win32 project" ON)
 option(PDC_INSTALL_TARGETS "Provide install targets" ON)
 
 message(STATUS "PDC_BUILD_SHARED ....... ${PDC_BUILD_SHARED}")
@@ -31,6 +32,7 @@ message(STATUS "PDC_NCURSES_BUILD ...... ${PDC_NCURSES_BUILD}")
 message(STATUS "PDC_DEMOS_BUILD ........ ${PDC_DEMOS_BUILD}")
 message(STATUS "PDC_WINCON_BUILD ....... ${PDC_WINCON_BUILD}")
 message(STATUS "PDC_WINGUI_BUILD ....... ${PDC_WINGUI_BUILD}")
+message(STATUS "PDC_VT_BUILD ........... ${PDC_VT_BUILD}")
 message(STATUS "PDC_INSTALL_TARGETS .... ${PDC_INSTALL_TARGETS}")
 
 # normalize a windows path
