@@ -19,8 +19,9 @@ full RGB on terminals that support it.
 Building
 --------
 
-In GNU/Linux,  run `make` or `make WIDE=Y`.  You can add `-w64` or `-w32`
+In GNU/Linux,  run `make` or `make WIDE=Y` or `make UTF8=Y`.  You can add `-w64` or `-w32`
 to cross-compile 64-bit or 32-bit Windows executables,  using MinGW64.
+(But see warnings below about Windows.)
 Add `DLL=Y` to get a DLL for Windows builds,  or a shared library (.so)
 on *nix builds.  Run `make install` (you'll probably need to be root for
 this) to install the shared library.
@@ -35,10 +36,16 @@ and haven't really been thoroughly vetted by others yet.
 Caveats
 -------
 
-As currently set up,  this is a bare-bones implementation.  It relies on a
-terminal that supports at least 256 colors.  RGB colors get remapped to the
-6x6x6 color cube.  If the `COLORTERM` environment variable is set to
-`truecolor`,  you'll get true color.  If not,  you can tell PDCurses you
+VT-style sequences are partially supported in Windows 10 and 11.  However,
+you get 16 colors (no RGB),  the mouse does not necessarily work,  and the
+console size cannot be determined or set.  Use of the VT platform in Windows
+is therefore strongly discouraged;  use WinGUI or WinCon instead.
+
+This code will usually figure out the capabilities of the underlying terminal.
+It errs on the conservative side and may not recognize what your terminal
+can actually do.  If it doesn't think full RGB coloring is supported,
+then RGB colors will be remapped to the 6x6x6 color cube.  If that happens
+(resulting in slightly ugly coloring),  you can tell PDCurses you
 really do have true color by setting
 
 `PDC_VT=RGB`
