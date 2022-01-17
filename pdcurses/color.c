@@ -184,6 +184,66 @@ static void _link_color_pair( const int pair_no, const int head)
     p[head].next = p[curr->next].prev = pair_no;
 }
 
+#if PDC_COLOR_BITS < 15
+    typedef int16_t hash_idx_t;
+#else
+    typedef int32_t hash_idx_t;
+#endif
+
+static hash_idx_t *_pair_hash_tbl = NULL;
+static int _pair_hash_tbl_size = 0, _pair_hash_tbl_used = 0;
+
+static int _hash_color_pair( const int fg, const int bg)
+{
+    int rval = (fg * 31469 + bg * 19583);
+
+    assert( _pair_hash_tbl_size);
+    rval ^= rval >> 11;
+    rval ^= rval << 7;
+    rval &= (_pair_hash_tbl_size - 1);
+    return( rval);
+}
+
+/* Linear/triangular-number hybrid hash table probing sequence.  See
+https://www.projectpluto.com/hashing.htm for details.    */
+
+#define GROUP_SIZE  4
+#define ADVANCE_HASH_PROBE( idx, iter) \
+              { idx++;        \
+                if( iter % GROUP_SIZE == 0) idx += iter - GROUP_SIZE;  \
+                idx &= (_pair_hash_tbl_size - 1); }
+
+static void _check_hash_tbl( void)
+{
+   assert( SP->atrtab);
+   if( _pair_hash_tbl_used * 5 / 4 >= _pair_hash_tbl_size)
+      {
+      int i, n_pairs;
+      PDC_PAIR *p = (PDC_PAIR *)SP->atrtab;
+
+      for( i = 1, n_pairs = 0; i < atrtab_size_alloced; i++)
+         if( p[i].f != UNSET_COLOR_PAIR)
+            n_pairs++;
+      _pair_hash_tbl_used = n_pairs;
+      _pair_hash_tbl_size = 8;    /* minimum table size */
+      while( n_pairs >= _pair_hash_tbl_size * 3 / 4)
+         _pair_hash_tbl_size <<= 1;    /* more than 75% of table is full */
+      if( _pair_hash_tbl)
+         free( _pair_hash_tbl);
+      _pair_hash_tbl = (hash_idx_t *)calloc(
+                              _pair_hash_tbl_size, sizeof( hash_idx_t));
+      for( i = 1; i < atrtab_size_alloced; i++)
+         if( p[i].f != UNSET_COLOR_PAIR)
+            {
+            int idx = _hash_color_pair( p[i].f, p[i].b), iter;
+
+            for( iter = 0; _pair_hash_tbl[idx]; iter++)
+               ADVANCE_HASH_PROBE( idx, iter);
+            _pair_hash_tbl[idx] = i;
+            }
+      }
+}
+
 int start_color(void)
 {
     PDC_LOG(("start_color() - called\n"));
@@ -333,10 +393,32 @@ static void _init_pair_core(int pair, int fg, int bg)
     _normalize(&fg, &bg);
 
     refresh_pair = (p->f != UNSET_COLOR_PAIR && (p->f != fg || p->b != bg));
+    _check_hash_tbl( );
+    if( pair && p->f != UNSET_COLOR_PAIR)
+    {
+       int idx = _hash_color_pair( p->f, p->b), iter;
+
+       for( iter = 0; _pair_hash_tbl[idx] != pair; iter++)
+       {
+           assert( _pair_hash_tbl[idx]);
+           ADVANCE_HASH_PROBE( idx, iter);
+       }
+       _pair_hash_tbl[idx] = -1;    /* mark as freed */
+    }
     if( pair)
        _unlink_color_pair( pair);
     p->f = fg;
     p->b = bg;
+    if( pair && fg != UNSET_COLOR_PAIR)
+    {
+       int idx = _hash_color_pair( fg, bg), iter;
+
+       for( iter = 0; _pair_hash_tbl[idx] > 0; iter++)
+           ADVANCE_HASH_PROBE( idx, iter);
+       if( !_pair_hash_tbl[idx])    /* using a new pair */
+           _pair_hash_tbl_used++;
+       _pair_hash_tbl[idx] = pair;
+    }
     if( pair)
        _link_color_pair( pair, (p->f == UNSET_COLOR_PAIR ? atrtab_size_alloced : 0));
     if( refresh_pair)
@@ -533,24 +615,30 @@ int color_content( short color, short *red, short *green, short *blue)
     return( rval);
 }
 
-/* At present,  find_pair( ) finds the desired pair,  if it exists,
-by doing a linear search of the table.  If enough pairs are in use
-(hundreds/thousands),  this can become slow.  ncurses uses a "fast
-indexing" scheme here (balanced binary tree);  we may follow suit.
-See 'pairs.txt' for further discussion.        */
-
 int find_pair( int fg, int bg)
 {
-    PDC_PAIR *p;
-    int i;
+    int idx = _hash_color_pair( fg, bg), iter;
 
     assert( SP);
     assert( SP->atrtab);
     assert( atrtab_size_alloced);
-    p = (PDC_PAIR *)SP->atrtab;
-    for( i = 1; i < atrtab_size_alloced; i++, p++)
-        if( p->f == fg && p->b == bg)
-            return( i);
+    for( iter = 0; _pair_hash_tbl[idx]; iter++)
+    {
+        int i;
+
+        if( (i = _pair_hash_tbl[idx]) > 0)
+        {
+            PDC_PAIR *p = (PDC_PAIR *)SP->atrtab;
+
+            if( p[i].f == fg && p[i].b == bg)
+            {
+                _unlink_color_pair( i);   /* unlink it and relink it */
+                _link_color_pair( i, 0);  /* to make it the 'head' node */
+                return( i);         /* we found the color */
+            }
+        }
+        ADVANCE_HASH_PROBE( idx, iter);
+    }
     return( -1);
 }
 
@@ -573,8 +661,8 @@ int alloc_pair( int fg, int bg)
 
         rval = p[atrtab_size_alloced].prev;
         assert( rval);
-        if( COLOR_PAIRS == rval)       /* all color pairs are in use */
-            rval = p[0].prev;
+        if( COLOR_PAIRS == rval)       /* all color pairs are in use; */
+            rval = p[0].prev;          /* 'repurpose' the oldest pair */
         if( ERR == init_extended_pair( rval, fg, bg))
             rval = -1;
         assert( rval != -1);
@@ -598,11 +686,20 @@ int free_pair( int pair)
     return OK;
 }
 
+void PDC_free_pair_hash_table( void)
+{
+    if( _pair_hash_tbl)
+        free( _pair_hash_tbl);
+    _pair_hash_tbl = NULL;
+    _pair_hash_tbl_size = _pair_hash_tbl_used = 0;
+}
+
 void reset_color_pairs( void)
 {
     assert( SP && SP->atrtab);
     free( SP->atrtab);
     SP->atrtab = NULL;
+    PDC_free_pair_hash_table( );
     PDC_init_atrtab( );
     curscr->_clear = TRUE;
 }
@@ -610,16 +707,16 @@ void reset_color_pairs( void)
 #ifdef PDC_COLOR_PAIR_DEBUGGING_FUNCTIONS
 
 /* The following is solely for testing the color pair table,  and
-specifically its two doubly-linked lists (one of 'used' pairs,
-one of 'free' pairs).  The elements in both lists are counted.
-The total should equal the number of allocated pairs.  All pairs
-in the first linked list are checked to make sure they're really
-used;  all in the second to make sure they're really free.  We
-also check that the links are consistent.  The return value is
-0 if the table checks out,  -1 if it does not.  'results' contains
-the number of used pairs,  the number of free pairs,  and the
-number of allocated pairs (which should be the sum of the first
-two numbers.)  See 'pairs.txt' for more details.   */
+specifically its two doubly-linked lists (one of 'used' pairs, one of
+'free' pairs).  The elements in both lists are counted. The total should
+equal the number of allocated pairs.  All pairs in the first linked list
+are checked to make sure they're really used;  all in the second to make
+sure they're really free.  We also check that the links are consistent.
+The return value is 0 if the table checks out,  -1 if it does not.
+'results' contains the number of used pairs,  the number of free pairs,
+and the number of allocated pairs (which should be the sum of the first
+two numbers.)  It also returns some data on the hash table size and
+usage.  See 'pairs.txt' for more details.   */
 
 int PDC_check_color_pair_table( int *results)
 {
@@ -657,6 +754,8 @@ int PDC_check_color_pair_table( int *results)
         results[0] = n_used;
         results[1] = n_free;
         results[2] = atrtab_size_alloced + 1;      /* include the 'dummy' pair */
+        results[3] = _pair_hash_tbl_size;
+        results[4] = _pair_hash_tbl_used;
     }
     return( (n_used + n_free == atrtab_size_alloced + 1) ? 0 : -1);
 }
