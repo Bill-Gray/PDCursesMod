@@ -1,3 +1,55 @@
+Current state (to 2022 January 20)
+==================================
+
+Minor new features
+------------------
+
+-  In 32-bit chtype,  non-wide-character builds,  you get 4096 color
+   pairs and all twelve attribute bits that you would get with any
+   64-bit chtype build.  d498305c35
+
+-  Color pair management for find_pair(), alloc_pair(), free_pair()
+   sped up considerably.  4d41c85101  864f02523d7
+
+-  'testcurs' modified to show A_DIM and to show supergradients when
+   possible.  dfb2387ff8
+
+-  Almost all ncurses demos are now built,  and this also now applies
+   to X11.  d742c1c708  e11eb4ed11
+
+-  Default framebuffer font now includes all WCS/WACS glyphs.  88fbc83b29
+   41ab7af534
+
+-  X11,  VT,  and framebuffer ports all compile with full warnings and
+   -Werror.   eabeb4cb99  fa98024a54  3c77a5b569
+
+-  New 'widetest' demo exercises getcchar() and setcchar(),  neither of
+   which actually got tested at all in other demos.  This was actually
+   added in 4.3.1,  though it wasn't built by default in most ports.
+   0a815ea432  9dbd63846b  a75727c5b2  4cd9338b56
+
+-  Automated builds on Windows now include the VT platform (commits
+   ceeb2de9e5,  6c3791f447).  But VT codes are indifferently supported
+   by Microsoft;  use of it is deprecated,   with WinCon or WinGUI being
+   suggested instead (commit d6e517eb36).
+
+Bug fixes
+---------
+
+-  VT and framebuffer ports returned 10 for Enter and Ctrl-M,
+   instead of 13.  Fixed by Mark Hessling (issue #225).  0dace8c90e
+
+-  WinCon port could mangle attributes for non-ANSI characters.  It
+   still can (unavoidably so),  but the damage no longer extends to
+   adjacent ANSI characters.  Partly from a fix made by William
+   McBrine to PDCurses.  6553e40a37
+
+-  Removed completely meaningless PDC_MOUSE_POSITION and MOUSE_POS_REPORTS
+   macros.  See issue wmcbrine/PDCurses#129.  b4e7429976
+
+-  The terminfo dummy functions were not exported in shared library/DLL
+   builds.  Fix by Simon Sobisch.  e8723349de  24ffa99b03
+
 PDCursesMod 4.3.1 - 2021 November 28
 ====================================
 
