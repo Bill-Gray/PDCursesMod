@@ -159,14 +159,14 @@ int PDC_choose_a_new_font( void);                     /* pdcdisp.c */
 
 #define KEY_QUEUE_SIZE    30
 
-       /* By default,  the PDC_shutdown_key[] array contains 0       */
+       /* By default,  the PDC_function_key[] array contains 0       */
        /* (i.e., there's no key that's supposed to be returned for   */
        /* exit handling), and 22 = Ctrl-V (i.e.,  hit Ctrl-V to      */
        /* paste text from the clipboard into the key queue);  then   */
        /* no key by default to enlarge/decrease font size or to      */
        /* select a font from the font dialog.                        */
 
-static int PDC_shutdown_key[PDC_MAX_FUNCTION_KEYS] = { 0, 22, 0, 0, 0 };
+static int PDC_function_key[PDC_MAX_FUNCTION_KEYS] = { 0, 22, 0, 0, 0 };
 int PDC_n_rows, PDC_n_cols;
 int PDC_cxChar, PDC_cyChar, PDC_key_queue_low = 0, PDC_key_queue_high = 0;
 int PDC_key_queue[KEY_QUEUE_SIZE];
@@ -214,13 +214,13 @@ static void add_key_to_queue( const int new_key)
         }
     }
     unicode_radix = 10;
-    if( new_key && new_key == PDC_shutdown_key[FUNCTION_KEY_ABORT])
+    if( new_key && new_key == PDC_function_key[FUNCTION_KEY_ABORT])
         exit( -1);
-    else if( new_key && new_key == PDC_shutdown_key[FUNCTION_KEY_ENLARGE_FONT])
+    else if( new_key && new_key == PDC_function_key[FUNCTION_KEY_ENLARGE_FONT])
         adjust_font_size( 1);
-    else if( new_key && new_key == PDC_shutdown_key[FUNCTION_KEY_SHRINK_FONT])
+    else if( new_key && new_key == PDC_function_key[FUNCTION_KEY_SHRINK_FONT])
         adjust_font_size( -1);
-    else if( new_key && new_key == PDC_shutdown_key[FUNCTION_KEY_CHOOSE_FONT])
+    else if( new_key && new_key == PDC_function_key[FUNCTION_KEY_CHOOSE_FONT])
     {
         if( PDC_choose_a_new_font( ))
             adjust_font_size( 0);
@@ -1919,14 +1919,14 @@ static LRESULT ALIGN_STACK CALLBACK WndProc (const HWND hwnd,
 
     case WM_CLOSE:
         EnterCriticalSection(&PDC_cs);
-        if( !PDC_shutdown_key[FUNCTION_KEY_SHUT_DOWN])
+        if( !PDC_function_key[FUNCTION_KEY_SHUT_DOWN])
         {
             final_cleanup( );
             /*PDC_bDone = TRUE;*/
             exit( 0);
         }
         else
-            add_key_to_queue( PDC_shutdown_key[FUNCTION_KEY_SHUT_DOWN]);
+            add_key_to_queue( PDC_function_key[FUNCTION_KEY_SHUT_DOWN]);
 
         LeaveCriticalSection(&PDC_cs);
         return( 0);
@@ -2010,8 +2010,8 @@ int PDC_set_function_key( const unsigned function, const int new_key)
 
     if( function < PDC_MAX_FUNCTION_KEYS)
     {
-         old_key = PDC_shutdown_key[function];
-         PDC_shutdown_key[function] = new_key;
+         old_key = PDC_function_key[function];
+         PDC_function_key[function] = new_key;
     }
 
     if( function == FUNCTION_KEY_SHUT_DOWN)
