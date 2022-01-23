@@ -37,4 +37,6 @@ jobs:
         nmake UTF8=Y DLL=Y -f Makefile.vc demos
         cd ..\wincon
         nmake DLL=Y -f Makefile.vc demos
+        cd ..\vt
+        nmake CHTYPE_32=Y -f Makefile.vc demos
       shell: cmd
