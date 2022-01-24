@@ -38,9 +38,9 @@ Defined by this header:
 #define PDC_VER_MAJOR    4
 #define PDC_VER_MINOR    3
 #define PDC_VER_CHANGE   1
-#define PDC_VER_YEAR   2021
-#define PDC_VER_MONTH    12
-#define PDC_VER_DAY      21
+#define PDC_VER_YEAR   2022
+#define PDC_VER_MONTH    01
+#define PDC_VER_DAY      23
 
 #define PDC_STRINGIZE( x) #x
 #define PDC_stringize( x) PDC_STRINGIZE( x)
@@ -1760,10 +1760,12 @@ PDCEX  void    PDC_set_resize_limits( const int new_min_lines,
 #define FUNCTION_KEY_SHRINK_FONT      3
 #define FUNCTION_KEY_CHOOSE_FONT      4
 #define FUNCTION_KEY_ABORT            5
-#define PDC_MAX_FUNCTION_KEYS         6
+#define FUNCTION_KEY_COPY             6
+#define PDC_MAX_FUNCTION_KEYS         7
 
 PDCEX int     PDC_set_function_key( const unsigned function,
                               const int new_key);
+PDCEX int     PDC_get_function_key( const unsigned function);
 
 PDCEX  WINDOW *Xinitscr(int, char **);
 #ifdef XCURSES

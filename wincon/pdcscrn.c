@@ -14,9 +14,6 @@ HANDLE pdc_con_in = INVALID_HANDLE_VALUE;
 
 DWORD pdc_quick_edit;
 
-/* special purpose function keys */
-static int PDC_shutdown_key[PDC_MAX_FUNCTION_KEYS] = { 0, 0, 0, 0, 0 };
-
 static short realtocurs[16] =
 {
     COLOR_BLACK, COLOR_BLUE, COLOR_GREEN, COLOR_CYAN, COLOR_RED,
@@ -478,6 +475,7 @@ int PDC_scr_open(void)
         SP->termattrs |= A_UNDERLINE | A_LEFT | A_RIGHT;
 
     PDC_reset_prog_mode();
+    PDC_set_function_key( FUNCTION_KEY_COPY, 0);
 
     SP->mono = FALSE;
 
@@ -719,17 +717,4 @@ void PDC_set_resize_limits( const int new_min_lines, const int new_max_lines,
     INTENTIONALLY_UNUSED_PARAMETER( new_max_lines);
     INTENTIONALLY_UNUSED_PARAMETER( new_min_cols);
     INTENTIONALLY_UNUSED_PARAMETER( new_max_cols);
-}
-
-/* PDC_set_function_key() does nothing on this platform */
-int PDC_set_function_key( const unsigned function, const int new_key)
-{
-    int old_key = -1;
-
-    if( function < PDC_MAX_FUNCTION_KEYS)
-    {
-         old_key = PDC_shutdown_key[function];
-         PDC_shutdown_key[function] = new_key;
-    }
-    return( old_key);
 }

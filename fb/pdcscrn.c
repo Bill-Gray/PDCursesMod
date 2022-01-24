@@ -331,13 +331,6 @@ int PDC_scr_open(void)
     return( 0);
 }
 
-int PDC_set_function_key( const unsigned function, const int new_key)
-{
-   INTENTIONALLY_UNUSED_PARAMETER( function);
-   INTENTIONALLY_UNUSED_PARAMETER( new_key);
-   return( 0);
-}
-
 void PDC_set_resize_limits( const int new_min_lines,
                             const int new_max_lines,
                             const int new_min_cols,

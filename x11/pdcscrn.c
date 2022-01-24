@@ -2,10 +2,6 @@
 
 #include "pdcx11.h"
 
-/* special purpose function keys */
-
-static int PDC_shutdown_key[PDC_MAX_FUNCTION_KEYS] = { 0, 0, 0, 0, 0 };
-
 #include <xpm.h>
 
 #include <stdlib.h>
@@ -789,59 +785,6 @@ int PDC_init_color(int color, int red, int green, int blue)
                             (PACKED_RGB)tmp.blue >> 8));
     return OK;
 }
-
-/*man-start**************************************************************
-
-Function keys
--------------
-
-### Synopsis
-
-   int PDC_set_function_key( const unsigned function, const int new_key);
-
-### Description
-
-   Allows one to set a 'shut down' key,  and reassign hotkeys used for
-   pasting from the clipboard and enlarging and decreasing the font size,
-   and for using the font selection dialog (on platforms where these
-   things are possible and implemented).  For example, calling
-
-   PDC_set_function_key( FUNCTION_KEY_SHUT_DOWN, ALT_Q);
-
-   would reset PDCurses such that,  if the user clicks on the 'close' box,
-   Alt-Q would be added to the key queue.  This would give the app the
-   opportunity to shut things down gracefully,  perhaps asking "are you
-   sure",  and/or "save changes or discard or cancel",  rather than just
-   having the window close (the default behavior).
-
-   Similarly,  one can set FUNCTION_KEY_ABORT to a key which,  when pressed,
-   will cause the program to abort gracelessly (no key returned to the
-   application).  One would normally use this to enable/disable Ctrl-C or
-   Ctrl-Break.
-
-### Return Value
-
-   Returns key code previously set for that function,  or -1 if the
-   function does not actually exist.
-
-### Portability
-
-   PDCurses-only function.
-
-**man-end****************************************************************/
-
-int PDC_set_function_key( const unsigned function, const int new_key)
-{
-    int old_key = -1;
-
-    if (function < PDC_MAX_FUNCTION_KEYS)
-    {
-         old_key = PDC_shutdown_key[function];
-         PDC_shutdown_key[function] = new_key;
-    }
-    return(old_key);
-}
-
 
 /*man-start**************************************************************
 

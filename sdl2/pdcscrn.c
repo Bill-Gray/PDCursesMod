@@ -39,9 +39,6 @@ int pdc_sheight = 0, pdc_swidth = 0, pdc_yoffset = 0, pdc_xoffset = 0;
 int pdc_fheight, pdc_fwidth, pdc_fthick, pdc_flastc;
 bool pdc_own_window;
 
-/* special purpose function keys */
-static int PDC_shutdown_key[PDC_MAX_FUNCTION_KEYS] = { 0, 0, 0, 0, 0 };
-
 #ifndef PDC_WIDE
 
 /* Load a bitmap from bmp_rw and also determine its palette size.
@@ -496,17 +493,4 @@ void PDC_set_resize_limits( const int new_min_lines, const int new_max_lines,
    INTENTIONALLY_UNUSED_PARAMETER( new_max_lines);
    INTENTIONALLY_UNUSED_PARAMETER( new_min_cols);
    INTENTIONALLY_UNUSED_PARAMETER( new_max_cols);
-}
-
-/* PDC_set_function_key() does nothing on this platform */
-int PDC_set_function_key( const unsigned function, const int new_key)
-{
-    int old_key = -1;
-
-    if( function < PDC_MAX_FUNCTION_KEYS)
-    {
-         old_key = PDC_shutdown_key[function];
-         PDC_shutdown_key[function] = new_key;
-    }
-    return( old_key);
 }

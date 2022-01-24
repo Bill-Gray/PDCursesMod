@@ -31,9 +31,6 @@ static int saved_cols = 0;
 static int saved_scrnmode[3];
 static int saved_font[3];
 
-/* special purpose function keys */
-static int PDC_shutdown_key[PDC_MAX_FUNCTION_KEYS] = { 0, 0, 0, 0, 0 };
-
 /* Thanks to Jeff Duntemann, K16RA for providing the impetus
    (through the Dr. Dobbs Journal, March 1989 issue) for getting
    the routines below merged into Bjorn Larsson's PDCurses 1.3...
@@ -706,17 +703,4 @@ void PDC_set_resize_limits( const int new_min_lines, const int new_max_lines,
    INTENTIONALLY_UNUSED_PARAMETER( new_max_lines);
    INTENTIONALLY_UNUSED_PARAMETER( new_min_cols);
    INTENTIONALLY_UNUSED_PARAMETER( new_max_cols);
-}
-
-/* PDC_set_function_key() does nothing on this platform */
-int PDC_set_function_key( const unsigned function, const int new_key)
-{
-    int old_key = -1;
-
-    if( function < PDC_MAX_FUNCTION_KEYS)
-    {
-         old_key = PDC_shutdown_key[function];
-         PDC_shutdown_key[function] = new_key;
-    }
-    return( old_key);
 }

@@ -159,14 +159,6 @@ int PDC_choose_a_new_font( void);                     /* pdcdisp.c */
 
 #define KEY_QUEUE_SIZE    30
 
-       /* By default,  the PDC_function_key[] array contains 0       */
-       /* (i.e., there's no key that's supposed to be returned for   */
-       /* exit handling), and 22 = Ctrl-V (i.e.,  hit Ctrl-V to      */
-       /* paste text from the clipboard into the key queue);  then   */
-       /* no key by default to enlarge/decrease font size or to      */
-       /* select a font from the font dialog.                        */
-
-static int PDC_function_key[PDC_MAX_FUNCTION_KEYS] = { 0, 22, 0, 0, 0 };
 int PDC_n_rows, PDC_n_cols;
 int PDC_cxChar, PDC_cyChar, PDC_key_queue_low = 0, PDC_key_queue_high = 0;
 int PDC_key_queue[KEY_QUEUE_SIZE];
@@ -214,13 +206,13 @@ static void add_key_to_queue( const int new_key)
         }
     }
     unicode_radix = 10;
-    if( new_key && new_key == PDC_function_key[FUNCTION_KEY_ABORT])
+    if( new_key && new_key == PDC_get_function_key( FUNCTION_KEY_ABORT))
         exit( -1);
-    else if( new_key && new_key == PDC_function_key[FUNCTION_KEY_ENLARGE_FONT])
+    else if( new_key && new_key == PDC_get_function_key( FUNCTION_KEY_ENLARGE_FONT))
         adjust_font_size( 1);
-    else if( new_key && new_key == PDC_function_key[FUNCTION_KEY_SHRINK_FONT])
+    else if( new_key && new_key == PDC_get_function_key( FUNCTION_KEY_SHRINK_FONT))
         adjust_font_size( -1);
-    else if( new_key && new_key == PDC_function_key[FUNCTION_KEY_CHOOSE_FONT])
+    else if( new_key && new_key == PDC_get_function_key( FUNCTION_KEY_CHOOSE_FONT))
     {
         if( PDC_choose_a_new_font( ))
             adjust_font_size( 0);
@@ -1919,14 +1911,14 @@ static LRESULT ALIGN_STACK CALLBACK WndProc (const HWND hwnd,
 
     case WM_CLOSE:
         EnterCriticalSection(&PDC_cs);
-        if( !PDC_function_key[FUNCTION_KEY_SHUT_DOWN])
+        if( !PDC_get_function_key( FUNCTION_KEY_SHUT_DOWN))
         {
             final_cleanup( );
             /*PDC_bDone = TRUE;*/
             exit( 0);
         }
         else
-            add_key_to_queue( PDC_function_key[FUNCTION_KEY_SHUT_DOWN]);
+            add_key_to_queue( PDC_get_function_key( FUNCTION_KEY_SHUT_DOWN));
 
         LeaveCriticalSection(&PDC_cs);
         return( 0);
@@ -1989,42 +1981,6 @@ static LRESULT ALIGN_STACK CALLBACK WndProc (const HWND hwnd,
 
     LeaveCriticalSection(&PDC_cs);
     return 0;
-}
-
-      /* Default behaviour is that,  when one clicks on the 'close' button, */
-      /* exit( 0) is called,  just as in the SDL and X11 versions.  But if  */
-      /* one wishes,  one can call PDC_set_shutdown_key to cause those      */
-      /* buttons to put a specified character into the input queue.  It's   */
-      /* then the application's problem to exit gracefully,  perhaps with   */
-      /* messages such as 'are you sure' and so forth.                      */
-      /*   If you've set a shutdown key,  there's always a risk that the    */
-      /* program will get stuck in a loop and never process said key.  So   */
-      /* when the key is set,  a 'Kill' item is appended to the system menu */
-      /* so that the user still has some way to terminate the app,  albeit  */
-      /* with extreme prejudice (i.e.,  click on 'Kill' and exit is called  */
-      /* and the app exits gracelessly.)                                    */
-
-int PDC_set_function_key( const unsigned function, const int new_key)
-{
-    int old_key = -1;
-
-    if( function < PDC_MAX_FUNCTION_KEYS)
-    {
-         old_key = PDC_function_key[function];
-         PDC_function_key[function] = new_key;
-    }
-
-    if( function == FUNCTION_KEY_SHUT_DOWN)
-        if( (new_key && !old_key) || (old_key && !new_key))
-        {
-            HMENU hMenu = GetSystemMenu( PDC_hWnd, FALSE);
-
-            if( new_key)
-                AppendMenu( hMenu, MF_STRING, WM_EXIT_GRACELESSLY, _T( "Kill"));
-            else
-                RemoveMenu( hMenu, WM_EXIT_GRACELESSLY, MF_BYCOMMAND);
-        }
-    return( old_key);
 }
 
 /* https://msdn.microsoft.com/en-us/library/windows/desktop/dd162826(v=vs.85).aspx
@@ -2360,6 +2316,7 @@ int PDC_scr_open(void)
     }
 
 /*  PDC_reset_prog_mode();   doesn't do anything anyway */
+    PDC_set_function_key( FUNCTION_KEY_COPY, 0);
     debug_printf( "...we're done\n");
     return OK;
 }
