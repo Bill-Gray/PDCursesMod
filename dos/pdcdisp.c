@@ -79,7 +79,7 @@ static void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *s
 
             temp_line[j].attr = mapped_attr;
 
-            if (ch & A_ALTCHARSET && !(ch & 0xff80))
+            if (ch & A_ALTCHARSET && !(ch & 0x80))
                 ch = acs_map[ch & 0x7f];
 
             temp_line[j].text = ch & 0xff;
