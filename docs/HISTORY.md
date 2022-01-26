@@ -1,4 +1,4 @@
-Current state (to 2022 January 20)
+Current state (to 2022 January 25)
 ==================================
 
 Minor new features
@@ -33,6 +33,15 @@ Minor new features
    by Microsoft;  use of it is deprecated,   with WinCon or WinGUI being
    suggested instead (commit d6e517eb36).
 
+-  The 'mangling' of initscr() (see curses.h) that was done to ensure that
+   library version errors would be caught at link time is now done to
+   'endwin()' instead.  We can really do either,  but it turns out that
+   some build processes rely on initscr() being unmangled.  1e19a2eb96
+
+-  PDC_set_function_key( ) is not really platform dependent.  This eliminated
+   some redundant code and enabled Ctrl-C to be returned on WinGUI and WinCon.
+   Added a corresponding PDC_get_function_key( ).  95b0843f69
+
 Bug fixes
 ---------
 
@@ -49,6 +58,8 @@ Bug fixes
 
 -  The terminfo dummy functions were not exported in shared library/DLL
    builds.  Fix by Simon Sobisch.  e8723349de  24ffa99b03
+
+-  DOS alternative character set (ACS) was improperly displayed.  5db85b1157
 
 PDCursesMod 4.3.1 - 2021 November 28
 ====================================
