@@ -1299,6 +1299,29 @@ PDCEX  int     doupdate(void);
 PDCEX  WINDOW *dupwin(WINDOW *);
 PDCEX  int     echochar(const chtype);
 PDCEX  int     echo(void);
+
+#ifdef PDC_WIDE
+   #ifdef PDC_FORCE_UTF8
+      #ifdef CHTYPE_32
+         #define endwin endwin_u32_4301
+      #else
+         #define endwin endwin_u64_4301
+      #endif
+   #else
+      #ifdef CHTYPE_32
+         #define endwin endwin_w32_4301
+      #else
+         #define endwin endwin_w64_4301
+      #endif
+   #endif
+#else       /* 8-bit chtypes */
+   #ifdef CHTYPE_32
+      #define endwin endwin_x32_4301a
+   #else
+      #define endwin endwin_x64_4301a
+   #endif
+#endif
+
 PDCEX  int     endwin(void);
 PDCEX  char    erasechar(void);
 PDCEX  int     erase(void);
@@ -1326,29 +1349,6 @@ PDCEX  int     init_color(short, short, short, short);
 PDCEX  int     init_extended_color(int, int, int, int);
 PDCEX  int     init_extended_pair(int, int, int);
 PDCEX  int     init_pair(short, short, short);
-
-#ifdef PDC_WIDE
-   #ifdef PDC_FORCE_UTF8
-      #ifdef CHTYPE_32
-         #define initscr initscr_u32_4301
-      #else
-         #define initscr initscr_u64_4301
-      #endif
-   #else
-      #ifdef CHTYPE_32
-         #define initscr initscr_w32_4301
-      #else
-         #define initscr initscr_w64_4301
-      #endif
-   #endif
-#else       /* 8-bit chtypes */
-   #ifdef CHTYPE_32
-      #define initscr initscr_x32_4301a
-   #else
-      #define initscr initscr_x64_4301a
-   #endif
-#endif
-
 PDCEX  WINDOW *initscr(void);
 PDCEX  int     innstr(char *, int);
 PDCEX  int     insch(chtype);
