@@ -113,7 +113,7 @@ void PDC_reset_prog_mode( void)
 
     tcgetattr( STDIN, &orig_term);
     memcpy( &term, &orig_term, sizeof( term));
-    term.c_lflag &= ~(ICANON | ECHO);
+    term.c_lflag &= ~(ICANON | ECHO | ISIG);
     term.c_iflag &= ~ICRNL;
     tcsetattr( STDIN, TCSANOW, &term);
 #endif
