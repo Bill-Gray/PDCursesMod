@@ -1,4 +1,4 @@
-Current state (to 2022 January 25)
+Current state (to 2022 February 05)
 ==================================
 
 Minor new features
@@ -46,7 +46,8 @@ Bug fixes
 ---------
 
 -  VT and framebuffer ports returned 10 for Enter and Ctrl-M,
-   instead of 13.  Fixed by Mark Hessling (issue #225).  0dace8c90e
+   instead of 13,  and ignored ^C and ^Z.  Fixed by Mark Hessling (issue #225
+   and pull request #227).  0dace8c90e  ab0da09435
 
 -  WinCon port could mangle attributes for non-ANSI characters.  It
    still can (unavoidably so),  but the damage no longer extends to
