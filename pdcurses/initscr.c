@@ -341,6 +341,8 @@ SCREEN *set_term(SCREEN *new)
     return (new == SP) ? SP : NULL;
 }
 
+void PDC_free_pair_hash_table( void);        /* color.c */
+
 void delscreen(SCREEN *sp)
 {
     PDC_LOG(("delscreen() - called\n"));
@@ -352,6 +354,7 @@ void delscreen(SCREEN *sp)
     free(SP->c_ungch);
     free(SP->c_buffer);
     free(SP->atrtab);
+    PDC_free_pair_hash_table();
 
     PDC_slk_free();     /* free the soft label keys, if needed */
 
