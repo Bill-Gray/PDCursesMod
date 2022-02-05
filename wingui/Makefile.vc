@@ -44,7 +44,7 @@ LINK    = link.exe -nologo
 CFLAGS       = -Z7 -DPDCDEBUG -MT -D_CRT_SECURE_NO_WARNINGS
 LDFLAGS      = -debug -pdb:none
 !else
-CFLAGS       = -Ox -MT -W3 -D_CRT_SECURE_NO_WARNINGS
+CFLAGS       = -Ox -MT -W4 -D_CRT_SECURE_NO_WARNINGS
 LDFLAGS      =
 !endif
 
