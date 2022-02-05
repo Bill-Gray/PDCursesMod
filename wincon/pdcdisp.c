@@ -27,8 +27,8 @@ void PDC_gotoyx(int row, int col)
     PDC_LOG(("PDC_gotoyx() - called: row %d col %d from row %d col %d\n",
              row, col, SP->cursrow, SP->curscol));
 
-    coord.X = col;
-    coord.Y = row;
+    coord.X = (SHORT)col;
+    coord.Y = (SHORT)row;
 
     SetConsoleCursorPosition(pdc_con_out, coord);
 }
@@ -177,7 +177,7 @@ static void _show_run_of_ansi_characters( const attr_t attr,
     }
 
     PDC_gotoyx(lineno, x);
-    _set_ansi_color(fore, back, attr);
+    _set_ansi_color( (short)fore, (short)back, attr);
 #ifdef PDC_WIDE
     WriteConsoleW(pdc_con_out, buffer, n_out, NULL, NULL);
 #else
@@ -199,9 +199,9 @@ static void _show_run_of_nonansi_characters( const attr_t attr,
     back = pdc_curstoreal[back];
 
     if (attr & A_REVERSE)
-        mapped_attr = back | (fore << 4);
+        mapped_attr = (WORD)( back | (fore << 4));
     else
-        mapped_attr = fore | (back << 4);
+        mapped_attr = (WORD)( fore | (back << 4));
 
     if (attr & A_UNDERLINE)
         mapped_attr |= 0x8000; /* COMMON_LVB_UNDERSCORE */
@@ -228,12 +228,12 @@ static void _show_run_of_nonansi_characters( const attr_t attr,
     }
 
     bufPos.X = bufPos.Y = 0;
-    bufSize.X = n_out;
+    bufSize.X = (SHORT)n_out;
     bufSize.Y = 1;
 
-    sr.Top = sr.Bottom = lineno;
-    sr.Left = x;
-    sr.Right = x + len - 1;
+    sr.Top = sr.Bottom = (SHORT)lineno;
+    sr.Left = (SHORT)x;
+    sr.Right = (SHORT)( x + len - 1);
 
     WriteConsoleOutput(pdc_con_out, buffer, bufSize, bufPos, &sr);
 }
@@ -321,7 +321,7 @@ void PDC_blink_text(void)
     bool oldvis;
 
     GetConsoleCursorInfo(pdc_con_out, &cci);
-    oldvis = cci.bVisible;
+    oldvis = (bool)cci.bVisible;
     if (oldvis)
     {
         cci.bVisible = FALSE;

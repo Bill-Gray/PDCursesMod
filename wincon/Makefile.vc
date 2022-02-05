@@ -25,11 +25,11 @@ PDCURSES_WIN_H	= $(osdir)\pdcwin.h
 CFLAGS		= -Z7 -DPDCDEBUG
 LDFLAGS		= -debug -pdb:none
 !else
-CFLAGS		= -O1
+CFLAGS		= -Ox
 LDFLAGS		=
 !endif
 
-CFLAGS		= $(CFLAGS) -W3 -D_CRT_SECURE_NO_WARNINGS
+CFLAGS		= $(CFLAGS) -W4 -D_CRT_SECURE_NO_WARNINGS
 
 !ifdef WIDE
 WIDEOPT		= -DPDC_WIDE

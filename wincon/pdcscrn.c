@@ -393,8 +393,8 @@ int PDC_scr_open(void)
 
     for (i = 0; i < 16; i++)
     {
-        pdc_curstoreal[realtocurs[i]] = i;
-        pdc_curstoansi[ansitocurs[i]] = i;
+        pdc_curstoreal[realtocurs[i]] = (short)i;
+        pdc_curstoansi[ansitocurs[i]] = (short)i;
     }
     _reset_old_colors();
 
@@ -551,12 +551,12 @@ int PDC_resize_screen(int nlines, int ncols)
     max = GetLargestConsoleWindowSize(pdc_con_out);
 
     rect.Left = rect.Top = 0;
-    rect.Right = ncols - 1;
+    rect.Right = (SHORT)ncols - 1;
 
     if (rect.Right > max.X)
         rect.Right = max.X;
 
-    rect.Bottom = nlines - 1;
+    rect.Bottom = (SHORT)nlines - 1;
 
     if (rect.Bottom > max.Y)
         rect.Bottom = max.Y;
@@ -698,9 +698,9 @@ int PDC_init_color(int color, int red, int green, int blue)
     }
     else
     {
-        pdc_color[color].r = red;
-        pdc_color[color].g = green;
-        pdc_color[color].b = blue;
+        pdc_color[color].r = (short)red;
+        pdc_color[color].g = (short)green;
+        pdc_color[color].b = (short)blue;
         pdc_color[color].mapped = TRUE;
     }
 
