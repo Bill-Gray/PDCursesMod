@@ -1303,22 +1303,22 @@ PDCEX  int     echo(void);
 #ifdef PDC_WIDE
    #ifdef PDC_FORCE_UTF8
       #ifdef CHTYPE_32
-         #define endwin endwin_u32_4301
+         #define endwin endwin_u32_4302
       #else
-         #define endwin endwin_u64_4301
+         #define endwin endwin_u64_4302
       #endif
    #else
       #ifdef CHTYPE_32
-         #define endwin endwin_w32_4301
+         #define endwin endwin_w32_4302
       #else
-         #define endwin endwin_w64_4301
+         #define endwin endwin_w64_4302
       #endif
    #endif
 #else       /* 8-bit chtypes */
    #ifdef CHTYPE_32
-      #define endwin endwin_x32_4301a
+      #define endwin endwin_x32_4302
    #else
-      #define endwin endwin_x64_4301a
+      #define endwin endwin_x64_4302
    #endif
 #endif
 
