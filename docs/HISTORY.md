@@ -1,5 +1,5 @@
-Current state (to 2022 February 05)
-==================================
+PDCursesMod 4.3.1 - 2022 February 06
+====================================
 
 Minor new features
 ------------------
