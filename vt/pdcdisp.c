@@ -289,7 +289,7 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
        {
            bytes_out = PDC_wc_to_utf8( obuff, (wchar_t)ch);
            while( count < len && !((srcp[0] ^ srcp[count]) & ~A_CHARTEXT)
-                        && (ch = (srcp[count] & A_CHARTEXT)) < MAX_UNICODE)
+                        && (ch = (srcp[count] & A_CHARTEXT)) < (int)MAX_UNICODE)
            {
                if( (srcp[count] & A_ALTCHARSET) && ch < 0x80)
                   ch = (int)acs_map[ch & 0x7f];
