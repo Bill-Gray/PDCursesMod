@@ -129,8 +129,6 @@ we can switch back to a "normal" console app by removing the above
 #undef MOUSE_MOVED
 #include <windows.h>
 
-#define INTENTIONALLY_UNUSED_PARAMETER( param) (void)(param)
-
 int dummy_main( int argc, char **argv);
 
 int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
