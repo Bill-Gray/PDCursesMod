@@ -126,4 +126,8 @@ size_t  PDC_wcstombs(char *, const wchar_t *, size_t);
 
 #define INTENTIONALLY_UNUSED_PARAMETER( param) (void)(param)
 
+#if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_DEPRECATE)
+# define _CRT_SECURE_NO_DEPRECATE 1   /* kill nonsense warnings */
+#endif
+
 #endif /* __CURSES_INTERNALS__ */

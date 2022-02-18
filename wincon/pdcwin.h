@@ -9,10 +9,6 @@
 #undef MOUSE_MOVED
 #include <curspriv.h>
 
-#if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_DEPRECATE)
-# define _CRT_SECURE_NO_DEPRECATE 1   /* kill nonsense warnings */
-#endif
-
 typedef struct {short r, g, b; bool mapped;} PDCCOLOR;
 
 extern PDCCOLOR pdc_color[PDC_MAXCOL];
