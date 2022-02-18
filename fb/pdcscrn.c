@@ -41,7 +41,8 @@ void PDC_reset_prog_mode( void)
 
     tcgetattr( STDIN, &orig_term);
     memcpy( &term, &orig_term, sizeof( term));
-    term.c_lflag &= ~(ICANON | ECHO);
+    term.c_lflag &= ~(ICANON | ECHO | ISIG);
+    term.c_iflag &= ~ICRNL;
     tcsetattr( STDIN, TCSANOW, &term);
     PDC_puts_to_stdout( "\033[?1006h");    /* Set SGR mouse tracking,  if available */
 #ifdef HOW_DO_WE_PRESERVE_THE_SCREEN
