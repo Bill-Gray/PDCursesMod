@@ -97,6 +97,7 @@ void    PDC_mark_cell_as_changed( WINDOW *, const int y, const int x);
 int     PDC_mbtowc(wchar_t *, const char *, size_t);
 size_t  PDC_mbstowcs(wchar_t *, const char *, size_t);
 size_t  PDC_wcstombs(char *, const wchar_t *, size_t);
+PDCEX int PDC_wcwidth( const int32_t ucs);
 #endif
 
 #ifdef PDCDEBUG

@@ -278,6 +278,13 @@ int mvwgetnstr(WINDOW *win, int y, int x, char *str, int n)
 }
 
 #ifdef PDC_WIDE
+static void _clear_preceding_char( WINDOW *win, const int ch)
+{
+    waddstr(win, "\b \b");
+    if( PDC_wcwidth( (int32_t)ch) == 2 || ch < ' ')
+       waddstr(win, "\b \b");    /* fullwidth & ctrl chars take two columns */
+}
+
 int wgetn_wstr(WINDOW *win, wint_t *wstr, int n)
 {
     int ch, i, num, x, chars;
@@ -335,11 +342,9 @@ int wgetn_wstr(WINDOW *win, wint_t *wstr, int n)
         case _ECHAR:        /* CTRL-H -- Delete character */
             if (p > wstr)
             {
-                if (oldecho)
-                    waddstr(win, "\b \b");
                 ch = *--p;
-                if ((ch < ' ') && (oldecho))
-                    waddstr(win, "\b \b");
+                if (oldecho)
+                   _clear_preceding_char( win, ch);
                 chars--;
             }
             break;
@@ -347,11 +352,9 @@ int wgetn_wstr(WINDOW *win, wint_t *wstr, int n)
         case _DLCHAR:       /* CTRL-U -- Delete line */
             while (p > wstr)
             {
-                if (oldecho)
-                    waddstr(win, "\b \b");
                 ch = *--p;
-                if ((ch < ' ') && (oldecho))
-                    waddstr(win, "\b \b");
+                if (oldecho)
+                   _clear_preceding_char( win, ch);
             }
             chars = 0;
             break;
@@ -360,20 +363,16 @@ int wgetn_wstr(WINDOW *win, wint_t *wstr, int n)
 
             while ((p > wstr) && (*(p - 1) == ' '))
             {
-                if (oldecho)
-                    waddstr(win, "\b \b");
-
                 --p;        /* remove space */
+                if (oldecho)
+                   _clear_preceding_char( win, *p);
                 chars--;
             }
             while ((p > wstr) && (*(p - 1) != ' '))
             {
-                if (oldecho)
-                    waddstr(win, "\b \b");
-
                 ch = *--p;
-                if ((ch < ' ') && (oldecho))
-                    waddstr(win, "\b \b");
+                if (oldecho)
+                   _clear_preceding_char( win, ch);
                 chars--;
             }
             break;
