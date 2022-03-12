@@ -37,11 +37,16 @@ PACKED_RGB PDC_default_color( int idx)
     assert( idx >= 0);
     if( idx < 16)
     {
-        const int intensity = ((idx & 8) ? 0xff : 0xc0);
+        if( idx == 8)
+            rval = PACK_RGB( 0x80, 0x80, 0x80);
+        else
+        {
+            const int intensity = ((idx & 8) ? 0xff : 0xc0);
 
-        rval = PACK_RGB( ((idx & COLOR_RED) ? intensity : 0),
-                          ((idx & COLOR_GREEN) ? intensity : 0),
-                          ((idx & COLOR_BLUE) ? intensity : 0));
+            rval = PACK_RGB( ((idx & COLOR_RED) ? intensity : 0),
+                             ((idx & COLOR_GREEN) ? intensity : 0),
+                             ((idx & COLOR_BLUE) ? intensity : 0));
+        }
     }
     else if( idx < 216 + 16)
     {                    /* colors 16-231 are a 6x6x6 color cube */
