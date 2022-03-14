@@ -415,7 +415,7 @@ bool PDC_is_function_key( const int key)
 
 int wgetch(WINDOW *win)
 {
-    int key, remaining_millisecs;
+    int key = ERR, remaining_millisecs;
 
     PDC_LOG(("wgetch() - called\n"));
 
@@ -442,13 +442,19 @@ int wgetch(WINDOW *win)
     /* if ungotten char exists, remove and return it */
 
     if (SP->c_ungind)
-        return SP->c_ungch[--(SP->c_ungind)];
+        key = SP->c_ungch[--(SP->c_ungind)];
 
     /* if normal and data in buffer */
 
-    if ((!SP->raw_inp && !SP->cbreak) && (SP->c_gindex < SP->c_pindex))
-        return SP->c_buffer[SP->c_gindex++];
+    else if ((!SP->raw_inp && !SP->cbreak) && (SP->c_gindex < SP->c_pindex))
+        key = SP->c_buffer[SP->c_gindex++];
 
+    if( key != ERR)
+    {
+        if( key == KEY_RESIZE)
+            resize_term( 0, 0);
+        return( key);
+    }
     /* prepare to buffer data */
 
     SP->c_pindex = 0;
@@ -503,7 +509,7 @@ int wgetch(WINDOW *win)
 
         /* filter special keys if not in keypad mode */
 
-        if( PDC_is_function_key( key) && !win->_use_keypad)
+        if( key != KEY_RESIZE && PDC_is_function_key( key) && !win->_use_keypad)
             key = -1;
 
         /* unwanted key? loop back */
@@ -531,7 +537,11 @@ int wgetch(WINDOW *win)
         /* if no buffering */
 
         if (SP->raw_inp || SP->cbreak)
+        {
+            if( key == KEY_RESIZE)
+                resize_term( 0, 0);
             return key;
+        }
 
         /* if no overflow, put data in buffer */
 
@@ -547,7 +557,11 @@ int wgetch(WINDOW *win)
         /* if we got a line */
 
         if (key == '\n' || key == '\r')
+        {
+            if( SP->c_buffer[SP->c_gindex] == KEY_RESIZE)
+                resize_term( 0, 0);
             return SP->c_buffer[SP->c_gindex++];
+        }
     }
 }
 

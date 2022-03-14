@@ -62,10 +62,9 @@ initscr
    and X11 allow user resizing, while DOS, OS/2, SDL and Windows console
    allow programmatic resizing. If you want to support user resizing,
    you should check for getch() returning KEY_RESIZE, and/or call
-   is_termresized() at appropriate times; if either condition occurs,
-   call resize_term(0, 0). Then, with either user or programmatic
-   resizing, you'll have to resize any windows you've created, as
-   appropriate; resize_term() only handles stdscr and curscr.
+   is_termresized() at appropriate times.   Then, with either user or
+   programmatic resizing, you'll have to resize any windows you've
+   created, as appropriate; resize_term() only handles stdscr and curscr.
 
    is_termresized() returns TRUE if the curses screen has been resized
    by the user, and a call to resize_term() is needed. Checking for
