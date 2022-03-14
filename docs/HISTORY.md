@@ -1,3 +1,28 @@
+Changes up to 2022 Mar 14
+=========================
+
+Minor new features
+------------------
+
+- Screen resizing no longer requires a call to resize_term(0,0).  No
+  one appears to know why that call was required in the first place.
+  Commit 3110e3f624.
+
+- The 'opts' parameter for certain functions,  heretofore ignored,  can
+  now be used to handle integer-sized color pair indices,  a la ncurses.
+  9be6bde504
+
+Bug fixes
+---------
+
+- Color 8 defaulted to black on X11, WinGUI, Linux framebuffer,  and
+  the SDLn platforms.  It should be (and now is) a medium gray.
+  ab8b038dc9
+
+- Wide-character string input functions,  such as get_wstr(),  generated
+  display artifacts when fullwidth text was input.  549e4635e6
+
+
 PDCursesMod 4.3.1 - 2022 February 06
 ====================================
 

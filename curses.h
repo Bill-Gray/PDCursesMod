@@ -39,8 +39,8 @@ Defined by this header:
 #define PDC_VER_MINOR    3
 #define PDC_VER_CHANGE   2
 #define PDC_VER_YEAR   2022
-#define PDC_VER_MONTH    02
-#define PDC_VER_DAY      18
+#define PDC_VER_MONTH    03
+#define PDC_VER_DAY      14
 
 #define PDC_STRINGIZE( x) #x
 #define PDC_stringize( x) PDC_STRINGIZE( x)
@@ -1461,6 +1461,7 @@ PDCEX  int     slk_attr_on(const attr_t, void *);
 PDCEX  int     slk_attrset(const chtype);
 PDCEX  int     slk_attr_set(const attr_t, short, void *);
 PDCEX  int     slk_clear(void);
+PDCEX  int     extended_slk_color(int);
 PDCEX  int     slk_color(short);
 PDCEX  int     slk_init(int);
 PDCEX  char   *slk_label(int);
