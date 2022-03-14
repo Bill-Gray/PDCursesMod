@@ -69,16 +69,19 @@ attr
    wattroff() turns off the named attributes without affecting any other
    attributes; wattron() turns them on.
 
-   wcolor_set() sets the window color to the value of color_pair. opts
-   is unused.
+   wcolor_set() sets the window color to the value of color_pair.  If
+   opts is non-NULL,  it is treated as a pointer to an integer containing
+   the desired color pair,  and color_pair is ignored (this is an ncurses
+   extension).
 
    standout() is the same as attron(A_STANDOUT). standend() is the same
    as attrset(A_NORMAL); that is, it turns off all attributes.
 
    The attr_* and wattr_* functions are intended for use with the WA_*
    attributes. In PDCurses, these are the same as A_*, and there is no
-   difference in bevahior from the chtype-based functions. In all cases,
-   opts is unused.
+   difference in bevahior from the chtype-based functions.  If opts is
+   non-NULL,  it is used as a pointer to an integer and the color pair
+   is stored in it (this is an ncurses extension).
 
    wattr_get() retrieves the attributes and color pair for the specified
    window.
@@ -87,7 +90,9 @@ attr
    the current line of a given window, without changing the existing
    text, or alterting the window's attributes. An n of -1 extends the
    change to the edge of the window. The changes take effect
-   immediately. opts is unused.
+   immediately.  If opts is non-NULL,  it is treated as a pointer to
+   an integer containing the desired color pair,  and color_pair is
+   ignored (this is an ncurses extension).
 
    wunderscore() turns on the A_UNDERLINE attribute; wunderend() turns
    it off. underscore() and underend() are the stdscr versions.
@@ -238,14 +243,15 @@ chtype getattrs(WINDOW *win)
 
 int wcolor_set(WINDOW *win, short color_pair, void *opts)
 {
+    const int integer_color_pair = (opts ? *(int *)opts : (int)color_pair);
+
     PDC_LOG(("wcolor_set() - called\n"));
 
-    INTENTIONALLY_UNUSED_PARAMETER( opts);
     assert( win);
     if (!win)
         return ERR;
 
-    win->_attrs = (win->_attrs & ~A_COLOR) | COLOR_PAIR(color_pair);
+    win->_attrs = (win->_attrs & ~A_COLOR) | COLOR_PAIR(integer_color_pair);
 
     return OK;
 }
@@ -261,7 +267,6 @@ int wattr_get(WINDOW *win, attr_t *attrs, short *color_pair, void *opts)
 {
     PDC_LOG(("wattr_get() - called\n"));
 
-    INTENTIONALLY_UNUSED_PARAMETER( opts);
     assert( win);
     if (!win)
         return ERR;
@@ -271,6 +276,8 @@ int wattr_get(WINDOW *win, attr_t *attrs, short *color_pair, void *opts)
 
     if (color_pair)
         *color_pair = (short)PAIR_NUMBER(win->_attrs);
+    if( opts)
+        *(int *)opts = (int)PAIR_NUMBER( win->_attrs);
 
     return OK;
 }
@@ -286,7 +293,7 @@ int wattr_off(WINDOW *win, attr_t attrs, void *opts)
 {
     PDC_LOG(("wattr_off() - called\n"));
 
-    INTENTIONALLY_UNUSED_PARAMETER( opts);
+    assert( !opts);
     return wattroff(win, attrs);
 }
 
@@ -294,7 +301,7 @@ int attr_off(attr_t attrs, void *opts)
 {
     PDC_LOG(("attr_off() - called\n"));
 
-    INTENTIONALLY_UNUSED_PARAMETER( opts);
+    assert( !opts);
     return wattroff(stdscr, attrs);
 }
 
@@ -302,7 +309,7 @@ int wattr_on(WINDOW *win, attr_t attrs, void *opts)
 {
     PDC_LOG(("wattr_off() - called\n"));
 
-    INTENTIONALLY_UNUSED_PARAMETER( opts);
+    assert( !opts);
     return wattron(win, attrs);
 }
 
@@ -310,20 +317,21 @@ int attr_on(attr_t attrs, void *opts)
 {
     PDC_LOG(("attr_on() - called\n"));
 
-    INTENTIONALLY_UNUSED_PARAMETER( opts);
+    assert( !opts);
     return wattron(stdscr, attrs);
 }
 
 int wattr_set(WINDOW *win, attr_t attrs, short color_pair, void *opts)
 {
+    const int integer_color_pair = (opts ? *(int *)opts : (int)color_pair);
+
     PDC_LOG(("wattr_set() - called\n"));
 
-    INTENTIONALLY_UNUSED_PARAMETER( opts);
     assert( win);
     if (!win)
         return ERR;
 
-    win->_attrs = (attrs & (A_ATTRIBUTES & ~A_COLOR)) | COLOR_PAIR(color_pair);
+    win->_attrs = (attrs & (A_ATTRIBUTES & ~A_COLOR)) | COLOR_PAIR(integer_color_pair);
 
     return OK;
 }
@@ -339,15 +347,15 @@ int wchgat(WINDOW *win, int n, attr_t attr, short color, const void *opts)
 {
     chtype *dest, newattr;
     int startpos, endpos;
+    const int integer_color_pair = (opts ? *(int *)opts : (int)color);
 
-    INTENTIONALLY_UNUSED_PARAMETER( opts);
     PDC_LOG(("wchgat() - called\n"));
 
     assert( win);
     if (!win)
         return ERR;
 
-    newattr = (attr & A_ATTRIBUTES) | COLOR_PAIR(color);
+    newattr = (attr & A_ATTRIBUTES) | COLOR_PAIR(integer_color_pair);
 
     startpos = win->_curx;
     endpos = ((n < 0) ? win->_maxx : min(startpos + n, win->_maxx)) - 1;

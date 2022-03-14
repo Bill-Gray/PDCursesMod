@@ -437,28 +437,41 @@ int slk_attrset(const chtype attrs)
     return rc;
 }
 
-int slk_color(short color_pair)
+int extended_slk_color( int pair)
 {
     int rc;
+
+    PDC_LOG(("extended_slk_color() - called\n"));
+
+    assert( SP);
+    if (!SP)
+        return ERR;
+
+    rc = wcolor_set(SP->slk_winptr, 0, (void *)&pair);
+    _redraw();
+
+    return rc;
+}
+
+int slk_color(short color_pair)
+{
+    int integer_color_pair = (int)color_pair;
 
     PDC_LOG(("slk_color() - called\n"));
 
     assert( SP);
     if (!SP)
         return ERR;
-
-    rc = wcolor_set(SP->slk_winptr, color_pair, NULL);
-    _redraw();
-
-    return rc;
+    return( extended_slk_color( integer_color_pair));
 }
 
 int slk_attr_set(const attr_t attrs, short color_pair, void *opts)
 {
-    INTENTIONALLY_UNUSED_PARAMETER( opts);
+    const int integer_color_pair = (opts ? *(int *)opts : (int)color_pair);
+
     PDC_LOG(("slk_attr_set() - called\n"));
 
-    return slk_attrset(attrs | COLOR_PAIR(color_pair));
+    return slk_attrset(attrs | COLOR_PAIR(integer_color_pair));
 }
 
 static void _slk_calc(void)

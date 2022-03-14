@@ -39,12 +39,15 @@ util
    getcchar() works in two modes: When wch is not NULL, it reads the
    cchar_t pointed to by wcval and stores the attributes in attrs, the
    color pair in color_pair, and the text in the wide-character string
-   wch. When wch is NULL, getcchar() merely returns the number of wide
-   characters in wcval. In either mode, the opts argument is unused.
+   wch.  If opts is non-NULL,  it is treated as a pointer to an integer
+   and the color pair is stored in it (this is an ncurses extension).
+   When wch is NULL, getcchar() merely returns the number of wide
+   characters in wcval.
 
    setcchar constructs a cchar_t at wcval from the wide-character text
-   at wch, the attributes in attr and the color pair in color_pair. The
-   opts argument is unused.
+   at wch, the attributes in attr and the color pair in color_pair.  If
+   the opts argument is non-NULL,  it is treated as a pointer to an
+   integer containing the desired color pair and color_pair is ignored.
 
 ### Return Value
 
@@ -270,7 +273,6 @@ int getcchar(const cchar_t *wcval, wchar_t *wch, attr_t *attrs,
     int32_t c[20];
     int n = 0;
 
-    INTENTIONALLY_UNUSED_PARAMETER( opts);
     assert( wcval);
     if (!wcval)
         return ERR;
@@ -310,6 +312,8 @@ int getcchar(const cchar_t *wcval, wchar_t *wch, attr_t *attrs,
 
         *attrs = (*wcval & (A_ATTRIBUTES & ~A_COLOR));
         *color_pair = (short)( PAIR_NUMBER(*wcval & A_COLOR));
+        if( opts)
+            *(int *)opts = (int)( PAIR_NUMBER(*wcval & A_COLOR));
         return OK;
     }
 }
@@ -322,7 +326,7 @@ int setcchar(cchar_t *wcval, const wchar_t *wch, const attr_t attrs,
     int i;
 #endif
 
-    INTENTIONALLY_UNUSED_PARAMETER( opts);
+    const int integer_color_pair = (opts ? *(int *)opts : (int)color_pair);
     assert( wcval);
     assert( wch);
     if (!wcval || !wch)
@@ -335,7 +339,7 @@ int setcchar(cchar_t *wcval, const wchar_t *wch, const attr_t attrs,
     for( i = 1; ochar[i]; i++)
         rval = COMBINED_CHAR_START + PDC_find_combined_char_idx( rval, ochar[i]);
 #endif
-    *wcval = rval | attrs | COLOR_PAIR(color_pair);
+    *wcval = rval | attrs | COLOR_PAIR(integer_color_pair);
     return OK;
 }
 
