@@ -41,12 +41,22 @@ static bool check_key( int *c)
     const int STDIN = 0;
     struct timeval timeout;
     fd_set rdset;
+    extern int PDC_n_ctrl_c;
 
     if( PDC_resize_occurred)
        return( TRUE);
 #ifdef LINUX_FRAMEBUFFER_PORT
     PDC_check_for_blinking( );
 #endif
+    if( PDC_n_ctrl_c)
+       {
+       if( c)
+          {
+          PDC_n_ctrl_c--;
+          *c = 3;
+          }
+       return( TRUE);
+       }
     FD_ZERO( &rdset);
     FD_SET( STDIN, &rdset);
     timeout.tv_sec = 0;

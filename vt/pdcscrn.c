@@ -113,8 +113,11 @@ void PDC_reset_prog_mode( void)
 
     tcgetattr( STDIN, &orig_term);
     memcpy( &term, &orig_term, sizeof( term));
-    term.c_lflag &= ~(ICANON | ECHO | ISIG);
+    term.c_lflag &= ~(ICANON | ECHO);
     term.c_iflag &= ~ICRNL;
+    term.c_cc[VSUSP] = _POSIX_VDISABLE;   /* disable Ctrl-Z */
+    term.c_cc[VSTOP] = _POSIX_VDISABLE;   /* disable Ctrl-S */
+    term.c_cc[VSTART] = _POSIX_VDISABLE;   /* disable Ctrl-Q */
     tcsetattr( STDIN, TCSANOW, &term);
 #endif
 #ifndef _WIN32
@@ -216,6 +219,8 @@ static void sigwinchHandler( int sig)
          }
 }
 
+int PDC_n_ctrl_c = 0;
+
 static void sigintHandler( int sig)
 {
     INTENTIONALLY_UNUSED_PARAMETER( sig);
@@ -225,6 +230,8 @@ static void sigintHandler( int sig)
         PDC_scr_free( );
         exit( 0);
     }
+    else
+        PDC_n_ctrl_c++;
 }
 #endif
 
