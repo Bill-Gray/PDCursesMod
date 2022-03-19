@@ -40,7 +40,7 @@ Defined by this header:
 #define PDC_VER_CHANGE   2
 #define PDC_VER_YEAR   2022
 #define PDC_VER_MONTH    03
-#define PDC_VER_DAY      14
+#define PDC_VER_DAY      19
 
 #define PDC_STRINGIZE( x) #x
 #define PDC_stringize( x) PDC_STRINGIZE( x)
@@ -87,6 +87,8 @@ extern "C"
    #define uint64_t unsigned __int64
    #define uint32_t unsigned long
    #define uint16_t unsigned short
+   #define int32_t  long
+   #define int16_t  short
 #else
    #include <stdint.h>
 #endif
