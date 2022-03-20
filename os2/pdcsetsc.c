@@ -1,4 +1,4 @@
-/* Public Domain Curses */
+/* PDCurses */
 
 #include "pdcos2.h"
 
@@ -28,21 +28,18 @@ pdcsetsc
 
    PDC_set_title() sets the title of the window in which the curses
    program is running. This function may not do anything on some
-   platforms. (Currently it only works in Win32 and X11.)
+   platforms.
 
 ### Portability
-                             X/Open    BSD    SYS V
+                             X/Open  ncurses  NetBSD
     PDC_set_blink               -       -       -
-    PDC_set_bold                -       -       -
     PDC_set_title               -       -       -
 
 **man-end****************************************************************/
 
 int PDC_curs_set(int visibility)
 {
-#ifndef EMXVIDEO
     VIOCURSORINFO pvioCursorInfo;
-#endif
     int ret_vis, hidden = 0, start = 0, end = 0;
 
     PDC_LOG(("PDC_curs_set() - called: visibility=%d\n", visibility));
@@ -53,13 +50,9 @@ int PDC_curs_set(int visibility)
     switch(visibility)
     {
     case 0:     /* invisible */
-#ifdef EMXVIDEO
-        start = end = 0;
-#else
         start = pdc_font / 4;
         end = pdc_font;
         hidden = -1;
-#endif
         break;
 
     case 2:     /* highly visible */
@@ -72,18 +65,12 @@ int PDC_curs_set(int visibility)
         end = SP->orig_cursor & 0xff;
     }
 
-#ifdef EMXVIDEO
-    if (!visibility)
-        v_hidecursor();
-    else
-        v_ctype(start, end);
-#else
     pvioCursorInfo.yStart = (USHORT)start;
     pvioCursorInfo.cEnd = (USHORT)end;
     pvioCursorInfo.cx = (USHORT)1;
     pvioCursorInfo.attr = hidden;
     VioSetCurType((PVIOCURSORINFO)&pvioCursorInfo, 0);
-#endif
+
     return ret_vis;
 }
 
@@ -94,26 +81,30 @@ void PDC_set_title(const char *title)
 
 int PDC_set_blink(bool blinkon)
 {
-#ifndef EMXVIDEO
-    USHORT statebuf[3], result;
+    if (!SP)
+        return ERR;
 
-    statebuf[0] = 6;    /* length */
-    statebuf[1] = 2;    /* blink/intensity */
-    statebuf[2] = !blinkon;
-
-    result = VioSetState(&statebuf, 0);
-    VioGetState(&statebuf, 0);  /* needed? */
-
-    if (SP->color_started)
-        COLORS = statebuf[2] ? 16 : 8;
-
-    return (result == 0) ? OK : ERR;
-#else
     if (SP->color_started)
         COLORS = 16;
 
-    return blinkon ? ERR : OK;
-#endif
+    if (blinkon)
+    {
+        if (!(SP->termattrs & A_BLINK))
+        {
+            SP->termattrs |= A_BLINK;
+            pdc_last_blink = PDC_ms_count();
+        }
+    }
+    else
+    {
+        if (SP->termattrs & A_BLINK)
+        {
+            SP->termattrs &= ~A_BLINK;
+            PDC_blink_text();
+        }
+    }
+
+    return OK;
 }
 
 int PDC_set_bold(bool boldon)

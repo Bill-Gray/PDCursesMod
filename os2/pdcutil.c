@@ -1,4 +1,4 @@
-/* Public Domain Curses */
+/* PDCurses */
 
 #include "pdcos2.h"
 
@@ -10,22 +10,26 @@ void PDC_beep(void)
 {
     PDC_LOG(("PDC_beep() - called\n"));
 
-#ifdef EMXVIDEO
-    putchar('\007');
-#else
     DosBeep(1380, 100);
-#endif
+}
+
+ULONG PDC_ms_count(void)
+{
+    ULONG now;
+
+    DosQuerySysInfo(QSV_MS_COUNT, QSV_MS_COUNT, &now, sizeof(ULONG));
+
+    return now;
 }
 
 void PDC_napms(int ms)
 {
     PDC_LOG(("PDC_napms() - called: ms=%d\n", ms));
 
-#ifdef __EMX__
-    _sleep2(ms);
-#else
+    if ((SP->termattrs & A_BLINK) && (PDC_ms_count() >= pdc_last_blink + 500))
+        PDC_blink_text();
+
     DosSleep(ms);
-#endif
 }
 
 const char *PDC_sysname(void)
