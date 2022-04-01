@@ -1413,6 +1413,11 @@ static void HandleSyskeyDown( const WPARAM wParam, const LPARAM lParam,
 
     if( key > ' ' && key < KEY_MIN && ctrl_pressed && !alt_pressed)
        add_key_to_queue( key);
+    else if( shift_pressed)
+    {
+       if( (key >= '0' && key <= '9') || key == '.')
+          add_key_to_queue( key);      /* Shift-numpad cases */
+    }
     SP->key_modifiers = 0;
     /* Save the key modifiers if required. Do this first to allow to
        detect e.g. a pressed CTRL key after a hit of NUMLOCK. */
