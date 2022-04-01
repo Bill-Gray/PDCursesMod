@@ -4,6 +4,10 @@
 #ifndef __CURSES_INTERNALS__
 #define __CURSES_INTERNALS__ 1
 
+#if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_DEPRECATE)
+# define _CRT_SECURE_NO_DEPRECATE 1   /* kill nonsense warnings */
+#endif
+
 #define CURSES_LIBRARY
 #include <curses.h>
 
@@ -126,9 +130,5 @@ PDCEX int PDC_wcwidth( const int32_t ucs);
 #define NUNGETCH         256  /* max # chars to ungetch() */
 
 #define INTENTIONALLY_UNUSED_PARAMETER( param) (void)(param)
-
-#if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_DEPRECATE)
-# define _CRT_SECURE_NO_DEPRECATE 1   /* kill nonsense warnings */
-#endif
 
 #endif /* __CURSES_INTERNALS__ */

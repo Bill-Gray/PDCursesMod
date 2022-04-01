@@ -1,5 +1,9 @@
 /* PDCurses */
 
+#if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_DEPRECATE)
+# define _CRT_SECURE_NO_DEPRECATE 1   /* kill nonsense warnings */
+#endif
+
 #if defined(PDC_WIDE) && !defined(UNICODE)
 # define UNICODE
 #endif
