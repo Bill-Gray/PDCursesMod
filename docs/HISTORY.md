@@ -1,8 +1,21 @@
-Changes up to 2022 Mar 14
+Changes up to 2022 Apr 03
 =========================
+
+Major new features
+------------------
+
+- OS/2 code replaced with William McBrine's current version,  with some
+  modifications to accommodate PDCursesMod.  This basically means that
+  the OS/2 port works again (it was rather thoroughly broken).  0b3cbc038f
+  bd39b611288
 
 Minor new features
 ------------------
+
+- Clipboard handling is implemented in a common manner for DOS,  DOSVGA,
+  VT,  and framebuffer ports.  This means the VT and framebuffer ports
+  actually store the clipboard text in a buffer and can retrieve it,
+  instead of basically doing nothing at all.  050b3532e1
 
 - Screen resizing no longer requires a call to resize_term(0,0).  No
   one appears to know why that call was required in the first place.
@@ -22,6 +35,15 @@ Bug fixes
 - Wide-character string input functions,  such as get_wstr(),  generated
   display artifacts when fullwidth text was input.  549e4635e6
 
+- VT port handles Alt-letter + shift/control modifiers better,  setting
+  the appropriate modifier flags.  74b84cc28f
+
+- WinGUI now interprets Shift-numpad keys correctly.  eacd04d1aa
+
+- VT and framebuffer ports (again) capture Ctrl-C with an interrupt
+  handler.  Without this,  you could hit Ctrl-C and not have anything
+  actually happen until getch() was called,  so your code could hang
+  easily.  Ctrls-Z, S, Q are now enabled on both platforms.  cac097f235
 
 PDCursesMod 4.3.1 - 2022 February 06
 ====================================
