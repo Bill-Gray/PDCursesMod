@@ -278,6 +278,16 @@ static int xlate_vt_codes( const int *c, const int count, int *modifiers)
       {
       if( c[0] >= 'a' && c[0] <= 'z')
          rval = ALT_A + c[0] - 'a';
+      else if( c[0] >= 'A' && c[0] <= 'Z')
+         {
+         rval = ALT_A + c[0] - 'A';
+         *modifiers = SHF;
+         }
+      else if( c[0] >= 1 && c[0] <= 26)
+         {
+         rval = ALT_A + c[0];
+         *modifiers = CTL;
+         }
       else if( c[0] >= '0' && c[0] <= '9')
          rval = ALT_0 + c[0] - '0';
       else
@@ -291,8 +301,13 @@ static int xlate_vt_codes( const int *c, const int count, int *modifiers)
 
          if( tptr)
              rval = codes[tptr - text];
+         else
+            {
+            rval = c[0];
+            *modifiers = SHF;
+            }
          }
-      *modifiers = ALT;
+      *modifiers |= ALT;
       }
    else if( count == 5 && c[0] == '[' && c[1] == 'M')
       rval = KEY_MOUSE;
