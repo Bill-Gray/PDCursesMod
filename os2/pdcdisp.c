@@ -123,7 +123,6 @@ void PDC_blink_text(void)
     }
 
     PDC_gotoyx(SP->cursrow, SP->curscol);
-    pdc_last_blink = PDC_ms_count();
 }
 
 void PDC_doupdate(void)

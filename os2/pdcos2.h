@@ -13,11 +13,9 @@
 
 #include <curspriv.h>
 
-extern ULONG pdc_last_blink;
 extern short pdc_curstoreal[16];
 extern int pdc_font;
 
-extern ULONG PDC_ms_count(void);
 extern void PDC_get_keyboard_info(void);
 extern void PDC_set_keyboard_default(void);
 extern void PDC_blink_text(void);

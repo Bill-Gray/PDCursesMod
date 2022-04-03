@@ -255,6 +255,7 @@ int PDC_get_key(void)
     int key, scan;
     KBDKEYINFO keyInfo = {0};
 
+    PDC_napms( 1);
     SP->key_modifiers = 0L;
 
     if (mouse_handle && mouse_events)
