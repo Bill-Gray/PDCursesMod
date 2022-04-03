@@ -21,10 +21,10 @@ TARGET = dos
 
 !ifeq MODEL f
 LTARGET	= dos4g
+CFLAGS =
 !else
 LTARGET	= dos
+CFLAGS = -DCHTYPE_32
 !endif
-
-CFLAGS =
 
 !include $(PDCURSES_SRCDIR)/common/watcom.mif
