@@ -81,11 +81,7 @@ int PDC_setclipboard(const char *contents, long length)
 {
     PDC_LOG(("PDC_setclipboard() - called\n"));
 
-    if (pdc_clipboard)
-    {
-        free(pdc_clipboard);
-        pdc_clipboard = NULL;
-    }
+    PDC_clearclipboard( );
 
     if (contents)
     {
