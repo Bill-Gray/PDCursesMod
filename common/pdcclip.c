@@ -108,11 +108,12 @@ int PDC_freeclipboard(char *contents)
            free'd memory.  We 1st overwrite memory with a string so if
            caller tries to use free memory they won't get what they
            expect & hopefully notice. */
+        const char *refreed = "!Freed buffer PDC clipboard!";
+        const char *tptr = refreed;
+        char *tptr2 = contents;
 
-        /* memset(contents, 0xFD, strlen(contents)); */
-
-        if (strlen(contents) >= strlen("PDCURSES"))
-            strcpy(contents, "PDCURSES");
+        while( *tptr2 && *tptr)
+            *tptr2++ = *tptr++;
 
         free(contents);
     }
