@@ -151,10 +151,16 @@ $(LIBOBJS) : %.o: $(srcdir)/%.c
 $(PDCOBJS) : %.o: $(osdir)/%.c
 	$(BUILD) $(SFLAGS) -c $<
 
+calendar$(E): $(demodir)/calendar.c
+	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
+
 firework$(E): $(demodir)/firework.c
 	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
 
 init_col$(E): $(demodir)/init_col.c
+	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
+
+mbrot$(E): $(demodir)/mbrot.c
 	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
 
 ozdemo$(E): $(demodir)/ozdemo.c

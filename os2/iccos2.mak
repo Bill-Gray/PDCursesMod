@@ -194,7 +194,13 @@ pdcsetsc.obj: $(osdir)\pdcsetsc.c $(PDCURSES_HEADERS) $(PDCURSES_OS2_H)
 pdcutil.obj: $(osdir)\pdcutil.c $(PDCURSES_HEADERS) $(PDCURSES_OS2_H)
 	$(BUILD) $(osdir)\pdcutil.c
 
+calendar.exe: calendar.obj $(LIBCURSES)
+	$(LINK) $(LDFLAGS) $*.obj,$*,,$(LIBCURSES);
+
 firework.exe: firework.obj $(LIBCURSES)
+	$(LINK) $(LDFLAGS) $*.obj,$*,,$(LIBCURSES);
+
+mbrot.exe: mbrot.obj $(LIBCURSES)
 	$(LINK) $(LDFLAGS) $*.obj,$*,,$(LIBCURSES);
 
 ozdemo.exe: ozdemo.obj $(LIBCURSES)
@@ -218,8 +224,14 @@ worm.exe: worm.obj $(LIBCURSES)
 xmas.exe: xmas.obj $(LIBCURSES)
 	$(LINK) $(LDFLAGS) $*.obj,$*,,$(LIBCURSES);
 
+calendar.obj: $(demodir)\calendar.c $(PDCURSES_CURSES_H)
+	$(BUILD) $(demodir)\calendar.c
+
 firework.obj: $(demodir)\firework.c $(PDCURSES_CURSES_H)
 	$(BUILD) $(demodir)\firework.c
+
+mbrot.obj: $(demodir)\mbrot.c $(PDCURSES_CURSES_H)
+	$(BUILD) $(demodir)\mbrot.c
 
 ozdemo.obj: $(demodir)\ozdemo.c $(PDCURSES_CURSES_H)
 	$(BUILD) $(demodir)\ozdemo.c

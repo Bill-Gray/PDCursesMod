@@ -48,10 +48,10 @@ LIB_DEPS        = -L$(PDCURSES_SRCDIR)/x11 -lXCurses
 
 PDCLIBS		= $(LIBCURSES) @SHL_TARGETS@
 
-DEMOS		= firework init_col newtest ozdemo picsview ptest \
-rain speed testcurs test_pan tuidemo widetest worm xmas
-DEMOOBJS	= firework.o init_col.o newtest.o ozdemo.o picsview.o ptest.o   \
-rain.o speed.o testcurs.o test_pan.o tui.o tuidemo.o widetest.o worm.o xmas.o
+DEMOS		= calendar firework init_col mbrot newtest ozdemo picsview \
+ptest rain speed testcurs test_pan tuidemo widetest worm xmas
+DEMOOBJS	= calendar.o firework.o init_col.o mbrot.o newtest.o ozdemo.o picsview.o \
+ptest.o rain.o speed.o testcurs.o test_pan.o tui.o tuidemo.o widetest.o worm.o xmas.o
 
 SHLFILE		= XCurses
 
@@ -455,11 +455,17 @@ sb.sho: $(osdir)/sb.c
 	$(DYN_BUILD) $(osdir)/sb.c
 	@SAVE2O@
 
+calendar: calendar.o
+	$(LINK) calendar.o -o $@ $(LDFLAGS)
+
 firework: firework.o
 	$(LINK) firework.o -o $@ $(LDFLAGS)
 
 init_col: init_col.o
 	$(LINK) init_col.o -o $@ $(LDFLAGS)
+
+mbrot: mbrot.o
+	$(LINK) mbrot.o -o $@ $(LDFLAGS)
 
 newtest: newtest.o
 	$(LINK) newtest.o -o $@ $(LDFLAGS)
@@ -497,11 +503,17 @@ worm: worm.o
 xmas: xmas.o
 	$(LINK) xmas.o -o $@ $(LDFLAGS)
 
+calendar.o: $(demodir)/calendar.c
+	$(BUILD) $(demodir)/calendar.c
+
 firework.o: $(demodir)/firework.c
 	$(BUILD) $(demodir)/firework.c
 
 init_col.o: $(demodir)/init_col.c
 	$(BUILD) $(demodir)/init_col.c
+
+mbrot.o: $(demodir)/mbrot.c
+	$(BUILD) $(demodir)/mbrot.c
 
 newtest.o: $(demodir)/newtest.c
 	$(BUILD) $(demodir)/newtest.c

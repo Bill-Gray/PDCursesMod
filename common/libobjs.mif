@@ -20,6 +20,6 @@ slk.$(O) termattr.$(O) touch.$(O) util.$(O) window.$(O) debug.$(O)
 PDCOBJS = pdcclip.$(O) pdcdisp.$(O) pdcgetsc.$(O) pdckbd.$(O) pdcscrn.$(O) \
 pdcsetsc.$(O) pdcutil.$(O)
 
-DEMOS =     firework$(E) init_col$(E) newtest$(E) ozdemo$(E) \
-picsview$(E) ptest$(E) rain$(E) speed$(E) test_pan$(E) \
-testcurs$(E) tuidemo$(E) worm$(E) xmas$(E)
+DEMOS =   calendar$(E) firework$(E) init_col$(E) mbrot$(E) newtest$(E) \
+ozdemo$(E) picsview$(E) ptest$(E) rain$(E) speed$(E) test_pan$(E) \
+testcurs$(E) tuidemo$(E) widetest$(E) worm$(E) xmas$(E)
