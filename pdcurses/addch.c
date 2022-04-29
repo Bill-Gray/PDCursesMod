@@ -118,7 +118,7 @@ addch
    So if PDC_WIDE is defined _and_ we're using 64-bit chtypes,  we're
    using the combining character scheme.  See curses.h. */
 
-#ifdef USING_COMBINING_CHARACTER_SCHEME
+#ifdef PDC_WIDE
 #include <stdlib.h>
 /*
  * A greatly stripped-down version of Markus Kuhn's excellent
@@ -278,6 +278,8 @@ PDCEX int PDC_wcwidth( const int32_t ucs)
       (ucs >= 0x30000 && ucs <= 0x3fffd)));
 }
 
+#ifdef USING_COMBINING_CHARACTER_SCHEME
+
 /* The handling of "fullwidth" characters (those consuming two "normal"
 columns) and combining characters (characters that can add accents to a
 preceding character) in PDCurses is,  of necessity,  complex.
@@ -369,6 +371,7 @@ int PDC_expand_combined_characters( const cchar_t c, cchar_t *added)
 }
 
 #endif      /* #ifdef USING_COMBINING_CHARACTER_SCHEME  */
+#endif      /* #ifdef PDC_WIDE                        */
 
 int waddch( WINDOW *win, const chtype ch)
 {
