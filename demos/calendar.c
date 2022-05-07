@@ -147,9 +147,9 @@ static void show_calendar( const long mjd, const char *path)
                  "September", "October", "November", "December" };
    FILE *ifile;
 
-   for( i = strlen( path); i && path[i - 1] != '/'
-                  && path[i - 1] != '\\'; i--)
-      ;
+   i = strlen( path);
+   while( i && path[i - 1] != '/' && path[i - 1] != '\\')
+      i--;
    if( i < (int)( sizeof( text) - 10))
       {
       memcpy( text, path, i);
@@ -193,9 +193,9 @@ static void show_calendar( const long mjd, const char *path)
          attrset( A_NORMAL);
       }
    snprintf( text, sizeof( text), "%s %ld", month_names[month], year);
-   mvaddstr( top_margin - 1, (COLS - strlen( text)) / 2, text);
+   mvaddstr( top_margin - 1, (COLS - (int)strlen( text)) / 2, text);
    snprintf( text, sizeof( text), "MJD %ld", mjd);
-   mvaddstr( top_margin - 1, COLS - strlen( text), text);
+   mvaddstr( top_margin - 1, COLS - (int)strlen( text), text);
    if( ifile)
       {
       char search[8];
@@ -219,7 +219,7 @@ static void show_calendar( const long mjd, const char *path)
 
 int main( const int argc, const char **argv)
 {
-   long mjd0 = 40587 + time( NULL) / 86400, mjd = mjd0;
+   long mjd0 = 40587 + (long)time( NULL) / 86400, mjd = mjd0;
    int quit = 0;
 
    INTENTIONALLY_UNUSED_PARAMETER( argc);
