@@ -18,10 +18,10 @@ assumes that init_color() will actually change the color. I think
 a lot of people do.  If somebody complains that it doesn't work in
 the Linux console,  we say : "Don't do that."
 
-   Fortunately,  PDCurses has been revised so that it uses the
+   Fortunately,  PDCursesMod has been revised so that it uses the
 the existing Curses model  _and_ can access a changeable palette
 of 16-million colors,  have 2^20 = 1048576 color pairs, and not
-require much code or memory.  (Actually, slightly less.)
+require much code or memory.  (Actually,  usually somewhat less.)
 
    As the 'PDC_default_color' function in 'pdccolor.c' shows,  the
 first 256 palette entries are the traditional ones : 8 primary
@@ -43,7 +43,7 @@ The 'picsview' demo illustrates how this can be done;  color
 palette index 0xdeadbe + 256 = 0xdeaebe.
 
    Resetting of palette entries is relatively rare,  especially
-because most PDCurses/ncurses programs don't expect more than 256
+because most PDCurses*/ncurses programs don't expect more than 256
 colors anyway.  'testcurs' resets colors beyond this,  but that's
 explicitly to test the above code.  As palette entries are set,
 the array of entries ('rgbs' in pdccolor.c) is reallocated to be
@@ -62,15 +62,20 @@ beyond 256' section.
 
    If you look in pdcurses/color.c,  you will see that the color
 pairs are similarly dynamically reallocated when new pairs are
-set.  One can have 2^20 = 1048576 color pairs,  consuming 8
-MBytes assuming 32-bit ints. But few applications use more than a
-few color pairs.  Again, 'testcurs' does so in the same 'colors
-beyond 256' section.
+set.  One can have 2^20 = 1048576 color pairs,  consuming about 25
+MBytes assuming 32-bit ints.  (Four integers are allocated for
+each color pair,  plus slightly more than one integer for a hash
+table.)  But few applications use more than a few color pairs;  the
+unusual programs with a dozen colors will consume a few hundred
+bytes.  'testcurs' uses a few hundred pairs in the same 'colors
+beyond 256' section.  'picsview' and 'mbrot' (which are PDCursesMod
+additions) use still more color pairs.
 
    'picsview' allocates a color pair for each character cell.  With
 the program at full screen with a tiny font,  I've been able to get
 it to allocate over 100K color pairs... indeed, that sort of
 "picture drawing" is the only case I can think of where one might
-use really large numbers of colors.  Note that since 'picsview'
-uses default colors,  the RGB array is not reallocated,  even though
-the full 16 million color space is being exploited.
+use really large numbers of colors.  Note that since 'picsview' and
+'mbrot' use default colors (no calls are made to init_color()),  the
+RGB array is not reallocated,  even though the full 16 million color
+space is being exploited.
