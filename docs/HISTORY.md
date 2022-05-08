@@ -17,6 +17,10 @@ Minor new features
   actually store the clipboard text in a buffer and can retrieve it,
   instead of basically doing nothing at all.  050b3532e1
 
+- Two new demos,  'mbrot' (Mandelbrot display,  exercises some of the
+  more esoteric color/palette functions) and 'calendar' (shows a calendar).
+  cbd59aca60
+
 - Screen resizing no longer requires a call to resize_term(0,0).  No
   one appears to know why that call was required in the first place.
   Commit 3110e3f624.
