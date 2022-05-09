@@ -70,8 +70,6 @@ static long cvt_to_rgb( const double ival)
 
 #define UNICODE_BBLOCK      0x2584
 #define UNICODE_UBLOCK      0x2580
-#define CP437_BBLOCK         0xdc
-#define CP437_UBLOCK         0xdf
 #define UNUSED_COLOR_INDEX   0
 
 static int _n_colors;
@@ -120,7 +118,7 @@ static void show_mandelbrot( const double x0, const double y0,
 #ifdef HAVE_WIDE
                 addnwstr( &bblock_char, 1);
 #else
-                addch( CP437_BBLOCK);
+                addch( ACS_BBLOCK);
 #endif
             }
             else
@@ -134,7 +132,7 @@ static void show_mandelbrot( const double x0, const double y0,
 #ifdef HAVE_WIDE
                 addnwstr( &ublock_char, 1);
 #else
-                addch( CP437_UBLOCK);
+                addch( ACS_UBLOCK);
 #endif
             }
         }
@@ -196,7 +194,6 @@ int main( const int argc, const char **argv)
     int results[5], rval;
 #endif
 
-    setlocale(LC_ALL, "");
     initscr();
     cbreak( );
     noecho( );
