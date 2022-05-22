@@ -49,7 +49,7 @@ Bug fixes
   actually happen until getch() was called,  so your code could hang
   easily.  Ctrls-Z, S, Q are now enabled on both platforms.  cac097f235
 
-PDCursesMod 4.3.1 - 2022 February 06
+PDCursesMod 4.3.2 - 2022 February 06
 ====================================
 
 Minor new features
