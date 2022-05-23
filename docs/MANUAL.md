@@ -32,36 +32,50 @@ Defined by this header:
 Text Attributes
 ===============
 
-If CHTYPE_32 is #defined,  PDCurses uses a 32-bit integer for its chtype:
+By default,  PDCurses uses 64-bit integers for its chtype.  All chtypes
+have bits devoted to character data,  attribute data,  and color pair data.
+There are three configurations supported :
 
-    +--------------------------------------------------------------------+
-    |31|30|29|28|27|26|25|24|23|22|21|20|19|18|17|16|15|14|13|..| 2| 1| 0|
-    +--------------------------------------------------------------------+
-          color pair        |     modifiers         |   character eg 'a'
-
-There are 256 color pairs (8 bits), 8 bits for modifiers, and 16 bits
-for character data. The modifiers are bold, underline, right-line,
-left-line, italic, reverse and blink, plus the alternate character set
-indicator.  (This is the scheme used in 'traditional' PDCurses.)
-
-   By default,  PDCursesMod uses 64-bit chtype :
-
+Default, 64-bit chtype,  both wide- and 8-bit character builds:
 -------------------------------------------------------------------------------
 |63|62|..|53|52|..|34|33|32|31|30|29|28|..|22|21|20|19|18|17|16|..| 3| 2| 1| 0|
 -------------------------------------------------------------------------------
   unused    |color pair |        modifiers      |         character eg 'a'
 
-   We take five more bits for the character (thus allowing Unicode values
-past 64K;  the full range of Unicode goes up to 0x10ffff,  requiring 21 bits
-total),  and four more bits for attributes.  Three are currently used as
-A_OVERLINE, A_DIM, and A_STRIKEOUT;  one more is reserved for future use.
-Bits 33-52 are used to specify a color pair.  In theory,  there can be
-2^20 = 1048576 color pairs,  but as of 2021 May 27,  only WinGUI,  VT,  X11,
-and SDLn have COLOR_PAIRS = 1048576.  Other platforms (DOSVGA,  Plan9,
-WinCon) may join them,  but some (DOS,  OS/2) simply do not have full-color
-capability.
+   21 character bits (0-20),  enough for full Unicode coverage
+   12 attribute bits (21-32)
+   20 color pair bits (33-52),  enough for 1048576 color pairs
+   11 currently unused bits (53-63)
 
-   Bits 53-63 are currently unused.
+32-bit chtypes with wide characters (CHTYPE_32 and PDC_WIDE are #defined):
+    +--------------------------------------------------------------------+
+    |31|30|29|28|27|26|25|24|23|22|21|20|19|18|17|16|15|14|13|..| 2| 1| 0|
+    +--------------------------------------------------------------------+
+          color pair        |     modifiers         |   character eg 'a'
+   16 character bits (0-16),  enough for BMP (Unicode below 64K)
+   8 attribute bits (16-23)
+   8 color pair bits (24-31),  for 256 color pairs
+
+32-bit chtypes with narrow characters (CHTYPE_32 #defined,  PDC_WIDE is not):
+    +--------------------------------------------------------------------+
+    |31|30|29|28|..|22|21|20|19|18|17|16|..|12|11|10| 9| 8| 7| 6|..| 1| 0|
+    +--------------------------------------------------------------------+
+          color pair        |     modifiers               |character
+   8 character bits (0-7);  only 8-bit charsets will work
+   12 attribute bits (8-19)
+   12 color pair bits (20-31),  for 4096 pairs
+
+All attribute modifier schemes include eight "basic" bits:  bold, underline,
+right-line, left-line, italic, reverse and blink attributes,  plus the
+alternate character set indicator. For default and 32-bit narrow builds,
+three more bits are used for underlined, dimmed, and strikeout attributes;
+a fourth bit is reserved.
+
+Default chtypes have enough character bits to support the full range of
+Unicode,  all attributes,  and 2^20 = 1048576 color pairs.  Note,  though,
+that as of 2021 Dec 21,  only WinGUI,  VT,  X11, and SDLn have COLOR_PAIRS
+= 1048576.  Other platforms (DOSVGA,  Plan9, WinCon) may join them.  Some
+(DOS,  OS/2) simply do not have full-color capability.
 
 
 
@@ -369,16 +383,19 @@ attr
    wattroff() turns off the named attributes without affecting any other
    attributes; wattron() turns them on.
 
-   wcolor_set() sets the window color to the value of color_pair. opts
-   is unused.
+   wcolor_set() sets the window color to the value of color_pair.  If
+   opts is non-NULL,  it is treated as a pointer to an integer containing
+   the desired color pair,  and color_pair is ignored (this is an ncurses
+   extension).
 
    standout() is the same as attron(A_STANDOUT). standend() is the same
    as attrset(A_NORMAL); that is, it turns off all attributes.
 
    The attr_* and wattr_* functions are intended for use with the WA_*
    attributes. In PDCurses, these are the same as A_*, and there is no
-   difference in bevahior from the chtype-based functions. In all cases,
-   opts is unused.
+   difference in behavior from the chtype-based functions.  If opts is
+   non-NULL,  it is used as a pointer to an integer and the color pair
+   is stored in it (this is an ncurses extension).
 
    wattr_get() retrieves the attributes and color pair for the specified
    window.
@@ -387,7 +404,9 @@ attr
    the current line of a given window, without changing the existing
    text, or alterting the window's attributes. An n of -1 extends the
    change to the edge of the window. The changes take effect
-   immediately. opts is unused.
+   immediately.  If opts is non-NULL,  it is treated as a pointer to
+   an integer containing the desired color pair,  and color_pair is
+   ignored (this is an ncurses extension).
 
    wunderscore() turns on the A_UNDERLINE attribute; wunderend() turns
    it off. underscore() and underend() are the stdscr versions.
@@ -796,9 +815,6 @@ color
    find_pair() return a pair number, or -1 on error.
 
 
-
-
-
 ### Portability
                              X/Open  ncurses  NetBSD
     has_colors                  Y       Y       Y
@@ -1042,6 +1058,49 @@ getch
     mvwget_wch                  Y       Y       Y
     unget_wch                   Y       Y       Y
     PDC_get_key_modifiers       -       -       -
+
+
+
+--------------------------------------------------------------------------
+
+
+Function keys
+-------------
+
+### Synopsis
+
+   int PDC_set_function_key( const unsigned function, const int new_key);
+   int PDC_get_function_key( const unsigned function);
+
+### Description
+
+   Allows one to set a 'shut down' key,  and reassign hotkeys used for
+   copying to/pasting from the clipboard and enlarging and decreasing the
+   font size,  and for using the font selection dialog (on platforms where
+   these things are possible and implemented).  For example, calling
+
+   PDC_set_function_key( FUNCTION_KEY_SHUT_DOWN, ALT_Q);
+
+   would reset PDCursesMod such that,  if the user clicks on the 'close'
+   box, Alt-Q would be added to the key queue.  This would give the app the
+   opportunity to shut things down gracefully,  perhaps asking "are you
+   sure",  and/or "save changes or discard or cancel",  rather than just
+   having the window close (the default behavior).
+
+   Similarly,  one can set FUNCTION_KEY_ABORT to a key which,  when pressed,
+   will cause the program to abort gracelessly (no key returned to the
+   application).  One would normally use this to enable/disable Ctrl-C or
+   Ctrl-Break,  or to set a different 'abort' key so that Ctrl-C can be
+   used for copying.
+
+### Return Value
+
+   Returns key code previously set for that function,  or -1 if the
+   function does not actually exist.
+
+### Portability
+
+   PDCursesMod-only function.
 
 
 
@@ -1340,10 +1399,9 @@ initscr
    and X11 allow user resizing, while DOS, OS/2, SDL and Windows console
    allow programmatic resizing. If you want to support user resizing,
    you should check for getch() returning KEY_RESIZE, and/or call
-   is_termresized() at appropriate times; if either condition occurs,
-   call resize_term(0, 0). Then, with either user or programmatic
-   resizing, you'll have to resize any windows you've created, as
-   appropriate; resize_term() only handles stdscr and curscr.
+   is_termresized() at appropriate times.   Then, with either user or
+   programmatic resizing, you'll have to resize any windows you've
+   created, as appropriate; resize_term() only handles stdscr and curscr.
 
    is_termresized() returns TRUE if the curses screen has been resized
    by the user, and a call to resize_term() is needed. Checking for
@@ -2819,18 +2877,15 @@ util
    getcchar() works in two modes: When wch is not NULL, it reads the
    cchar_t pointed to by wcval and stores the attributes in attrs, the
    color pair in color_pair, and the text in the wide-character string
-   wch. When wch is NULL, getcchar() merely returns the number of wide
-   characters in wcval. In either mode, the opts argument is unused.
+   wch.  If opts is non-NULL,  it is treated as a pointer to an integer
+   and the color pair is stored in it (this is an ncurses extension).
+   When wch is NULL, getcchar() merely returns the number of wide
+   characters in wcval.
 
    setcchar constructs a cchar_t at wcval from the wide-character text
-   at wch, the attributes in attr and the color pair in color_pair. The
-   opts argument is unused.
-
-   Currently, the length returned by getcchar() is always 1 or 0.
-   Similarly, setcchar() will only take the first wide character from
-   wch, and ignore any others that it "should" take (i.e., combining
-   characters). Nor will it correctly handle any character outside the
-   basic multilingual plane (UCS-2).
+   at wch, the attributes in attr and the color pair in color_pair.  If
+   the opts argument is non-NULL,  it is treated as a pointer to an
+   integer containing the desired color pair and color_pair is ignored.
 
 ### Return Value
 
@@ -3027,47 +3082,6 @@ clipboard
     PDC_setclipboard            -       -       -
     PDC_freeclipboard           -       -       -
     PDC_clearclipboard          -       -       -
-
-
-
---------------------------------------------------------------------------
-
-
-Function keys
--------------
-
-### Synopsis
-
-   int PDC_set_function_key( const unsigned function, const int new_key);
-
-### Description
-
-   Allows one to set a 'shut down' key,  and reassign hotkeys used for
-   pasting from the clipboard and enlarging and decreasing the font size,
-   and for using the font selection dialog (on platforms where these
-   things are possible and implemented).  For example, calling
-
-   PDC_set_function_key( FUNCTION_KEY_SHUT_DOWN, ALT_Q);
-
-   would reset PDCurses such that,  if the user clicks on the 'close' box,
-   Alt-Q would be added to the key queue.  This would give the app the
-   opportunity to shut things down gracefully,  perhaps asking "are you
-   sure",  and/or "save changes or discard or cancel",  rather than just
-   having the window close (the default behavior).
-
-   Similarly,  one can set FUNCTION_KEY_ABORT to a key which,  when pressed,
-   will cause the program to abort gracelessly (no key returned to the
-   application).  One would normally use this to enable/disable Ctrl-C or
-   Ctrl-Break.
-
-### Return Value
-
-   Returns key code previously set for that function,  or -1 if the
-   function does not actually exist.
-
-### Portability
-
-   PDCurses-only function.
 
 
 
