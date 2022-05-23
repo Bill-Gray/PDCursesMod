@@ -79,7 +79,7 @@ attr
 
    The attr_* and wattr_* functions are intended for use with the WA_*
    attributes. In PDCurses, these are the same as A_*, and there is no
-   difference in bevahior from the chtype-based functions.  If opts is
+   difference in behavior from the chtype-based functions.  If opts is
    non-NULL,  it is used as a pointer to an integer and the color pair
    is stored in it (this is an ncurses extension).
 
