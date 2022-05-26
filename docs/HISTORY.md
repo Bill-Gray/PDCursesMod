@@ -1,5 +1,5 @@
-Changes up to 2022 Apr 03
-=========================
+PDCursesMod 4.3.3 - 2022 May 25
+===============================
 
 Major new features
 ------------------
@@ -13,9 +13,9 @@ Minor new features
 ------------------
 
 - Clipboard handling is implemented in a common manner for DOS,  DOSVGA,
-  VT,  and framebuffer ports.  This means the VT and framebuffer ports
-  actually store the clipboard text in a buffer and can retrieve it,
-  instead of basically doing nothing at all.  050b3532e1
+  VT,  SDL1,  and framebuffer ports.  This means the VT and framebuffer
+  ports actually store the clipboard text in a buffer and can retrieve it,
+  instead of basically doing nothing at all.  050b3532e1 d97b6a4171
 
 - Two new demos,  'mbrot' (Mandelbrot display,  exercises some of the
   more esoteric color/palette functions) and 'calendar' (shows a calendar).
