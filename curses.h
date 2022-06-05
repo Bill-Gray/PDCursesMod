@@ -35,6 +35,8 @@ Defined by this header:
 
 #define PDCURSES        1
 #define PDC_BUILD (PDC_VER_MAJOR*1000 + PDC_VER_MINOR *100 + PDC_VER_CHANGE)
+         /* NOTE : For version changes that are not backward compatible, */
+         /* the 'endwin_*' #defines below should be updated.             */
 #define PDC_VER_MAJOR    4
 #define PDC_VER_MINOR    3
 #define PDC_VER_CHANGE   3
