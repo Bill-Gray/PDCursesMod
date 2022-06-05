@@ -49,6 +49,10 @@ Bug fixes
   actually happen until getch() was called,  so your code could hang
   easily.  Ctrls-Z, S, Q are now enabled on both platforms.  cac097f235
 
+- If the screen was user-resized,  KEY_RESIZE was only returned if you'd
+  called `keypad( stdstr, 1)`.  That requirement appeared to be unneeded
+  and has been removed (see issue #230 on GitHub).  3110e3f624
+
 PDCursesMod 4.3.2 - 2022 February 06
 ====================================
 
