@@ -365,7 +365,7 @@ int PDC_get_key( void)
             {
             count++;
             rval = xlate_vt_codes( c, count, &modifiers);
-            if( rval == ALT_LBRACKET && check_key( NULL))
+            if( (rval == ALT_LBRACKET || rval == ALT_O) && check_key( NULL))
                rval = -1;
             }
 #ifdef LINUX_FRAMEBUFFER_PORT
@@ -411,6 +411,7 @@ int PDC_get_key( void)
                                                     &x, &y, &n_bytes);
                assert( n_fields == 3);
                assert( c[count] == 'M' || c[count] == 'm');
+               assert( n_bytes == count - 2);
                release = (c[count] == 'm');
                button = idx & 3;
                if( idx & 0x40)            /* (SGR) wheel mouse event; */
