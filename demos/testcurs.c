@@ -967,10 +967,13 @@ void curTest(void)
             move(getcury(stdscr), getcurx(stdscr) - 1);
         else if (c == KEY_RIGHT)
             move(getcury(stdscr), getcurx(stdscr) + 1);
-#ifdef PDCURSES
-        else if (c == 'i')
-            curs_set(SP->visibility == 1 ? 2 : 1);
-#endif
+        else if (c == 'i')              /* cycle cursor visibility from */
+        {                 /* 1 = low to 2 = high to 0 =off to low again */
+            const int curr_visibility = curs_set( 1);
+
+            if( curr_visibility == 1 || curr_visibility == 2)
+               curs_set( (curr_visibility + 1) % 3);
+        }
         else
 #endif
             break;
