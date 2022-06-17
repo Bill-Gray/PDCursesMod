@@ -82,8 +82,12 @@ static bool check_key( int *c)
     return( rval);
 }
 
+static MOUSE_STATUS _cached_mouse_status;
+
 bool PDC_check_key( void)
 {
+   if( _cached_mouse_status.changes)
+      return( TRUE);
    return( check_key( NULL));
 }
 
@@ -91,6 +95,7 @@ void PDC_flushinp( void)
 {
    int thrown_away_char;
 
+   _cached_mouse_status.changes = 0;
    while( check_key( &thrown_away_char))
       ;
 }
@@ -334,11 +339,18 @@ static int xlate_vt_codes( const int *c, const int count, int *modifiers)
 int PDC_get_key( void)
 {
    int rval = -1;
+   static bool recursed = FALSE;
 
    if( PDC_resize_occurred)
       {
       PDC_resize_occurred = FALSE;
       return( KEY_RESIZE);
+      }
+   if( !recursed && _cached_mouse_status.changes)
+      {
+      SP->mouse_status = _cached_mouse_status;
+      _cached_mouse_status.changes = 0;
+      return( KEY_MOUSE);
       }
    if( check_key( &rval))
       {
@@ -459,23 +471,35 @@ int PDC_get_key( void)
                         (button ? PDC_MOUSE_WHEEL_DOWN : PDC_MOUSE_WHEEL_UP);
                else     /* "normal" mouse button */
                   SP->mouse_status.changes = (1 << button);
-               if( !release && !(idx & 64))   /* wait for a possible release */
-                  {
+               if( !release && !(idx & 0x40) && !recursed)   /* wait for possible */
+                  {                                       /* release, click, etc. */
                   int n_events = 0;
+                  const MOUSE_STATUS stored = SP->mouse_status;
+                  bool keep_going = TRUE;
 
-                  while( n_events < 6)
+                  recursed = TRUE;
+                  while( keep_going && n_events < 5)
                      {
                      PDC_napms( SP->mouse_wait);
-                     if( check_key( c))
-                        {
-                        count = 0;
-                        while( count < MAX_COUNT && check_key( &c[count]))
-                           count++;
-                        n_events++;
-                        }
-                     else
-                        break;
+                     keep_going = FALSE;
+                     while( check_key( NULL) && n_events < 5)
+                        if( PDC_get_key( ) == KEY_MOUSE)
+                           {
+                           if( SP->mouse_status.x == x && SP->mouse_status.y == y
+                                   && ((SP->mouse_status.changes >> button) & 1))
+                              {
+                              keep_going = TRUE;
+                              n_events++;
+                              }
+                           else     /* some other mouse event;  store and report */
+                              {     /* next time we're asked for a key/mouse event */
+                              keep_going = FALSE;
+                              _cached_mouse_status = SP->mouse_status;
+                              }
+                           }
                      }
+                  SP->mouse_status = stored;
+                  recursed = FALSE;
                   if( !n_events)   /* just a click,  no release(s) */
                      held ^= (1 << button);
                   else if( n_events == 1)
