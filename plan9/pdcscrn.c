@@ -101,19 +101,3 @@ void PDC_scr_free(void)
 {
 	free(SP);
 }
-
-static struct {short f, b;} atrtab[PDC_COLOR_PAIRS];
-
-void PDC_init_pair(short pair, short fg, short bg)
-{
-	atrtab[pair].f = fg;
-	atrtab[pair].b = bg;
-}
-
-int PDC_pair_content(short pair, short *fg, short *bg)
-{
-	*fg = atrtab[pair].f;
-	*bg = atrtab[pair].b;
-
-	return OK;
-}
