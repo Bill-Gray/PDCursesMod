@@ -1343,41 +1343,23 @@ void attrTest(WINDOW *win)
     mvaddstr(tmarg + 13, col1, "A_UNDERLINE");
     attrset(A_NORMAL);
 
-#ifdef A_STRIKEOUT
-    if( A_STRIKEOUT)
-    {
-        attrset(A_STRIKEOUT);
-        mvaddstr(tmarg + 15, col1, "A_STRIKEOUT");
-        attrset(A_NORMAL);
-    }
+#if PDC_COLOR_BITS >= 11
+    attrset(A_STRIKEOUT);
+    mvaddstr(tmarg + 15, col1, "A_STRIKEOUT");
+    attrset(A_NORMAL);
+
+    attrset(A_OVERLINE);
+    mvaddstr(tmarg + 15, col2, "A_OVERLINE");
+    attrset(A_NORMAL);
+
+    attrset(A_DIM);
+    mvaddstr(tmarg + 17, col2, "A_DIM");
+    attrset(A_NORMAL);
 #endif
 
-#ifdef A_OVERLINE
-    if( A_OVERLINE)
-    {
-        attrset(A_OVERLINE);
-        mvaddstr(tmarg + 15, col2, "A_OVERLINE");
-        attrset(A_NORMAL);
-    }
-#endif
-
-#ifdef A_ITALIC
-    if( A_ITALIC)
-    {
-        attrset(A_ITALIC|A_UNDERLINE);
-        mvaddstr(tmarg + 3, col2, "Underlined Italic");
-        attrset(A_NORMAL);
-    }
-#endif
-
-#ifdef A_DIM
-    if( A_DIM)
-    {
-        attrset(A_DIM);
-        mvaddstr(tmarg + 17, col2, "A_DIM");
-        attrset(A_NORMAL);
-    }
-#endif
+    attrset(A_ITALIC|A_UNDERLINE);
+    mvaddstr(tmarg + 3, col2, "Underlined Italic");
+    attrset(A_NORMAL);
 
     attrset(A_BOLD|A_UNDERLINE);
     mvaddstr(tmarg + 5, col2, "Underlined Bold");
