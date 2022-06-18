@@ -42,7 +42,7 @@ Defined by this header:
 #define PDC_VER_CHANGE   3
 #define PDC_VER_YEAR   2022
 #define PDC_VER_MONTH    06
-#define PDC_VER_DAY      17
+#define PDC_VER_DAY      18
 
 #define PDC_STRINGIZE( x) #x
 #define PDC_stringize( x) PDC_STRINGIZE( x)
@@ -1738,6 +1738,8 @@ PDCEX  char    wordchar(void);
 PDCEX  wchar_t *slk_wlabel(int);
 #endif
 
+PDCEX  bool    PDC_getcbreak(void);
+PDCEX  bool    PDC_getecho(void);
 PDCEX  void    PDC_debug(const char *, ...);
 PDCEX  void    _tracef(const char *, ...);
 PDCEX  void    PDC_get_version(PDC_VERSION *);

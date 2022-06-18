@@ -29,6 +29,8 @@ inopts
     void timeout(int delay);
     void wtimeout(WINDOW *win, int delay);
     int typeahead(int fildes);
+    bool PDC_getcbreak(void);
+    bool PDC_getecho(void);
 
     int crmode(void);
     int nocrmode(void);
@@ -47,6 +49,9 @@ inopts
    echo() and noecho() control whether typed characters are echoed by
    the input routine. Initially, input characters are echoed. Subsequent
    calls to echo() and noecho() do not flush type-ahead.
+
+   PDC_getcbreak() and PDC_getecho() return the current cbreak and echo
+   states.
 
    halfdelay() is similar to cbreak(), but allows for a time limit to be
    specified, in tenths of a second. This causes getch() to block for
@@ -104,6 +109,8 @@ inopts
     nocbreak                    Y       Y       Y
     echo                        Y       Y       Y
     noecho                      Y       Y       Y
+    PDC_getcbreak               -       -       -
+    PDC_getecho                 -       -       -
     halfdelay                   Y       Y       Y
     intrflush                   Y       Y       Y
     keypad                      Y       Y       Y
@@ -152,6 +159,17 @@ int nocbreak(void)
     return OK;
 }
 
+bool PDC_getcbreak(void)
+{
+    PDC_LOG(("PDC_getcbreak() - called\n"));
+
+    assert( SP);
+    if (!SP)
+        return ERR;
+
+    return( SP->cbreak);
+}
+
 int echo(void)
 {
     PDC_LOG(("echo() - called\n"));
@@ -176,6 +194,17 @@ int noecho(void)
     SP->echo = FALSE;
 
     return OK;
+}
+
+bool PDC_getecho(void)
+{
+    PDC_LOG(("PDC_getecho() - called\n"));
+
+    assert( SP);
+    if (!SP)
+        return ERR;
+
+    return( SP->echo);
 }
 
 int halfdelay(int tenths)
