@@ -66,7 +66,7 @@ int PDC_getclipboard(char **contents, long *length)
     if (!pdc_clipboard)
         return PDC_CLIP_EMPTY;
 
-    len = strlen(pdc_clipboard);
+    len = (int)strlen(pdc_clipboard);
     *contents = malloc(len + 1);
     if (!*contents)
         return PDC_CLIP_MEMORY_ERROR;

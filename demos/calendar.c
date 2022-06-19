@@ -147,7 +147,7 @@ static void show_calendar( const long mjd, const char *path)
                  "September", "October", "November", "December" };
    FILE *ifile;
 
-   i = strlen( path);
+   i = (int)strlen( path);
    while( i && path[i - 1] != '/' && path[i - 1] != '\\')
       i--;
    if( i < (int)( sizeof( text) - 10))
