@@ -56,7 +56,7 @@ void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
     {
         chtype ch = srcp[j];
 
-        if (ch & A_ALTCHARSET && !(ch & 0xff80))
+        if( _is_altcharset( ch))
             ch = acs_map[ch & 0x7f];
 
         if (blink && blinked_off)

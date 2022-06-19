@@ -232,7 +232,7 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
        chtype changes = *srcp ^ prev_ch;
        size_t bytes_out = 0;
 
-       if( (*srcp & A_ALTCHARSET) && ch < 0x80)
+       if( _is_altcharset( *srcp))
           ch = (int)acs_map[ch & 0x7f];
        if( ch < (int)' ' || (ch >= 0x80 && ch <= 0x9f))
           ch = ' ';
@@ -291,7 +291,7 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
            while( count < len && !((srcp[0] ^ srcp[count]) & ~A_CHARTEXT)
                         && (ch = (srcp[count] & A_CHARTEXT)) < (int)MAX_UNICODE)
            {
-               if( (srcp[count] & A_ALTCHARSET) && ch < 0x80)
+               if( _is_altcharset( srcp[count]))
                   ch = (int)acs_map[ch & 0x7f];
                if( ch < (int)' ' || (ch >= 0x80 && ch <= 0x9f))
                   ch = ' ';

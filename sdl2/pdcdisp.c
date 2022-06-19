@@ -287,10 +287,10 @@ void PDC_gotoyx(int row, int col)
 #ifdef PDC_WIDE
     SDL_FillRect(pdc_screen, &dest, get_pdc_mapped( backgr));
 
-    if (!(SP->visibility == 2 && (ch & A_ALTCHARSET && !(ch & 0xff80)) &&
+    if (!(SP->visibility == 2 && _is_altcharset( ch) &&
         _grprint(ch & (0x7f | A_ALTCHARSET), dest)))
     {
-        if (ch & A_ALTCHARSET && !(ch & 0xff80))
+        if( _is_altcharset( ch))
             ch = acs_map[ch & 0x7f];
 
         chstr[0] = ch & A_CHARTEXT;
@@ -325,7 +325,7 @@ void PDC_gotoyx(int row, int col)
         }
     }
 #else
-    if (ch & A_ALTCHARSET && !(ch & 0xff80))
+    if( _is_altcharset( ch))
         ch = acs_map[ch & 0x7f];
 
     src.x = (ch & 0xff) % 32 * pdc_fwidth;
@@ -408,7 +408,7 @@ void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
 
         dest.w = pdc_fwidth;
 
-        if (ch & A_ALTCHARSET && !(ch & 0xff80))
+        if( _is_altcharset( ch))
         {
 #ifdef PDC_WIDE
             if (_grprint(ch & (0x7f | A_ALTCHARSET), dest))

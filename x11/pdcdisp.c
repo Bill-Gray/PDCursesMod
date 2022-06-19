@@ -376,7 +376,7 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
 
         attr = curr & A_ATTRIBUTES;
 
-        if (attr & A_ALTCHARSET && !(curr & 0xff80))
+        if( _is_altcharset( curr))
         {
             attr ^= A_ALTCHARSET;
             curr = acs_map[curr & 0x7f];

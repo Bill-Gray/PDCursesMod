@@ -257,7 +257,7 @@ static const uint8_t *_get_glyph( const chtype ch, const int cursor_type,
         root = 0;
 #endif
 
-    if( (ch & A_ALTCHARSET) && c < 0x80)
+    if( _is_altcharset( ch))
         c = (int)acs_map[c & 0x7f];
     else if( c < (int)' ' || (c >= 0x80 && c <= 0x9f))
         c = ' ';

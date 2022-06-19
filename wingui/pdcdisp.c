@@ -292,7 +292,7 @@ static bool character_is_in_font( chtype ichar)
     int i;
     WCRANGE *wptr = PDC_unicode_range_data->ranges;
 
-    if( (ichar & A_ALTCHARSET) && (ichar & A_CHARTEXT) < 0x80)
+    if( _is_altcharset( ichar))
        ichar = acs_map[ichar & 0x7f];
     ichar &= A_CHARTEXT;
     if( ichar > MAX_UNICODE)  /* assume combining chars won't be */
@@ -441,7 +441,7 @@ void PDC_transform_line_given_hdc( const HDC hdc, const int lineno,
                 }
             }
 #endif
-            if( (srcp[i] & A_ALTCHARSET) && ch < 0x80)
+            if( _is_altcharset( ch))
                 ch = acs_map[ch & 0x7f];
             else if( ch < 32)
                ch = starting_ascii_to_unicode[ch];

@@ -71,9 +71,10 @@ static void _new_packet(unsigned long colors, int lineno, int x, int len, const 
     /* Compute these just once */
     for (i = 0; i < len; ++i)
     {
-        chtype glyph = srcp[i];
+        const chtype glyph = srcp[i];
         unsigned ch = glyph & A_CHARTEXT;
-        if ((glyph & A_ALTCHARSET) != 0 && (ch & 0xff80) == 0)
+
+        if( _is_altcharset( glyph))
             ch = acs_map[ch];
         glyphs[i].font_addr = PDC_state.font_glyph_data(FALSE, ch);
     }
@@ -394,7 +395,7 @@ static void _transform_line_8(int lineno, int x, int len, const chtype *srcp)
 
         /* Get the index into the font */
         ch = glyph & A_CHARTEXT;
-        if ((glyph & A_ALTCHARSET) != 0 && (glyph & 0xff80) == 0)
+        if( _is_altcharset( glyph))
             ch = acs_map[ch & 0x7f];
 
         /* Get the address of the font data */

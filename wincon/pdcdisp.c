@@ -162,7 +162,7 @@ static void _show_run_of_ansi_characters( const attr_t attr,
     {
         chtype ch = srcp[j];
 
-        if (ch & A_ALTCHARSET && !(ch & 0xff80))
+        if( _is_altcharset( ch))
             ch = acs_map[ch & 0x7f];
 
         if (blink && blinked_off)
@@ -214,7 +214,7 @@ static void _show_run_of_nonansi_characters( const attr_t attr,
     {
         chtype ch = srcp[j];
 
-        if (ch & A_ALTCHARSET && !(ch & 0xff80))
+        if( _is_altcharset( ch))
             ch = acs_map[ch & 0x7f];
 
         if (blink && blinked_off)

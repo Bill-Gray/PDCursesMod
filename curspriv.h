@@ -131,4 +131,6 @@ PDCEX int PDC_wcwidth( const int32_t ucs);
 
 #define INTENTIONALLY_UNUSED_PARAMETER( param) (void)(param)
 
+#define _is_altcharset( ch)  (((ch) & (A_ALTCHARSET | (A_CHARTEXT ^ 0x7f))) == A_ALTCHARSET)
+
 #endif /* __CURSES_INTERNALS__ */

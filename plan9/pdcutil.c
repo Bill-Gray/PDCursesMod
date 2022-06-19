@@ -304,7 +304,7 @@ void p9putc(int y, int x, chtype ch)
 		fg = bg;
 		bg = t;
 	}
-	if (attr & A_ALTCHARSET && !(ch & 0xff80))
+	if( _is_altcharset( ch))
 		ch = acs_map[ch & 0x7f];
 
 	c = ch & A_CHARTEXT;
