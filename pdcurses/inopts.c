@@ -164,9 +164,6 @@ bool PDC_getcbreak(void)
     PDC_LOG(("PDC_getcbreak() - called\n"));
 
     assert( SP);
-    if (!SP)
-        return ERR;
-
     return( SP->cbreak);
 }
 
@@ -201,9 +198,6 @@ bool PDC_getecho(void)
     PDC_LOG(("PDC_getecho() - called\n"));
 
     assert( SP);
-    if (!SP)
-        return ERR;
-
     return( SP->echo);
 }
 
