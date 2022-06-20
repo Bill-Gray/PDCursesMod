@@ -35,9 +35,12 @@ void PDC_napms(int ms)     /* 'ms' = milli,  _not_ microseconds! */
 
     PDC_LOG(("PDC_napms() - called: ms=%d\n", ms));
 
-    LeaveCriticalSection(&PDC_cs);
-    Sleep(ms);
-    EnterCriticalSection(&PDC_cs);
+    if( ms)
+    {
+        LeaveCriticalSection(&PDC_cs);
+        Sleep(ms);
+        EnterCriticalSection(&PDC_cs);
+    }
 }
 
 const char *PDC_sysname(void)

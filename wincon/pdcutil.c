@@ -35,7 +35,8 @@ void PDC_napms(int ms)
     if ((SP->termattrs & A_BLINK) && (GetTickCount() >= pdc_last_blink + 500))
         PDC_blink_text();
 
-    Sleep(ms);
+    if( ms)
+       Sleep(ms);
 }
 
 const char *PDC_sysname(void)
