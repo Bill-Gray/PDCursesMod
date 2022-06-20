@@ -239,7 +239,7 @@ static void _check_hash_tbl( void)
 
             for( iter = 0; _pair_hash_tbl[idx]; iter++)
                ADVANCE_HASH_PROBE( idx, iter);
-            _pair_hash_tbl[idx] = i;
+            _pair_hash_tbl[idx] = (hash_idx_t)i;
             }
       }
 }
@@ -417,7 +417,7 @@ static void _init_pair_core(int pair, int fg, int bg)
            ADVANCE_HASH_PROBE( idx, iter);
        if( !_pair_hash_tbl[idx])    /* using a new pair */
            _pair_hash_tbl_used++;
-       _pair_hash_tbl[idx] = pair;
+       _pair_hash_tbl[idx] = (hash_idx_t)pair;
     }
     if( pair)
        _link_color_pair( pair, (p->f == UNSET_COLOR_PAIR ? atrtab_size_alloced : 0));
