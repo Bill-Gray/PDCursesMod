@@ -27,7 +27,6 @@ PLATFORM=X64
 osdir      = $(PDCURSES_SRCDIR)\wingui
 common     = $(PDCURSES_SRCDIR)\common
 
-!include $(common)\version.mif
 !include $(common)\libobjs.mif
 
 PDCURSES_WIN_H   = $(osdir)\pdcwin.h
@@ -135,9 +134,3 @@ tui.obj: $(demodir)\tui.c $(demodir)\tui.h
 
 tuidemo.obj: $(demodir)\tuidemo.c
    $(BUILD) -I$(demodir) $(demodir)\tuidemo.c
-
-PLATFORM1 = Visual C++
-PLATFORM2 = Microsoft Visual C/C++ for Win32
-ARCNAME = pdc$(VER)_vc_w32
-
-!include $(common)\makedist.mif

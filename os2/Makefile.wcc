@@ -13,8 +13,6 @@ PDCURSES_SRCDIR = ..
 
 common		= $(PDCURSES_SRCDIR)/common
 
-!include $(common)/version.mif
-
 osdir = os2
 
 TARGET = os2
@@ -26,9 +24,3 @@ CFLAGS =
 EXTRA_LIB_CMD = -$(COPY) $(PDCNAME).lib panel.lib
 
 !include $(common)/watcom.mif
-
-PLATFORM1   = Watcom C++ OS/2
-PLATFORM2   = Open Watcom for OS/2
-ARCNAME     = pdc$(VER)_wcc_os2
-
-!include $(common)/makedist.mif

@@ -15,7 +15,6 @@ PDCURSES_SRCDIR = ..
 osdir		= $(PDCURSES_SRCDIR)\os2
 common		= $(PDCURSES_SRCDIR)\common
 
-!include $(common)\version.mif
 !include $(common)\libobjs.mif
 
 PDCURSES_OS2_H	= $(osdir)\pdcos2.h
@@ -256,9 +255,3 @@ worm.obj: $(demodir)\worm.c $(PDCURSES_CURSES_H)
 
 xmas.obj: $(demodir)\xmas.c $(PDCURSES_CURSES_H)
 	$(BUILD) $(demodir)\xmas.c
-
-PLATFORM1 = C Set/2 OS/2
-PLATFORM2 = C Set/2 for OS/2
-ARCNAME = pdc$(VER)_icc_os2
-
-!include $(common)\makedist.mif

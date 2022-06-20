@@ -13,8 +13,6 @@ PDCURSES_SRCDIR = ..
 
 common     = $(PDCURSES_SRCDIR)/common
 
-!include $(common)/version.mif
-
 osdir = wingui
 
 TARGET = nt
@@ -32,9 +30,3 @@ ADDED_LIBS = lib winmm.lib
 EXTRA_LIB_CMD = -$(COPY) $(PDCNAME).lib panel.lib
 
 !include $(common)/watcom.mif
-
-PLATFORM1   = Watcom C++ WinGUI
-PLATFORM2   = Open Watcom for WinGUI
-ARCNAME     = pdc$(VER)_wcc_w32
-
-!include $(common)/makedist.mif

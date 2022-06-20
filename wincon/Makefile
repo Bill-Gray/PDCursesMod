@@ -16,7 +16,6 @@ endif
 osdir		= $(PDCURSES_SRCDIR)/wincon
 common		= $(PDCURSES_SRCDIR)/common
 
-include $(common)/version.mif
 include $(common)/libobjs.mif
 
 uname_S := $(shell uname -s 2>/dev/null)

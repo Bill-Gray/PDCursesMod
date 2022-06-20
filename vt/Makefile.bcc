@@ -17,7 +17,6 @@ PDCURSES_SRCDIR = ..
 osdir		= $(PDCURSES_SRCDIR)\vt
 common		= $(PDCURSES_SRCDIR)\common
 
-!include $(common)\version.mif
 !include $(common)\libobjs.mif
 
 !ifdef OLD_BCC
@@ -100,9 +99,3 @@ tui.obj: $(demodir)\tui.c $(demodir)\tui.h $(PDCURSES_CURSES_H)
 
 tuidemo.obj: $(demodir)\tuidemo.c $(PDCURSES_CURSES_H)
 	$(BUILD) -I$(demodir) $(demodir)\tuidemo.c
-
-PLATFORM1 = Borland C++ Wincon
-PLATFORM2 = Borland C/C++ 7.2 for Windows console
-ARCNAME = pdc$(VER)_bcc_vt
-
-!include $(common)\makedist.mif

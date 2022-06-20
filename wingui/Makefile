@@ -15,7 +15,6 @@ endif
 osdir		= $(PDCURSES_SRCDIR)/wingui
 common		= $(PDCURSES_SRCDIR)/common
 
-include $(common)/version.mif
 include $(common)/libobjs.mif
 
 uname_S := $(shell uname -s 2>/dev/null)
@@ -164,10 +163,4 @@ tui.o: $(demodir)/tui.c $(demodir)/tui.h $(PDCURSES_CURSES_H)
 tuidemo.o: $(demodir)/tuidemo.c $(PDCURSES_CURSES_H)
 	$(CC) -c $(CFLAGS) -I$(demodir) -o$@ $<
 
-PLATFORM1 = MinGW Win32
-PLATFORM2 = MinGW for Win32
-ARCNAME = pdc$(VER)_ming_w32
-BUILD		= $(CC) $(CFLAGS) -I$(PDCURSES_SRCDIR) -mwindows $(LIBCURSES)
-
-include $(common)/makedist.mif
 include $(PDCURSES_SRCDIR)/demos/nctests.mif
