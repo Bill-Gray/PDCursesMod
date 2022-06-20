@@ -92,7 +92,7 @@ void PDC_set_keyboard_binary(bool on)
 
 bool PDC_check_key(void)
 {
-    int haveevent;
+    bool haveevent;
 
     PDC_pump_and_peep();
 
@@ -100,9 +100,9 @@ bool PDC_check_key(void)
        should handle before polling for additional events. */
 
     if (event.type == SDL_TEXTINPUT && event.text.text[0])
-        haveevent = 1;
+        haveevent = TRUE;
     else
-        haveevent = SDL_PollEvent(&event);
+        haveevent = (bool)SDL_PollEvent(&event);
 
     return haveevent;
 }
