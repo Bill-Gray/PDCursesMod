@@ -441,7 +441,7 @@ void PDC_transform_line_given_hdc( const HDC hdc, const int lineno,
                 }
             }
 #endif
-            if( _is_altcharset( ch))
+            if( _is_altcharset( srcp[i]))
                 ch = acs_map[ch & 0x7f];
             else if( ch < 32)
                ch = starting_ascii_to_unicode[ch];
