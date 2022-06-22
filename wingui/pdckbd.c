@@ -19,6 +19,11 @@ extern int PDC_key_queue[KEY_QUEUE_SIZE];
 
 bool PDC_check_key(void)
 {
+    extern CRITICAL_SECTION PDC_cs;
+
+    LeaveCriticalSection(&PDC_cs);
+    SwitchToThread( );
+    EnterCriticalSection(&PDC_cs);
     if( PDC_key_queue_low != PDC_key_queue_high)
         return TRUE;
     return FALSE;
