@@ -200,19 +200,22 @@ void PDC_get_rgb_values( const chtype srcp,
         else if( PDC_blink_state)
             reverse_colors ^= 1;
     }
-    if( srcp & A_BOLD & ~SP->termattrs)
+    if( default_foreground)
+        *foreground_rgb = (PACKED_RGB)-1;
+    else if( srcp & A_BOLD & ~SP->termattrs)
         *foreground_rgb = intensified_color( *foreground_rgb);
-    if( intensify_backgnd)
+
+    if( default_background)
+        *background_rgb = (PACKED_RGB)-1;
+    else if( intensify_backgnd)
         *background_rgb = intensified_color( *background_rgb);
     if( srcp & A_DIM)
     {
-        *foreground_rgb = dimmed_color( *foreground_rgb);
-        *background_rgb = dimmed_color( *background_rgb);
+        if( !default_foreground)
+           *foreground_rgb = dimmed_color( *foreground_rgb);
+        if( !default_background)
+           *background_rgb = dimmed_color( *background_rgb);
     }
-    if( default_foreground)
-        *foreground_rgb = (PACKED_RGB)-1;
-    if( default_background)
-        *background_rgb = (PACKED_RGB)-1;
     if( reverse_colors)
     {
         const PACKED_RGB temp = *foreground_rgb;
