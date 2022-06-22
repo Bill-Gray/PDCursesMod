@@ -73,9 +73,10 @@ a fourth bit is reserved.
 
 Default chtypes have enough character bits to support the full range of
 Unicode,  all attributes,  and 2^20 = 1048576 color pairs.  Note,  though,
-that as of 2021 Dec 21,  only WinGUI,  VT,  X11, and SDLn have COLOR_PAIRS
-= 1048576.  Other platforms (DOSVGA,  Plan9, WinCon) may join them.  Some
-(DOS,  OS/2) simply do not have full-color capability.
+that as of 2022 Jun 17,  only WinGUI,  VT,  X11,  Linux framebuffer,  and
+SDLn have COLOR_PAIRS = 1048576.  Other platforms (DOSVGA,  Plan9, WinCon)
+may join them.  Some (DOS,  OS/2) simply do not have full-color
+capability.
 
 
 
@@ -1462,6 +1463,8 @@ inopts
     void timeout(int delay);
     void wtimeout(WINDOW *win, int delay);
     int typeahead(int fildes);
+    bool PDC_getcbreak(void);
+    bool PDC_getecho(void);
 
     int crmode(void);
     int nocrmode(void);
@@ -1480,6 +1483,9 @@ inopts
    echo() and noecho() control whether typed characters are echoed by
    the input routine. Initially, input characters are echoed. Subsequent
    calls to echo() and noecho() do not flush type-ahead.
+
+   PDC_getcbreak() and PDC_getecho() return the current cbreak and echo
+   states.
 
    halfdelay() is similar to cbreak(), but allows for a time limit to be
    specified, in tenths of a second. This causes getch() to block for
@@ -1537,6 +1543,8 @@ inopts
     nocbreak                    Y       Y       Y
     echo                        Y       Y       Y
     noecho                      Y       Y       Y
+    PDC_getcbreak               -       -       -
+    PDC_getecho                 -       -       -
     halfdelay                   Y       Y       Y
     intrflush                   Y       Y       Y
     keypad                      Y       Y       Y

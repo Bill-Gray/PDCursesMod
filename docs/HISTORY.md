@@ -1,3 +1,28 @@
+Changes to date - 2022 June 22
+==============================
+
+Minor new features
+------------------
+
+- As a small step to avoiding direct access to the SCREEN structure
+  outside private PDCurses code,  added PDC_getbreak() and PDC_getecho()
+  functions to access SP->cbreak and SP->echo. 59bd4b5653  5da7c96fe8
+
+Bug fixes
+---------
+
+- WinGUI could block if there was no key delay (threading contention).
+  b84cf0cbb8
+
+- Alternative character set glyphs could be shown when they shouldn't
+  be,  or not shown when they should be. d6d338a8ee
+
+- Revised mouse click handling on VT.  The previous logic sometimes missed
+  double-clicks and could get confused with press/move/release.
+  93d0d931a0
+
+- VT platform missed some function keys on some platforms.  043ca72355
+
 PDCursesMod 4.3.3 - 2022 May 25
 ===============================
 
