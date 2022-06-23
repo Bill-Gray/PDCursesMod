@@ -313,7 +313,7 @@ void PDC_gotoyx(int row, int col)
     }
 }
 
-static bool _merge_rects( SDL_Rect *a, SDL_Rect *b)
+static bool _merge_rects( SDL_Rect *a, const SDL_Rect *b)
 {
     if( a->x == b->x && a->w == b->w)
     {
