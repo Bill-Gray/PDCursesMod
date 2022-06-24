@@ -228,7 +228,7 @@ init:
   - if "%TOOLCHAIN%"=="Watcom19" (
       set "WATCOM_VERSION=Open Watcom 1.9" &&
       set "ARTIFACT_NAME=open-watcom-c-win32-1.9.exe" &&
-      set "ARTIFACT_URL=https://sourceforge.net/projects/openwatcom/files/open-watcom-1.9" &&
+      set "ARTIFACT_URL=ftp://ftp.openwatcom.org/install" &&
       set "PATH=%WATCOM%\BINNT;%WATCOM%\BINW;%PATH%"
     ) else if "%TOOLCHAIN%"=="Watcom20" (
       set "WATCOM_VERSION=Open Watcom 2.0" &&
