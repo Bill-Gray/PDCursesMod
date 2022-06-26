@@ -1,4 +1,4 @@
-Changes to date - 2022 June 22
+Changes to date - 2022 June 26
 ==============================
 
 Minor new features
@@ -7,6 +7,8 @@ Minor new features
 - As a small step to avoiding direct access to the SCREEN structure
   outside private PDCurses code,  added PDC_getbreak() and PDC_getecho()
   functions to access SP->cbreak and SP->echo. 59bd4b5653  5da7c96fe8
+
+- Miscellaneous code cleanup.
 
 Bug fixes
 ---------
@@ -22,6 +24,9 @@ Bug fixes
   93d0d931a0
 
 - VT platform missed some function keys on some platforms.  043ca72355
+
+- Fixed (I think) problem with AppVeyor failing to get OpenWATCOM 1.9 to
+  work,  causing almost every run to fail. cb59c93039  61929c222d  18abcfdbd6
 
 PDCursesMod 4.3.3 - 2022 May 25
 ===============================
