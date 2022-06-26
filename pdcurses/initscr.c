@@ -130,7 +130,7 @@ char ttytype[128];
    #define PDC_VER_MONTH_STR "!!!"
 #endif
 
-const char *_curses_notice = "PDCurses " PDC_VERDOT " - "\
+const char *_curses_notice = "PDCursesMod " PDC_VERDOT " - "\
                     PDC_stringize( PDC_VER_YEAR) "-" \
                     PDC_VER_MONTH_STR "-" \
                     PDC_stringize( PDC_VER_DAY);
@@ -271,7 +271,7 @@ WINDOW *initscr(void)
 
     def_shell_mode();
 
-    sprintf(ttytype, "pdcurses|PDCurses for %s", PDC_sysname());
+    longname( );
 
     SP->c_buffer = malloc(_INBUFSIZ * sizeof(int));
     if (!SP->c_buffer)
