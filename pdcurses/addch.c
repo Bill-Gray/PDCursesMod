@@ -1,5 +1,13 @@
 /* PDCurses */
 
+/* On Linux,  and probably some other platforms,  we can just
+use the built-in wcwidth() function.  */
+#ifdef __linux
+   #define HAVE_WCWIDTH
+   #define _XOPEN_SOURCE
+   #include <wchar.h>
+#endif
+
 #include <curspriv.h>
 #include <assert.h>
 
@@ -120,6 +128,15 @@ addch
 
 #ifdef PDC_WIDE
 #include <stdlib.h>
+
+#ifdef HAVE_WCWIDTH
+
+PDCEX int PDC_wcwidth( const int32_t ucs)
+{
+   return( wcwidth( (wchar_t)ucs));
+}
+
+#else
 /*
  * A greatly stripped-down version of Markus Kuhn's excellent
  * wcwidth implementation.  For his latest version and many
@@ -277,6 +294,7 @@ PDCEX int PDC_wcwidth( const int32_t ucs)
       (ucs >= 0x20000 && ucs <= 0x2fffd) ||
       (ucs >= 0x30000 && ucs <= 0x3fffd)));
 }
+#endif
 
 #ifdef USING_COMBINING_CHARACTER_SCHEME
 
