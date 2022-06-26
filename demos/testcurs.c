@@ -1727,7 +1727,7 @@ void display_menu(int old_option, int new_option)
         int i;
 
         attrset(A_BOLD);
-        mvaddstr(tmarg - 3, lmarg - 5, "PDCurses Test Program");
+        mvprintw(tmarg - 3, lmarg - 5, "%s Test Program", longname( ));
         attrset(A_NORMAL);
 
         for (i = 0; i < MAX_OPTIONS; i++)
