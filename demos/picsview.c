@@ -489,8 +489,8 @@ int main( const int argc, const char *argv[])
       }
    free( pixels);
    endwin();
-#ifdef PDCURSES
-   delscreen( SP);
+#ifdef __PDCURSESMOD__      /* Not really needed,  but ensures Valgrind  */
+    PDC_free_memory_allocations( );      /* says all memory was freed */
 #endif
    return( 0);
 }
