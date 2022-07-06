@@ -71,7 +71,7 @@ void PDC_debug(const char *fmt, ...)
     time_t now;
 
     assert( SP);
-    if (!SP || !SP->dbfp)
+    if (!SP || !SP->dbfp || SP->in_endwin)
         return;
 
     time(&now);

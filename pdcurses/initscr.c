@@ -310,6 +310,7 @@ WINDOW *Xinitscr(int argc, char **argv)
 
 int endwin(void)
 {
+    SP->in_endwin = TRUE;
     PDC_LOG(("endwin() - called\n"));
 
     /* Allow temporary exit from curses using endwin() */
@@ -320,6 +321,7 @@ int endwin(void)
     assert( SP);
     SP->alive = FALSE;
 
+    SP->in_endwin = FALSE;
     return OK;
 }
 

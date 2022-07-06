@@ -418,8 +418,8 @@ typedef struct
                                       on last key press */
     bool  return_key_modifiers;    /* TRUE if modifier keys are
                                       returned as "real" keys */
-    bool  unused_key_code;         /* (was) TRUE if last key is a special key;
-                                      used internally by get_wch() */
+    bool  in_endwin;               /* if we're in endwin(),  we should use
+                                      only signal-safe code */
     MOUSE_STATUS mouse_status;     /* last returned mouse status */
     short line_color;     /* color of line attributes - default -1 */
     attr_t termattrs;     /* attribute capabilities */
