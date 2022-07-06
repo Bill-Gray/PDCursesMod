@@ -41,8 +41,8 @@ Defined by this header:
 #define PDC_VER_MINOR    3
 #define PDC_VER_CHANGE   3
 #define PDC_VER_YEAR   2022
-#define PDC_VER_MONTH    06
-#define PDC_VER_DAY      26
+#define PDC_VER_MONTH    07
+#define PDC_VER_DAY      06
 
 #define PDC_STRINGIZE( x) #x
 #define PDC_stringize( x) PDC_STRINGIZE( x)
@@ -1761,6 +1761,7 @@ PDCEX  void    PDC_set_resize_limits( const int new_min_lines,
                                const int new_max_lines,
                                const int new_min_cols,
                                const int new_max_cols);
+PDCEX  void    PDC_free_memory_allocations( void);
 
 #define FUNCTION_KEY_SHUT_DOWN        0
 #define FUNCTION_KEY_PASTE            1

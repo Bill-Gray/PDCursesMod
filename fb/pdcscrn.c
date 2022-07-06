@@ -394,3 +394,7 @@ int PDC_init_color( int color, int red, int green, int blue)
     }
     return OK;
 }
+
+void PDC_free_platform_dependent_memory( void)
+{
+}

@@ -101,3 +101,7 @@ void PDC_scr_free(void)
 {
 	free(SP);
 }
+
+void PDC_free_platform_dependent_memory( void)
+{
+}

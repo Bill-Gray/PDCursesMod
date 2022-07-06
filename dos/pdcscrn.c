@@ -446,7 +446,7 @@ void PDC_scr_close(void)
 #endif
     PDC_LOG(("PDC_scr_close() - called\n"));
 
-    if (getenv("PDC_RESTORE_SCREEN") && saved_screen)
+    if( saved_screen)
     {
 #ifdef __DJGPP__
         dosmemput(saved_screen, saved_lines * saved_cols * 2,
@@ -463,8 +463,6 @@ void PDC_scr_close(void)
         (void *)saved_screen, (saved_lines * saved_cols * 2));
 # endif
 #endif
-        free(saved_screen);
-        saved_screen = NULL;
     }
 
     reset_shell_mode();
@@ -703,4 +701,11 @@ void PDC_set_resize_limits( const int new_min_lines, const int new_max_lines,
    INTENTIONALLY_UNUSED_PARAMETER( new_max_lines);
    INTENTIONALLY_UNUSED_PARAMETER( new_min_cols);
    INTENTIONALLY_UNUSED_PARAMETER( new_max_cols);
+}
+
+void PDC_free_platform_dependent_memory( void)
+{
+    if( saved_screen)
+        free(saved_screen);
+    saved_screen = NULL;
 }

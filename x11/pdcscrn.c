@@ -827,3 +827,7 @@ void PDC_set_resize_limits( const int new_min_lines, const int new_max_lines,
     PDC_min_cols = max( new_min_cols, 2);
     PDC_max_cols = max( new_max_cols, PDC_min_cols);
 }
+
+void PDC_free_platform_dependent_memory( void)
+{
+}

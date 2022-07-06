@@ -384,3 +384,7 @@ int PDC_init_color( int color, int red, int green, int blue)
         curscr->_clear = TRUE;
     return OK;
 }
+
+void PDC_free_platform_dependent_memory( void)
+{
+}

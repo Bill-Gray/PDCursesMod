@@ -59,13 +59,8 @@ void PDC_scr_close(void)
     PDC_LOG(("PDC_scr_close() - called\n"));
 
     if (saved_screen && getenv("PDC_RESTORE_SCREEN"))
-    {
         VioWrtCellStr(saved_screen, saved_lines * saved_cols * 2,
             0, 0, (HVIO)NULL);
-
-        free(saved_screen);
-        saved_screen = NULL;
-    }
 
     reset_shell_mode();
 
@@ -230,4 +225,11 @@ details of what it does on platforms that do support user resizing. */
 void PDC_set_resize_limits( const int new_min_lines, const int new_max_lines,
                   const int new_min_cols, const int new_max_cols)
 {
+}
+
+void PDC_free_platform_dependent_memory( void)
+{
+    if( saved_screen)
+        free(saved_screen);
+    saved_screen = NULL;
 }
