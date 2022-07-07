@@ -1,4 +1,4 @@
-Changes to date - 2022 June 26
+Changes to date - 2022 July 07
 ==============================
 
 Minor new features
@@ -8,10 +8,29 @@ Minor new features
   outside private PDCurses code,  added PDC_getbreak() and PDC_getecho()
   functions to access SP->cbreak and SP->echo. 59bd4b5653  5da7c96fe8
 
+- You can free remaining internal buffers by calling the new
+  PDC_free_memory_allocations() function.  8d10534143
+
+- On Linux,  we use the system-provided wcwidth() instead of our own.
+  Aside from avoiding redundant code,  this may help in non-Unicode
+  locales (our wcwidth() is for Unicode only).  fc520ca19f
+
+- When building SDL1 on OS/2,  Ctrl-(letter) and Alt-(letter) combinations
+  were not returned.  Pointed out and fix contributed by Mark Hessling.
+  2968f3198d
+
+- Mark also found some neglected VT key sequences and added them.
+  c47ce9f724
+
 - Miscellaneous code cleanup.
 
 Bug fixes
 ---------
+
+- endwin() was not signal-safe.  While in endwin(),  we shouldn't free
+  memory or have debug logging on (we were doing both).  See "upstream"
+  issue wmcbrine/PDCurses#134 for discussion.  c5ca238fac  18ff2cb00c
+  8d10534143
 
 - WinGUI could block if there was no key delay (threading contention).
   b84cf0cbb8
@@ -24,6 +43,9 @@ Bug fixes
   93d0d931a0
 
 - VT platform missed some function keys on some platforms.  043ca72355
+
+- SDL2 got duplicated key presses if Shift-(numpad) keys were hit (issue #234).
+  9b86c29aa1
 
 - Fixed (I think) problem with AppVeyor failing to get OpenWATCOM 1.9 to
   work,  causing almost every run to fail. cb59c93039  61929c222d  18abcfdbd6

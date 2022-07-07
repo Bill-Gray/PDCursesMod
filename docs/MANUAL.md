@@ -1356,6 +1356,7 @@ initscr
     SCREEN *newterm(const char *type, FILE *outfd, FILE *infd);
     SCREEN *set_term(SCREEN *new);
     void delscreen(SCREEN *sp);
+    void PDC_free_memory_allocations( void);
 
     int resize_term(int nlines, int ncols);
     bool is_termresized(void);
@@ -1388,6 +1389,15 @@ initscr
    since it's not freed by endwin(). This function is usually not
    needed. In PDCurses, the parameter must be the value of SP, and
    delscreen() sets SP to NULL.
+
+   PDC_free_memory_allocations() frees all memory allocated by PDCurses,
+   including SP and any platform-dependent memory.  It should be called
+   after endwin(),  not instead of it.  It need not be called,  because
+   remaining memory will be freed at exit;  but it can help in diagnosing
+   memory leak issues by ruling out any from PDCurses.
+
+   Note that SDLn and X11 have known memory leaks within their libraries,
+   which appear to be effectively unfixable.
 
    set_term() does nothing meaningful in PDCurses, but is included for
    compatibility with other curses implementations.
