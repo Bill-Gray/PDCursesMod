@@ -84,12 +84,12 @@ ifdef CHTYPE_32
 	CFLAGS += -DCHTYPE_32
 endif
 
-ifeq ($(WIDE),Y)
-	CFLAGS += -DPDC_WIDE
-endif
-
 ifeq ($(UTF8),Y)
-	CFLAGS += -DPDC_FORCE_UTF8
+	CFLAGS += -DPDC_FORCE_UTF8 -DPDC_WIDE
+else
+	ifeq ($(WIDE),Y)
+		CFLAGS += -DPDC_WIDE
+	endif
 endif
 
 ifeq ($(INFOEX),N)
@@ -166,10 +166,5 @@ tui.o: $(demodir)/tui.c $(demodir)/tui.h $(PDCURSES_CURSES_H)
 
 tuidemo.o: $(demodir)/tuidemo.c $(PDCURSES_CURSES_H)
 	$(CC) -c $(CFLAGS) -I$(demodir) -o$@ $<
-
-PLATFORM1 = MinGW WinCon
-PLATFORM2 = MinGW for WinCon
-ARCNAME = pdc$(VER)_ming_wcon
-BUILD		= $(CC) $(CFLAGS) -I$(PDCURSES_SRCDIR) -mwindows $(LIBCURSES)
 
 include $(PDCURSES_SRCDIR)/demos/nctests.mif
