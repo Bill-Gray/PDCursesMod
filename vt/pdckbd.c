@@ -502,11 +502,11 @@ int PDC_get_key( void)
                   recursed = FALSE;
                   if( !n_events)   /* just a click,  no release(s) */
                      held ^= (1 << button);
-                  else if( n_events == 1)
+                  else if( n_events < 3)
                       SP->mouse_status.button[button] = BUTTON_CLICKED;
-                  else if( n_events <= 3)
+                  else if( n_events < 5)
                       SP->mouse_status.button[button] = BUTTON_DOUBLE_CLICKED;
-                  else if( n_events <= 5)
+                  else
                       SP->mouse_status.button[button] = BUTTON_TRIPLE_CLICKED;
                   }
                }
