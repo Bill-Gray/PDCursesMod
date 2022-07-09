@@ -1,5 +1,9 @@
 /* PDCurses */
 
+#if defined( PDC_FORCE_UTF8) && !defined( PDC_WIDE)
+   #define PDC_WIDE
+#endif
+
 #include <SDL.h>
 #ifdef PDC_WIDE
 # include <SDL_ttf.h>

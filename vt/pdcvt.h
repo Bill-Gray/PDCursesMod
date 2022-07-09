@@ -2,6 +2,10 @@
     will actually work.  Happens in older Windows, DOS, Linux console. */
 extern int PDC_is_ansi;
 
+#if defined( PDC_FORCE_UTF8) && !defined( PDC_WIDE)
+   #define PDC_WIDE
+#endif
+
 #ifdef PDC_WIDE
    #if !defined( UNICODE)
       # define UNICODE
