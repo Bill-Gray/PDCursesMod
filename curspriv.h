@@ -24,6 +24,10 @@
 # endif
 #endif
 
+#if defined( PDC_FORCE_UTF8) && !defined( PDC_WIDE)
+   #define PDC_WIDE
+#endif
+
 /*----------------------------------------------------------------------*/
 
 typedef struct           /* structure for ripped off lines */

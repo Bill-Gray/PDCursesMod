@@ -14,7 +14,7 @@ Define before inclusion (only those needed):
     PDC_RGB         if you want to use RGB color definitions
                     (Red = 1, Green = 2, Blue = 4) instead of BGR
     PDC_WIDE        if building / built with wide-character support
-    PDC_FORCE_UTF8  if forcing use of UTF8
+    PDC_FORCE_UTF8  if forcing use of UTF8 (implies PDC_WIDE)
     PDC_DLL_BUILD   if building / built as a Windows DLL
     PDC_NCMOUSE     to use the ncurses mouse API instead
                     of PDCurses' traditional mouse API
@@ -42,7 +42,7 @@ Defined by this header:
 #define PDC_VER_CHANGE   3
 #define PDC_VER_YEAR   2022
 #define PDC_VER_MONTH    07
-#define PDC_VER_DAY      07
+#define PDC_VER_DAY      09
 
 #define PDC_STRINGIZE( x) #x
 #define PDC_stringize( x) PDC_STRINGIZE( x)
@@ -68,6 +68,10 @@ Defined by this header:
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdio.h>
+
+#if defined( PDC_FORCE_UTF8) && !defined( PDC_WIDE)
+   #define PDC_WIDE
+#endif
 
 #ifdef PDC_WIDE
 # include <wchar.h>
