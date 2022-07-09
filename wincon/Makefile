@@ -85,7 +85,7 @@ ifdef CHTYPE_32
 endif
 
 ifeq ($(UTF8),Y)
-	CFLAGS += -DPDC_FORCE_UTF8 -DPDC_WIDE
+	CFLAGS += -DPDC_FORCE_UTF8
 else
 	ifeq ($(WIDE),Y)
 		CFLAGS += -DPDC_WIDE

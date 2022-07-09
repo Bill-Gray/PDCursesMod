@@ -37,7 +37,7 @@ else
 endif
 
 ifeq ($(UTF8),Y)
-	CFLAGS	+= -DPDC_WIDE -DPDC_FORCE_UTF8
+	CFLAGS	+= -DPDC_FORCE_UTF8
 else
 	ifeq ($(WIDE),Y)
 		CFLAGS	+= -DPDC_WIDE

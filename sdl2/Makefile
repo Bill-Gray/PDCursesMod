@@ -64,6 +64,10 @@ endif
 
 ifeq ($(UTF8),Y)
 	CFLAGS += -DPDC_FORCE_UTF8
+	ifneq ($(WIDE),Y)
+		SFLAGS += $(TFLAGS)
+		SLIBS  += $(TLIBS)
+	endif
 endif
 
 ifdef CHTYPE_32
