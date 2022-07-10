@@ -293,6 +293,7 @@ int wattr_off(WINDOW *win, attr_t attrs, void *opts)
 {
     PDC_LOG(("wattr_off() - called\n"));
 
+    INTENTIONALLY_UNUSED_PARAMETER( opts);
     assert( !opts);
     return wattroff(win, attrs);
 }
@@ -301,6 +302,7 @@ int attr_off(attr_t attrs, void *opts)
 {
     PDC_LOG(("attr_off() - called\n"));
 
+    INTENTIONALLY_UNUSED_PARAMETER( opts);
     assert( !opts);
     return wattroff(stdscr, attrs);
 }
@@ -309,7 +311,8 @@ int wattr_on(WINDOW *win, attr_t attrs, void *opts)
 {
     PDC_LOG(("wattr_off() - called\n"));
 
-    assert( !opts);
+    if( opts)
+        attrs = (attrs & ~A_COLOR) | COLOR_PAIR( *(int *)opts);
     return wattron(win, attrs);
 }
 
@@ -317,8 +320,7 @@ int attr_on(attr_t attrs, void *opts)
 {
     PDC_LOG(("attr_on() - called\n"));
 
-    assert( !opts);
-    return wattron(stdscr, attrs);
+    return wattr_on(stdscr, attrs, opts);
 }
 
 int wattr_set(WINDOW *win, attr_t attrs, short color_pair, void *opts)
