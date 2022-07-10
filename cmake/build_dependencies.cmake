@@ -49,7 +49,7 @@ IF (PDC_SDL2_DEPS_BUILD)
         ENDIF()
     ENDIF()
 
-    IF (PDC_WIDE)
+    IF (PDC_WIDE OR PDC_UTF8)
 
         ExternalProject_Add(zlib_ext
             GIT_REPOSITORY "https://github.com/madler/zlib.git"
@@ -178,6 +178,6 @@ IF (PDC_SDL2_DEPS_BUILD)
             ENDIF()
         ENDIF()
 
-    ENDIF (PDC_WIDE)
+    ENDIF (PDC_WIDE OR PDC_UTF8)
 
 ENDIF()
