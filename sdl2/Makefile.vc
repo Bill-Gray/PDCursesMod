@@ -42,12 +42,15 @@ LDFLAGS		=
 
 !ifdef WIDE
 WIDEOPT		= -DPDC_WIDE
-TTF_INCLUDE	= -I$(TTFBASE)\include
-TTF_LIB		= $(TTFBASE)\lib\$(PLATFORM)\SDL2_ttf.lib
 !endif
 
 !ifdef UTF8
-UTF8OPT		= -DPDC_FORCE_UTF8
+WIDEOPT		= -DPDC_FORCE_UTF8
+!endif
+
+!ifdef WIDEOPT
+TTF_INCLUDE	= -I$(TTFBASE)\include
+TTF_LIB		= $(TTFBASE)\lib\$(PLATFORM)\SDL2_ttf.lib
 !endif
 
 !ifdef INFOEX
@@ -74,17 +77,17 @@ CCLIBS		= $(SDL2_LIBMAIN) $(SDL2_LIB) $(TTF_LIB) shell32.lib
 !endif
 
 BUILD		= $(CC) -I$(PDCURSES_SRCDIR) \
--c $(CFLAGS) $(DLLOPT) $(WIDEOPT) $(UTF8OPT) $(INFOPT)
+-c $(CFLAGS) $(DLLOPT) $(WIDEOPT) $(INFOPT)
 
 all:	$(PDCLIBS)
 
 clean:
 	-$(RM) *.obj
-	-$(RM) *.lib
+	-$(RM) $(LIBCURSES)
 	-$(RM) *.exe
-	-$(RM) *.dll
+	-$(RM) $(CURSESDLL)
 	-$(RM) *.exp
-	-$(RM) *.res
+	-$(RM) pdcurses.res
 
 demos:	$(PDCLIBS) $(DEMOS) sdltest.exe
 
