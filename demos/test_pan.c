@@ -200,8 +200,8 @@ int main()
       del_panel( my_panels[i]);
       delwin( my_wins[i]);
       }
-#ifdef PDCURSES
-    delscreen( SP);
+#ifdef __PDCURSESMOD__      /* Not really needed,  but ensures Valgrind  */
+    PDC_free_memory_allocations( );      /* says all memory was freed */
 #endif
     return( 0);
 }
