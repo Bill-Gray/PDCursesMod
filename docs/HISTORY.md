@@ -1,4 +1,4 @@
-Changes to date - 2022 July 09
+Changes to date - 2022 July 19
 ==============================
 
 Minor new features
@@ -9,7 +9,7 @@ Minor new features
   functions to access SP->cbreak and SP->echo. 59bd4b5653  5da7c96fe8
 
 - You can free remaining internal buffers by calling the new
-  PDC_free_memory_allocations() function.  8d10534143
+  PDC_free_memory_allocations() function.  8d10534143  2259f29d5f
 
 - On Linux,  we use the system-provided wcwidth() instead of our own.
   Aside from avoiding redundant code,  this may help in non-Unicode
@@ -30,10 +30,18 @@ Minor new features
   and for VT when compiled in Windows.  It would probably work with SDL1
   when compiled in Windows,  but that would need testing.  02d55b890e
 
+- putwin() should produce files that can be read by getwin() even if
+  the putting code and the getting code are compiled with different
+  chtypes (i.e.,  wide vs. narrow and 32-bit vs. 64-bit chtypes).
+  6824e49bab  98e3f56580
+
 - Miscellaneous code cleanup.
 
 Bug fixes
 ---------
+
+- CMake builds of SDL2 with WIDE=Y were not actually making wide builds.
+  797f688dd4  99e90f20c5  f6b73892c3
 
 - endwin() was not signal-safe.  While in endwin(),  we shouldn't free
   memory or have debug logging on (we were doing both).  See "upstream"
@@ -57,6 +65,10 @@ Bug fixes
 
 - Fixed (I think) problem with AppVeyor failing to get OpenWATCOM 1.9 to
   work,  causing almost every run to fail. cb59c93039  61929c222d  18abcfdbd6
+
+- wattr_on() and attr_on() ignored the 'opts' parameter.  When non-NULL,  it
+  should (and now is) treated as a pointer to an integer color pair.
+  23374b894b
 
 PDCursesMod 4.3.3 - 2022 May 25
 ===============================
