@@ -1259,7 +1259,7 @@ void acsTest(WINDOW *win)
         printw( "sizeof( chtype) = %d; sizeof( mmask_t) = %d",
                            (int)sizeof( chtype), (int)sizeof( mmask_t));
         mvaddstr(tmarg + n_rows * 2 + 2, 3, "Press any key to continue");
-        getch();
+        curTest( );
         clear( );
     }
 
@@ -1307,7 +1307,7 @@ void acsTest(WINDOW *win)
 #endif            /* U+1D11E = musical symbol G clef */
 
         mvaddstr(tmarg + 2, 3, "Press any key to continue");
-        getch();
+        curTest( );
         clear( );
     }
 #endif
@@ -1527,7 +1527,7 @@ static void supergradient(int tmarg)
     mvaddstr( LINES - 1, 1, "Green");
 
     mvaddstr(tmarg + 19, 3, "Press any key to continue");
-    getch();
+    curTest( );
 }
 #endif
 
