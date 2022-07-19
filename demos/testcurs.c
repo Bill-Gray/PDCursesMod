@@ -959,6 +959,12 @@ void curTest(void)
         int c = getch();
 
 #if defined (PDCURSES) || defined (NCURSES_VERSION)
+#ifdef __linux
+        const char *screen_dump_filename = "/tmp/screen.xyz";
+#else
+        const char *screen_dump_filename = "screen.xyz";
+#endif
+
         if (c == KEY_UP)
             move(getcury(stdscr) - 1, getcurx(stdscr));
         else if (c == KEY_DOWN)
@@ -973,6 +979,13 @@ void curTest(void)
 
             if( curr_visibility == 1 || curr_visibility == 2)
                curs_set( (curr_visibility + 1) % 3);
+        }
+        else if( c == 's')
+            scr_dump( screen_dump_filename);
+        else if( c == 'r')
+        {
+            scr_restore( screen_dump_filename);
+            refresh( );
         }
         else
 #endif
