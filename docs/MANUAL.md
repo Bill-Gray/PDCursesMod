@@ -7,7 +7,7 @@ Define before inclusion (only those needed):
     PDC_RGB         if you want to use RGB color definitions
                     (Red = 1, Green = 2, Blue = 4) instead of BGR
     PDC_WIDE        if building / built with wide-character support
-    PDC_FORCE_UTF8  if forcing use of UTF8
+    PDC_FORCE_UTF8  if forcing use of UTF8 (implies PDC_WIDE)
     PDC_DLL_BUILD   if building / built as a Windows DLL
     PDC_NCMOUSE     to use the ncurses mouse API instead
                     of PDCurses' traditional mouse API
@@ -68,7 +68,7 @@ Default, 64-bit chtype,  both wide- and 8-bit character builds:
 All attribute modifier schemes include eight "basic" bits:  bold, underline,
 right-line, left-line, italic, reverse and blink attributes,  plus the
 alternate character set indicator. For default and 32-bit narrow builds,
-three more bits are used for underlined, dimmed, and strikeout attributes;
+three more bits are used for overlined, dimmed, and strikeout attributes;
 a fourth bit is reserved.
 
 Default chtypes have enough character bits to support the full range of
