@@ -42,7 +42,7 @@ Defined by this header:
 #define PDC_VER_CHANGE   3
 #define PDC_VER_YEAR   2022
 #define PDC_VER_MONTH    07
-#define PDC_VER_DAY      10
+#define PDC_VER_DAY      18
 
 #define PDC_STRINGIZE( x) #x
 #define PDC_stringize( x) PDC_STRINGIZE( x)
@@ -511,7 +511,7 @@ Default, 64-bit chtype,  both wide- and 8-bit character builds:
 All attribute modifier schemes include eight "basic" bits:  bold, underline,
 right-line, left-line, italic, reverse and blink attributes,  plus the
 alternate character set indicator. For default and 32-bit narrow builds,
-three more bits are used for underlined, dimmed, and strikeout attributes;
+three more bits are used for overlined, dimmed, and strikeout attributes;
 a fourth bit is reserved.
 
 Default chtypes have enough character bits to support the full range of
@@ -572,7 +572,7 @@ capability.
 #endif
 
 #define A_ITALIC      A_INVIS
-#define A_PROTECT    (A_UNDERLINE | A_LEFT | A_RIGHT)
+#define A_PROTECT    (A_UNDERLINE | A_LEFT | A_RIGHT | A_OVERLINE)
 #define A_STANDOUT    (A_REVERSE | A_BOLD) /* X/Open */
 
 #define A_HORIZONTAL  A_NORMAL
