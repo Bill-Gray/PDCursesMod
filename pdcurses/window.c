@@ -150,19 +150,13 @@ WINDOW *PDC_makenew(int nlines, int ncols, int begy, int begx)
     /* allocate the line pointer array */
 
     win->_y = malloc(nlines * sizeof(chtype *));
-    if (!win->_y)
-    {
-        free(win);
-        return (WINDOW *)NULL;
-    }
 
     /* allocate the minchng and maxchng arrays */
 
     win->_firstch = malloc(nlines * sizeof(int) * 2);
-    if (!win->_firstch)
+    if (!win->_firstch || !win->_y)
     {
-        free(win->_y);
-        free(win);
+        delwin( win);
         return (WINDOW *)NULL;
     }
 
@@ -266,8 +260,10 @@ int delwin(WINDOW *win)
         if (win->_y[0])
            free(win->_y[0]);
 
-    free(win->_firstch);
-    free(win->_y);
+    if( win->_firstch)
+        free(win->_firstch);
+    if( win->_y)
+        free(win->_y);
     free(win);
 
     return OK;
