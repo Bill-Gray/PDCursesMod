@@ -153,7 +153,7 @@ typedef struct
 } PDC_PAIR;
 
 int COLORS = 0;
-int COLOR_PAIRS = PDC_COLOR_PAIRS;
+int COLOR_PAIRS = 1;       /* until start_color() is called */
 static int atrtab_size_alloced;
 
 static bool default_colors = FALSE;

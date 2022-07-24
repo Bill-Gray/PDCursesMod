@@ -128,7 +128,6 @@ PDCEX int PDC_wcwidth( const int32_t ucs);
 
 #define PDC_CLICK_PERIOD 150  /* time to wait for a click, if
                                  not set by mouseinterval() */
-#define PDC_COLOR_PAIRS  256
 #define PDC_MAXCOL       768  /* maximum possible COLORS; may be less */
 
 #define _INBUFSIZ        512  /* size of terminal input buffer */
