@@ -1199,6 +1199,12 @@ INLINE void HandleSizing( WPARAM wParam, LPARAM lParam )
         rect->left = rect->right - rounded_width;
 }
 
+typedef void(*resize_callback_fnptr)();
+static resize_callback_fnptr resize_callback = NULL;
+void PDC_set_window_resized_callback(resize_callback_fnptr callback) {
+    resize_callback = callback;
+}
+
 static void HandleSize( const WPARAM wParam, const LPARAM lParam)
 {
     static WPARAM prev_wParam = (WPARAM)-99;
@@ -1239,6 +1245,9 @@ static void HandleSize( const WPARAM wParam, const LPARAM lParam)
             /* don't add a key when the window is initialized */
             add_key_to_queue( KEY_RESIZE);
             SP->resized = TRUE;
+            if (resize_callback) {
+                resize_callback();
+            }
         }
     }
 
@@ -1908,28 +1917,20 @@ static LRESULT ALIGN_STACK CALLBACK WndProc (const HWND hwnd,
         PostQuitMessage (0) ;
         PDC_bDone = TRUE;
         return 0 ;
-    }
 
-    if( button != -1)
-    {
-        add_mouse( button, action, LOWORD( lParam) / PDC_cxChar, HIWORD( lParam) / PDC_cyChar);
-        if( action == BUTTON_PRESSED)
-           SetCapture( hwnd);
-        else
-           ReleaseCapture( );
-#if 0 /* checkme */
-        SetTimer( hwnd, 0, SP->mouse_wait, NULL);
-#endif
+    default:
+        return DefWindowProc( hwnd, message, wParam, lParam) ;
     }
 
     /* mouse button handling code */
-
-    add_mouse( button, action, LOWORD( lParam) / PDC_cxChar, HIWORD( lParam) / PDC_cyChar);
-    if( action == BUTTON_PRESSED)
-       SetCapture( hwnd);
+    assert(button != -1);
+    add_mouse(button, action, LOWORD(lParam) / PDC_cxChar, HIWORD(lParam) / PDC_cyChar);
+    if (action == BUTTON_PRESSED)
+        SetCapture(hwnd);
     else
-       add_mouse( -1, -1, -1, -1);
-    return DefWindowProc( hwnd, message, wParam, lParam) ;
+        ReleaseCapture();
+    SetTimer(hwnd, 0, SP->mouse_wait, NULL);
+    return 0;
 }
 
 /* https://msdn.microsoft.com/en-us/library/windows/desktop/dd162826(v=vs.85).aspx
