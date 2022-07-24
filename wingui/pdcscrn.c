@@ -982,35 +982,6 @@ INLINE int set_default_sizes_from_registry( const int n_cols, const int n_rows,
     return( rval != ERROR_SUCCESS);
 }
 
-/* If the window is maximized,  there will usually be a fractional
-character width at the right and bottom edges.  The following code fills
-that in with a black brush.  It takes the "paint rectangle",  the area
-passed with a WM_PAINT message that specifies what chunk of the client
-area needs to be redrawn.
-
-    If the window is _not_ maximized,  this shouldn't happen;  the window
-width/height should always be an integral multiple of the character
-width/height,  with no slivers at the right and bottom edges. */
-
-static void fix_up_edges( const HDC hdc, const RECT *rect)
-{
-    const int x = PDC_n_cols * PDC_cxChar;
-    const int y = PDC_n_rows * PDC_cyChar;
-
-    if( rect->right >= x || rect->bottom >= y)
-    {
-        const HBRUSH hOldBrush =
-                      SelectObject( hdc, GetStockObject( BLACK_BRUSH));
-
-        SelectObject( hdc, GetStockObject( NULL_PEN));
-        if( rect->right >= x)
-           Rectangle( hdc, x, rect->top, rect->right + 1, rect->bottom + 1);
-        if( rect->bottom >= y)
-           Rectangle( hdc, rect->left, y, rect->right + 1, rect->bottom + 1);
-        SelectObject( hdc, hOldBrush);
-    }
-}
-
 static void adjust_font_size( const int font_size_change)
 {
     extern int PDC_font_size;
@@ -1042,7 +1013,7 @@ static void adjust_font_size( const int font_size_change)
         SP->resized = TRUE;
         hdc = GetDC (PDC_hWnd) ;
         GetClientRect( PDC_hWnd, &client_rect);
-        fix_up_edges( hdc, &client_rect);
+        InvalidateRect(PDC_hWnd, &client_rect, TRUE);
         ReleaseDC( PDC_hWnd, hdc) ;
     }
     else
@@ -1238,11 +1209,12 @@ static void HandleSize( const WPARAM wParam, const LPARAM lParam)
     debug_printf( "WM_SIZE: wParam %x %d %d %d\n", (unsigned)wParam,
                   n_xpixels, n_ypixels, SP->resized);
 
-    if( wParam == SIZE_MINIMIZED )
+    if ( wParam == SIZE_MINIMIZED )
     {
         prev_wParam = SIZE_MINIMIZED;
         return;
     }
+
     new_n_rows = n_ypixels / PDC_cyChar;
     new_n_cols = n_xpixels / PDC_cxChar;
     debug_printf( "Size was %d x %d; will be %d x %d\n",
@@ -1292,20 +1264,22 @@ static void HandleSize( const WPARAM wParam, const LPARAM lParam)
     prev_wParam = wParam;
 }
 
-
 static void HandlePaint( HWND hwnd )
 {
     PAINTSTRUCT ps;
     HDC hdc;
-    RECT rect;
 
-    GetUpdateRect( hwnd, &rect, FALSE);
 /*  printf( "In HandlePaint: %ld %ld, %ld %ld\n",
                rect.left, rect.top, rect.right, rect.bottom); */
 
     hdc = BeginPaint( hwnd, &ps);
+    RECT rect = ps.rcPaint;
 
-    fix_up_edges( hdc, &rect);
+    /* paint the background black. */
+    const HBRUSH hOldBrush =
+        SelectObject(hdc, GetStockObject(BLACK_BRUSH));
+    Rectangle(hdc, rect.left, rect.top, rect.right, rect.bottom);
+    SelectObject(hdc, hOldBrush);
 
     if( curscr && curscr->_y)
     {
