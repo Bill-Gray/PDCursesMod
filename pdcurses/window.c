@@ -198,10 +198,7 @@ WINDOW *PDC_makelines(WINDOW *win)
     {
         /* if error, free all the data */
 
-        free(win->_firstch);
-        free(win->_y);
-        free(win);
-
+        delwin( win);
         return (WINDOW *)NULL;
     }
     for (i = 1; i < nlines; i++)

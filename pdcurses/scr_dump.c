@@ -89,6 +89,25 @@ static chtype _get_chtype_from_eight_bytes( const char *buff)
    return( (chtype)c);
 }
 
+/* In PDCursesMod 4.3.3 and earlier,  the on-disk representation of a
+window was entirely binary.  A WINDOW struct was written out,  and the
+window's chtype data was written out.  Portability of these files was
+nearly zero.  Alignment and structure packing differences, differences
+in the sizes of ints,  bools,  and pointers,  32-bit vs. 64-bit
+chtypes and endianness would usually ensure that a file written by one
+program couldn't be read by another.
+
+Adding grief to this is the fact that the window structure changed in
+4.3.1.  Files written with 4.3.0 and earlier could not be read in
+4.3.1 and later.
+
+The window structure is now written out in ASCII,  which should help
+with cross-compiler and cross-OS compatibility.  chtypes are expanded
+to the 64-bit form on writing and compacted back upon reading.  You
+will get scrambled colors and/or attributes if you make a file with
+one program that uses attributes or color pairs beyond the reach of
+the program reading the file.  Error checks for this may be added. */
+
 static const char *_format_nine_ints = "%d %d %d %d %d %d %d %d %d\n";
 static const char *_format_three_ints = "%d %d %d\n";
 
@@ -172,11 +191,20 @@ WINDOW *getwin(FILE *filep)
     if( failure)
         return (WINDOW *)NULL;
 
-    win = malloc(sizeof(WINDOW));
+    win = PDC_makenew( temp_win._maxy, temp_win._maxx, temp_win._begy, temp_win._begx);
     if (!win)
         return (WINDOW *)NULL;
+    else
+    {
+        chtype **saved_y = win->_y;
+        int *saved_firstch = win->_firstch;
+        int *saved_lastch = win->_lastch;
 
-    memcpy( win, &temp_win, sizeof( WINDOW));
+        memcpy( win, &temp_win, sizeof( WINDOW));
+        win->_y = saved_y;
+        win->_firstch = saved_firstch;
+        win->_lastch  = saved_lastch;
+    }
     win->_attrs = _get_chtype_from_eight_bytes( buff);
     win->_bkgd = _get_chtype_from_eight_bytes( buff + 8);
     win->_clear      = _clear;
@@ -188,27 +216,6 @@ WINDOW *getwin(FILE *filep)
     win->_use_keypad = _use_keypad;
 
     nlines = win->_maxy;
-
-    /* allocate the line pointer array */
-
-    win->_y = malloc(nlines * sizeof(chtype *));
-    if (!win->_y)
-    {
-        free(win);
-        return (WINDOW *)NULL;
-    }
-
-    /* allocate the minchng and maxchng arrays */
-
-    win->_firstch = malloc(nlines * sizeof(int) * 2);
-    if (!win->_firstch)
-    {
-        free(win->_y);
-        free(win);
-        return (WINDOW *)NULL;
-    }
-
-    win->_lastch = win->_firstch + nlines;
 
     /* allocate the lines */
 
