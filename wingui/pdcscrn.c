@@ -1278,79 +1278,83 @@ struct BACK_BUFFER {
     HANDLE original_object;
     RECT rect;
     bool is_rect_valid;
-} backBuffer;
+} back_buffer;
 
 static void PrepareBackBuffer(HDC hdc, RECT rect)
 {
-    memset(&backBuffer, 0, sizeof(backBuffer));
     int width = rect.right - rect.left;
     int height = rect.bottom - rect.top;
-    backBuffer.rect = rect;
-    backBuffer.window_dc = hdc;
-    backBuffer.memory_dc = CreateCompatibleDC(hdc);
-    backBuffer.memory_bitmap = CreateCompatibleBitmap(hdc, width, height);
-    backBuffer.original_object =
-        SelectObject(backBuffer.memory_dc, backBuffer.memory_bitmap);
-    backBuffer.is_rect_valid = width > 0 && height > 0;
+    memset(&back_buffer, 0, sizeof(back_buffer));
+    back_buffer.rect = rect;
+    back_buffer.window_dc = hdc;
+    back_buffer.memory_dc = CreateCompatibleDC(hdc);
+    back_buffer.memory_bitmap = CreateCompatibleBitmap(hdc, width, height);
+    back_buffer.original_object =
+        SelectObject(back_buffer.memory_dc, back_buffer.memory_bitmap);
+    back_buffer.is_rect_valid = width > 0 && height > 0;
 }
 
 static void BlitBackBuffer()
 {
-    if (backBuffer.is_rect_valid)
+    const RECT* r = NULL;
+    int width = 0;
+    int height = 0;
+
+    if (back_buffer.is_rect_valid)
     {
-        const RECT* r = &backBuffer.rect;
-        int width = r->right - r->left;
-        int height = r->bottom - r->top;
+        r = &back_buffer.rect;
+        width = r->right - r->left;
+        height = r->bottom - r->top;
         BitBlt(
-            backBuffer.window_dc,
+            back_buffer.window_dc,
             r->left, r->top,
             width, height,
-            backBuffer.memory_dc,
+            back_buffer.memory_dc,
             0, 0,
             SRCCOPY);
     }
-    SelectObject(backBuffer.memory_dc, backBuffer.original_object);
-    DeleteObject(backBuffer.memory_bitmap);
-    DeleteObject(backBuffer.memory_dc);
-    memset(&backBuffer, 0, sizeof(backBuffer));
+    SelectObject(back_buffer.memory_dc, back_buffer.original_object);
+    DeleteObject(back_buffer.memory_bitmap);
+    DeleteObject(back_buffer.memory_dc);
+    memset(&back_buffer, 0, sizeof(back_buffer));
 }
 
 static void HandlePaint( HWND hwnd )
 {
     PAINTSTRUCT ps;
-    HDC windowDC, memoryDC;
-    RECT clientRect;
+    HDC window_dc, memory_dc;
+    RECT client_rect;
+    HBRUSH hOldBrush;
 
 /*  printf( "In HandlePaint: %ld %ld, %ld %ld\n",
                rect.left, rect.top, rect.right, rect.bottom); */
 
-    windowDC = BeginPaint( hwnd, &ps);
-    GetClientRect(hwnd, &clientRect);
+    window_dc = BeginPaint( hwnd, &ps);
+    GetClientRect(hwnd, &client_rect);
 
-    PrepareBackBuffer(windowDC, clientRect);
-    memoryDC = backBuffer.memory_dc;
+    PrepareBackBuffer(window_dc, client_rect);
+    memory_dc = back_buffer.memory_dc;
     {
         /* paint the background black. */
-        const HBRUSH hOldBrush =
-            SelectObject(memoryDC, GetStockObject(BLACK_BRUSH));
-        Rectangle(memoryDC,
-            clientRect.left, clientRect.top,
-            clientRect.right, clientRect.bottom);
-        SelectObject(memoryDC, hOldBrush);
+        hOldBrush = SelectObject(memory_dc, GetStockObject(BLACK_BRUSH));
+        Rectangle(memory_dc,
+            client_rect.left, client_rect.top,
+            client_rect.right, client_rect.bottom);
+        SelectObject(memory_dc, hOldBrush);
 
         /* paint all the rows */
         if (curscr && curscr->_y)
         {
             int i, x1, n_chars;
 
-            x1 = clientRect.left / PDC_cxChar;
-            n_chars = clientRect.right / PDC_cxChar - x1 + 1;
+            x1 = client_rect.left / PDC_cxChar;
+            n_chars = client_rect.right / PDC_cxChar - x1 + 1;
             if (n_chars > SP->cols - x1)
                 n_chars = SP->cols - x1;
             if (n_chars > 0)
-                for (i = clientRect.top / PDC_cyChar; i <= clientRect.bottom / PDC_cyChar; i++)
+                for (i = client_rect.top / PDC_cyChar; i <= client_rect.bottom / PDC_cyChar; i++)
                     if (i < SP->lines && curscr->_y[i])
-                        PDC_transform_line_given_hdc(memoryDC, i, x1,
+                        PDC_transform_line_given_hdc(memory_dc, i, x1,
                             n_chars, curscr->_y[i] + x1);
         }
     }
