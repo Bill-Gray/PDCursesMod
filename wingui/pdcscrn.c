@@ -2051,7 +2051,8 @@ INLINE int set_up_window( void)
     HANDLE hInstance = GetModuleHandle( NULL);
     int n_default_columns = 80;
     int n_default_rows = 25;
-    int xsize, ysize, window_style;
+    int xsize, ysize;
+    DWORD window_style, window_ex_style;
     int xloc = CW_USEDEFAULT;
     int yloc = CW_USEDEFAULT;
     TCHAR WindowTitle[MAX_PATH];
@@ -2122,7 +2123,7 @@ INLINE int set_up_window( void)
     else  /* fixed-size window:  looks "normal",  but w/o a maximize box */
         window_style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
 
-    DWORD window_ex_style = WS_EX_CLIENTEDGE;
+    window_ex_style = WS_EX_CLIENTEDGE;
 
     if( n_default_columns == -1)
         xsize = ysize = CW_USEDEFAULT;
