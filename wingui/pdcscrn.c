@@ -1324,7 +1324,8 @@ static void HandlePaint( HWND hwnd )
     PAINTSTRUCT ps;
     HDC window_dc, memory_dc;
     RECT client_rect;
-    HBRUSH hOldBrush;
+    HBRUSH old_brush;
+    int i;
 
 /*  printf( "In HandlePaint: %ld %ld, %ld %ld\n",
                rect.left, rect.top, rect.right, rect.bottom); */
@@ -1336,30 +1337,22 @@ static void HandlePaint( HWND hwnd )
     memory_dc = back_buffer.memory_dc;
     {
         /* paint the background black. */
-        hOldBrush = SelectObject(memory_dc, GetStockObject(BLACK_BRUSH));
+        old_brush = SelectObject(memory_dc, GetStockObject(BLACK_BRUSH));
         Rectangle(memory_dc,
             client_rect.left, client_rect.top,
             client_rect.right, client_rect.bottom);
-        SelectObject(memory_dc, hOldBrush);
+        SelectObject(memory_dc, old_brush);
 
         /* paint all the rows */
-        if (curscr && curscr->_y)
+        if (curscr && curscr->_y && PDC_n_cols > 0 && PDC_n_rows > 0)
         {
-            int i, x1, n_chars;
-
-            x1 = client_rect.left / PDC_cxChar;
-            n_chars = client_rect.right / PDC_cxChar - x1 + 1;
-            if (n_chars > SP->cols - x1)
-                n_chars = SP->cols - x1;
-            if (n_chars > 0)
-                for (i = client_rect.top / PDC_cyChar; i <= client_rect.bottom / PDC_cyChar; i++)
-                    if (i < SP->lines && curscr->_y[i])
-                        PDC_transform_line_given_hdc(memory_dc, i, x1,
-                            n_chars, curscr->_y[i] + x1);
+            for (i = 0; i < PDC_n_rows; i++)
+                if (i < SP->lines && curscr->_y[i])
+                    PDC_transform_line_given_hdc(memory_dc, i, 0, PDC_n_cols, curscr->_y[i]);
         }
     }
     BlitBackBuffer();
-    EndPaint( hwnd, &ps );
+    EndPaint(hwnd, &ps);
 }
 
 static bool key_already_handled = FALSE;
@@ -1755,14 +1748,14 @@ static LRESULT ALIGN_STACK CALLBACK WndProc (const HWND hwnd,
     {
     case WM_SIZING:
         HandleSizing( wParam, lParam );
-        return( TRUE );
+        return 1;
 
     case WM_SIZE:
                 /* If ignore_resize = 1,  don't bother resizing; */
                 /* the final window size has yet to be set       */
         if( ignore_resize == FALSE)
            HandleSize( wParam, lParam);
-        return 0 ;
+        return 0;
 
     case WM_MOUSEWHEEL:
     case WM_MOUSEHWHEEL:
