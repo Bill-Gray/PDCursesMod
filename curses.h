@@ -1780,6 +1780,8 @@ PDCEX int     PDC_set_function_key( const unsigned function,
                               const int new_key);
 PDCEX int     PDC_get_function_key( const unsigned function);
 
+PDCEX void    PDC_set_window_resized_callback(void (*callback)());
+
 PDCEX  WINDOW *Xinitscr(int, char **);
 #ifdef XCURSES
 PDCEX  void    XCursesExit(void);

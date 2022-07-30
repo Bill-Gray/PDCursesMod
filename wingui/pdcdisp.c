@@ -243,7 +243,6 @@ int PDC_choose_a_new_font( void)
     CHOOSEFONT cf;
     int rval;
     extern HWND PDC_hWnd;
-    extern CRITICAL_SECTION PDC_cs;
 
     lf.lfHeight = -PDC_font_size;
     debug_printf( "In PDC_choose_a_new_font: %d\n", lf.lfHeight);
@@ -252,9 +251,7 @@ int PDC_choose_a_new_font( void)
     cf.Flags = CF_INITTOLOGFONTSTRUCT | CF_SCREENFONTS | CF_FIXEDPITCHONLY | CF_SELECTSCRIPT;
     cf.hwndOwner = PDC_hWnd;
     cf.lpLogFont = &lf;
-    LeaveCriticalSection(&PDC_cs);
     rval = ChooseFont( &cf);
-    EnterCriticalSection(&PDC_cs);
     if( rval) {
 #ifdef PDC_WIDE
         wcscpy( PDC_font_name, lf.lfFaceName);
