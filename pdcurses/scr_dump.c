@@ -82,7 +82,7 @@ static chtype _get_chtype_from_eight_bytes( const char *buff)
 
          /* Should reverse these eight bytes on big-Endian machines */
    memcpy( &x, buff, 8);
-   text = x & 0x1ffff;
+   text = x & A_CHARTEXT;
    attribs = (x >> 21) & 0xfff;
    color_pair = (x >> 33) & 0xfffff;
    c = text | (attribs << PDC_CHARTEXT_BITS) | COLOR_PAIR( color_pair);
