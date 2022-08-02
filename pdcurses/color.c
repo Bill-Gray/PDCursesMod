@@ -152,6 +152,12 @@ typedef struct
     int prev, next;       /* doubly-linked list indices */
 } PDC_PAIR;
 
+#if PDC_COLOR_BITS < 15
+    typedef int16_t hash_idx_t;
+#else
+    typedef int32_t hash_idx_t;
+#endif
+
 struct _opaque_screen_t
 {
    PDC_PAIR *pairs;
@@ -160,6 +166,8 @@ struct _opaque_screen_t
    int _default_background_idx;
    int first_col;
    bool default_colors;
+   hash_idx_t *pair_hash_tbl;
+   int pair_hash_tbl_size, pair_hash_tbl_used;
 };
 
 int COLORS = 0;
@@ -188,23 +196,14 @@ static void _link_color_pair( const int pair_no, const int head)
     p[head].next = p[curr->next].prev = pair_no;
 }
 
-#if PDC_COLOR_BITS < 15
-    typedef int16_t hash_idx_t;
-#else
-    typedef int32_t hash_idx_t;
-#endif
-
-static hash_idx_t *_pair_hash_tbl = NULL;
-static int _pair_hash_tbl_size = 0, _pair_hash_tbl_used = 0;
-
 static int _hash_color_pair( const int fg, const int bg)
 {
     int rval = (fg * 31469 + bg * 19583);
 
-    assert( _pair_hash_tbl_size);
+    assert( SP->opaque->pair_hash_tbl_size);
     rval ^= rval >> 11;
     rval ^= rval << 7;
-    rval &= (_pair_hash_tbl_size - 1);
+    rval &= (SP->opaque->pair_hash_tbl_size - 1);
     return( rval);
 }
 
@@ -215,12 +214,12 @@ https://www.projectpluto.com/hashing.htm for details.    */
 #define ADVANCE_HASH_PROBE( idx, iter) \
               { idx++;        \
                 if( iter % GROUP_SIZE == 0) idx += iter - GROUP_SIZE;  \
-                idx &= (_pair_hash_tbl_size - 1); }
+                idx &= (SP->opaque->pair_hash_tbl_size - 1); }
 
 static void _check_hash_tbl( void)
 {
    assert( SP->opaque && SP->opaque->pairs);
-   if( _pair_hash_tbl_used * 5 / 4 >= _pair_hash_tbl_size)
+   if( SP->opaque->pair_hash_tbl_used * 5 / 4 >= SP->opaque->pair_hash_tbl_size)
       {
       int i, n_pairs;
       PDC_PAIR *p = SP->opaque->pairs;
@@ -228,22 +227,22 @@ static void _check_hash_tbl( void)
       for( i = 1, n_pairs = 0; i < SP->opaque->pairs_allocated; i++)
          if( p[i].f != UNSET_COLOR_PAIR)
             n_pairs++;
-      _pair_hash_tbl_used = n_pairs;
-      _pair_hash_tbl_size = 8;    /* minimum table size */
-      while( n_pairs >= _pair_hash_tbl_size * 3 / 4)
-         _pair_hash_tbl_size <<= 1;    /* more than 75% of table is full */
-      if( _pair_hash_tbl)
-         free( _pair_hash_tbl);
-      _pair_hash_tbl = (hash_idx_t *)calloc(
-                              _pair_hash_tbl_size, sizeof( hash_idx_t));
+      SP->opaque->pair_hash_tbl_used = n_pairs;
+      SP->opaque->pair_hash_tbl_size = 8;    /* minimum table size */
+      while( n_pairs >= SP->opaque->pair_hash_tbl_size * 3 / 4)
+         SP->opaque->pair_hash_tbl_size <<= 1;    /* more than 75% of table is full */
+      if( SP->opaque->pair_hash_tbl)
+         free( SP->opaque->pair_hash_tbl);
+      SP->opaque->pair_hash_tbl = (hash_idx_t *)calloc(
+                              SP->opaque->pair_hash_tbl_size, sizeof( hash_idx_t));
       for( i = 1; i < SP->opaque->pairs_allocated; i++)
          if( p[i].f != UNSET_COLOR_PAIR)
             {
             int idx = _hash_color_pair( p[i].f, p[i].b), iter;
 
-            for( iter = 0; _pair_hash_tbl[idx]; iter++)
+            for( iter = 0; SP->opaque->pair_hash_tbl[idx]; iter++)
                ADVANCE_HASH_PROBE( idx, iter);
-            _pair_hash_tbl[idx] = (hash_idx_t)i;
+            SP->opaque->pair_hash_tbl[idx] = (hash_idx_t)i;
             }
       }
 }
@@ -404,12 +403,12 @@ static void _init_pair_core(int pair, int fg, int bg)
     {
        int idx = _hash_color_pair( p->f, p->b), iter;
 
-       for( iter = 0; _pair_hash_tbl[idx] != pair; iter++)
+       for( iter = 0; SP->opaque->pair_hash_tbl[idx] != pair; iter++)
        {
-           assert( _pair_hash_tbl[idx]);
+           assert( SP->opaque->pair_hash_tbl[idx]);
            ADVANCE_HASH_PROBE( idx, iter);
        }
-       _pair_hash_tbl[idx] = -1;    /* mark as freed */
+       SP->opaque->pair_hash_tbl[idx] = -1;    /* mark as freed */
     }
     if( pair)
        _unlink_color_pair( pair);
@@ -419,11 +418,11 @@ static void _init_pair_core(int pair, int fg, int bg)
     {
        int idx = _hash_color_pair( fg, bg), iter;
 
-       for( iter = 0; _pair_hash_tbl[idx] > 0; iter++)
+       for( iter = 0; SP->opaque->pair_hash_tbl[idx] > 0; iter++)
            ADVANCE_HASH_PROBE( idx, iter);
-       if( !_pair_hash_tbl[idx])    /* using a new pair */
-           _pair_hash_tbl_used++;
-       _pair_hash_tbl[idx] = (hash_idx_t)pair;
+       if( !SP->opaque->pair_hash_tbl[idx])    /* using a new pair */
+           SP->opaque->pair_hash_tbl_used++;
+       SP->opaque->pair_hash_tbl[idx] = (hash_idx_t)pair;
     }
     if( pair)
        _link_color_pair( pair, (p->f == UNSET_COLOR_PAIR ? SP->opaque->pairs_allocated : 0));
@@ -645,11 +644,11 @@ int find_pair( int fg, int bg)
     assert( SP);
     assert( SP->opaque);
     assert( SP->opaque->pairs_allocated);
-    for( iter = 0; _pair_hash_tbl[idx]; iter++)
+    for( iter = 0; SP->opaque->pair_hash_tbl[idx]; iter++)
     {
         int i;
 
-        if( (i = _pair_hash_tbl[idx]) > 0)
+        if( (i = SP->opaque->pair_hash_tbl[idx]) > 0)
         {
             PDC_PAIR *p = SP->opaque->pairs;
 
@@ -711,17 +710,19 @@ int free_pair( int pair)
 
 void PDC_free_pair_hash_table( void)
 {
-    if( _pair_hash_tbl)
-        free( _pair_hash_tbl);
-    _pair_hash_tbl = NULL;
-    _pair_hash_tbl_size = _pair_hash_tbl_used = 0;
+    assert( SP);
+    assert( SP->opaque);
+    if( SP->opaque->pair_hash_tbl)
+        free( SP->opaque->pair_hash_tbl);
+    SP->opaque->pair_hash_tbl = NULL;
+    SP->opaque->pair_hash_tbl_size = SP->opaque->pair_hash_tbl_used = 0;
 }
 
 void reset_color_pairs( void)
 {
     assert( SP && SP->opaque && SP->opaque->pairs);
-    PDC_free_atrtab( );
     PDC_free_pair_hash_table( );
+    PDC_free_atrtab( );
     PDC_init_atrtab( );
     curscr->_clear = TRUE;
 }
@@ -776,8 +777,8 @@ int PDC_check_color_pair_table( int *results)
         results[0] = n_used;
         results[1] = n_free;
         results[2] = SP->opaque->pairs_allocated + 1;      /* include the 'dummy' pair */
-        results[3] = _pair_hash_tbl_size;
-        results[4] = _pair_hash_tbl_used;
+        results[3] = SP->opaque->pair_hash_tbl_size;
+        results[4] = SP->opaque->pair_hash_tbl_used;
     }
     return( (n_used + n_free == SP->opaque->pairs_allocated + 1) ? 0 : -1);
 }

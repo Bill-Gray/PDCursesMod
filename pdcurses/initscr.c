@@ -372,8 +372,8 @@ void delscreen(SCREEN *sp)
 
     free(SP->c_ungch);
     free(SP->c_buffer);
-    PDC_free_atrtab( );
     PDC_free_pair_hash_table();
+    PDC_free_atrtab( );
 
     PDC_slk_free();     /* free the soft label keys, if needed */
 
