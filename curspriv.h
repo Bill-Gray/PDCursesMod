@@ -90,6 +90,7 @@ const char *PDC_sysname(void);
 /* Internal cross-module functions */
 
 int     PDC_init_atrtab(void);
+void    PDC_free_atrtab(void);
 WINDOW *PDC_makelines(WINDOW *);
 WINDOW *PDC_makenew(int, int, int, int);
 int     PDC_mouse_in_slk(int, int);

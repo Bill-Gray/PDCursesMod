@@ -152,14 +152,18 @@ typedef struct
     int prev, next;       /* doubly-linked list indices */
 } PDC_PAIR;
 
+struct _opaque_screen_t
+{
+   PDC_PAIR *pairs;
+   int pairs_allocated;
+   int _default_foreground_idx;
+   int _default_background_idx;
+   int first_col;
+   bool default_colors;
+};
+
 int COLORS = 0;
 int COLOR_PAIRS = 1;       /* until start_color() is called */
-static int atrtab_size_alloced;
-
-static bool default_colors = FALSE;
-static int first_col = 0;
-static int _default_foreground_idx = COLOR_WHITE;
-static int _default_background_idx = COLOR_BLACK;
 
 static void _init_pair_core(int pair, int fg, int bg);
 
@@ -167,7 +171,7 @@ static void _init_pair_core(int pair, int fg, int bg);
 
 static void _unlink_color_pair( const int pair_no)
 {
-    PDC_PAIR *p = (PDC_PAIR *)SP->atrtab;
+    PDC_PAIR *p = SP->opaque->pairs;
     PDC_PAIR *curr = p + pair_no;
 
     p[curr->next].prev = curr->prev;
@@ -176,7 +180,7 @@ static void _unlink_color_pair( const int pair_no)
 
 static void _link_color_pair( const int pair_no, const int head)
 {
-    PDC_PAIR *p = (PDC_PAIR *)SP->atrtab;
+    PDC_PAIR *p = SP->opaque->pairs;
     PDC_PAIR *curr = p + pair_no;
 
     curr->next = p[head].next;
@@ -215,13 +219,13 @@ https://www.projectpluto.com/hashing.htm for details.    */
 
 static void _check_hash_tbl( void)
 {
-   assert( SP->atrtab);
+   assert( SP->opaque && SP->opaque->pairs);
    if( _pair_hash_tbl_used * 5 / 4 >= _pair_hash_tbl_size)
       {
       int i, n_pairs;
-      PDC_PAIR *p = (PDC_PAIR *)SP->atrtab;
+      PDC_PAIR *p = SP->opaque->pairs;
 
-      for( i = 1, n_pairs = 0; i < atrtab_size_alloced; i++)
+      for( i = 1, n_pairs = 0; i < SP->opaque->pairs_allocated; i++)
          if( p[i].f != UNSET_COLOR_PAIR)
             n_pairs++;
       _pair_hash_tbl_used = n_pairs;
@@ -232,7 +236,7 @@ static void _check_hash_tbl( void)
          free( _pair_hash_tbl);
       _pair_hash_tbl = (hash_idx_t *)calloc(
                               _pair_hash_tbl_size, sizeof( hash_idx_t));
-      for( i = 1; i < atrtab_size_alloced; i++)
+      for( i = 1; i < SP->opaque->pairs_allocated; i++)
          if( p[i].f != UNSET_COLOR_PAIR)
             {
             int idx = _hash_color_pair( p[i].f, p[i].b), iter;
@@ -256,10 +260,11 @@ int start_color(void)
 
     PDC_set_blink(FALSE);   /* Also sets COLORS */
 
-    if (!default_colors && SP->orig_attr && getenv("PDC_ORIGINAL_COLORS"))
-        default_colors = TRUE;
+    if (!SP->opaque->default_colors && SP->orig_attr && getenv("PDC_ORIGINAL_COLORS"))
+        SP->opaque->default_colors = TRUE;
 
-    _init_pair_core( 0, _default_foreground_idx, _default_background_idx);
+    _init_pair_core( 0, SP->opaque->_default_foreground_idx,
+                        SP->opaque->_default_background_idx);
     if( !SP->_preserve)
         curscr->_clear = TRUE;
 #if !defined( CHTYPE_32) && !defined(OS2) && !defined(DOS)
@@ -280,19 +285,19 @@ int start_color(void)
 
 void PDC_set_default_colors( const int fg_idx, const int bg_idx)
 {
-   _default_foreground_idx = fg_idx;
-   _default_background_idx = bg_idx;
+   SP->opaque->_default_foreground_idx = fg_idx;
+   SP->opaque->_default_background_idx = bg_idx;
 }
 
 static void _normalize(int *fg, int *bg)
 {
-    const bool using_defaults = (SP->orig_attr && (default_colors || !SP->color_started));
+    const bool using_defaults = (SP->orig_attr && (SP->opaque->default_colors || !SP->color_started));
 
     if (*fg == -1 || *fg == UNSET_COLOR_PAIR)
-        *fg = using_defaults ? SP->orig_fore : _default_foreground_idx;
+        *fg = using_defaults ? SP->orig_fore : SP->opaque->_default_foreground_idx;
 
     if (*bg == -1 || *fg == UNSET_COLOR_PAIR)
-        *bg = using_defaults ? SP->orig_back : _default_background_idx;
+        *bg = using_defaults ? SP->orig_back : SP->opaque->_default_background_idx;
 }
 
 /* When a color pair is reset,  all cells of that color should be
@@ -362,29 +367,30 @@ static void _init_pair_core(int pair, int fg, int bg)
     PDC_PAIR *p;
     bool refresh_pair;
 
-    assert( SP->atrtab);
-    assert( atrtab_size_alloced);
+    assert( SP->opaque);
+    assert( SP->opaque->pairs_allocated);
     assert( pair < COLOR_PAIRS);
-    if( pair >= atrtab_size_alloced)
+    if( pair >= SP->opaque->pairs_allocated)
     {
-        int i, new_size = atrtab_size_alloced * 2;
+        int i, new_size = SP->opaque->pairs_allocated * 2;
 
         while( pair >= new_size)
             new_size += new_size;
-        SP->atrtab = (void *)realloc( SP->atrtab, (new_size + 1) * sizeof( PDC_PAIR));
-        assert( SP->atrtab);
-        for( i = atrtab_size_alloced + 1; i <= new_size; i++)
+        SP->opaque->pairs = (PDC_PAIR *)realloc( SP->opaque->pairs,
+                                      (new_size + 1) * sizeof( PDC_PAIR));
+        assert( SP->opaque);
+        for( i = SP->opaque->pairs_allocated + 1; i <= new_size; i++)
         {
-            p = (PDC_PAIR *)SP->atrtab + i;
+            p = SP->opaque->pairs + i;
             p->f = UNSET_COLOR_PAIR;
-            _link_color_pair( i, atrtab_size_alloced);
+            _link_color_pair( i, SP->opaque->pairs_allocated);
         }
-        atrtab_size_alloced = new_size;
+        SP->opaque->pairs_allocated = new_size;
     }
 
     assert( pair >= 0);
-    assert( pair < atrtab_size_alloced);
-    p = (PDC_PAIR *)SP->atrtab + pair;
+    assert( pair < SP->opaque->pairs_allocated);
+    p = SP->opaque->pairs + pair;
 
     /* To allow the PDC_PRESERVE_SCREEN option to work, we only reset
        curscr if this call to init_pair() alters a color pair created by
@@ -420,7 +426,7 @@ static void _init_pair_core(int pair, int fg, int bg)
        _pair_hash_tbl[idx] = (hash_idx_t)pair;
     }
     if( pair)
-       _link_color_pair( pair, (p->f == UNSET_COLOR_PAIR ? atrtab_size_alloced : 0));
+       _link_color_pair( pair, (p->f == UNSET_COLOR_PAIR ? SP->opaque->pairs_allocated : 0));
     if( refresh_pair)
         _set_cells_to_refresh_for_pair_change( pair);
 }
@@ -430,8 +436,9 @@ int init_extended_pair(int pair, int fg, int bg)
     PDC_LOG(("init_pair() - called: pair %d fg %d bg %d\n", pair, fg, bg));
 
     assert( SP);
-    if (!SP || !SP->color_started || pair < 1 || pair >= COLOR_PAIRS ||
-        fg < first_col || fg >= COLORS || bg < first_col || bg >= COLORS)
+    if (!SP || !SP->color_started || pair < 1 || pair >= COLOR_PAIRS
+        || fg < SP->opaque->first_col || fg >= COLORS
+        || bg < SP->opaque->first_col || bg >= COLORS)
         return ERR;
 
     _init_pair_core(pair, fg, bg);
@@ -494,14 +501,14 @@ bool can_change_color(void)
 
 int extended_pair_content(int pair, int *fg, int *bg)
 {
-    PDC_PAIR *p = (PDC_PAIR *)SP->atrtab + pair;
+    PDC_PAIR *p = SP->opaque->pairs + pair;
 
     PDC_LOG(("pair_content() - called\n"));
 
     if (pair < 0 || pair >= COLOR_PAIRS || !fg || !bg)
         return ERR;
 
-    if( pair >= atrtab_size_alloced || (pair && p->f == UNSET_COLOR_PAIR))
+    if( pair >= SP->opaque->pairs_allocated || (pair && p->f == UNSET_COLOR_PAIR))
     {
         *fg = COLOR_RED;      /* signal use of uninitialized pair */
         *bg = COLOR_BLUE;     /* with visible,  but odd,  colors  */
@@ -534,8 +541,8 @@ int use_default_colors(void)
 {
     PDC_LOG(("use_default_colors() - called\n"));
 
-    default_colors = TRUE;
-    first_col = -1;
+    SP->opaque->default_colors = TRUE;
+    SP->opaque->first_col = -1;
 
     return assume_default_colors(-1, -1);
 }
@@ -558,24 +565,40 @@ int PDC_set_line_color(short color)
 int PDC_init_atrtab(void)
 {
     assert( SP);
-    if( !SP->atrtab)
+    if( !SP->opaque)
     {
        PDC_PAIR *p;
 
-       atrtab_size_alloced = 1;
-       SP->atrtab = calloc( 2, sizeof(PDC_PAIR));
-       assert( SP->atrtab);
-       if( !SP->atrtab)
+       SP->opaque = (struct _opaque_screen_t *)calloc( 1, sizeof( struct _opaque_screen_t));
+       assert( SP->opaque);
+       if( !SP->opaque)
            return -1;
-       p = (PDC_PAIR *)SP->atrtab;
+       SP->opaque->pairs_allocated = 1;
+       SP->opaque->pairs = (PDC_PAIR *)calloc( 2, sizeof(PDC_PAIR));
+       assert( SP->opaque->pairs);
+       if( !SP->opaque->pairs)
+           return -1;
+       p = (PDC_PAIR *)SP->opaque->pairs;
        p[0].f = p[1].f = UNSET_COLOR_PAIR;
        p[0].prev = p[0].next = 0;
        p[1].prev = p[1].next = 1;
+       SP->opaque->default_colors = FALSE;
+       PDC_set_default_colors( COLOR_WHITE, COLOR_BLACK);
     }
     _init_pair_core( 0,
-            (SP->orig_attr ? SP->orig_fore : _default_foreground_idx),
-            (SP->orig_attr ? SP->orig_back : _default_background_idx));
+            (SP->orig_attr ? SP->orig_fore : SP->opaque->_default_foreground_idx),
+            (SP->orig_attr ? SP->orig_back : SP->opaque->_default_background_idx));
     return( 0);
+}
+
+void PDC_free_atrtab(void)
+{
+    assert( SP);
+    assert( SP->opaque);
+    assert( SP->opaque->pairs);
+    free( SP->opaque->pairs);
+    free( SP->opaque);
+    SP->opaque = NULL;
 }
 
 int init_pair( short pair, short fg, short bg)
@@ -620,15 +643,15 @@ int find_pair( int fg, int bg)
     int idx = _hash_color_pair( fg, bg), iter;
 
     assert( SP);
-    assert( SP->atrtab);
-    assert( atrtab_size_alloced);
+    assert( SP->opaque);
+    assert( SP->opaque->pairs_allocated);
     for( iter = 0; _pair_hash_tbl[idx]; iter++)
     {
         int i;
 
         if( (i = _pair_hash_tbl[idx]) > 0)
         {
-            PDC_PAIR *p = (PDC_PAIR *)SP->atrtab;
+            PDC_PAIR *p = SP->opaque->pairs;
 
             if( p[i].f == fg && p[i].b == bg)
             {
@@ -657,9 +680,9 @@ int alloc_pair( int fg, int bg)
 
     if( -1 == rval)        /* pair isn't already allocated.  First,  look */
     {                      /* for an unset color pair. */
-        PDC_PAIR *p = (PDC_PAIR *)SP->atrtab;
+        PDC_PAIR *p = SP->opaque->pairs;
 
-        rval = p[atrtab_size_alloced].prev;
+        rval = p[SP->opaque->pairs_allocated].prev;
         assert( rval);
         if( COLOR_PAIRS == rval)       /* all color pairs are in use; */
             rval = p[0].prev;          /* 'repurpose' the oldest pair */
@@ -674,11 +697,11 @@ int free_pair( int pair)
 {
     PDC_PAIR *p;
 
-    assert( SP && SP->atrtab);
-    assert( pair >= 1 && pair < atrtab_size_alloced);
-    p = (PDC_PAIR *)SP->atrtab + pair;
+    assert( SP && SP->opaque && SP->opaque->pairs);
+    assert( pair >= 1 && pair < SP->opaque->pairs_allocated);
+    p = SP->opaque->pairs + pair;
     assert( p->f != UNSET_COLOR_PAIR);
-    if (!SP || !SP->color_started || pair < 1 || pair >= atrtab_size_alloced
+    if (!SP || !SP->color_started || pair < 1 || pair >= SP->opaque->pairs_allocated
                || p->f == UNSET_COLOR_PAIR)
         return ERR;
 
@@ -696,9 +719,8 @@ void PDC_free_pair_hash_table( void)
 
 void reset_color_pairs( void)
 {
-    assert( SP && SP->atrtab);
-    free( SP->atrtab);
-    SP->atrtab = NULL;
+    assert( SP && SP->opaque && SP->opaque->pairs);
+    PDC_free_atrtab( );
     PDC_free_pair_hash_table( );
     PDC_init_atrtab( );
     curscr->_clear = TRUE;
@@ -723,27 +745,27 @@ int PDC_check_color_pair_table( int *results)
     int idx, n_used = 1, n_free = 1;
     PDC_PAIR *p;
 
-    assert( SP && SP->atrtab);
-    p = (PDC_PAIR *)SP->atrtab;
+    assert( SP && SP->opaque && SP->opaque->pairs);
+    p = (PDC_PAIR *)SP->opaque->pairs;
     idx = 0;
-    while( n_used < atrtab_size_alloced + 10 && p[idx].next)
+    while( n_used < SP->opaque->pairs_allocated + 10 && p[idx].next)
     {                /* loop through all _used_ color pairs */
         const int next = p[idx].next;
 
         assert( p[idx].f != UNSET_COLOR_PAIR);
-        assert( next >= 0 && next < atrtab_size_alloced);
+        assert( next >= 0 && next < SP->opaque->pairs_allocated);
         assert( p[next].prev == idx);
         idx = p[idx].next;
         n_used++;
     }
 
-    idx = atrtab_size_alloced;
-    while( n_free < atrtab_size_alloced + 10 && p[idx].next != atrtab_size_alloced)
+    idx = SP->opaque->pairs_allocated;
+    while( n_free < SP->opaque->pairs_allocated + 10 && p[idx].next != SP->opaque->pairs_allocated)
     {                /* loop through all _free_ color pairs */
         const int next = p[idx].next;
 
         assert( p[idx].f == UNSET_COLOR_PAIR);
-        assert( next > 0 && next <= atrtab_size_alloced);
+        assert( next > 0 && next <= SP->opaque->pairs_allocated);
         assert( p[next].prev == idx);
         idx = p[idx].next;
         n_free++;
@@ -753,10 +775,10 @@ int PDC_check_color_pair_table( int *results)
     {
         results[0] = n_used;
         results[1] = n_free;
-        results[2] = atrtab_size_alloced + 1;      /* include the 'dummy' pair */
+        results[2] = SP->opaque->pairs_allocated + 1;      /* include the 'dummy' pair */
         results[3] = _pair_hash_tbl_size;
         results[4] = _pair_hash_tbl_used;
     }
-    return( (n_used + n_free == atrtab_size_alloced + 1) ? 0 : -1);
+    return( (n_used + n_free == SP->opaque->pairs_allocated + 1) ? 0 : -1);
 }
 #endif   /*  #ifdef PDC_COLOR_PAIR_DEBUGGING_FUNCTIONS */

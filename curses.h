@@ -439,7 +439,7 @@ typedef struct
     int  *c_ungch;        /* array of ungotten chars */
     int   c_ungind;       /* ungetch() push index */
     int   c_ungmax;       /* allocated size of ungetch() buffer */
-    void *atrtab;         /* table of color pairs */
+    struct _opaque_screen_t *opaque;    /* internal library variables */
 } SCREEN;
 
 /*----------------------------------------------------------------------
