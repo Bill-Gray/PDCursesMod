@@ -595,6 +595,10 @@ void PDC_free_atrtab(void)
     assert( SP);
     assert( SP->opaque);
     assert( SP->opaque->pairs);
+    if( SP->opaque->pair_hash_tbl)
+        free( SP->opaque->pair_hash_tbl);
+    SP->opaque->pair_hash_tbl = NULL;
+    SP->opaque->pair_hash_tbl_size = SP->opaque->pair_hash_tbl_used = 0;
     free( SP->opaque->pairs);
     free( SP->opaque);
     SP->opaque = NULL;
@@ -708,20 +712,9 @@ int free_pair( int pair)
     return OK;
 }
 
-void PDC_free_pair_hash_table( void)
-{
-    assert( SP);
-    assert( SP->opaque);
-    if( SP->opaque->pair_hash_tbl)
-        free( SP->opaque->pair_hash_tbl);
-    SP->opaque->pair_hash_tbl = NULL;
-    SP->opaque->pair_hash_tbl_size = SP->opaque->pair_hash_tbl_used = 0;
-}
-
 void reset_color_pairs( void)
 {
     assert( SP && SP->opaque && SP->opaque->pairs);
-    PDC_free_pair_hash_table( );
     PDC_free_atrtab( );
     PDC_init_atrtab( );
     curscr->_clear = TRUE;
