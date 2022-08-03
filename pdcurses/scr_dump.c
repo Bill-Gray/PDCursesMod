@@ -152,6 +152,9 @@ int putwin(WINDOW *win, FILE *filep)
          }
     return OK;
 }
+#ifdef _MSC_VER
+   #pragma warning( disable: 4701)  /* suppress spurious warnings */
+#endif                         /* about 'uninitialised' variables */
 
 WINDOW *getwin(FILE *filep)
 {
@@ -249,6 +252,10 @@ WINDOW *getwin(FILE *filep)
 
     return win;
 }
+
+#ifdef _MSC_VER
+   #pragma warning( default: 4701)
+#endif
 
 int scr_dump(const char *filename)
 {
