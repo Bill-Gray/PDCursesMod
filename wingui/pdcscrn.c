@@ -985,7 +985,6 @@ INLINE int set_default_sizes_from_registry( const int n_cols, const int n_rows,
 static void adjust_font_size( const int font_size_change)
 {
     extern int PDC_font_size;
-    RECT client_rect;
 
     PDC_font_size += font_size_change;
     if( PDC_font_size < 2)
@@ -1002,6 +1001,8 @@ static void adjust_font_size( const int font_size_change)
           /* you disagree,  I have others.                    */
     if( IsZoomed( PDC_hWnd))
     {
+        RECT client_rect;
+
         GetClientRect(PDC_hWnd, &client_rect);
         PDC_n_rows = client_rect.bottom / PDC_cyChar;
         PDC_n_cols = client_rect.right / PDC_cxChar;
@@ -1071,8 +1072,9 @@ void PDC_set_resize_limits( const int new_min_lines, const int new_max_lines,
       /* one on each side.  Vertically,  we need two frame heights,  plus room */
       /* for the application title and the menu.  */
 
-static void adjust_window_size( int *xpixels, int *ypixels, DWORD window_style,
-                                     DWORD window_ex_style)
+static void adjust_window_size( int *xpixels, int *ypixels,
+                                     const DWORD window_style,
+                                     const DWORD window_ex_style)
 {
     RECT rect;
 
@@ -1113,7 +1115,7 @@ static int keep_size_within_bounds( int *lines, int *cols)
 }
 
 INLINE int get_default_sizes_from_registry( int *n_cols, int *n_rows,
-                                     int *xloc, int *yloc, int *menu_shown)
+                                     int *xloc, int *yloc)
 {
     TCHAR data[100];
     DWORD size_out = sizeof( data);
@@ -1137,7 +1139,7 @@ INLINE int get_default_sizes_from_registry( int *n_cols, int *n_rows,
 
             my_stscanf( data, _T( "%dx%d,%d,%d,%d,%d;%d,%d,%d,%d:%n"),
                              &x, &y, &PDC_font_size,
-                             xloc, yloc, menu_shown,
+                             xloc, yloc, &menu_shown,
                              &min_lines, &max_lines,
                              &min_cols, &max_cols,
                              &bytes_read);
@@ -1282,8 +1284,9 @@ struct BACK_BUFFER {
 
 static void PrepareBackBuffer(HDC hdc, RECT rect)
 {
-    int width = rect.right - rect.left;
-    int height = rect.bottom - rect.top;
+    const int width = rect.right - rect.left;
+    const int height = rect.bottom - rect.top;
+
     memset(&back_buffer, 0, sizeof(back_buffer));
     back_buffer.rect = rect;
     back_buffer.window_dc = hdc;
@@ -1296,15 +1299,13 @@ static void PrepareBackBuffer(HDC hdc, RECT rect)
 
 static void BlitBackBuffer()
 {
-    const RECT* r = NULL;
-    int width = 0;
-    int height = 0;
 
     if (back_buffer.is_rect_valid)
     {
-        r = &back_buffer.rect;
-        width = r->right - r->left;
-        height = r->bottom - r->top;
+        const RECT* r = &back_buffer.rect;
+        const int width = r->right - r->left;
+        const int height = r->bottom - r->top;
+
         BitBlt(
             back_buffer.window_dc,
             r->left, r->top,
@@ -1325,7 +1326,6 @@ static void HandlePaint( HWND hwnd )
     HDC window_dc, memory_dc;
     RECT client_rect;
     HBRUSH old_brush;
-    int i;
 
 /*  printf( "In HandlePaint: %ld %ld, %ld %ld\n",
                rect.left, rect.top, rect.right, rect.bottom); */
@@ -1335,21 +1335,22 @@ static void HandlePaint( HWND hwnd )
 
     PrepareBackBuffer(window_dc, client_rect);
     memory_dc = back_buffer.memory_dc;
-    {
-        /* paint the background black. */
-        old_brush = SelectObject(memory_dc, GetStockObject(BLACK_BRUSH));
-        Rectangle(memory_dc,
-            client_rect.left, client_rect.top,
-            client_rect.right, client_rect.bottom);
-        SelectObject(memory_dc, old_brush);
 
-        /* paint all the rows */
-        if (curscr && curscr->_y && PDC_n_cols > 0 && PDC_n_rows > 0)
-        {
-            for (i = 0; i < PDC_n_rows; i++)
-                if (i < SP->lines && curscr->_y[i])
-                    PDC_transform_line_given_hdc(memory_dc, i, 0, PDC_n_cols, curscr->_y[i]);
-        }
+    /* paint the background black. */
+    old_brush = SelectObject(memory_dc, GetStockObject(BLACK_BRUSH));
+    Rectangle(memory_dc,
+        client_rect.left, client_rect.top,
+        client_rect.right, client_rect.bottom);
+    SelectObject(memory_dc, old_brush);
+
+    /* paint all the rows */
+    if (curscr && curscr->_y && PDC_n_cols > 0 && PDC_n_rows > 0)
+    {
+        int i;
+
+        for (i = 0; i < PDC_n_rows; i++)
+            if (i < SP->lines && curscr->_y[i])
+                PDC_transform_line_given_hdc(memory_dc, i, 0, PDC_n_cols, curscr->_y[i]);
     }
     BlitBackBuffer();
     EndPaint(hwnd, &ps);
@@ -2106,7 +2107,7 @@ INLINE int set_up_window( void)
     }
 
     get_default_sizes_from_registry( &n_default_columns, &n_default_rows,
-                     &xloc, &yloc, &menu_shown);
+                     &xloc, &yloc);
 
     if( ttytype[1])
         PDC_set_resize_limits( (unsigned char)ttytype[0],
@@ -2132,7 +2133,7 @@ INLINE int set_up_window( void)
         keep_size_within_bounds( &n_default_rows, &n_default_columns);
         xsize = PDC_cxChar * n_default_columns;
         ysize = PDC_cyChar * n_default_rows;
-        adjust_window_size( &xsize, &ysize, window_style, menu_shown);
+        adjust_window_size( &xsize, &ysize, window_style, window_ex_style);
     }
 
     PDC_hWnd = CreateWindowEx( window_ex_style,
