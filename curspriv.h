@@ -138,5 +138,22 @@ PDCEX int PDC_wcwidth( const int32_t ucs);
 
 #define _is_altcharset( ch)  (((ch) & (A_ALTCHARSET | (A_CHARTEXT ^ 0x7f))) == A_ALTCHARSET)
 
+#if PDC_COLOR_BITS < 15
+    typedef int16_t hash_idx_t;
+#else
+    typedef int32_t hash_idx_t;
+#endif
+
+struct _opaque_screen_t
+{
+   struct _pdc_pair *pairs;
+   int pairs_allocated;
+   int _default_foreground_idx;
+   int _default_background_idx;
+   int first_col;
+   bool default_colors;
+   hash_idx_t *pair_hash_tbl;
+   int pair_hash_tbl_size, pair_hash_tbl_used;
+};
 
 #endif /* __CURSES_INTERNALS__ */

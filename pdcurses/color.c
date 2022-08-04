@@ -145,30 +145,12 @@ color
 
 /* Color pair structure */
 
-typedef struct
+typedef struct _pdc_pair
 {
     int f;                /* foreground color */
     int b;                /* background color */
     int prev, next;       /* doubly-linked list indices */
 } PDC_PAIR;
-
-#if PDC_COLOR_BITS < 15
-    typedef int16_t hash_idx_t;
-#else
-    typedef int32_t hash_idx_t;
-#endif
-
-struct _opaque_screen_t
-{
-   PDC_PAIR *pairs;
-   int pairs_allocated;
-   int _default_foreground_idx;
-   int _default_background_idx;
-   int first_col;
-   bool default_colors;
-   hash_idx_t *pair_hash_tbl;
-   int pair_hash_tbl_size, pair_hash_tbl_used;
-};
 
 int COLORS = 0;
 int COLOR_PAIRS = 1;       /* until start_color() is called */
