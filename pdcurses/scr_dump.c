@@ -152,6 +152,9 @@ int putwin(WINDOW *win, FILE *filep)
          }
     return OK;
 }
+
+void PDC_add_window_to_list( WINDOW *win);
+
 #ifdef _MSC_VER
    #pragma warning( disable: 4701)  /* suppress spurious warnings */
 #endif                         /* about 'uninitialised' variables */
@@ -249,6 +252,7 @@ WINDOW *getwin(FILE *filep)
     }
 
     touchwin(win);
+    PDC_add_window_to_list( win);
 
     return win;
 }

@@ -154,6 +154,8 @@ struct _opaque_screen_t
    bool default_colors;
    hash_idx_t *pair_hash_tbl;
    int pair_hash_tbl_size, pair_hash_tbl_used;
+   int n_windows;
+   WINDOW **window_list;
 };
 
 #endif /* __CURSES_INTERNALS__ */

@@ -216,6 +216,18 @@ void PDC_sync(WINDOW *win)
         wsyncup(win);
 }
 
+#define is_power_of_two( X)   (!((X) & ((X) - 1)))
+
+void PDC_add_window_to_list( WINDOW *win)
+{
+   SP->opaque->n_windows++;
+   if( is_power_of_two( SP->opaque->n_windows))
+      SP->opaque->window_list = (WINDOW **)realloc( SP->opaque->window_list,
+                     SP->opaque->n_windows * 2 * sizeof( WINDOW *));
+   assert( SP->opaque->window_list);
+   SP->opaque->window_list[SP->opaque->n_windows - 1] = win;
+}
+
 WINDOW *newwin(int nlines, int ncols, int begy, int begx)
 {
     WINDOW *win;
@@ -237,7 +249,10 @@ WINDOW *newwin(int nlines, int ncols, int begy, int begx)
         win = PDC_makelines(win);
 
     if (win)
+    {
         werase(win);
+        PDC_add_window_to_list( win);
+    }
 
     return win;
 }
@@ -245,10 +260,22 @@ WINDOW *newwin(int nlines, int ncols, int begy, int begx)
 int delwin(WINDOW *win)
 {
     PDC_LOG(("delwin() - called\n"));
+    int i = 0;
 
     assert( win);
     if (!win)
         return ERR;
+
+    assert( SP->opaque->n_windows);
+    /* recursively delete subwindows,  if any */
+    while( i < SP->opaque->n_windows)
+        if( SP->opaque->window_list[i]->_parent == win)
+        {
+            delwin( SP->opaque->window_list[i]);
+            i = 0;         /* start from beginning of list again */
+        }
+        else
+            i++;
 
     /* subwindows use parents' lines */
 
@@ -261,7 +288,12 @@ int delwin(WINDOW *win)
     if( win->_y)
         free(win->_y);
     free(win);
-
+    i = 0;
+    while( i < SP->opaque->n_windows && SP->opaque->window_list[i] != win)
+        i++;
+    assert( i < SP->opaque->n_windows);
+    SP->opaque->n_windows--;
+    SP->opaque->window_list[i] = SP->opaque->window_list[SP->opaque->n_windows];
     return OK;
 }
 
@@ -328,6 +360,7 @@ WINDOW *subwin(WINDOW *orig, int nlines, int ncols, int begy, int begx)
         win->_y[i] = orig->_y[j] + k;
 
     win->_flags |= _SUBWIN;
+    PDC_add_window_to_list( win);
 
     return win;
 }
@@ -417,6 +450,7 @@ WINDOW *dupwin(WINDOW *win)
     new->_parent = win->_parent;
     new->_bkgd = win->_bkgd;
     new->_flags = win->_flags;
+    PDC_add_window_to_list( new);
 
     return new;
 }

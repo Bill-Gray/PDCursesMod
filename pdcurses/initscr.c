@@ -203,6 +203,9 @@ WINDOW *initscr(void)
     LINES = SP->lines = PDC_get_rows();
     COLS = SP->cols = PDC_get_columns();
 
+    if( PDC_init_atrtab())   /* set up default colors */
+        return NULL;
+
     if (LINES < 2 || COLS < 2)
     {
         fprintf(stderr, "initscr(): LINES=%d COLS=%d: too small.\n",
@@ -268,8 +271,6 @@ WINDOW *initscr(void)
     else
         curscr->_clear = TRUE;
 
-    if( PDC_init_atrtab())   /* set up default colors */
-        return NULL;
 
     MOUSE_X_POS = MOUSE_Y_POS = -1;
     BUTTON_STATUS(1) = BUTTON_RELEASED;
@@ -370,13 +371,12 @@ void delscreen(SCREEN *sp)
 
     free(SP->c_ungch);
     free(SP->c_buffer);
-    PDC_free_atrtab( );
 
     PDC_slk_free();     /* free the soft label keys, if needed */
 
-    delwin(stdscr);
-    delwin(curscr);
-    delwin(SP->lastscr);
+    while( SP->opaque->n_windows)
+       delwin( SP->opaque->window_list[0]);
+    PDC_free_atrtab( );
     stdscr = (WINDOW *)NULL;
     curscr = (WINDOW *)NULL;
     SP->lastscr = (WINDOW *)NULL;
