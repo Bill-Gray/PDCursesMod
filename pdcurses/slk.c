@@ -28,10 +28,6 @@ slk
 
     int slk_wset(int labnum, const wchar_t *label, int justify);
 
-    int PDC_mouse_in_slk(int y, int x);
-    void PDC_slk_free(void);
-    void PDC_slk_initialize(void);
-
     wchar_t *slk_wlabel(int labnum)
 
 ### Description
@@ -90,9 +86,6 @@ slk
     slk_attr_set                Y       Y       Y
     slk_attr_off                Y       Y       Y
     slk_wset                    Y       Y       Y
-    PDC_mouse_in_slk            -       -       -
-    PDC_slk_free                -       -       -
-    PDC_slk_initialize          -       -       -
     slk_wlabel                  -       -       -
 
 **man-end****************************************************************/

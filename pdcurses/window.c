@@ -26,9 +26,6 @@ window
 
     WINDOW *resize_window(WINDOW *win, int nlines, int ncols);
     int wresize(WINDOW *win, int nlines, int ncols);
-    WINDOW *PDC_makelines(WINDOW *win);
-    WINDOW *PDC_makenew(int nlines, int ncols, int begy, int begx);
-    void PDC_sync(WINDOW *win);
 
 ### Description
 
@@ -85,16 +82,6 @@ window
    window. (However, you still can call it _on_ subwindows.) It returns
    OK or ERR.
 
-   PDC_makenew() allocates all data for a new WINDOW * except the actual
-   lines themselves. If it's unable to allocate memory for the window
-   structure, it will free all allocated memory and return a NULL
-   pointer.
-
-   PDC_makelines() allocates the memory for the lines.
-
-   PDC_sync() handles wrefresh() and wsyncup() calls when a window is
-   changed.
-
 ### Return Value
 
    newwin(), subwin(), derwin() and dupwin() return a pointer to the new
@@ -126,11 +113,23 @@ window
     wsyncdown                   Y       Y       Y
     wresize                     -       Y       Y
     resize_window               -       -       -
-    PDC_makelines               -       -       -
-    PDC_makenew                 -       -       -
-    PDC_sync                    -       -       -
 
 **man-end****************************************************************/
+
+/*library-internals-begin************************************************
+
+   PDC_makenew() allocates all data for a new WINDOW * except the actual
+   lines themselves. If it's unable to allocate memory for the window
+   structure, it will free all allocated memory and return a NULL
+   pointer.
+
+   PDC_makelines() allocates the memory for the lines.
+
+   PDC_sync() handles wrefresh() and wsyncup() calls when a window is
+   changed.
+
+**library-internals-end**************************************************/
+
 
 #include <stdlib.h>
 
