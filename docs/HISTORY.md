@@ -1,3 +1,28 @@
+Changes as of 2022 August 11
+============================
+
+Major new features
+------------------
+
+- WinGUI is again single-threaded,  resulting in considerably simpler
+  code and fixing some resizing issues.  See pull request #240.
+  6962ab6e9d
+
+Minor new features
+------------------
+
+- Much revision internal to the PDCursesMod library (no effect as far
+  as users of the library are concerned) to move static variables into
+  the SCREEN structure,  in a way that preserves binary compatibility
+  and keeps those variables opaque outside the library.  0d5e4dc5b4
+  3e167172ff  7449df5369
+
+- delwin() now returns ERR if you attempt to delete a window with
+  active subwindows,  or a window that wasn't allocated by PDCursesMod
+  or which has already been freed.  c643c0da95  3b14813dbb
+
+- delscreen() deletes all windows associated with a SCREEN.  26e473c60b
+
 PDCursesMod 4.3.4 - 2022 July 29
 ================================
 

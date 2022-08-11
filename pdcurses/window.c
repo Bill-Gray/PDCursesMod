@@ -258,9 +258,9 @@ WINDOW *newwin(int nlines, int ncols, int begy, int begx)
 
 int delwin(WINDOW *win)
 {
-    PDC_LOG(("delwin() - called\n"));
     int i;
 
+    PDC_LOG(("delwin() - called\n"));
     assert( win);
     if (!win)
         return ERR;
