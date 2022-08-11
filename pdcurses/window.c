@@ -35,9 +35,8 @@ window
    ncols to COLS - begx. Create a new full-screen window by calling
    newwin(0, 0, 0, 0).
 
-   delwin() deletes the named window, freeing all associated memory. In
-   the case of overlapping windows, subwindows should be deleted before
-   the main window.
+   delwin() deletes the named window, freeing all associated memory.
+   Subwindows must be deleted before the main window can be deleted.
 
    mvwin() moves the window so that the upper left-hand corner is at
    position (y,x). If the move would cause the window to be off the
@@ -260,22 +259,25 @@ WINDOW *newwin(int nlines, int ncols, int begy, int begx)
 int delwin(WINDOW *win)
 {
     PDC_LOG(("delwin() - called\n"));
-    int i = 0;
+    int i;
 
     assert( win);
     if (!win)
         return ERR;
 
-    assert( SP->opaque->n_windows);
-    /* recursively delete subwindows,  if any */
-    while( i < SP->opaque->n_windows)
+            /* make sure win has no subwindows */
+    for( i = 0; i < SP->opaque->n_windows; i++)
         if( SP->opaque->window_list[i]->_parent == win)
-        {
-            delwin( SP->opaque->window_list[i]);
-            i = 0;         /* start from beginning of list again */
-        }
-        else
-            i++;
+            return( ERR);
+
+    i = 0;     /* make sure win is in the window list */
+    while( i < SP->opaque->n_windows && SP->opaque->window_list[i] != win)
+        i++;
+    assert( i < SP->opaque->n_windows);
+    if( i == SP->opaque->n_windows)
+        return( ERR);
+    SP->opaque->n_windows--;        /* remove win from window list */
+    SP->opaque->window_list[i] = SP->opaque->window_list[SP->opaque->n_windows];
 
     /* subwindows use parents' lines */
 
@@ -288,12 +290,6 @@ int delwin(WINDOW *win)
     if( win->_y)
         free(win->_y);
     free(win);
-    i = 0;
-    while( i < SP->opaque->n_windows && SP->opaque->window_list[i] != win)
-        i++;
-    assert( i < SP->opaque->n_windows);
-    SP->opaque->n_windows--;
-    SP->opaque->window_list[i] = SP->opaque->window_list[SP->opaque->n_windows];
     return OK;
 }
 
