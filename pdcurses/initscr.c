@@ -375,7 +375,12 @@ void delscreen(SCREEN *sp)
     PDC_slk_free();     /* free the soft label keys, if needed */
 
     while( SP->opaque->n_windows)
-       delwin( SP->opaque->window_list[0]);
+    {
+        int i;
+
+        for( i = 0; i < SP->opaque->n_windows; i++)
+            delwin( SP->opaque->window_list[i]);
+    }
     PDC_free_atrtab( );
     stdscr = (WINDOW *)NULL;
     curscr = (WINDOW *)NULL;
