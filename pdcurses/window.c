@@ -267,8 +267,11 @@ int delwin(WINDOW *win)
 
             /* make sure win has no subwindows */
     for( i = 0; i < SP->opaque->n_windows; i++)
+    {
+        assert( SP->opaque->window_list[i]->_parent != win);
         if( SP->opaque->window_list[i]->_parent == win)
             return( ERR);
+    }
 
     i = 0;     /* make sure win is in the window list */
     while( i < SP->opaque->n_windows && SP->opaque->window_list[i] != win)
