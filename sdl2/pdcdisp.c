@@ -266,7 +266,10 @@ void PDC_gotoyx(int row, int col)
     PDC_transform_line(oldrow, oldcol, 1, curscr->_y[oldrow] + oldcol);
 
     if (!SP->visibility)
+    {
+        PDC_update_rects();
         return;
+    }
 
     /* draw a new cursor by overprinting the existing character in
        reverse, either the full cell (when visibility == 2) or the
@@ -341,6 +344,7 @@ void PDC_gotoyx(int row, int col)
 
         uprect[rectcount++] = dest;
     }
+    PDC_update_rects();
 }
 
 static bool _merge_rects( SDL_Rect *a, const SDL_Rect *b)
