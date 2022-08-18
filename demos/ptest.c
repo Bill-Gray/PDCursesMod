@@ -93,7 +93,7 @@ PANEL *mkpanel(int rows, int cols, int tly, int tlx)
 
 void rmpanel(PANEL *pan)
 {
-    WINDOW *win = pan->win;
+    WINDOW *win = panel_window( pan);
 
     del_panel(pan);
     delwin(win);
@@ -101,8 +101,8 @@ void rmpanel(PANEL *pan)
 
 void fill_panel(PANEL *pan)
 {
-    WINDOW *win = pan->win;
-    char num = *((char *)pan->user + 1);
+    WINDOW *win = panel_window( pan);
+    char num = *((char *)panel_userptr( pan) + 1);
     int y, x, maxy, maxx;
 
     box(win, 0, 0);
