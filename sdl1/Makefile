@@ -24,13 +24,14 @@ else
 	CFLAGS  += -O2
 endif
 
-ifeq ($(WIDE),Y)
-	CFLAGS	+= -DPDC_WIDE
-	SLIBS	+= -lSDL_ttf
-endif
-
 ifeq ($(UTF8),Y)
-	CFLAGS	+= -DPDC_FORCE_UTF8
+	CFLAGS	+= -DPDC_FORCE_UTF8 -DPDC_WIDE
+	SLIBS	+= -lSDL_ttf
+else
+	ifeq ($(WIDE),Y)
+		CFLAGS	+= -DPDC_WIDE
+		SLIBS	+= -lSDL_ttf
+	endif
 endif
 
 ifdef CHTYPE_32
