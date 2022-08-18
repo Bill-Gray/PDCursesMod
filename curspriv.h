@@ -156,6 +156,8 @@ struct _opaque_screen_t
    int pair_hash_tbl_size, pair_hash_tbl_used;
    int n_windows;
    WINDOW **window_list;
+   unsigned trace_flags;
+   bool want_trace_fflush;
 };
 
 #endif /* __CURSES_INTERNALS__ */
