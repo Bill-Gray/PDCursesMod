@@ -1,4 +1,4 @@
-Changes as of 2022 August 11
+Changes as of 2022 August 18
 ============================
 
 Major new features
@@ -22,6 +22,14 @@ Minor new features
   or which has already been freed.  c643c0da95  3b14813dbb
 
 - delscreen() deletes all windows associated with a SCREEN.  26e473c60b
+
+- Made the PANEL and PANELOBS structures opaque.  f55e55a0fb  78039d10c3
+
+Bug fixes
+---------
+
+- In some situations,  cursor movement/changes were not immediately made
+  on VT and SDL2.  a805ec2b15  18abe3dbd5
 
 PDCursesMod 4.3.4 - 2022 July 29
 ================================
