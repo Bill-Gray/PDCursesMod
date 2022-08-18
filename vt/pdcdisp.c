@@ -85,6 +85,7 @@ void PDC_gotoyx(int y, int x)
 
    snprintf( tbuff, sizeof( tbuff), "\033[%d;%dH", y + 1, x + 1);
    PDC_puts_to_stdout( tbuff);
+   PDC_doupdate( );
 }
 
 #define RESET_ATTRS   "\033[0m"
