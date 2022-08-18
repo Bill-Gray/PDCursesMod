@@ -16,8 +16,8 @@ list_keys$(E) lrtest$(E) move_field$(E) \
 movewindow$(E) ncurses$(E) newdemo$(E) padview$(E) pair_content$(E) \
 picsmap$(E) railroad$(E) redraw$(E) savescreen$(E) sp_tinfo$(E) \
 tclock$(E) testaddch$(E) test_addchstr$(E) test_addstr$(E) \
-test_add_wchstr$(E) test_addwstr$(E)\
-test_arrays$(E) test_getstr$(E) test_get_wstr$(E) test_instr$(E) \
+test_add_wchstr$(E) test_addwstr$(E) test_arrays$(E) \
+test_delwin$(E) test_getstr$(E) test_get_wstr$(E) test_instr$(E) \
 test_opaque$(E) testscanw$(E) test_setupterm$(E) test_sgr$(E) test_termattrs$(E) \
 test_tparm$(E) test_vid_puts$(E) test_vidputs$(E) view$(E)
 
@@ -215,6 +215,9 @@ test_addwstr$(E): $(ncurses_testdir)/test_addwstr.c
 	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
 
 test_arrays$(E): $(ncurses_testdir)/test_arrays.c
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+
+test_delwin$(E): $(ncurses_testdir)/test_delwin.c
 	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
 
 test_getstr$(E): $(ncurses_testdir)/test_getstr.c $(ncurses_testdir)/popup_msg.c
