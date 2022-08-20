@@ -14,7 +14,6 @@ extern "C"
 {
 #endif
 
-typedef struct panelobs PANELOBS;
 typedef struct panel PANEL;
 
 PDCEX int     bottom_panel(PANEL *pan);

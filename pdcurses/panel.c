@@ -130,6 +130,8 @@ panel
 #include <panel.h>
 #include <stdlib.h>
 
+typedef struct panelobs PANELOBS;
+
 struct panelobs
 {
     struct panelobs *above;
