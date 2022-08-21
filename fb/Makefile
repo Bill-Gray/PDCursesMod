@@ -61,6 +61,17 @@ LINK		= $(CC)
 LDFLAGS		= $(LIBCURSES)
 RANLIB		= ranlib
 
+ifeq ($(DRM),Y)
+	CFLAGS += -DUSE_DRM -I /usr/include/drm
+	LDFLAGS += -ldrm
+endif
+
+ifeq ($(shell uname -s),FreeBSD)
+	CC = cc
+	CFLAGS += -DUSE_DRM -I/usr/local/include -I/usr/local/include/libdrm
+	LDFLAGS += -L /usr/local/lib -ldrm
+endif
+
 .PHONY: all libs clean demos
 
 all:	libs

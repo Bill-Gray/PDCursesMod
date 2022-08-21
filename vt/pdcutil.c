@@ -37,10 +37,14 @@ void PDC_napms(int ms)
 
 const char *PDC_sysname(void)
 {
-#ifdef LINUX_FRAMEBUFFER_PORT
-   return( "LinuxFB");
+#ifdef USE_DRM
+   return( "Direct Rendering Manager");
 #else
-   return( "VTx00");
+   #ifdef LINUX_FRAMEBUFFER_PORT
+      return( "LinuxFB");
+   #else
+      return( "VTx00");
+   #endif
 #endif
 }
 

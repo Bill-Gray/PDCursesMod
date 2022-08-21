@@ -7,9 +7,16 @@
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 #include <fcntl.h>
-#include <linux/fb.h>
 #include "pdcfb.h"
 #include "psf.c"
+
+struct video_info PDC_fb;
+
+#ifdef USE_DRM
+    #include "drm.c"
+#else       /* using Linux framebuffer */
+    #include <linux/fb.h>
+#endif
 #ifdef PDC_WIDE
    #include "psf_wide.h"
 #else
@@ -94,10 +101,6 @@ void PDC_save_screen_mode(int i)
 }
 
 bool PDC_has_rgb_color = TRUE;
-struct fb_fix_screeninfo PDC_finfo;
-struct fb_var_screeninfo PDC_vinfo;
-uint8_t *PDC_framebuf;
-static int _framebuffer_fd;
 struct font_info PDC_font_info;
 static uint8_t *_loaded_font_bytes;
 
@@ -115,6 +118,9 @@ static void _unload_font( void)
    }
 }
 
+#ifndef USE_DRM
+static int _framebuffer_fd;
+#endif
 
 void PDC_scr_close( void)
 {
@@ -124,8 +130,12 @@ void PDC_scr_close( void)
    tcsetattr( STDIN, TCSANOW, &orig_term);
    PDC_doupdate( );
    PDC_puts_to_stdout( NULL);      /* free internal cache */
-   munmap( PDC_framebuf, PDC_finfo.smem_len);
+#ifdef USE_DRM
+   close_drm( );
+#else
+   munmap( PDC_fb.framebuf, PDC_fb.smem_len);
    close( _framebuffer_fd);
+#endif
    _unload_font( );
    return;
 }
@@ -219,8 +229,8 @@ static int _load_psf_font( const int font_num)
 #endif
     if( PDC_font_info.glyphs)
     {
-        const int new_cols = PDC_vinfo.xres / PDC_font_info.width;
-        const int new_rows = PDC_vinfo.yres / PDC_font_info.height;
+        const int new_cols = PDC_fb.xres / PDC_font_info.width;
+        const int new_rows = PDC_fb.yres / PDC_font_info.height;
         static bool first_load = TRUE;
 
         if( PDC_rows != new_rows || PDC_cols != new_cols)
@@ -239,10 +249,10 @@ static int _load_psf_font( const int font_num)
         curr_font = font_num;
                /* Clear area below last row : */
         PDC_draw_rectangle( 0, new_rows * PDC_font_info.height,
-               PDC_vinfo.xres, PDC_vinfo.yres - new_rows * PDC_font_info.height, 0);
+               PDC_fb.xres, PDC_fb.yres - new_rows * PDC_font_info.height, 0);
                /* And area after last column : */
         PDC_draw_rectangle( new_cols * PDC_font_info.width, 0,
-               PDC_vinfo.xres - new_cols * PDC_font_info.width, PDC_vinfo.yres, 0);
+               PDC_fb.xres - new_cols * PDC_font_info.width, PDC_fb.yres, 0);
     }
     else
         rval = -1;
@@ -264,6 +274,18 @@ int PDC_scr_open(void)
     struct sigaction sa;
     int error;
 
+#ifdef USE_DRM
+    PDC_LOG(("PDC_scr_open called\n"));
+    error = init_drm( "/dev/dri/card0", "def");
+    if( error)
+    {
+        fprintf( stderr, "Error %d on DRM opening\n", error);
+        return( -1);
+    }
+#else       /* 'traditional' Linux framebuffer */
+    struct fb_fix_screeninfo PDC_finfo;
+    struct fb_var_screeninfo PDC_vinfo;
+
     PDC_LOG(("PDC_scr_open called\n"));
     _framebuffer_fd = open( "/dev/fb0", O_RDWR);
     if( _framebuffer_fd < 0)
@@ -277,11 +299,18 @@ int PDC_scr_open(void)
     if( error)
         return( -3);
 
-    PDC_framebuf = mmap(NULL, PDC_finfo.smem_len, PROT_READ | PROT_WRITE, MAP_SHARED,
+    PDC_fb.xres = PDC_vinfo.xres;
+    PDC_fb.yres = PDC_vinfo.yres;
+    PDC_fb.bits_per_pixel = PDC_vinfo.bits_per_pixel;
+    PDC_fb.line_length = PDC_finfo.line_length;
+    PDC_fb.smem_len = PDC_finfo.smem_len;
+    PDC_fb.framebuf = mmap(NULL, PDC_finfo.smem_len, PROT_READ | PROT_WRITE, MAP_SHARED,
                   _framebuffer_fd, 0);
-    if( PDC_framebuf == MAP_FAILED)
+    if( PDC_fb.framebuf == MAP_FAILED)
         return( -4);
-    PDC_has_rgb_color = (PDC_vinfo.bits_per_pixel > 8);
+
+#endif
+    PDC_has_rgb_color = (PDC_fb.bits_per_pixel > 8);
     if( PDC_has_rgb_color)
        COLORS = 256 + (256 * 256 * 256);
     else
@@ -324,7 +353,7 @@ int PDC_scr_open(void)
     }
 
     SP->_preserve = (getenv("PDC_PRESERVE_SCREEN") != NULL);
-    if( PDC_vinfo.bits_per_pixel == 8)        /* 256 color palette */
+    if( PDC_fb.bits_per_pixel == 8)        /* 256 color palette */
     {
         int i, r, g, b;
 
@@ -376,7 +405,8 @@ int PDC_init_color( int color, int red, int green, int blue)
 
     if( !PDC_set_palette_entry( color, new_rgb))
         curscr->_clear = TRUE;
-    if( PDC_vinfo.bits_per_pixel == 8)        /* 256 color palette */
+#ifndef USE_DRM
+    if( PDC_fb.bits_per_pixel == 8)        /* 256 color palette */
     {
         struct fb_cmap pal;
         uint16_t r = (uint16_t)( red * 131 / 2);
@@ -392,5 +422,6 @@ int PDC_init_color( int color, int red, int green, int blue)
         if( ioctl( _framebuffer_fd, FBIOPUTCMAP, &pal))
             fprintf( stderr, "Error setting palette.\n");
     }
+#endif
     return OK;
 }

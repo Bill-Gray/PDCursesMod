@@ -4,7 +4,6 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
-#include <linux/fb.h>
 #include <sys/time.h>
 #include <unistd.h>
 
@@ -183,29 +182,27 @@ static const uint8_t *_get_raw_glyph_bytes( struct font_info *font, int unicode_
     return( font->glyphs + glyph_idx * font_char_size_in_bytes * font->height);
 }
 
-extern struct fb_fix_screeninfo PDC_finfo;
-extern struct fb_var_screeninfo PDC_vinfo;
-extern uint8_t *PDC_framebuf;
 extern struct font_info PDC_font_info;
+extern struct video_info PDC_fb;
 
 void PDC_draw_rectangle( const int xpix, const int ypix,
                   const int xsize, const int ysize, const uint32_t color)
 {
-    const int line_len = PDC_finfo.line_length * 8 / PDC_vinfo.bits_per_pixel;
+    const int line_len = PDC_fb.line_length * 8 / PDC_fb.bits_per_pixel;
     int x, y;
     const long video_offset = xpix + ypix * line_len;
 
-    if( PDC_vinfo.bits_per_pixel == 32)
+    if( PDC_fb.bits_per_pixel == 32)
     {
-        uint32_t *tptr = (uint32_t *)PDC_framebuf + video_offset;
+        uint32_t *tptr = (uint32_t *)PDC_fb.framebuf + video_offset;
 
         for( y = ysize; y; y--, tptr += line_len - xsize)
             for( x = xsize; x; x--)
                 *tptr++ = color;
     }
-    if( PDC_vinfo.bits_per_pixel == 8)
+    if( PDC_fb.bits_per_pixel == 8)
     {
-        uint8_t *tptr = PDC_framebuf + video_offset;
+        uint8_t *tptr = (uint8_t *)PDC_fb.framebuf + video_offset;
 
         for( y = ysize; y; y--, tptr += line_len - xsize)
             for( x = xsize; x; x--)
@@ -338,7 +335,7 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
 {
     const int font_char_size_in_bytes = (PDC_font_info.width + 7) >> 3;
     int cursor_to_draw = 0;
-    const int line_len = PDC_finfo.line_length * 8 / PDC_vinfo.bits_per_pixel;
+    const int line_len = PDC_fb.line_length * 8 / PDC_fb.bits_per_pixel;
     uint8_t scratch[300];
 
     assert( srcp);
@@ -347,11 +344,11 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
     assert( lineno >= 0);
     assert( lineno < SP->lines);
     assert( len > 0);
-    if( lineno > (int)( PDC_vinfo.yres / PDC_font_info.height))
+    if( lineno > (int)( PDC_fb.yres / PDC_font_info.height))
         return;
-    if( x + len > (int)( PDC_vinfo.xres / PDC_font_info.width))
+    if( x + len > (int)( PDC_fb.xres / PDC_font_info.width))
     {
-        len = (int)( PDC_vinfo.xres / PDC_font_info.width) - x;
+        len = (int)( PDC_fb.xres / PDC_font_info.width) - x;
         if( len <= 0)
             return;
     }
@@ -393,10 +390,10 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
         }
         while( run_len < len && !((*srcp ^ srcp[run_len]) & A_ATTRIBUTES))
             run_len++;
-        if( PDC_vinfo.bits_per_pixel == 32)
+        if( PDC_fb.bits_per_pixel == 32)
         {
             int i;
-            uint32_t *tptr = (uint32_t *)PDC_framebuf + video_offset;
+            uint32_t *tptr = (uint32_t *)PDC_fb.framebuf + video_offset;
 
             for( i = 0; i < run_len; i++)
             {
@@ -417,12 +414,12 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
                 x++;
             }
         }
-        if( PDC_vinfo.bits_per_pixel == 8)
+        if( PDC_fb.bits_per_pixel == 8)
         {
-            const int line_len = PDC_finfo.line_length; /* / sizeof( uint8_t); */
+            const int line_len = PDC_fb.line_length; /* / sizeof( uint8_t); */
             int i, integer_fg_idx, integer_bg_idx;
             uint8_t fg_idx, bg_idx;
-            uint8_t *tptr = PDC_framebuf + video_offset;
+            uint8_t *tptr = (uint8_t *)PDC_fb.framebuf + video_offset;
             bool reverse_colors = ((*srcp & A_REVERSE) ? TRUE : FALSE);
 
             extended_pair_content( (*srcp & A_COLOR) >> PDC_COLOR_SHIFT,
