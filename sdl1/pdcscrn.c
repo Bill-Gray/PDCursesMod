@@ -84,6 +84,7 @@ void PDC_scr_close(void)
 
 void PDC_scr_free(void)
 {
+    PDC_free_palette( );
 }
 
 /* open the physical screen -- miscellaneous initialization */

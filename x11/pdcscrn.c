@@ -180,6 +180,7 @@ void PDC_scr_free(void)
 {
     extern XIM pdc_xim;
 
+    PDC_free_palette( );
     if (icon_pixmap)
     {
         XFreePixmap(XCURSESDISPLAY, icon_pixmap);
