@@ -32,7 +32,11 @@ tested it under "real" Windows.
 
 #define INTENTIONALLY_UNUSED_PARAMETER( param) (void)(param)
 
-/* ftime() is consided obsolete.  But it's all we have for
+/* millisec_timer( ) returns the wall-clock time,  in milliseconds.
+Call with TRUE to (re)set it,  FALSE to find out the elapsed time
+since then.
+
+   ftime() is consided obsolete.  But it's all we have for
 millisecond precision on older compilers/systems.  We'll
 use gettimeofday() when available.        */
 
@@ -40,29 +44,34 @@ use gettimeofday() when available.        */
     defined( __DMC__) || defined(__WATCOMC__) || defined(_MSC_VER)
 #include <sys/timeb.h>
 
-static long millisec_clock( )
+static long millisec_timer( const bool reset)
 {
     struct timeb t;
+    static struct timeb t0;
 
     ftime( &t);
-    return( (long)t.time * 1000L + (long)t.millitm);
+    if( reset)                            /* first time */
+       t0 = t;
+    return( (long)(t.time - t0.time) * 1000L + (long)( t.millitm - t0.millitm));
 }
 #else
 #include <sys/time.h>
 
-static long millisec_clock( )
+static long millisec_timer( const bool reset)
 {
     struct timeval t;
+    static struct timeval t0;
 
     gettimeofday( &t, NULL);
-    return( t.tv_sec * 1000 + t.tv_usec / 1000);
+    if( reset)                            /* first time */
+       t0 = t;
+    return( (t.tv_sec - t0.tv_sec) * 1000 + (t.tv_usec - t0.tv_usec) / 1000);
 }
 #endif
 
 int main( const int argc, const char **argv)
 {
     unsigned n_frames = 0;
-    long t0;
 
     INTENTIONALLY_UNUSED_PARAMETER( argv);
     INTENTIONALLY_UNUSED_PARAMETER( argc);
@@ -73,8 +82,10 @@ int main( const int argc, const char **argv)
     refresh();
     keypad( stdscr, 1);
     nodelay(stdscr, TRUE);
-    t0 = millisec_clock( );
-    while( millisec_clock( ) - t0 < 3000L && getch( ) != 'q')
+    millisec_timer( TRUE);
+    if( argc == 2)
+      curs_set( 0);
+    while( millisec_timer( FALSE) < 3000L && getch( ) != 'q')
       {
       char buff[11];
       int i, j;
