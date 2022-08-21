@@ -1,4 +1,4 @@
-Changes as of 2022 August 18
+Changes as of 2022 August 20
 ============================
 
 Major new features
@@ -31,6 +31,13 @@ Bug fixes
 - In some situations,  cursor movement/changes were not immediately made
   on VT and SDL2.  a805ec2b15  18abe3dbd5
 
+- Keyboard entry in SDL2 was defective for some numeric keypad hits,  and
+  shift-F(n) keys gave no response.  d87b7bd917  8a41f2ed57
+
+- PDC_free_memory_allocations() (see below) was unnecessary;  if we follow
+  the specifications for delscreen(),  as we now do,  all that memory
+  gets freed in the natural course of things.  0223039ec0  60138ca8ec
+
 PDCursesMod 4.3.4 - 2022 July 29
 ================================
 
@@ -43,6 +50,7 @@ Minor new features
 
 - You can free remaining internal buffers by calling the new
   PDC_free_memory_allocations() function.  8d10534143  2259f29d5f
+  (Note that this has been reverted.)
 
 - On Linux,  we use the system-provided wcwidth() instead of our own.
   Aside from avoiding redundant code,  this may help in non-Unicode
