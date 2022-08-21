@@ -119,7 +119,7 @@ int main( const int argc, const char *argv[])
         resize_term( 0, 0);
     endwin( );
 #ifdef __PDCURSESMOD__      /* Not really needed,  but ensures Valgrind  */
-    PDC_free_memory_allocations( );      /* says all memory was freed */
+    delscreen( SP);                      /* says all memory was freed */
 #endif
     return( -1);
 }

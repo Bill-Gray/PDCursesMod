@@ -1356,7 +1356,6 @@ initscr
     SCREEN *newterm(const char *type, FILE *outfd, FILE *infd);
     SCREEN *set_term(SCREEN *new);
     void delscreen(SCREEN *sp);
-    void PDC_free_memory_allocations( void);
 
     int resize_term(int nlines, int ncols);
     bool is_termresized(void);
@@ -1389,15 +1388,6 @@ initscr
    since it's not freed by endwin(). This function is usually not
    needed. In PDCurses, the parameter must be the value of SP, and
    delscreen() sets SP to NULL.
-
-   PDC_free_memory_allocations() frees all memory allocated by PDCurses,
-   including SP and any platform-dependent memory.  It should be called
-   after endwin(),  not instead of it.  It need not be called,  because
-   remaining memory will be freed at exit;  but it can help in diagnosing
-   memory leak issues by ruling out any from PDCurses.
-
-   Note that SDLn and X11 have known memory leaks within their libraries,
-   which appear to be effectively unfixable.
 
    set_term() does nothing meaningful in PDCurses, but is included for
    compatibility with other curses implementations.
@@ -2948,9 +2938,8 @@ window
    ncols to COLS - begx. Create a new full-screen window by calling
    newwin(0, 0, 0, 0).
 
-   delwin() deletes the named window, freeing all associated memory. In
-   the case of overlapping windows, subwindows should be deleted before
-   the main window.
+   delwin() deletes the named window, freeing all associated memory.
+   Subwindows must be deleted before the main window can be deleted.
 
    mvwin() moves the window so that the upper left-hand corner is at
    position (y,x). If the move would cause the window to be off the

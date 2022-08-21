@@ -148,7 +148,7 @@ static void cleanup(void)
     curs_set(1);
     endwin();
 #ifdef __PDCURSESMOD__      /* Not really needed,  but ensures Valgrind  */
-    PDC_free_memory_allocations( );      /* says all memory was freed */
+    delscreen( SP);                      /* says all memory was freed */
 #endif
 }
 

@@ -201,7 +201,7 @@ int main()
       delwin( my_wins[i]);
       }
 #ifdef __PDCURSESMOD__      /* Not really needed,  but ensures Valgrind  */
-    PDC_free_memory_allocations( );      /* says all memory was freed */
+    delscreen( SP);                      /* says all memory was freed */
 #endif
     return( 0);
 }
