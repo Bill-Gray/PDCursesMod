@@ -336,7 +336,6 @@ bool isendwin(void)
 
 void PDC_free_memory_allocations( void)
 {
-   PDC_free_platform_dependent_memory( );
    PDC_clearclipboard( );
    traceoff( );
    delscreen( SP);

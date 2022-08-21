@@ -2338,7 +2338,3 @@ int PDC_init_color( int color, int red, int green, int blue)
     PDC_set_palette_entry( color, new_rgb);
     return OK;
 }
-
-void PDC_free_platform_dependent_memory( void)
-{
-}

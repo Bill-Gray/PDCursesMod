@@ -84,7 +84,6 @@ void    PDC_scr_free(void);
 int     PDC_scr_open(void);
 void    PDC_set_keyboard_binary(bool);
 void    PDC_transform_line(int, int, int, const chtype *);
-void    PDC_free_platform_dependent_memory( void);
 const char *PDC_sysname(void);
 
 /* Internal cross-module functions */

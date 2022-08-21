@@ -1,7 +1,6 @@
 PDCurses Implementor's Guide
 ============================
 
-                2022/07/06 - added PDC_free_platform_dependent_memory()
 - Version 1.6 - 2019/09/?? - added PDC_doupdate(); removed argc, argv,
                              lines, cols and SP allocation from
                              PDC_scr_open(); removed PDC_init_pair(),
@@ -245,12 +244,6 @@ the cursor to the lower left corner. (The X11 port does nothing.)
 ### void PDC_scr_free(void);
 
 Free any memory allocated by PDC_scr_open(). Called by delscreen().
-
-### void PDC_free_platform_dependent_memory( void);
-
-Free any platform-specific memory.  Called by PDC_free_memory_allocations().
-Does nothing (at present) on all platforms except DOS and OS/2.  On those,
-it frees the initial screen state.
 
 ### int PDC_scr_open(void);
 

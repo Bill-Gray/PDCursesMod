@@ -74,6 +74,9 @@ void PDC_scr_close(void)
 
 void PDC_scr_free(void)
 {
+    if( saved_screen)
+        free(saved_screen);
+    saved_screen = NULL;
 }
 
 /* open the physical screen -- miscellaneous initialization, may save
@@ -225,11 +228,4 @@ details of what it does on platforms that do support user resizing. */
 void PDC_set_resize_limits( const int new_min_lines, const int new_max_lines,
                   const int new_min_cols, const int new_max_cols)
 {
-}
-
-void PDC_free_platform_dependent_memory( void)
-{
-    if( saved_screen)
-        free(saved_screen);
-    saved_screen = NULL;
 }
