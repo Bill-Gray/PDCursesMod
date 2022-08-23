@@ -48,6 +48,10 @@ CC	= $(PREFIX)gcc
 LIBEXE = $(PREFIX)ar
 STRIP	= $(PREFIX)strip
 
+ifeq ($(shell uname -s),FreeBSD)
+	CC = cc
+endif
+
 ifeq ($(DLL),Y)
 		DLL_SUFFIX = .so
 		LIBEXE = $(CC)

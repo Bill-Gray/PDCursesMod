@@ -69,6 +69,10 @@ CC	= $(PREFIX)gcc
 LIBEXE = $(PREFIX)ar
 STRIP	= $(PREFIX)strip
 
+ifeq ($(shell uname -s),FreeBSD)
+	CC = cc
+endif
+
 ifeq ($(DLL),Y)
 	ifeq ($(E),.exe)
 		CFLAGS += -DPDC_DLL_BUILD
