@@ -1,5 +1,8 @@
 /* DRM (Direct Rendering Manager,  _not_ Digital Restrictions or Rights
-Management!) functions.  */
+Management!) functions.  Modified from code provided at
+
+https://embear.ch/blog/drm-framebuffer   (describes the code)
+https://github.com/embear-engineering/drm-framebuffer   */
 
 #include <stdio.h>
 #include <string.h>
