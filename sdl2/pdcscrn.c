@@ -19,6 +19,7 @@
 #   define PDC_FONT_PATH "/System/Library/Fonts/Menlo.ttc"
 #  else
 #   define PDC_FONT_PATH "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf"
+#   define PDC_FONT_PATH2 "/usr/share/fonts/dejavu-sans-mono-fonts/DejaVuSansMono.ttf"
 #  endif
 # endif
 TTF_Font *pdc_ttffont = NULL;
@@ -192,6 +193,9 @@ int PDC_scr_open(void)
 {
     SDL_Event event;
     int displaynum = 0;
+ #ifdef PDC_WIDE
+    const char *ptsz, *fname;
+ #endif
 
     PDC_LOG(("PDC_scr_open() - called\n"));
 
@@ -213,8 +217,6 @@ int PDC_scr_open(void)
 #ifdef PDC_WIDE
     if (!pdc_ttffont)
     {
-        const char *ptsz, *fname;
-
         if (TTF_Init() == -1)
         {
             fprintf(stderr, "Could not start SDL_TTF: %s\n", SDL_GetError());
@@ -230,11 +232,30 @@ int PDC_scr_open(void)
         fname = getenv("PDC_FONT");
         pdc_ttffont = TTF_OpenFont(fname ? fname : PDC_FONT_PATH,
                                    pdc_font_size);
+# ifdef PDC_FONT_PATH2
+        if (!pdc_ttffont && !fname)
+        {
+            pdc_ttffont = TTF_OpenFont(PDC_FONT_PATH2,
+                                       pdc_font_size);
+        }
+# endif
     }
 
     if (!pdc_ttffont)
     {
-        fprintf(stderr, "Could not load font\n");
+        if (fname)
+            fprintf(stderr, "Could not load specified font: %s\n",fname);
+        else
+        {
+# ifdef PDC_FONT_PATH2
+            fprintf(stderr, "Could not load default font: %s or %s\n",
+                    PDC_FONT_PATH, PDC_FONT_PATH2);
+# else
+            fprintf(stderr, "Could not load default font: %s\n",
+                    PDC_FONT_PATH);
+# endif
+
+        }
         return ERR;
     }
 
