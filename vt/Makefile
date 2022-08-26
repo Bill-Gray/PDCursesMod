@@ -1,6 +1,7 @@
 # GNU MAKE Makefile for PDCurses library for VT
 #
-# Usage: [g]make [DEBUG=Y] [WIDE=Y] [UTF8=Y] [target]
+# Usage: [g]make [DEBUG=Y] [WIDE=Y] [UTF8=Y] [LIBNAME=(name)]
+#                [DLLNAME=(name)] [target]
 #
 # where target can be any of:
 # [all|demos|libpdcurses.a|testcurs]...
@@ -63,8 +64,11 @@ ifeq ($(OS),Windows_NT)
 	RM = cmd /c del
 endif
 
+LIBNAME=pdcurses
+DLLNAME=pdcurses
+
 LIBFLAGS = rv
-LIBCURSES	= libpdcurses.a
+LIBCURSES	= lib$(LIBNAME).a
 CC	= $(PREFIX)gcc
 LIBEXE = $(PREFIX)ar
 STRIP	= $(PREFIX)strip
@@ -76,9 +80,9 @@ endif
 ifeq ($(DLL),Y)
 	ifeq ($(E),.exe)
 		CFLAGS += -DPDC_DLL_BUILD
-		LIBCURSES	= pdcurses.dll
+		LIBCURSES	= $(DLLNAME).dll
 		LIBEXE = $(CC)
-		LIBFLAGS = -Wl,--out-implib,pdcurses.a -shared -o
+		LIBFLAGS = -Wl,--out-implib,$(LIBNAME).a -shared -o
 	else
 		ifeq ($(shell uname -s),Darwin)
 			DLL_SUFFIX = .dylib
@@ -87,7 +91,7 @@ ifeq ($(DLL),Y)
 		endif
 		LIBEXE = $(CC)
 		LIBFLAGS = -shared -o
-		LIBCURSES = libpdcurses$(DLL_SUFFIX)
+		LIBCURSES = lib$(DLLNAME)$(DLL_SUFFIX)
 	endif
 endif
 
@@ -113,7 +117,7 @@ endif
 
 $(LIBCURSES) : $(LIBOBJS) $(PDCOBJS)
 	$(LIBEXE) $(LIBFLAGS) $@ $?
-ifeq ($(LIBCURSES),libpdcurses.a)
+ifeq ($(LIBCURSES),$(LIBNAME).a)
 	-$(RANLIB) $@
 endif
 
@@ -186,12 +190,12 @@ include $(demodir)/nctests.mif
 
 install:
 ifneq ($(OS),Windows_NT)
-	cp libpdcurses.so /usr/local/lib
+	cp lib$(DLLNAME).so /usr/local/lib
 	ldconfig /usr/local/lib
 endif
 
 uninstall:
 ifneq ($(OS),Windows_NT)
-	$(RM) /usr/local/lib/libpdcurses.so
+	$(RM) /usr/local/lib/lib$(DLLNAME).so
 	ldconfig /usr/local/lib
 endif

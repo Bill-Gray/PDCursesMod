@@ -1,6 +1,7 @@
 # GNU MAKE Makefile for PDCurses library for Linux framebuffer
 #
-# Usage: [g]make [DEBUG=Y] [WIDE=Y] [UTF8=Y] [target]
+# Usage: [g]make [DEBUG=Y] [WIDE=Y] [UTF8=Y] [LIBNAME=(name)]
+#                [DLLNAME=(name)] [DRM=Y] [CHTYPE_32=Y] [target]
 #
 # where target can be any of:
 # [all|demos|libpdcurses.a|testcurs]...
@@ -42,8 +43,11 @@ ifdef CHTYPE_32
 	CFLAGS += -DCHTYPE_32
 endif
 
+LIBNAME=pdcurses
+DLLNAME=pdcurses
+
 LIBFLAGS = rv
-LIBCURSES	= libpdcurses.a
+LIBCURSES	= lib$(LIBNAME).a
 CC	= $(PREFIX)gcc
 LIBEXE = $(PREFIX)ar
 STRIP	= $(PREFIX)strip
@@ -56,7 +60,7 @@ ifeq ($(DLL),Y)
 		DLL_SUFFIX = .so
 		LIBEXE = $(CC)
 		LIBFLAGS = -shared -o
-		LIBCURSES = libpdcurses$(DLL_SUFFIX)
+		LIBCURSES = lib$(DLLNAME)$(DLL_SUFFIX)
 endif
 
 BUILD		= $(CC) $(CFLAGS) -I$(PDCURSES_SRCDIR)
@@ -92,7 +96,7 @@ endif
 
 $(LIBCURSES) : $(LIBOBJS) $(PDCOBJS)
 	$(LIBEXE) $(LIBFLAGS) $@ $?
-ifeq ($(LIBCURSES),libpdcurses.a)
+ifeq ($(LIBCURSES),lib$(LIBNAME).a)
 	-$(RANLIB) $@
 endif
 
@@ -165,12 +169,12 @@ include $(demodir)/nctests.mif
 
 install:
 ifneq ($(OS),Windows_NT)
-	cp libpdcurses.so /usr/local/lib
+	cp lib$(DLLNAME).so /usr/local/lib
 	ldconfig /usr/local/lib
 endif
 
 uninstall:
 ifneq ($(OS),Windows_NT)
-	$(RM) /usr/local/lib/libpdcurses.so
+	$(RM) /usr/local/lib/lib$(DLLNAME).so
 	ldconfig /usr/local/lib
 endif

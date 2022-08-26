@@ -1,4 +1,10 @@
-# Makefile for PDCurses for SDL
+# GNU MAKE Makefile for PDCurses for SDL
+#
+# Usage: [g]make [DEBUG=Y] [WIDE=Y] [UTF8=Y] [LIBNAME=(name)]
+#                [DLLNAME=(name)] [target]
+#
+# where target can be any of:
+# [all|demos|libpdcurses.a|testcurs]...
 
 O = o
 
@@ -43,9 +49,12 @@ else
 	LDFLAGS		= $(LIBCURSES) $(SLIBS)
 endif
 
+LIBNAME=pdcurses
+DLLNAME=pdcurses
+
 RANLIB		= ranlib
-LIBCURSES	= libpdcurses.a
-LIBCURSES_SO	= libpdcurses.so
+LIBCURSES	= lib$(LIBNAME).a
+LIBCURSES_SO	= lib$(DLLNAME).so
 
 BUILD		= $(CC) $(CFLAGS) -I$(PDCURSES_SRCDIR)
 
