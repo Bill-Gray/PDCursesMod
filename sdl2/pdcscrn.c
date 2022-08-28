@@ -109,6 +109,7 @@ static void _clean(void)
     {
         TTF_CloseFont(pdc_ttffont);
         TTF_Quit();
+        pdc_ttffont = NULL;
     }
 #endif
     SDL_FreeSurface(pdc_tileback);
@@ -193,9 +194,9 @@ int PDC_scr_open(void)
 {
     SDL_Event event;
     int displaynum = 0;
- #ifdef PDC_WIDE
+#ifdef PDC_WIDE
     const char *ptsz, *fname;
- #endif
+#endif
 
     PDC_LOG(("PDC_scr_open() - called\n"));
 
@@ -215,31 +216,28 @@ int PDC_scr_open(void)
     }
 
 #ifdef PDC_WIDE
-    if (!pdc_ttffont)
+    if (TTF_Init() == -1)
     {
-        if (TTF_Init() == -1)
-        {
-            fprintf(stderr, "Could not start SDL_TTF: %s\n", SDL_GetError());
-            return ERR;
-        }
-
-        ptsz = getenv("PDC_FONT_SIZE");
-        if (ptsz != NULL)
-            pdc_font_size = atoi(ptsz);
-        if (pdc_font_size <= 0)
-            pdc_font_size = 18;
-
-        fname = getenv("PDC_FONT");
-        pdc_ttffont = TTF_OpenFont(fname ? fname : PDC_FONT_PATH,
-                                   pdc_font_size);
-# ifdef PDC_FONT_PATH2
-        if (!pdc_ttffont && !fname)
-        {
-            pdc_ttffont = TTF_OpenFont(PDC_FONT_PATH2,
-                                       pdc_font_size);
-        }
-# endif
+        fprintf(stderr, "Could not start SDL_TTF: %s\n", SDL_GetError());
+        return ERR;
     }
+
+    ptsz = getenv("PDC_FONT_SIZE");
+    if (ptsz != NULL)
+        pdc_font_size = atoi(ptsz);
+    if (pdc_font_size <= 0)
+        pdc_font_size = 18;
+
+    fname = getenv("PDC_FONT");
+    pdc_ttffont = TTF_OpenFont(fname ? fname : PDC_FONT_PATH,
+                               pdc_font_size);
+# ifdef PDC_FONT_PATH2
+    if (!pdc_ttffont && !fname)
+    {
+        pdc_ttffont = TTF_OpenFont(PDC_FONT_PATH2,
+                                   pdc_font_size);
+    }
+# endif
 
     if (!pdc_ttffont)
     {
