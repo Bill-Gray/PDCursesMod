@@ -12,7 +12,14 @@
 
 #ifdef PDC_WIDE
 # ifndef PDC_FONT_PATH
-#  define PDC_FONT_PATH "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf"
+#  ifdef _WIN32
+#   define PDC_FONT_PATH "C:/Windows/Fonts/consola.ttf"
+#  elif defined(__APPLE__)
+#   define PDC_FONT_PATH "/System/Library/Fonts/Menlo.ttc"
+#  else
+#   define PDC_FONT_PATH "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf"
+#   define PDC_FONT_PATH2 "/usr/share/fonts/dejavu-sans-mono-fonts/DejaVuSansMono.ttf"
+#  endif
 # endif
 TTF_Font *pdc_ttffont = NULL;
 int pdc_font_size = 17;
@@ -35,6 +42,7 @@ static void _clean(void)
     {
         TTF_CloseFont(pdc_ttffont);
         TTF_Quit();
+        pdc_ttffont = NULL;
     }
 #endif
     SDL_FreeSurface(pdc_tileback);
@@ -91,6 +99,9 @@ void PDC_scr_free(void)
 
 int PDC_scr_open(void)
 {
+#ifdef PDC_WIDE
+    const char *ptsz, *fname;
+#endif
     PDC_LOG(("PDC_scr_open() - called\n"));
 
     pdc_own_screen = !pdc_screen;
@@ -107,30 +118,43 @@ int PDC_scr_open(void)
     }
 
 #ifdef PDC_WIDE
-    if (!pdc_ttffont)
+    if (TTF_Init() == -1)
     {
-        const char *ptsz, *fname;
-
-        if (TTF_Init() == -1)
-        {
-            fprintf(stderr, "Could not start SDL_TTF: %s\n", SDL_GetError());
-            return ERR;
-        }
-
-        ptsz = getenv("PDC_FONT_SIZE");
-        if (ptsz != NULL)
-           pdc_font_size = atoi(ptsz);
-        if (pdc_font_size <= 0)
-           pdc_font_size = 18;
-
-        fname = getenv("PDC_FONT");
-        pdc_ttffont = TTF_OpenFont(fname ? fname : PDC_FONT_PATH,
-                                   pdc_font_size);
+        fprintf(stderr, "Could not start SDL_TTF: %s\n", SDL_GetError());
+        return ERR;
     }
 
+    ptsz = getenv("PDC_FONT_SIZE");
+    if (ptsz != NULL)
+        pdc_font_size = atoi(ptsz);
+    if (pdc_font_size <= 0)
+        pdc_font_size = 18;
+
+    fname = getenv("PDC_FONT");
+    pdc_ttffont = TTF_OpenFont(fname ? fname : PDC_FONT_PATH,
+                               pdc_font_size);
+# ifdef PDC_FONT_PATH2
+    if (!pdc_ttffont && !fname)
+    {
+        pdc_ttffont = TTF_OpenFont(PDC_FONT_PATH2,
+                                   pdc_font_size);
+    }
+# endif
+
     if (!pdc_ttffont)
     {
-        fprintf(stderr, "Could not load font\n");
+        if (fname)
+            fprintf(stderr, "Could not load specified font: %s\n",fname);
+        else
+        {
+# ifdef PDC_FONT_PATH2
+            fprintf(stderr, "Could not load default font: %s or %s\n",
+                    PDC_FONT_PATH, PDC_FONT_PATH2);
+# else
+            fprintf(stderr, "Could not load default font: %s\n",
+                    PDC_FONT_PATH);
+# endif
+        }
         return ERR;
     }
 
