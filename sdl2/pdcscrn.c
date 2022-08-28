@@ -112,12 +112,25 @@ static void _clean(void)
         pdc_ttffont = NULL;
     }
 #endif
-    SDL_FreeSurface(pdc_tileback);
-    SDL_FreeSurface(pdc_back);
-    SDL_FreeSurface(pdc_icon);
-    SDL_FreeSurface(pdc_font);
-    SDL_DestroyWindow(pdc_window);
+    if( pdc_tileback)
+        SDL_FreeSurface(pdc_tileback);
+    if( pdc_back)
+        SDL_FreeSurface(pdc_back);
+    if( pdc_icon)
+        SDL_FreeSurface(pdc_icon);
+    if( pdc_font)
+        SDL_FreeSurface(pdc_font);
+    if( pdc_screen)
+        SDL_FreeSurface(pdc_screen);
+    pdc_screen = pdc_tileback = pdc_back = pdc_icon = pdc_font = NULL;
+    if( pdc_own_window && pdc_window)
+    {
+        SDL_DestroyWindow(pdc_window);
+        pdc_window = NULL;
+    }
+
     SDL_Quit();
+    pdc_sheight = pdc_swidth = 0;
 }
 
 void PDC_retile(void)
@@ -160,6 +173,7 @@ void PDC_scr_close(void)
 void PDC_scr_free(void)
 {
     PDC_free_palette( );
+    _clean( );
 }
 
 
