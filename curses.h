@@ -42,7 +42,7 @@ Defined by this header:
 #define PDC_VER_CHANGE   4
 #define PDC_VER_YEAR   2022
 #define PDC_VER_MONTH     8
-#define PDC_VER_DAY      21
+#define PDC_VER_DAY      26
 
 #define PDC_STRINGIZE( x) #x
 #define PDC_stringize( x) PDC_STRINGIZE( x)
@@ -349,6 +349,11 @@ typedef struct
  *
  */
 
+/* Avoid using the WINDOW or SCREEN structs directly -- doing so
+   makes your code PDCurses*-only and may result in future binary
+   incompatibility;  use the corresponding functions if possible.
+   These structs may eventually be made private. */
+
 typedef struct _win       /* definition of a window */
 {
     int   _cury;          /* current pseudo-cursor */
@@ -380,8 +385,7 @@ typedef struct _win       /* definition of a window */
     int   _smincol, _smaxcol;    /* saved position used only for pads */
 } WINDOW;
 
-/* Avoid using the SCREEN struct directly -- use the corresponding
-   functions if possible. This struct may eventually be made private. */
+/* See above warning against directly accessing SCREEN elements. */
 
 typedef struct
 {
