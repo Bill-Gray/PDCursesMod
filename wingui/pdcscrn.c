@@ -2,7 +2,6 @@
 
 #include "pdcwin.h"
 #include <tchar.h>
-#include <stdint.h>
 #include <assert.h>
 #include "../common/pdccolor.h"
 #ifdef WIN32_LEAN_AND_MEAN
@@ -28,7 +27,7 @@ inlined functions.  Until we puzzle out which ones do and which
 don't,  we'll just leave "inlined" functions as plain old static
 functions.        */
 
-#ifdef _MSC_VER
+#if defined( _MSC_VER) || defined( __BORLANDC__)
 #define INLINE static
 #else
 #define INLINE static inline
@@ -1199,7 +1198,7 @@ INLINE void HandleSizing( WPARAM wParam, LPARAM lParam )
         rect->left = rect->right - rounded_width;
 }
 
-typedef void(*resize_callback_fnptr)();
+typedef void(*resize_callback_fnptr)(void);
 static resize_callback_fnptr resize_callback = NULL;
 void PDC_set_window_resized_callback(resize_callback_fnptr callback) {
     resize_callback = callback;
@@ -1304,7 +1303,7 @@ static void PrepareBackBuffer(HDC hdc, RECT rect)
     back_buffer.is_rect_valid = width > 0 && height > 0;
 }
 
-static void BlitBackBuffer()
+static void BlitBackBuffer( void)
 {
 
     if (back_buffer.is_rect_valid)
@@ -1814,6 +1813,7 @@ static LRESULT ALIGN_STACK CALLBACK WndProc (const HWND hwnd,
         {
         const int mouse_x = LOWORD( lParam) / PDC_cxChar;
         const int mouse_y = HIWORD( lParam) / PDC_cyChar;
+
         if( add_mouse( 0, BUTTON_MOVED, mouse_x, mouse_y))
             modified_key_to_return = 0;
         }
