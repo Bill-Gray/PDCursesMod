@@ -150,6 +150,8 @@ void PDC_scr_close(void)
 void PDC_scr_free(void)
 {
     PDC_free_palette( );
+    DestroyWindow( PDC_hWnd);
+    ttytype[1] = 0;
 }
 
 int PDC_choose_a_new_font( void);                     /* pdcdisp.c */
@@ -1218,6 +1220,11 @@ static void HandleSize( const WPARAM wParam, const LPARAM lParam)
         prev_wParam = SIZE_MINIMIZED;
         return;
     }
+    if( wParam == (WPARAM)-99)
+    {
+        prev_wParam = (WPARAM)-99;
+        return;
+    }
 
     new_n_rows = n_ypixels / PDC_cyChar;
     new_n_cols = n_xpixels / PDC_cxChar;
@@ -2136,6 +2143,8 @@ INLINE int set_up_window( void)
         adjust_window_size( &xsize, &ysize, window_style, window_ex_style);
     }
 
+    HandleSize( (WPARAM)-99, 0);
+
     PDC_hWnd = CreateWindowEx( window_ex_style,
                     AppName, WindowTitle,
                     window_style,
@@ -2195,6 +2204,7 @@ int PDC_scr_open(void)
         return ERR;
 
     debug_printf( "colors alloc\n");
+    PDC_bDone = FALSE;
     SP->mouse_wait = PDC_CLICK_PERIOD;
     SP->visibility = 0;                /* no cursor,  by default */
     SP->curscol = SP->cursrow = 0;
