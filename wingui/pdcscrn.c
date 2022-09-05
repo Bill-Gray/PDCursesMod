@@ -1738,7 +1738,7 @@ static LRESULT ALIGN_STACK CALLBACK WndProc (const HWND hwnd,
     static int xbutton_pressed = 0;
     static int modified_key_to_return = 0;
     static bool ignore_resize = FALSE;
-    int button = -1, action = -1;
+    int button, action;
 
     PDC_hWnd = hwnd;
     if( !hwnd)
@@ -2047,7 +2047,6 @@ it's inlined. */
 INLINE int set_up_window( void)
 {
     /* create the dialog window  */
-    WNDCLASS   wndclass ;
     HMENU hMenu;
     HANDLE hInstance = GetModuleHandle( NULL);
     int n_default_columns = 80;
@@ -2072,6 +2071,7 @@ INLINE int set_up_window( void)
     if( !wndclass_has_been_registered)
     {
         ATOM rval;
+        WNDCLASS   wndclass ;
 
         wndclass.style         = CS_VREDRAW | CS_HREDRAW;
         wndclass.lpfnWndProc   = WndProc ;
