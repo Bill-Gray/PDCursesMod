@@ -97,6 +97,9 @@ extern "C"
    #define int16_t  short
 #else
    #include <stdint.h>
+   #ifdef __DMC__
+      #define uint64_t unsigned long long
+   #endif
 #endif
 
 /*----------------------------------------------------------------------
