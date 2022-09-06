@@ -150,7 +150,11 @@ int PDC_resize_screen(int nlines, int ncols)
       {
       char tbuff[50];
 
+#ifdef HAVE_SNPRINTF
       snprintf( tbuff, sizeof( tbuff), "\033[8;%d;%dt", nlines, ncols);
+#else
+      sprintf( tbuff, "\033[8;%d;%dt", nlines, ncols);
+#endif
       PDC_puts_to_stdout( tbuff);
       PDC_rows = nlines;
       PDC_cols = ncols;

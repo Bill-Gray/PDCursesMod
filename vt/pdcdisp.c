@@ -83,7 +83,11 @@ void PDC_gotoyx(int y, int x)
 {
    char tbuff[50];
 
+#ifdef HAVE_SNPRINTF
    snprintf( tbuff, sizeof( tbuff), "\033[%d;%dH", y + 1, x + 1);
+#else
+   sprintf( tbuff, "\033[%d;%dH", y + 1, x + 1);
+#endif
    PDC_puts_to_stdout( tbuff);
    PDC_doupdate( );
 }

@@ -19,4 +19,8 @@ extern int PDC_is_ansi;
 # define _CRT_SECURE_NO_DEPRECATE 1   /* kill nonsense warnings */
 #endif
 
+#if !defined( __DMC__)
+# define HAVE_SNPRINTF
+#endif
+
 void PDC_puts_to_stdout( const char *buff);        /* pdcdisp.c */

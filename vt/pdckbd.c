@@ -630,12 +630,20 @@ int PDC_mouse_set( void)
 
          if( curr_tracking_state > 0)
             {
+#ifdef HAVE_SNPRINTF
             snprintf( tbuff, sizeof( tbuff), "\033[?%dl", curr_tracking_state);
+#else
+            sprintf( tbuff, "\033[?%dl", curr_tracking_state);
+#endif
             PDC_puts_to_stdout( tbuff);
             }
          if( tracking_state)
             {
+#ifdef HAVE_SNPRINTF
             snprintf( tbuff, sizeof( tbuff), "\033[?%dh", tracking_state);
+#else
+            sprintf( tbuff, "\033[?%dh", tracking_state);
+#endif
             PDC_puts_to_stdout( tbuff);
             }
          curr_tracking_state = tracking_state;
