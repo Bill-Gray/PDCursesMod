@@ -1,7 +1,7 @@
 # Visual C++ Makefile for PDCurses - SDL2
 #
 # Usage: nmake -f [path\]Makefile.vc [DEBUG=Y] [DLL=Y] [WIDE=Y] [UTF8=Y]
-#        [INFOEX=N] [target]
+#                   [target]
 #
 # where target can be any of:
 # [all|demos|pdcurses.lib|testcurs.exe...]
@@ -51,10 +51,6 @@ WIDEOPT		= -DPDC_FORCE_UTF8
 !ifdef WIDEOPT
 TTF_INCLUDE	= -I$(TTFBASE)\include
 TTF_LIB		= $(TTFBASE)\lib\$(PLATFORM)\SDL2_ttf.lib
-!endif
-
-!ifdef INFOEX
-INFOPT		= -DHAVE_NO_INFOEX
 !endif
 
 SHL_LD = link $(LDFLAGS) -nologo -dll -machine:$(PLATFORM) -out:pdcurses.dll
