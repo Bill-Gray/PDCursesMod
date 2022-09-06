@@ -273,14 +273,17 @@ int delwin(WINDOW *win)
             return( ERR);
     }
 
-    i = 0;     /* make sure win is in the window list */
-    while( i < SP->opaque->n_windows && SP->opaque->window_list[i] != win)
-        i++;
-    assert( i < SP->opaque->n_windows);
-    if( i == SP->opaque->n_windows)
-        return( ERR);
-    SP->opaque->n_windows--;        /* remove win from window list */
-    SP->opaque->window_list[i] = SP->opaque->window_list[SP->opaque->n_windows];
+    if( win->_firstch && win->_y && win->_y[0])
+    {
+        i = 0;     /* make sure win is in the window list */
+        while( i < SP->opaque->n_windows && SP->opaque->window_list[i] != win)
+            i++;
+        assert( i < SP->opaque->n_windows);
+        if( i == SP->opaque->n_windows)
+            return( ERR);
+        SP->opaque->n_windows--;        /* remove win from window list */
+        SP->opaque->window_list[i] = SP->opaque->window_list[SP->opaque->n_windows];
+    }
 
     /* subwindows use parents' lines */
 
