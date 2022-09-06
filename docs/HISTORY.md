@@ -1,4 +1,4 @@
-Changes as of 2022 August 20
+Changes as of 2022 August 28
 ============================
 
 Major new features
@@ -10,6 +10,15 @@ Major new features
 
 Minor new features
 ------------------
+
+- Framebuffer port can now use either the (deprecated) Linux framebuffer
+  system or the DRM (Direct Rendering Manager) system.  DRM is not
+  supported on some older systems and the Linux framebuffer is not
+  supported on newer ones.  DRM also can be used with *BSD;  the Linux
+  framebuffer really is a Linux-only solution.  e9bc09c083
+
+- GNU Makefiles for VT and framebuffer ports work out of the box on
+  FreeBSD.  2b5f0036fe
 
 - Much revision internal to the PDCursesMod library (no effect as far
   as users of the library are concerned) to move static variables into
@@ -25,6 +34,11 @@ Minor new features
 
 - Made the PANEL and PANELOBS structures opaque.  f55e55a0fb  78039d10c3
 
+- You can specify the library name during a GCC build with LIBNAME=(name)
+  and the shared library name with DLLNAME=(name).  Support is,  as yet,
+  incomplete,  but it should be possible to expand this to MSVC and
+  OpenWATCOM builds.   44e5aa323e
+
 Bug fixes
 ---------
 
@@ -37,6 +51,18 @@ Bug fixes
 - PDC_free_memory_allocations() (see below) was unnecessary;  if we follow
   the specifications for delscreen(),  as we now do,  all that memory
   gets freed in the natural course of things.  0223039ec0  60138ca8ec
+
+- SDL2 had problems finding the default TrueType font on Rocky Linux 9
+  builds.  Mark Hessling added a bit of code so that a secondary default
+  path is specified;  if one path fails,  we try the other.  1e4bcc9676
+
+- SDL1 was similarly updated;  it also got some better default locations
+  for TrueType fonts on Windows and Apple,  borrowed from fixes that had
+  already been done for SDL2.  9cf041e835
+
+- Both SDL1 and SDL2 failed to free some memory when delscreen(SP) was
+  called.  The result was that you couldn't cleanly shut down curses
+  completely and restart it.  c62edf7752
 
 PDCursesMod 4.3.4 - 2022 July 29
 ================================
