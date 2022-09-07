@@ -117,7 +117,6 @@ int main()
       {
       PANEL *curr_top = ceiling_panel( NULL);
 
-      assert( curr_top);
       update_panels();
 
       /* Show it on the screen */
@@ -130,14 +129,17 @@ int main()
             top_panel( my_panels[c - '1']);
             break;
          case 9:
+            if( curr_top)
+               {
 #ifdef __PDCURSES__
-            if( panel_hidden( curr_top) == OK)
+               if( panel_hidden( curr_top) == OK)
 #else
-            if( panel_hidden( curr_top) == TRUE)
+               if( panel_hidden( curr_top) == TRUE)
 #endif
-               show_panel( curr_top);
-            else
-               hide_panel( curr_top);
+                  show_panel( curr_top);
+               else
+                  hide_panel( curr_top);
+               }
             break;
 #ifdef __PDCURSESMOD__
          case 'v':
@@ -153,22 +155,23 @@ int main()
             break;
 #endif
          case KEY_LEFT: case KEY_RIGHT: case KEY_UP: case KEY_DOWN:
-            {
-            WINDOW *win = panel_window( curr_top);
+            if( curr_top)
+               {
+               WINDOW *win = panel_window( curr_top);
 
-            x = getbegx( win);
-            y = getbegy( win);
-            if( c == KEY_LEFT)
-               x--;
-            if( c == KEY_RIGHT)
-               x++;
-            if( c == KEY_UP)
-               y--;
-            if( c == KEY_DOWN)
-               y++;
-            if( move_panel( curr_top, y, x) == ERR)
-               flash( );
-            }
+               x = getbegx( win);
+               y = getbegy( win);
+               if( c == KEY_LEFT)
+                  x--;
+               if( c == KEY_RIGHT)
+                  x++;
+               if( c == KEY_UP)
+                  y--;
+               if( c == KEY_DOWN)
+                  y++;
+               if( move_panel( curr_top, y, x) == ERR)
+                  flash( );
+               }
             break;
          case KEY_MOUSE:
             {
