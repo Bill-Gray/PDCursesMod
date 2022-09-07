@@ -33,8 +33,9 @@ LIBCURSES   = pdcurses.lib
 
 BUILD      = $(CC) $(CFLAGS) $(CPPFLAGS)
 
-DEMOS      = testcurs.exe ozdemo.exe newtest.exe xmas.exe tuidemo.exe \
-firework.exe ptest.exe rain.exe worm.exe
+DEMOS      =  calendar.exe firework.exe init_col.exe mbrot.exe \
+newtest.exe ozdemo.exe picsview.exe ptest.exe rain.exe speed.exe \
+testcurs.exe test_pan.exe tuidemo.exe widetest.exe worm.exe xmas.exe
 
 all:    $(LIBCURSES) $(DEMOS)
 
@@ -56,8 +57,9 @@ touch.obj util.obj window.obj debug.obj
 PDCOBJS = pdcclip.obj pdcdisp.obj pdcgetsc.obj pdckbd.obj pdcscrn.obj \
 pdcsetsc.obj pdcutil.obj
 
-DEMOOBJS = testcurs.obj ozdemo.obj newtest.obj xmas.obj tuidemo.obj tui.obj \
-firework.obj ptest.obj rain.obj worm.obj
+DEMOOBS    =  calendar.obj firework.obj init_col.obj mbrot.obj \
+newtest.obj ozdemo.obj picsview.obj ptest.obj rain.obj speed.obj \
+testcurs.obj test_pan.obj tuidemo.obj widetest.obj worm.obj xmas.obj tui.obj
 
 LIBS = advapi32.lib gdi32.lib user32.lib shell32.lib comdlg32.lib winmm.lib
 
@@ -217,13 +219,25 @@ pdcsetsc.obj: $(osdir)\pdcsetsc.c
 pdcutil.obj: $(osdir)\pdcutil.c
    $(OSBUILD)
 
+calendar.exe:   $(demodir)\calendar.c
+   $(DEMOBUILD) $(LIBS)
+
 firework.exe:   $(demodir)\firework.c
    $(DEMOBUILD) $(LIBS)
 
-ozdemo.exe:    $(demodir)\ozdemo.c
+init_col.exe:   $(demodir)\init_col.c
+   $(DEMOBUILD) $(LIBS)
+
+mbrot.exe:      $(demodir)\mbrot.c
    $(DEMOBUILD) $(LIBS)
 
 newtest.exe:    $(demodir)\newtest.c
+   $(DEMOBUILD) $(LIBS)
+
+ozdemo.exe:     $(demodir)\ozdemo.c
+   $(DEMOBUILD) $(LIBS)
+
+picsview.exe:   $(demodir)\picsview.c
    $(DEMOBUILD) $(LIBS)
 
 ptest.exe:      $(demodir)\ptest.c
@@ -232,7 +246,13 @@ ptest.exe:      $(demodir)\ptest.c
 rain.exe:       $(demodir)\rain.c
    $(DEMOBUILD) $(LIBS)
 
+speed.exe:      $(demodir)\speed.c
+   $(DEMOBUILD) $(LIBS)
+
 testcurs.exe:   $(demodir)\testcurs.c
+   $(DEMOBUILD) $(LIBS)
+
+test_pan.exe:   $(demodir)\test_pan.c
    $(DEMOBUILD) $(LIBS)
 
 tuidemo.exe:    tuidemo.obj tui.obj
