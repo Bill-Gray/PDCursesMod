@@ -17,28 +17,16 @@ void PDC_set_keyboard_binary(bool on)
 extern int PDC_key_queue_low, PDC_key_queue_high;
 extern int PDC_key_queue[KEY_QUEUE_SIZE];
 
-/* The PeekMessage( ) check for new keyhits is a little sluggish;
-it runs at about 70000/s on my machine.  The current logic is therefore :
-if a millisecond has not elapsed (i.e.,  curr_ms == last_ms),  there is
-probably no point in checking for messages.  With that modification,
-the relatively expensive PeekMessage( ) call is only done once every
-millisecond,  and PDC_check_key can take (on average) under half a
-microsecond.         */
-
 bool PDC_check_key(void)
 {
     MSG msg;
     extern HWND PDC_hWnd;
-    DWORD curr_ms = GetTickCount( );
-    static DWORD last_ms;
 
-    if( curr_ms != last_ms)
-        while( PeekMessage(&msg, PDC_hWnd, WM_KEYFIRST, WM_KEYLAST, PM_REMOVE) )
-        {
-           TranslateMessage(&msg);
-           DispatchMessage(&msg);
-        }
-    last_ms = curr_ms;
+    while( PeekMessage(&msg, PDC_hWnd, WM_KEYFIRST, WM_KEYLAST, PM_REMOVE) )
+    {
+       TranslateMessage(&msg);
+       DispatchMessage(&msg);
+    }
     if( PDC_key_queue_low != PDC_key_queue_high)
         return TRUE;
     return FALSE;

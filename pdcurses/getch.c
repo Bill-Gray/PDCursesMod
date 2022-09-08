@@ -406,6 +406,60 @@ static int _mouse_key(void)
     return key;
 }
 
+/* ftime() is consided obsolete.  But it's all we have for
+millisecond precision on older compilers/systems.  We'll
+use gettimeofday() when available.        */
+
+#if defined(__TURBOC__) || defined(__EMX__) || defined(__DJGPP__) || \
+    defined( __DMC__) || defined(__WATCOMC__) || defined(_MSC_VER)
+#include <sys/timeb.h>
+
+long PDC_millisecs( void)
+{
+    struct timeb t;
+
+    ftime( &t);
+    return( (long)t.time * 1000L + (long)t.millitm);
+}
+#else
+#include <sys/time.h>
+
+long PDC_millisecs( )
+{
+    struct timeval t;
+
+    gettimeofday( &t, NULL);
+    return( t.tv_sec * 1000 + t.tv_usec / 1000);
+}
+#endif
+
+/* On many systems,  checking for a key hit is quite slow.  If
+PDC_check_key( ) returns FALSE,  we can safely stop checking for
+a key hit for a millisecond.  This ensures we won't call it more
+than 1000 times per second.
+
+On DOS,  it appears that checking the time is so slow that we're
+better off (by a small margin) not using this scheme.  */
+
+static bool _fast_check_key( void)
+{
+#if defined( __DMC__) && !defined( _WIN32)
+    return( PDC_check_key( ));
+#else
+    static long prev_millisecond;
+    const long curr_ms = PDC_millisecs( );
+    bool rval;
+
+    if( prev_millisecond == curr_ms)
+        return( FALSE);
+    rval = PDC_check_key( );
+    if( !rval)
+        prev_millisecond = curr_ms;
+    return( rval);
+#endif
+}
+
+
 bool PDC_is_function_key( const int key)
 {
    return( key >= KEY_MIN && key < KEY_MAX);
@@ -466,7 +520,7 @@ int wgetch(WINDOW *win)
     {
         /* is there a keystroke ready? */
 
-        while( !PDC_check_key())
+        while( !_fast_check_key())
         {
             /* if not, handle timeout() and halfdelay() */
             int nap_time = 50;
