@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "../demos/snprintf.c"
+
 #define PDC_NCMOUSE
 
 #include "curses.h"

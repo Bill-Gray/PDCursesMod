@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <time.h>
 
+#include "../demos/snprintf.c"
+
 static void _find_max_min( int *minval, int *maxval, const int *values,
                          int n_values)
 {

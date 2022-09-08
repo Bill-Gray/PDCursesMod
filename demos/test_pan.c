@@ -31,6 +31,8 @@ http://www.tldp.org/HOWTO/NCURSES-Programming-HOWTO/panels.html
 #include <stdio.h>
 #include <assert.h>
 
+#include "../demos/snprintf.c"
+
 #if !defined( __PDCURSES__) && !NCURSES_SP_FUNCS
       /* Older ncurses may lack ceiling_panel() and ground_panel() */
 
