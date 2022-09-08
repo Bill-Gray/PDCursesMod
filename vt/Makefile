@@ -64,11 +64,11 @@ ifeq ($(OS),Windows_NT)
 	RM = cmd /c del
 endif
 
-LIBNAME=pdcurses
+LIBNAME=libpdcurses
 DLLNAME=pdcurses
 
 LIBFLAGS = rv
-LIBCURSES	= lib$(LIBNAME).a
+LIBCURSES	= $(LIBNAME).a
 CC	= $(PREFIX)gcc
 LIBEXE = $(PREFIX)ar
 STRIP	= $(PREFIX)strip
