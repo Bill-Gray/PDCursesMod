@@ -1,4 +1,4 @@
-Changes as of 2022 August 28
+Changes as of 2022 September 7
 ============================
 
 Major new features
@@ -34,6 +34,9 @@ Minor new features
 
 - Made the PANEL and PANELOBS structures opaque.  f55e55a0fb  78039d10c3
 
+- Checking for key hits is much,  much faster on most platforms.
+  6612df5af6
+
 - You can specify the library name during a GCC build with LIBNAME=(name)
   and the shared library name with DLLNAME=(name).  Support is,  as yet,
   incomplete,  but it should be possible to expand this to MSVC and
@@ -63,6 +66,9 @@ Bug fixes
 - Both SDL1 and SDL2 failed to free some memory when delscreen(SP) was
   called.  The result was that you couldn't cleanly shut down curses
   completely and restart it.  c62edf7752
+
+- Fixed some problems with Digital Mars compiles and added missing demos.
+  e798d30e63  4781b742b5  e39528f9e8  5efbea3676  aba598f492
 
 PDCursesMod 4.3.4 - 2022 July 29
 ================================

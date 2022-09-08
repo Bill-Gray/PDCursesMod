@@ -538,21 +538,33 @@ int PDC_get_key( void)
          }
       else if( (rval & 0xc0) == 0xc0)      /* start of UTF-8 */
          {
-         check_key( &c[0]);
+         if( !check_key( &c[0]))    /* we should get at least one */
+            {                       /* continuation byte    */
+            assert( 0);
+            return( -1);
+            }
          assert( (c[0] & 0xc0) == 0x80);
          c[0] &= 0x3f;
          if( !(rval & 0x20))      /* two-byte : U+0080 to U+07ff */
             rval = c[0] | ((rval & 0x1f) << 6);
          else
             {
-            check_key( &c[1]);
+            if( !check_key( &c[1]))   /* in this situation,  we should get */
+               {                     /* at least one more continuation byte */
+               assert( 0);
+               return( -1);
+               }
             assert( (c[1] & 0xc0) == 0x80);
             c[1] &= 0x3f;
             if( !(rval & 0x10))   /* three-byte : U+0800 - U+ffff */
                rval = (c[1] | (c[0] << 6) | ((rval & 0xf) << 12));
             else              /* four-byte : U+FFFF - U+10FFFF : SMP */
                {              /* (Supplemental Multilingual Plane) */
-               check_key( &c[2]);
+               if( !check_key( &c[2]))
+                  {
+                  assert( 0);
+                  return( -1);
+                  }
                assert( (c[2] & 0xc0) == 0x80);
 #if WCHAR_MAX > 65535
                c[2] &= 0x3f;
