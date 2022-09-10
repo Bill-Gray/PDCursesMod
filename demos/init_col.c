@@ -38,14 +38,7 @@ claim to support the concept of an 'original' background and foreground.
 I've not checked yet to see how that works out in practice.  (In
 theory,  they use the same underlying code for the purpose as
 the VT flavor of PDCurses.  In theory,  practice and theory are
-the same.  In practice,  they usually aren't.)
-
-   The following is really a 'private',  internal PDCurses function,
-declared in curspriv.h and normally called from PDC_scr_open() to
-force particular default foreground/background colors.  We use
-it here just to allow testing of resettable default colors;  the
--w command line switch causes the default background to be white
-and the default foreground to be black.   */
+the same.  In practice,  they usually aren't.)        */
 
 #ifdef __PDCURSESMOD__
 PDCEX void PDC_set_default_colors( const int, const int);
@@ -54,6 +47,7 @@ PDCEX void PDC_set_default_colors( const int, const int);
 int main( const int argc, const char *argv[])
 {
     int line = 1, i;
+    int reset_defaults = 0;
     int show_text_without_start_color = 0;
 
     for( i = 1; i < argc; i++)
@@ -71,12 +65,10 @@ int main( const int argc, const char *argv[])
                     putenv( "PDC_PRESERVE_SCREEN=1");
 #endif
                     break;
-#ifdef __PDCURSESMOD__
+#endif
                 case 'w':     /* switch defaults to be black text on white */
-                    PDC_set_default_colors( COLOR_BLACK, COLOR_WHITE);
+                    reset_defaults = 1;
                     break;
-#endif
-#endif
                 default:
                     fprintf( stderr, "Unrecognized option '%s'\n", argv[i]);
                     return( -1);
@@ -92,12 +84,17 @@ int main( const int argc, const char *argv[])
             resize_term( 0, 0);
     }
     start_color( );
+    if( reset_defaults)       /* set black text on white bkgd */
+        assume_default_colors( COLOR_BLACK, COLOR_WHITE);
+
     noecho();
 
     if( !show_text_without_start_color)
         mvaddstr( 0, 12, longname( ));
     mvaddstr( line++, 2, "start_color() called,  but no colors set.  We should have");
-    mvaddstr( line++, 2, "a black background and white foreground everywhere.");
+    mvaddstr( line++, 2, reset_defaults ?
+                   "a white background and black foreground everywhere." :
+                   "a black background and white foreground everywhere.");
     mvaddstr( line++, 2, "Hit a key");
     while( getch( ) == KEY_RESIZE)
         resize_term( 0, 0);
