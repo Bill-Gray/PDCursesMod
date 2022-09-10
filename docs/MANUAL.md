@@ -723,7 +723,6 @@ color
     int free_pair( int pair);
     int use_default_colors(void);
     void reset_color_pairs(void);
-    void PDC_set_default_colors( const int fg_idx, const int bg_idx);
 
     int PDC_set_line_color(short color);
 
@@ -796,11 +795,7 @@ color
    the terminal;  SDLn defines them to be the colors of the background
    image,  if any.  On all other platforms,  and on SDLn if there's no
    background images,  the default background is black;  the default
-   foreground is white.  PDC_set_default_colors(),  a PDCursesMod-
-   specific function,  allows you to override this and define default
-   colors before calling initscr().  This was added for the Plan9
-   platform,  where the desired default is black text on a white
-   background,  but it can be used with any platform.
+   foreground is white.
 
    PDC_set_line_color() is used to set the color, globally, for the
    color of the lines drawn for the attributes: A_UNDERLINE, A_LEFT and
@@ -2629,12 +2624,12 @@ slk
    2 lines used
    55      5-5 format (pdcurses format)
 
-   In PDCurses,  one can alternatively set fmt as a series of hex
+   In PDCursesMod,  one can alternatively set fmt as a series of hex
    digits specifying the format.  For example,  0x414 would result
    in 4-1-4 format; 0x21b3 would result in 2-1-11-3 format;  and
    so on.  Also,  negating fmt results in the index line being added.
 
-   Also,  in PDCurses,  one can call slk_init() at any time
+   Also,  in PDCursesMod,  one can call slk_init() at any time
    _after_ initscr(),  to reset the label format.  If you do this,
    you'll need to reset the label text and call slk_refresh().  However,
    you can't toggle the index line or turn SLK on or off after initscr()

@@ -1,4 +1,4 @@
-/* PDCurses */
+/* PDCursesMod */
 
 #include <curspriv.h>
 #include <assert.h>
@@ -50,12 +50,12 @@ slk
    2 lines used
    55      5-5 format (pdcurses format)
 
-   In PDCurses,  one can alternatively set fmt as a series of hex
+   In PDCursesMod,  one can alternatively set fmt as a series of hex
    digits specifying the format.  For example,  0x414 would result
    in 4-1-4 format; 0x21b3 would result in 2-1-11-3 format;  and
    so on.  Also,  negating fmt results in the index line being added.
 
-   Also,  in PDCurses,  one can call slk_init() at any time
+   Also,  in PDCursesMod,  one can call slk_init() at any time
    _after_ initscr(),  to reset the label format.  If you do this,
    you'll need to reset the label text and call slk_refresh().  However,
    you can't toggle the index line or turn SLK on or off after initscr()
