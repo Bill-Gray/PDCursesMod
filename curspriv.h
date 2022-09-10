@@ -147,8 +147,6 @@ struct _opaque_screen_t
 {
    struct _pdc_pair *pairs;
    int pairs_allocated;
-   int _default_foreground_idx;
-   int _default_background_idx;
    int first_col;
    bool default_colors;
    hash_idx_t *pair_hash_tbl;
