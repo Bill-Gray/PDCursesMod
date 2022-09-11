@@ -451,7 +451,6 @@ void PDC_transform_line_given_hdc( const HDC hdc, const int lineno,
                mbtowc( &z, &c, 1);
                ch = (chtype)z;
             }
-            assert( "We should never get here");
 #endif
             buff[olen] = (wchar_t)ch;
             lpDx[olen] = PDC_cxChar;
