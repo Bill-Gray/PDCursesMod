@@ -40,6 +40,7 @@
 #define HAVE_LIBPANEL 1
 #define HAVE_LOCALE_H 1
 #define HAVE_MATH_H 1
+#define HAVE_MATH_FUNCS 1
 #define HAVE_NAPMS 1
 #define HAVE_NEWPAD 1
 #define HAVE_PANEL_H 1
