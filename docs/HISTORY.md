@@ -1,4 +1,4 @@
-Changes as of 2022 September 7
+Changes as of 2022 September 28
 ============================
 
 Major new features
@@ -69,6 +69,13 @@ Bug fixes
 
 - Fixed some problems with Digital Mars compiles and added missing demos.
   e798d30e63  4781b742b5  e39528f9e8  5efbea3676  aba598f492
+
+- wgetnstr() was broken on platforms where wint_t != wchar_t.  54bc1a16fb
+
+- AltCharSet display was broken in DOSVGA 8-bit character builds. e00e33650b
+
+- Made PDC_set_default_colors() an internal function.  Exposing it basically
+  amounted to a bug.  f1786064ee acd143144f
 
 PDCursesMod 4.3.4 - 2022 July 29
 ================================
@@ -375,7 +382,9 @@ Minor new features
 
 -  Added a PDC_set_default_colors( ) function.  Some platforms expect
    particular background/foreground colors by default.  This lets you set
-   those colors.   b642c91279
+   those colors.  (Note that this should have been,  and was made,  an
+   internal function;  programs should use 'assume_default_colors()'.)
+   b642c91279
 
 -  In Windows,  one can use Ctrl-C/Ctrl-V to copy/paste,  instead of
    Ctrl-Shift-C/Ctrl-Shift-V.   9f487d4fea
