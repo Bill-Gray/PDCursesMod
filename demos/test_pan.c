@@ -2,7 +2,8 @@
 
 http://www.tldp.org/HOWTO/NCURSES-Programming-HOWTO/panels.html
 
-   Should look like this when you run it :
+   Should look like this when you run it (note that your editor
+should be set to UTF-8;  otherwise,  you'll see some garbage) :
 
             -------- Top of screen -----------
  Hit 1-3 to move panels 1-3 to the top
@@ -10,7 +11,7 @@ http://www.tldp.org/HOWTO/NCURSES-Programming-HOWTO/panels.html
  Tab toggles display of top panel
  Click on a panel to bring to top/send to bottom
  Escape or q exits the program
-
+ r causes the panel to be repositioned at random
     ┌──────────────────────────────────────┐
     │    ┌──────────────────────────────────────┐
     │    │    ┌──────────────────────────────────────┐
@@ -29,6 +30,7 @@ http://www.tldp.org/HOWTO/NCURSES-Programming-HOWTO/panels.html
 
 #include <panel.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <assert.h>
 
 #include "../demos/snprintf.c"
@@ -71,7 +73,7 @@ int main()
 {
    WINDOW *my_wins[3];
    PANEL  *my_panels[3];
-   int lines = 10, cols = 40, y = 7, x = 4, i, c = 0;
+   int lines = 10, cols = 40, y = 8, x = 4, i, c = 0;
 #ifdef __PDCURSESMOD__
    int box_style = 0;
 #endif
@@ -113,6 +115,7 @@ int main()
    mvaddstr( 5, 1, "h, v toggle doubled horiz/vert lines");
 #endif
    mvaddstr( 6, 1, "Escape or q exits the program");
+   mvaddstr( 7, 1, "r causes the panel to be repositioned at random");
 
    /* Update the stacking order. 2nd panel will be on top */
    while( c != 27 && c != 'q')
@@ -174,6 +177,10 @@ int main()
                if( move_panel( curr_top, y, x) == ERR)
                   flash( );
                }
+            break;
+         case 'r':
+            if( curr_top)
+               move_panel( curr_top, rand( ) % (LINES - lines), rand( ) % (COLS - cols));
             break;
          case KEY_MOUSE:
             {
