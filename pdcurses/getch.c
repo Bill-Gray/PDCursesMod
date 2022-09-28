@@ -539,27 +539,37 @@ int wgetch(WINDOW *win)
         /* if there is, fetch it */
 
         key = PDC_get_key();
+        
+        /* loop back if we did not get a key yet */
 
-        /* copy or paste? */
-
-#ifndef _WIN32
-        if (SP->key_modifiers & PDC_KEY_MODIFIER_SHIFT)
-#endif
-        {
-            if (PDC_function_key[FUNCTION_KEY_COPY] == key)
-            {
-                _copy();
-                continue;
-            }
-            else if (PDC_function_key[FUNCTION_KEY_PASTE] == key)
-                key = _paste();
-        }
+        if (key == -1)
+            continue;
 
         /* filter mouse events; translate mouse clicks in the slk
-           area to function keys */
+           area to function keys (especially copy + pase) */
 
         if( key == KEY_MOUSE)
+        {
             key = _mouse_key();
+        }
+        else
+        {
+
+            /* copy or paste? */
+#ifndef _WIN32
+            if (SP->key_modifiers & PDC_KEY_MODIFIER_SHIFT)
+#endif
+            {
+                if (PDC_function_key[FUNCTION_KEY_COPY] == key)
+                {
+                    _copy();
+                    continue;
+                }
+                else if (PDC_function_key[FUNCTION_KEY_PASTE] == key)
+                    key = _paste();
+            }
+            
+        }
 
         /* filter special keys if not in keypad mode */
 
