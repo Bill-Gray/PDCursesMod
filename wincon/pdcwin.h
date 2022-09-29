@@ -8,6 +8,10 @@
 # define _CRT_SECURE_NO_DEPRECATE 1   /* kill nonsense warnings */
 #endif
 
+#if defined( PDC_FORCE_UTF8)
+   #define PDC_WIDE
+#endif
+
 #if defined(PDC_WIDE) && !defined(UNICODE)
 # define UNICODE
 #endif
