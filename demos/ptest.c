@@ -116,6 +116,7 @@ void fill_panel(PANEL *pan)
 
 int main(int argc, char **argv)
 {
+    SCREEN *screen_pointer;
     int itmp, y;
 
     if (argc > 1 && atol(argv[1]))
@@ -123,8 +124,9 @@ int main(int argc, char **argv)
 
 #ifdef XCURSES
     Xinitscr(argc, argv);
+    screen_pointer = SP;
 #else
-    initscr();
+    screen_pointer = newterm(NULL, stdout, stdin);
 #endif
 
     keypad(stdscr, TRUE);
@@ -297,6 +299,11 @@ int main(int argc, char **argv)
         pflush();
         wait_a_while(nap_msec);
 
+        saywhat("d3; ");
+        rmpanel(p3);
+        pflush();
+        wait_a_while(nap_msec);
+
         if (nap_msec == 1)
             break;
 
@@ -304,6 +311,7 @@ int main(int argc, char **argv)
     }
 
     endwin();
+    delscreen( screen_pointer);          /* says all memory was freed */
 
     return 0;
 }   /* end of main */

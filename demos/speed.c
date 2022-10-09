@@ -69,14 +69,20 @@ static long millisec_timer( const bool reset)
 }
 #endif
 
-int main( const int argc, const char **argv)
+int main( const int argc, char **argv)
 {
     unsigned n_frames = 0;
+    SCREEN *screen_pointer;
 
+    resize_term( 30, 90);
+#ifdef XCURSES
+    Xinitscr(argc, argv);
+    screen_pointer = SP;
+#else
     INTENTIONALLY_UNUSED_PARAMETER( argv);
     INTENTIONALLY_UNUSED_PARAMETER( argc);
-    resize_term( 30, 90);
-    initscr();
+    screen_pointer = newterm(NULL, stdout, stdin);
+#endif
     cbreak( );
     noecho();
     refresh();
@@ -108,6 +114,7 @@ int main( const int argc, const char **argv)
     printw( "  %u frames/sec  ", n_frames / 3);
     getch( );
     endwin();
+    delscreen( screen_pointer);
     printf( "%u frames per second\n", n_frames / 3);
     return( 0);
 }
