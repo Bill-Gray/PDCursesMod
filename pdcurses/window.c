@@ -217,12 +217,18 @@ void PDC_sync(WINDOW *win)
 
 #define is_power_of_two( X)   (!((X) & ((X) - 1)))
 
+static void _resize_window_list( SCREEN *scr_ptr)
+{
+   if( is_power_of_two( scr_ptr->opaque->n_windows))
+      scr_ptr->opaque->window_list =
+                 (WINDOW **)realloc( scr_ptr->opaque->window_list,
+                     scr_ptr->opaque->n_windows * 2 * sizeof( WINDOW *));
+}
+
 void PDC_add_window_to_list( WINDOW *win)
 {
    SP->opaque->n_windows++;
-   if( is_power_of_two( SP->opaque->n_windows))
-      SP->opaque->window_list = (WINDOW **)realloc( SP->opaque->window_list,
-                     SP->opaque->n_windows * 2 * sizeof( WINDOW *));
+   _resize_window_list( SP);
    assert( SP->opaque->window_list);
    SP->opaque->window_list[SP->opaque->n_windows - 1] = win;
 }
@@ -283,6 +289,7 @@ int delwin(WINDOW *win)
             return( ERR);
         SP->opaque->n_windows--;        /* remove win from window list */
         SP->opaque->window_list[i] = SP->opaque->window_list[SP->opaque->n_windows];
+        _resize_window_list( SP);
     }
 
     /* subwindows use parents' lines */

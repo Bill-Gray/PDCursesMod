@@ -580,8 +580,6 @@ void PDC_free_atrtab(void)
     SP->opaque->pair_hash_tbl_size = SP->opaque->pair_hash_tbl_used = 0;
     if( SP->opaque->pairs)
        free( SP->opaque->pairs);
-    if( SP->opaque->window_list)
-       free( SP->opaque->window_list);
     free( SP->opaque);
     SP->opaque = NULL;
 }
