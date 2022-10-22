@@ -24,11 +24,12 @@ slk
     int slk_attr_set(const attr_t attrs, short color_pair, void *opts);
     int slk_attroff(const chtype attrs);
     int slk_attr_off(const attr_t attrs, void *opts);
+    attr_t slk_attr( void);                  /* ncurses extension */
     int slk_color(short color_pair);
 
     int slk_wset(int labnum, const wchar_t *label, int justify);
 
-    wchar_t *slk_wlabel(int labnum)
+    wchar_t *slk_wlabel(int labnum);
 
 ### Description
 
@@ -85,6 +86,7 @@ slk
     slk_attr_on                 Y       Y       Y
     slk_attr_set                Y       Y       Y
     slk_attr_off                Y       Y       Y
+    slk_attr                    -       Y       -
     slk_wset                    Y       Y       Y
     slk_wlabel                  -       -       -
 
@@ -150,7 +152,7 @@ int slk_init(int fmt)
                fmt, labels, slk));
     if( slk)
         free( slk);
-    slk = calloc(labels, sizeof(struct SLK));
+    slk = (struct SLK *)calloc(labels, sizeof(struct SLK));
     PDC_LOG(( "New slk: %p; SP = %p\n", slk, SP));
 
     if (!slk)
@@ -428,6 +430,18 @@ int slk_attrset(const chtype attrs)
     _redraw();
 
     return rc;
+}
+
+attr_t slk_attr( void)
+{
+    PDC_LOG(("slk_attrset() - called\n"));
+
+    assert( SP);
+    if (!SP)
+        return ERR;
+    assert( SP->slk_winptr);
+
+    return( SP->slk_winptr->_attrs & (A_ATTRIBUTES & ~A_COLOR));
 }
 
 int extended_slk_color( int pair)
