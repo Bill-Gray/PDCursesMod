@@ -24,12 +24,12 @@ slk
     int slk_attr_set(const attr_t attrs, short color_pair, void *opts);
     int slk_attroff(const chtype attrs);
     int slk_attr_off(const attr_t attrs, void *opts);
-    attr_t slk_attr( void);                  /* ncurses extension */
     int slk_color(short color_pair);
 
     int slk_wset(int labnum, const wchar_t *label, int justify);
 
     wchar_t *slk_wlabel(int labnum);
+    attr_t slk_attr( void);            (ncurses extension)
 
 ### Description
 
