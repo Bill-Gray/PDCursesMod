@@ -99,12 +99,14 @@ int show_table( const int *xvals, const int *yvals,
 }
 
 /* Cheap,  simple codelets for Gregorian calendar conversions.
-Works from year 1 on.         */
+Works from year -99999999 (about 100 million years ago) for
+64-bit long integers,  and about year -5880000 with 32-bit
+long integers.  */
 
 static long _mjd_for_jan_0( const long year)
 {
-   return( year * 365L + (year - 1) / 4 - (year - 1) / 100
-                 + (year - 1) / 400 - 678941);
+   return( year * 365L + (year + 99999999) / 4 - (year + 99999999) / 100
+                 + (year + 99999999) / 400 - 24928941);
 }
 
 long mjd_from_dmy( const long year, const int month, const int day)
