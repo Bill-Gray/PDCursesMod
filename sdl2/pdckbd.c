@@ -348,6 +348,8 @@ static int _process_mouse_event(void)
 
     SP->mouse_status.x = (event.motion.x - pdc_xoffset) / pdc_fwidth;
     SP->mouse_status.y = (event.motion.y - pdc_yoffset) / pdc_fheight;
+    if( SP->mouse_status.x >= COLS || SP->mouse_status.y >= LINES)
+        return -1;
 
     if (event.type == SDL_MOUSEMOTION)
     {
