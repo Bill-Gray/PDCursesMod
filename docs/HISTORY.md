@@ -1,4 +1,4 @@
-Changes as of 2022 September 28
+Changes as of 2022 November 04
 ============================
 
 Major new features
@@ -42,6 +42,9 @@ Minor new features
   incomplete,  but it should be possible to expand this to MSVC and
   OpenWATCOM builds.   44e5aa323e
 
+- 'ptest' and 'speed' demos free all memory on exit.  This helps (slightly)
+  when testing with Valgrind.
+
 Bug fixes
 ---------
 
@@ -74,8 +77,14 @@ Bug fixes
 
 - AltCharSet display was broken in DOSVGA 8-bit character builds. e00e33650b
 
+- getch() and wget_wch() could return erroneous values in WinCon for values
+  greater than 127.  e54d03fc80  e86d9c3568
+
 - Made PDC_set_default_colors() an internal function.  Exposing it basically
   amounted to a bug.  f1786064ee acd143144f
+
+- In SDLn in fullscreen mode,  mouse events near the bottom or right-hand
+  sides of the screen could trigger segfaults.   03eb51cefc
 
 PDCursesMod 4.3.4 - 2022 July 29
 ================================
