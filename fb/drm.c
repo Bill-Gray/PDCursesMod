@@ -240,8 +240,7 @@ static int init_drm( const char *dri_device, const char *connector_name)
         PDC_fb.xres     = _drm_framebuffer.dumb_framebuffer.width;
         PDC_fb.yres     = _drm_framebuffer.dumb_framebuffer.height;
         PDC_fb.bits_per_pixel = 32;
-        PDC_fb.line_length = _drm_framebuffer.dumb_framebuffer.width;
-        PDC_fb.line_length *= sizeof( uint32_t);
+        PDC_fb.line_length = _drm_framebuffer.dumb_framebuffer.pitch;
         PDC_fb.smem_len = 0;        /* unused */
         drmSetMaster(_drm_framebuffer.fd);
         drmModeSetCrtc( _drm_framebuffer.fd, _drm_framebuffer.crtc->crtc_id, 0, 0, 0, NULL, 0, NULL);
