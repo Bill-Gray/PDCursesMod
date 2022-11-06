@@ -7,7 +7,7 @@ WINDOW *w4, *w5;
 
 long nap_msec = 1;
 
-char *mod[] =
+const char *mod[] =
 {
     "test ", "TEST ", "(**) ", "*()* ", "<--> ", "LAST "
 };

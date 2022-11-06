@@ -60,9 +60,9 @@ int main( const int argc, const char *argv[])
 #ifdef __PDCURSES__
                 case 'p':
 #ifdef _WIN32
-                    _putenv( "PDC_PRESERVE_SCREEN=1");
+                    _putenv( (char *)"PDC_PRESERVE_SCREEN=1");
 #else
-                    putenv( "PDC_PRESERVE_SCREEN=1");
+                    putenv( (char *)"PDC_PRESERVE_SCREEN=1");
 #endif
                     break;
 #endif

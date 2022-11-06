@@ -16,7 +16,7 @@ void trap(int);
 
 /* An ASCII map of Australia */
 
-char *AusMap[17] =
+const char *AusMap[17] =
 {
     "                 _,__        .:",
     "         Darwin <*  /        | \\",
@@ -39,7 +39,7 @@ char *AusMap[17] =
 
 /* Funny messages for the scroller */
 
-char *messages[] =
+const char *messages[] =
 {
     "Hello from the Land Down Under",
     "The Land of crocs, and a big Red Rock",
@@ -347,7 +347,7 @@ int main(int argc, char **argv)
 
         for (j = 0; messages[j] != NULL; j++)
         {
-            char *message = messages[j];
+            const char *message = messages[j];
             const int msg_len = (int)strlen(message);
             int stop = 0;
             int xpos, start, count;
