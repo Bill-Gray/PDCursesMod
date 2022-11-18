@@ -1457,6 +1457,7 @@ inopts
     void qiflush(void);
     void timeout(int delay);
     void wtimeout(WINDOW *win, int delay);
+    int wgetdelay(const WINDOW *win);
     int typeahead(int fildes);
     bool PDC_getcbreak(void);
     bool PDC_getecho(void);
@@ -1465,6 +1466,8 @@ inopts
     int nocrmode(void);
 
     bool is_keypad(const WINDOW *win);
+    bool is_nodelay(const WINDOW *win);
+    bool is_notimeout(const WINDOW *win);
 
 ### Description
 
@@ -1518,6 +1521,8 @@ inopts
    delay is given; i.e., 1-99 will wait 50ms, 100-149 will wait 100ms,
    etc.
 
+   wgetdelay() returns the delay timeout as set in wtimeout().
+
    intrflush(), notimeout(), noqiflush(), qiflush() and typeahead() do
    nothing in PDCurses, but are included for compatibility with other
    curses implementations.
@@ -1527,10 +1532,16 @@ inopts
 
    is_keypad() reports whether the specified window is in keypad mode.
 
+   is_nodelay() reports whether the specified window is in nodelay mode.
+
 ### Return Value
 
-   All functions except is_keypad() and the void functions return OK on
-   success and ERR on error.
+   All functions that return integers return OK on success and ERR on
+   error.  is_keypad() and is_nodelay() return TRUE or FALSE.
+
+   is_notimeout() is provided for compatibility with other curses
+   implementations.  It has no real meaning in PDCursesMod and will
+   always return FALSE.
 
 ### Portability
                              X/Open  ncurses  NetBSD
@@ -1554,10 +1565,13 @@ inopts
     qiflush                     Y       Y       Y
     timeout                     Y       Y       Y
     wtimeout                    Y       Y       Y
+    wgetdelay                   -       Y       -
     typeahead                   Y       Y       Y
     crmode                      Y       Y       Y
     nocrmode                    Y       Y       Y
     is_keypad                   -       Y       Y
+    is_nodelay                  -       Y       -
+    is_notimeout                -       Y       -
 
 
 
@@ -2051,11 +2065,17 @@ outopts
     int leaveok(WINDOW *win, bool bf);
     int setscrreg(int top, int bot);
     int wsetscrreg(WINDOW *win, int top, int bot);
+    int wgetscrreg(const WINDOW *win, int *top, int *bot);
     int scrollok(WINDOW *win, bool bf);
 
     int raw_output(bool bf);
 
+    bool is_cleared(const WINDOW *win);
+    bool is_idlok(const WINDOW *win);
+    bool is_idcok(const WINDOW *win);
+    bool is_immedok(const WINDOW *win);
     bool is_leaveok(const WINDOW *win);
+    bool is_scrollok(const WINDOW *win);
 
 ### Description
 
@@ -2077,19 +2097,35 @@ outopts
    will cause all lines in the scrolling region to scroll up one line.
    setscrreg() is the stdscr version.
 
-   idlok() and idcok() do nothing in PDCurses, but are provided for
-   compatibility with other curses implementations.
+   wgetscrreg() gets the top and bottom margins as set in wsetscrreg().
+
+   idlok(), idcok(), is_idlok() and is_idcok() do nothing in PDCursesMod,
+   but are provided for compatibility with other curses implementations.
 
    raw_output() enables the output of raw characters using the standard
    *add* and *ins* curses functions (that is, it disables translation of
    control characters).
 
+   is_cleared() reports whether the specified window causes clear at next
+   refresh.
+
+   is_immedok() reports whether the specified window is in immedok mode.
+
    is_leaveok() reports whether the specified window is in leaveok mode.
+
+   is_scrollok() reports whether the specified window allows scrolling.
 
 ### Return Value
 
-   All functions except is_leaveok() return OK on success and ERR on
+   All functions returning integers return OK on success and ERR on
    error.
+
+   is_cleared(), is_immedok(), is_leaveok() and is_scrollok() are
+   booleans and return TRUE or FALSE.
+
+   is_idlok() and is_idcok() are provided for compatibility with other
+   curses implementations.  They have no real meaning in PDCursesMod and
+   will always return FALSE.
 
 ### Portability
                              X/Open  ncurses  NetBSD
@@ -2100,8 +2136,14 @@ outopts
     leaveok                     Y       Y       Y
     setscrreg                   Y       Y       Y
     wsetscrreg                  Y       Y       Y
+    wgetscrreg                  -       Y       -
     scrollok                    Y       Y       Y
+    is_cleared                  -       Y       -
+    is_idlok                    -       Y       -
+    is_idcok                    -       Y       -
+    is_immedok                  -       Y       -
     is_leaveok                  -       Y       Y
+    is_scrollok                 -       Y       -
     raw_output                  -       -       -
 
 
@@ -2602,7 +2644,9 @@ slk
 
     int slk_wset(int labnum, const wchar_t *label, int justify);
 
-    wchar_t *slk_wlabel(int labnum)
+    wchar_t *slk_wlabel(int labnum);
+    attr_t slk_attr( void);            (ncurses extension)
+    int extended_slk_color( int pair); (ncurses extension)
 
 ### Description
 
@@ -2639,6 +2683,10 @@ slk
    slk_refresh(), slk_noutrefresh() and slk_touch() are analogous to
    refresh(), noutrefresh() and touch().
 
+   slk_color() is analogous to color_set(),  and is similarly limited
+   to 16-bit color pairs.  extended_slk_color() allows the ability to
+   access color pairs beyond 64K.
+
 ### Return Value
 
    All functions return OK on success and ERR on error.
@@ -2659,8 +2707,10 @@ slk
     slk_attr_on                 Y       Y       Y
     slk_attr_set                Y       Y       Y
     slk_attr_off                Y       Y       Y
+    slk_attr                    -       Y       -
     slk_wset                    Y       Y       Y
     slk_wlabel                  -       -       -
+    extended_slk_color          -       Y       -
 
 
 
@@ -2914,10 +2964,13 @@ window
     WINDOW *subwin(WINDOW* orig, int nlines, int ncols,
                    int begy, int begx);
     WINDOW *dupwin(WINDOW *win);
+    WINDOW *wgetparent(const WINDOW *win);
     int delwin(WINDOW *win);
     int mvwin(WINDOW *win, int y, int x);
     int mvderwin(WINDOW *win, int pary, int parx);
     int syncok(WINDOW *win, bool bf);
+    bool is_subwin(const WINDOW *win);
+    bool is_syncok(const WINDOW *win);
     void wsyncup(WINDOW *win);
     void wcursyncup(WINDOW *win);
     void wsyncdown(WINDOW *win);
@@ -2959,10 +3012,18 @@ window
 
    dupwin() creates an exact duplicate of the window win.
 
+   wgetparent() returns the parent WINDOW pointer for subwindows, or NULL
+   for windows having no parent.
+
    wsyncup() causes a touchwin() of all of the window's parents.
 
-   If wsyncok() is called with a second argument of TRUE, this causes a
+   If syncok() is called with a second argument of TRUE, this causes a
    wsyncup() to be called every time the window is changed.
+
+   is_subwin() reports whether the specified window is a subwindow,
+   created by subwin() or derwin().
+
+   is_syncok() reports whether the specified window is in syncok mode.
 
    wcursyncup() causes the current cursor position of all of a window's
    ancestors to reflect the current cursor position of the current
@@ -3004,8 +3065,11 @@ window
     derwin                      Y       Y       Y
     mvderwin                    Y       Y       Y
     dupwin                      Y       Y       Y
+    wgetparent                  -       Y       -
     wsyncup                     Y       Y       Y
     syncok                      Y       Y       Y
+    is_subwin                   -       Y       -
+    is_syncok                   -       Y       -
     wcursyncup                  Y       Y       Y
     wsyncdown                   Y       Y       Y
     wresize                     -       Y       Y

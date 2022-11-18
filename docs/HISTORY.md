@@ -1,4 +1,4 @@
-Changes as of 2022 November 04
+Changes as of 2022 November 18
 ============================
 
 Major new features
@@ -37,6 +37,9 @@ Minor new features
 - Checking for key hits is much,  much faster on most platforms.
   6612df5af6
 
+- Added ncurses extensions for opaque WINDOW structs,  from Markus Uhlin.
+  7bb822b2a4  22fecc1cf6
+
 - You can specify the library name during a GCC build with LIBNAME=(name)
   and the shared library name with DLLNAME=(name).  Support is,  as yet,
   incomplete,  but it should be possible to expand this to MSVC and
@@ -44,6 +47,11 @@ Minor new features
 
 - 'ptest' and 'speed' demos free all memory on exit.  This helps (slightly)
   when testing with Valgrind.
+
+- On gcc and mingw builds for WinCon, WinGUI,  and VT,  one can run 'make
+  configure (options)' to revise 'curses.h' to use the specified options.
+  This may be extended to other compilers and platforms.  fe39e244d2
+  9c0f475287
 
 Bug fixes
 ---------
