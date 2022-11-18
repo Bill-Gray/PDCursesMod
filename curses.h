@@ -42,7 +42,7 @@ Defined by this header:
 #define PDC_VER_CHANGE   4
 #define PDC_VER_YEAR   2022
 #define PDC_VER_MONTH    11
-#define PDC_VER_DAY      04
+#define PDC_VER_DAY      18
 
 #define PDC_STRINGIZE( x) #x
 #define PDC_stringize( x) PDC_STRINGIZE( x)
@@ -1708,12 +1708,25 @@ PDCEX  const char *curses_version(void);
 PDCEX  int     find_pair(int, int);
 PDCEX  int     free_pair( int);
 PDCEX  bool    has_key(int);
+PDCEX  bool    is_cleared(const WINDOW *);
+PDCEX  bool    is_idcok(const WINDOW *);
+PDCEX  bool    is_idlok(const WINDOW *);
+PDCEX  bool    is_immedok(const WINDOW *);
 PDCEX  bool    is_keypad(const WINDOW *);
 PDCEX  bool    is_leaveok(const WINDOW *);
+PDCEX  bool    is_leaveok(const WINDOW *);
+PDCEX  bool    is_nodelay(const WINDOW *);
+PDCEX  bool    is_notimeout(const WINDOW *);
 PDCEX  bool    is_pad(const WINDOW *);
 PDCEX  void    reset_color_pairs( void);
+PDCEX  bool    is_scrollok(const WINDOW *);
+PDCEX  bool    is_subwin(const WINDOW *);
+PDCEX  bool    is_syncok(const WINDOW *);
 PDCEX  int     set_tabsize(int);
 PDCEX  int     use_default_colors(void);
+PDCEX  int     wgetdelay(const WINDOW *);
+PDCEX  WINDOW *wgetparent(const WINDOW *);
+PDCEX  int     wgetscrreg(const WINDOW *, int *, int *);
 PDCEX  int     wresize(WINDOW *, int, int);
 
 PDCEX  bool    has_mouse(void);
