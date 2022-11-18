@@ -166,4 +166,13 @@ tui.o: $(demodir)/tui.c $(demodir)/tui.h $(PDCURSES_CURSES_H)
 tuidemo.o: $(demodir)/tuidemo.c $(PDCURSES_CURSES_H)
 	$(CC) -c $(CFLAGS) -I$(demodir) -o$@ $<
 
+configure :
+	$(CC) $(CFLAGS) -o config_curses$(E) $(common)/config_curses.c
+ifdef ON_WINDOWS
+	config_curses -v -d.. $(CFLAGS)
+else
+	wine config_curses -v -d.. $(CFLAGS)
+endif
+	rm config_curses$(E)
+
 include $(PDCURSES_SRCDIR)/demos/nctests.mif

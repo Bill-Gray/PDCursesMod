@@ -186,6 +186,15 @@ tui.o: $(demodir)/tui.c $(demodir)/tui.h
 tuidemo.o: $(demodir)/tuidemo.c
 	$(BUILD) -c $(DEMOFLAGS) $(demodir)/tuidemo.c
 
+configure :
+	$(CC) $(CFLAGS) -o config_curses$(E) $(common)/config_curses.c
+ifdef PREFIX
+	wine config_curses -v -d.. $(CFLAGS)
+else
+	./config_curses -v -d.. $(CFLAGS)
+endif
+	rm config_curses$(E)
+
 include $(demodir)/nctests.mif
 
 install:
