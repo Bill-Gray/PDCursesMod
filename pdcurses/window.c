@@ -1,5 +1,6 @@
 /* PDCurses */
 
+#include <stdlib.h>
 #include <curspriv.h>
 #include <assert.h>
 
@@ -129,9 +130,6 @@ window
 
 **library-internals-end**************************************************/
 
-
-#include <stdlib.h>
-
 WINDOW *PDC_makenew(int nlines, int ncols, int begy, int begx)
 {
     WINDOW *win;
@@ -141,17 +139,17 @@ WINDOW *PDC_makenew(int nlines, int ncols, int begy, int begx)
 
     /* allocate the window structure itself */
 
-    win = calloc(1, sizeof(WINDOW));
+    win = (WINDOW *)calloc(1, sizeof(WINDOW));
     if (!win)
         return win;
 
     /* allocate the line pointer array */
 
-    win->_y = malloc(nlines * sizeof(chtype *));
+    win->_y = (chtype **)malloc(nlines * sizeof(chtype *));
 
     /* allocate the minchng and maxchng arrays */
 
-    win->_firstch = malloc(nlines * sizeof(int) * 2);
+    win->_firstch = (int *)malloc(nlines * sizeof(int) * 2);
     if (!win->_firstch || !win->_y)
     {
         delwin( win);
@@ -191,7 +189,7 @@ WINDOW *PDC_makelines(WINDOW *win)
     nlines = win->_maxy;
     ncols = win->_maxx;
 
-    win->_y[0] = malloc(ncols * nlines * sizeof(chtype));
+    win->_y[0] = (chtype *)malloc(ncols * nlines * sizeof(chtype));
     if (!win->_y[0])
     {
         /* if error, free all the data */
@@ -407,7 +405,7 @@ int mvderwin(WINDOW *win, int pary, int parx)
 
 WINDOW *dupwin(WINDOW *win)
 {
-    WINDOW *new;
+    WINDOW *new_win;
     chtype *ptr, *ptr1;
     int nlines, ncols, begy, begx, i;
 
@@ -420,53 +418,53 @@ WINDOW *dupwin(WINDOW *win)
     begy = win->_begy;
     begx = win->_begx;
 
-    new = PDC_makenew(nlines, ncols, begy, begx);
-    if (new)
-        new = PDC_makelines(new);
+    new_win = PDC_makenew(nlines, ncols, begy, begx);
+    if (new_win)
+        new_win = PDC_makelines(new_win);
 
-    if (!new)
+    if (!new_win)
         return (WINDOW *)NULL;
 
-    /* copy the contents of win into new */
+    /* copy the contents of win into new_win */
 
     for (i = 0; i < nlines; i++)
     {
-        for (ptr = new->_y[i], ptr1 = win->_y[i];
-             ptr < new->_y[i] + ncols; ptr++, ptr1++)
+        for (ptr = new_win->_y[i], ptr1 = win->_y[i];
+             ptr < new_win->_y[i] + ncols; ptr++, ptr1++)
             *ptr = *ptr1;
 
-        PDC_mark_line_as_changed( new, i);
+        PDC_mark_line_as_changed( new_win, i);
     }
 
-    new->_curx = win->_curx;
-    new->_cury = win->_cury;
-    new->_maxy = win->_maxy;
-    new->_maxx = win->_maxx;
-    new->_begy = win->_begy;
-    new->_begx = win->_begx;
-    new->_flags = win->_flags;
-    new->_attrs = win->_attrs;
-    new->_clear = win->_clear;
-    new->_leaveit = win->_leaveit;
-    new->_scroll = win->_scroll;
-    new->_nodelay = win->_nodelay;
-    new->_delayms = win->_delayms;
-    new->_use_keypad = win->_use_keypad;
-    new->_tmarg = win->_tmarg;
-    new->_bmarg = win->_bmarg;
-    new->_parx = win->_parx;
-    new->_pary = win->_pary;
-    new->_parent = win->_parent;
-    new->_bkgd = win->_bkgd;
-    new->_flags = win->_flags;
-    PDC_add_window_to_list( new);
+    new_win->_curx = win->_curx;
+    new_win->_cury = win->_cury;
+    new_win->_maxy = win->_maxy;
+    new_win->_maxx = win->_maxx;
+    new_win->_begy = win->_begy;
+    new_win->_begx = win->_begx;
+    new_win->_flags = win->_flags;
+    new_win->_attrs = win->_attrs;
+    new_win->_clear = win->_clear;
+    new_win->_leaveit = win->_leaveit;
+    new_win->_scroll = win->_scroll;
+    new_win->_nodelay = win->_nodelay;
+    new_win->_delayms = win->_delayms;
+    new_win->_use_keypad = win->_use_keypad;
+    new_win->_tmarg = win->_tmarg;
+    new_win->_bmarg = win->_bmarg;
+    new_win->_parx = win->_parx;
+    new_win->_pary = win->_pary;
+    new_win->_parent = win->_parent;
+    new_win->_bkgd = win->_bkgd;
+    new_win->_flags = win->_flags;
+    PDC_add_window_to_list( new_win);
 
-    return new;
+    return new_win;
 }
 
 WINDOW *resize_window(WINDOW *win, int nlines, int ncols)
 {
-    WINDOW *new;
+    WINDOW *new_win;
     int save_cury, save_curx, new_begy, new_begx;
 
     PDC_LOG(("resize_window() - called: nlines %d ncols %d\n",
@@ -479,14 +477,14 @@ WINDOW *resize_window(WINDOW *win, int nlines, int ncols)
 
     if (win->_flags & _SUBPAD)
     {
-        new = subpad(win->_parent, nlines, ncols, win->_begy, win->_begx);
-        if (!new)
+        new_win = subpad(win->_parent, nlines, ncols, win->_begy, win->_begx);
+        if (!new_win)
             return (WINDOW *)NULL;
     }
     else if (win->_flags & _SUBWIN)
     {
-        new = subwin(win->_parent, nlines, ncols, win->_begy, win->_begx);
-        if (!new)
+        new_win = subwin(win->_parent, nlines, ncols, win->_begy, win->_begx);
+        if (!new_win)
             return (WINDOW *)NULL;
     }
     else
@@ -502,53 +500,52 @@ WINDOW *resize_window(WINDOW *win, int nlines, int ncols)
             new_begx = win->_begx;
         }
 
-        new = PDC_makenew(nlines, ncols, new_begy, new_begx);
-        if (!new)
+        new_win = PDC_makenew(nlines, ncols, new_begy, new_begx);
+        if (!new_win)
             return (WINDOW *)NULL;
     }
-
-    save_curx = min(win->_curx, (new->_maxx - 1));
-    save_cury = min(win->_cury, (new->_maxy - 1));
+    save_curx = min(win->_curx, (new_win->_maxx - 1));
+    save_cury = min(win->_cury, (new_win->_maxy - 1));
 
     if (!(win->_flags & (_SUBPAD|_SUBWIN)))
     {
-        new = PDC_makelines(new);
-        if (!new)
+        new_win = PDC_makelines(new_win);
+        if (!new_win)
             return (WINDOW *)NULL;
 
-        new->_bkgd = win->_bkgd;
-        werase(new);
+        new_win->_bkgd = win->_bkgd;
+        werase(new_win);
 
-        copywin(win, new, 0, 0, 0, 0, min(win->_maxy, new->_maxy) - 1,
-                min(win->_maxx, new->_maxx) - 1, FALSE);
+        copywin(win, new_win, 0, 0, 0, 0, min(win->_maxy, new_win->_maxy) - 1,
+                min(win->_maxx, new_win->_maxx) - 1, FALSE);
 
         if (win->_y[0])
             free(win->_y[0]);
     }
 
-    new->_flags = win->_flags;
-    new->_attrs = win->_attrs;
-    new->_clear = win->_clear;
-    new->_leaveit = win->_leaveit;
-    new->_scroll = win->_scroll;
-    new->_nodelay = win->_nodelay;
-    new->_delayms = win->_delayms;
-    new->_use_keypad = win->_use_keypad;
-    new->_tmarg = (win->_tmarg > new->_maxy - 1) ? 0 : win->_tmarg;
-    new->_bmarg = (win->_bmarg == win->_maxy - 1) ?
-                  new->_maxy - 1 : min(win->_bmarg, (new->_maxy - 1));
-    new->_parent = win->_parent;
-    new->_immed = win->_immed;
-    new->_sync = win->_sync;
-    new->_bkgd = win->_bkgd;
+    new_win->_flags = win->_flags;
+    new_win->_attrs = win->_attrs;
+    new_win->_clear = win->_clear;
+    new_win->_leaveit = win->_leaveit;
+    new_win->_scroll = win->_scroll;
+    new_win->_nodelay = win->_nodelay;
+    new_win->_delayms = win->_delayms;
+    new_win->_use_keypad = win->_use_keypad;
+    new_win->_tmarg = (win->_tmarg > new_win->_maxy - 1) ? 0 : win->_tmarg;
+    new_win->_bmarg = (win->_bmarg == win->_maxy - 1) ?
+                  new_win->_maxy - 1 : min(win->_bmarg, (new_win->_maxy - 1));
+    new_win->_parent = win->_parent;
+    new_win->_immed = win->_immed;
+    new_win->_sync = win->_sync;
+    new_win->_bkgd = win->_bkgd;
 
-    new->_curx = save_curx;
-    new->_cury = save_cury;
+    new_win->_curx = save_curx;
+    new_win->_cury = save_cury;
     free(win->_firstch);
     free(win->_y);
 
-    *win = *new;
-    free(new);
+    *win = *new_win;
+    free(new_win);
 
     return win;
 }
