@@ -74,7 +74,7 @@ ifeq ($(DEBUG),Y)
 	CFLAGS  += -g -DPDCDEBUG
 	LDFLAGS = -g
 else
-	CFLAGS  += -O4
+	CFLAGS  += -O3
 	LDFLAGS =
 endif
 
