@@ -42,7 +42,7 @@ Defined by this header:
 #define PDC_VER_CHANGE   5
 #define PDC_VER_YEAR   2022
 #define PDC_VER_MONTH    11
-#define PDC_VER_DAY      27
+#define PDC_VER_DAY      29
 
 #define PDC_STRINGIZE( x) #x
 #define PDC_stringize( x) PDC_STRINGIZE( x)
@@ -1799,7 +1799,7 @@ PDCEX int     PDC_set_function_key( const unsigned function,
                               const int new_key);
 PDCEX int     PDC_get_function_key( const unsigned function);
 
-PDCEX void    PDC_set_window_resized_callback(void (*callback)());
+PDCEX void    PDC_set_window_resized_callback(void (*callback)(void));
 
 PDCEX  WINDOW *Xinitscr(int, char **);
 #ifdef XCURSES
