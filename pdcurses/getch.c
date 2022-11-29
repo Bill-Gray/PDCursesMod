@@ -227,10 +227,10 @@ static void _copy(void)
         return;
 
 #ifdef PDC_WIDE
-    wtmp = malloc((len + 1) * sizeof(wchar_t));
+    wtmp = (wchar_t *)malloc((len + 1) * sizeof(wchar_t));
     len *= 3;
 #endif
-    tmp = malloc(len + 1);
+    tmp = (char *)malloc(len + 1);
 
     for (j = y_start, pos = 0; j <= y_end; j++)
     {
@@ -278,13 +278,13 @@ static int _paste(void)
         return -1;
 
 #ifdef PDC_WIDE
-    wpaste = malloc(len * sizeof(wchar_t));
+    wpaste = (wchar_t *)malloc(len * sizeof(wchar_t));
     len = (long)PDC_mbstowcs(wpaste, paste, len);
 #endif
     newmax = len + SP->c_ungind;
     if (newmax > SP->c_ungmax)
     {
-        SP->c_ungch = realloc(SP->c_ungch, newmax * sizeof(int));
+        SP->c_ungch = (int *)realloc(SP->c_ungch, newmax * sizeof(int));
         if (!SP->c_ungch)
             return -1;
         SP->c_ungmax = newmax;
@@ -424,7 +424,7 @@ long PDC_millisecs( void)
 #else
 #include <sys/time.h>
 
-long PDC_millisecs( )
+long PDC_millisecs( void)
 {
     struct timeval t;
 
@@ -539,7 +539,7 @@ int wgetch(WINDOW *win)
         /* if there is, fetch it */
 
         key = PDC_get_key();
-        
+
         /* loop back if we did not get a key yet */
 
         if (key == -1)
@@ -568,7 +568,7 @@ int wgetch(WINDOW *win)
                 else if (PDC_function_key[FUNCTION_KEY_PASTE] == key)
                     key = _paste();
             }
-            
+
         }
 
         /* filter special keys if not in keypad mode */
