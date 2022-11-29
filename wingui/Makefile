@@ -169,9 +169,9 @@ tuidemo.o: $(demodir)/tuidemo.c $(PDCURSES_CURSES_H)
 configure :
 	$(CC) $(CFLAGS) -o config_curses$(E) $(common)/config_curses.c
 ifdef ON_WINDOWS
-	config_curses -v -d.. $(CFLAGS)
+	config_curses$(E) -v -d.. $(CFLAGS)
 else
-	wine config_curses -v -d.. $(CFLAGS)
+	wine config_curses$(E) -v -d.. $(CFLAGS)
 endif
 	rm config_curses$(E)
 

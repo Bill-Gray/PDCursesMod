@@ -189,9 +189,9 @@ tuidemo.o: $(demodir)/tuidemo.c
 configure :
 	$(CC) $(CFLAGS) -o config_curses$(E) $(common)/config_curses.c
 ifdef PREFIX
-	wine config_curses -v -d.. $(CFLAGS)
+	wine config_curses$(E) -v -d.. $(CFLAGS)
 else
-	./config_curses -v -d.. $(CFLAGS)
+	./config_curses$(E) -v -d.. $(CFLAGS)
 endif
 	rm config_curses$(E)
 
