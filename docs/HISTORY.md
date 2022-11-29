@@ -1,5 +1,5 @@
-Changes as of 2022 November 18
-============================
+PDCursesMod 4.3.5 - 2022 November 27
+====================================
 
 Major new features
 ------------------
