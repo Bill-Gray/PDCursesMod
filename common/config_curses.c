@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <assert.h>
-#ifdef _WIN32
+#if defined( _WIN32) || defined( __WATCOMC__)
    #include <direct.h>
 #else
    #include <unistd.h>

@@ -20,11 +20,18 @@ osdir = dos
 TARGET = dos
 
 !ifeq MODEL f
-LTARGET	= dos4g
+LTARGET   = dos4g
 CFLAGS =
 !else
-LTARGET	= dos
+LTARGET   = dos
 CFLAGS = -DCHTYPE_32
 !endif
 
 !include $(PDCURSES_SRCDIR)/common/watcom.mif
+
+configure:
+   $(COPY) $(PDCURSES_SRCDIR)\common\config*.c cursconf.c
+   $(CC) $(CFLAGS) cursconf.c
+   $(LINK) $(LDFLAGS) name cursconf.exe file cursconf.obj
+   cursconf -v -d.. $(CFLAGS)
+   $(DEL) cursconf.*
