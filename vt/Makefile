@@ -124,6 +124,7 @@ endif
 $(LIBOBJS) $(PDCOBJS) : $(PDCURSES_HEADERS)
 $(DEMOS) : $(PDCURSES_CURSES_H) $(LIBCURSES)
 tui.o tuidemo.o : $(PDCURSES_CURSES_H)
+terminfo.o : $(TERM_HEADER)
 panel.o ptest: $(PANEL_HEADER)
 
 $(LIBOBJS) : %.o: $(srcdir)/%.c

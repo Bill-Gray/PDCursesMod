@@ -34,6 +34,7 @@
 -+scroll.obj &
 -+slk.obj &
 -+termattr.obj &
+-+terminfo.obj &
 -+touch.obj &
 -+util.obj &
 -+window.obj &
