@@ -29,7 +29,7 @@ static void put_to_stdout( const char *buff, size_t bytes_out)
 {
     static char *tbuff = NULL;
     static size_t bytes_cached;
-    const int stdout_fd = 1;
+    static int stdout_fd = -1;
 
     if( !buff && !tbuff)
         return;
@@ -41,6 +41,24 @@ static void put_to_stdout( const char *buff, size_t bytes_out)
         bytes_cached = 0;
         return;
     }
+
+    if( stdout_fd == -1)
+      {
+#ifdef _WIN32
+//    if( FILE_TYPE_CHAR == GetFileType( GetStdHandle( STD_OUTPUT_HANDLE)))
+      stdout_fd = 2;
+#else
+      if( isatty( STDOUT_FILENO))
+         stdout_fd = STDOUT_FILENO;   /* stdout hasn't been redirected;  use it */
+      else if( isatty( STDERR_FILENO))
+         stdout_fd = STDERR_FILENO;    /* stdout is redirected to a file;  use stderr */
+      else
+         {
+         fprintf(stderr, "No output device found\n");
+         exit( -1);
+         }
+#endif
+      }
 
     if( buff && !tbuff)
         tbuff = (char *)malloc( TBUFF_SIZE);
