@@ -70,7 +70,7 @@ extern GC pdc_normal_gc, pdc_cursor_gc, pdc_italic_gc, pdc_bold_gc;
 extern int pdc_fheight, pdc_fwidth, pdc_fascent, pdc_fdescent;
 extern int pdc_wwidth, pdc_wheight;
 
-extern bool pdc_blinked_off, pdc_window_entered, pdc_resize_now;
+extern bool pdc_blinked_off, pdc_window_entered, pdc_resize_now, pdc_return_window_close_as_key;
 extern bool pdc_vertical_cursor, pdc_visible_cursor;
 
 int PDC_display_cursor(int, int, int, int, int);
