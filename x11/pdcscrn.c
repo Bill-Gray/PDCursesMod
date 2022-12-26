@@ -151,7 +151,7 @@ Widget pdc_toplevel, pdc_drawing;
 GC pdc_normal_gc, pdc_cursor_gc, pdc_italic_gc, pdc_bold_gc;
 int pdc_fheight, pdc_fwidth, pdc_fascent, pdc_fdescent;
 int pdc_wwidth, pdc_wheight;
-bool pdc_window_entered = TRUE, pdc_resize_now = FALSE;
+bool pdc_window_entered = TRUE, pdc_resize_now = FALSE, pdc_return_window_close_as_key = FALSE;
 
 static Atom wm_atom[2];
 static String class_name = "XCurses";
@@ -374,7 +374,12 @@ static void _handle_nonmaskable(Widget w, XtPointer client_data, XEvent *event,
            Removed on 3-3-2001. Now only exits on WM_DELETE_WINDOW. */
 
         if ((Atom)client_event->data.s[0] == wm_atom[0])
-            exit(0);
+        {
+            if( !PDC_get_function_key( FUNCTION_KEY_SHUT_DOWN))
+                exit(0);
+            else
+                pdc_return_window_close_as_key = TRUE;
+        }
     }
 }
 

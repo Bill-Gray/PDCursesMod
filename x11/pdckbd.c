@@ -615,7 +615,7 @@ bool PDC_check_key(void)
 
     PDC_LOG(("PDC_check_key() - returning %s\n", (s & XtIMXEvent) ? "TRUE" : "FALSE"));
 
-    return pdc_resize_now || !!(s & XtIMXEvent);
+    return pdc_resize_now || pdc_return_window_close_as_key || !!(s & XtIMXEvent);
 }
 
 /* return the next available key or mouse event */
@@ -630,6 +630,12 @@ int PDC_get_key(void)
     {
         pdc_resize_now = FALSE;
         return KEY_RESIZE;
+    }
+
+    if (pdc_return_window_close_as_key)
+    {
+        pdc_return_window_close_as_key = FALSE;
+        return PDC_get_function_key( FUNCTION_KEY_SHUT_DOWN);
     }
 
     XtAppNextEvent(pdc_app_context, &event);
