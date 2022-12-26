@@ -320,7 +320,11 @@ int PDC_get_key(void)
     switch (event.type)
     {
     case SDL_QUIT:
-        exit(1);
+        if( !PDC_get_function_key( FUNCTION_KEY_SHUT_DOWN))
+        {
+            exit(1);
+        }
+        return PDC_get_function_key( FUNCTION_KEY_SHUT_DOWN);
     case SDL_VIDEORESIZE:
         if (pdc_own_screen &&
            (event.resize.h / pdc_fheight != LINES ||
