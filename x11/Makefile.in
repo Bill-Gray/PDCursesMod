@@ -89,7 +89,7 @@ LIBOBJS = addch.o addchstr.o addstr.o attr.o beep.o bkgd.o border.o \
 clear.o color.o delch.o deleteln.o getch.o getstr.o getyx.o \
 inch.o inchstr.o initscr.o inopts.o insch.o insstr.o instr.o kernel.o \
 keyname.o mouse.o move.o outopts.o overlay.o pad.o panel.o printw.o \
-refresh.o scanw.o scr_dump.o scroll.o slk.o termattr.o \
+refresh.o scanw.o scr_dump.o scroll.o slk.o termattr.o terminfo.o \
 touch.o util.o window.o debug.o
 
 PDCOBJS = pdcclip.o pdcdisp.o pdcgetsc.o pdckbd.o pdcscrn.o pdcsetsc.o \
@@ -219,6 +219,9 @@ slk.o: $(srcdir)/slk.c
 
 termattr.o: $(srcdir)/termattr.c
 	$(BUILD) $(srcdir)/termattr.c
+
+terminfo.o: $(srcdir)/terminfo.c
+	$(BUILD) $(srcdir)/terminfo.c
 
 touch.o: $(srcdir)/touch.c
 	$(BUILD) $(srcdir)/touch.c
@@ -401,6 +404,10 @@ slk.sho: $(srcdir)/slk.c
 
 termattr.sho: $(srcdir)/termattr.c
 	$(DYN_BUILD) $(srcdir)/termattr.c
+	@SAVE2O@
+
+terminfo.sho: $(srcdir)/terminfo.c
+	$(DYN_BUILD) $(srcdir)/terminfo.c
 	@SAVE2O@
 
 touch.sho: $(srcdir)/touch.c
@@ -983,9 +990,6 @@ sp_tinfo.o: $(ncurses_testdir)/sp_tinfo.c $(PDCURSES_CURSES_H)
 
 tclock.o: $(ncurses_testdir)/tclock.c $(PDCURSES_CURSES_H)
 	$(BUILD) $(NCFLAGS) $(ncurses_testdir)/tclock.c
-
-terminfo.o: $(srcdir)/terminfo.c $(PDCURSES_CURSES_H)
-	$(BUILD) $(NCFLAGS) $(srcdir)/terminfo.c
 
 testaddch.o: $(ncurses_testdir)/testaddch.c $(PDCURSES_CURSES_H)
 	$(BUILD) $(NCFLAGS) $(ncurses_testdir)/testaddch.c

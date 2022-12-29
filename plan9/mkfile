@@ -41,6 +41,7 @@ OFILES=\
 	scroll.$O\
 	slk.$O\
 	termattr.$O\
+	terminfo.$O\
 	touch.$O\
 	util.$O\
 	window.$O\
@@ -68,7 +69,7 @@ UPDATE=\
 CC=pcc
 LD=pcc
 CFLAGS= -c -I. -I.. -D_POSIX_SOURCE -D_BSD_EXTENSION -D_C99_SNPRINTF_EXTENSION \
--DHAVE_VSNPRINTF 
+-DHAVE_VSNPRINTF
 
 %.$O: ../pdcurses/%.c
 	$CC $CFLAGS ../pdcurses/$stem.c
