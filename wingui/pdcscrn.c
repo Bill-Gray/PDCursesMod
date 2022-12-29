@@ -2216,11 +2216,23 @@ INLINE int set_up_window( void)
 int PDC_scr_open(void)
 {
     const HMODULE hntdll = GetModuleHandle( _T("ntdll.dll"));
+    const HMODULE shcoredll = GetModuleHandle(_T("Shcore.dll"));
 
     PDC_LOG(("PDC_scr_open() - called\n"));
 
     if( hntdll)
         wine_version = (wine_version_func)GetProcAddress(hntdll, "wine_get_version");
+
+    if ( shcoredll) {
+        typedef HRESULT *(CDECL *set_process_dpi_awareness_t)(int);
+        static set_process_dpi_awareness_t set_process_dpi_awareness_func;
+        static int ADJUST_DPI_PER_MONITOR = 2;
+        set_process_dpi_awareness_func = (set_process_dpi_awareness_t)GetProcAddress(shcoredll, "SetProcessDpiAwareness");
+        if ( set_process_dpi_awareness_func) {
+            set_process_dpi_awareness_func(ADJUST_DPI_PER_MONITOR);
+        }
+    }
+
     COLORS = N_COLORS;  /* should give this a try and see if it works! */
     if (!SP || PDC_init_palette( ))
         return ERR;
