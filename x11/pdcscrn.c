@@ -704,7 +704,7 @@ int PDC_scr_open(void)
     /* Make sure that we say that we're allowed to have input focus.
        Otherwise some window managers will refuse to focus the window. */
     XWMHints* hints = XGetWMHints(XtDisplay(pdc_toplevel), XtWindow(pdc_toplevel));
-    hints->input=true;
+    hints->input=TRUE;
     XSetWMHints(XtDisplay(pdc_toplevel), XtWindow(pdc_toplevel), hints);
     XFree(hints);
 
