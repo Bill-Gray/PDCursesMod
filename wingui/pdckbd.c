@@ -19,16 +19,15 @@ extern int PDC_key_queue[KEY_QUEUE_SIZE];
 
 bool PDC_check_key(void)
 {
-    MSG msg;
-    extern HWND PDC_hWnd;
+    static int count;
 
-    while( PeekMessage(&msg, PDC_hWnd, WM_KEYFIRST, WM_KEYLAST, PM_REMOVE) )
-    {
-       TranslateMessage(&msg);
-       DispatchMessage(&msg);
-    }
     if( PDC_key_queue_low != PDC_key_queue_high)
         return TRUE;
+    if( count++ == 100)
+    {
+        count = 0;
+        PDC_napms( 1);
+    }
     return FALSE;
 }
 
