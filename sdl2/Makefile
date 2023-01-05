@@ -156,6 +156,7 @@ $(LIBOBJS) $(PDCOBJS) : $(PDCURSES_HEADERS)
 $(PDCOBJS) : $(PDCURSES_SDL_H)
 $(DEMOS) : $(PDCURSES_CURSES_H) $(LIBCURSES)
 tui.o tuidemo.o : $(PDCURSES_CURSES_H)
+terminfo.o : $(TERM_HEADER)
 panel.o ptest$(E) test_pan$(E): $(PANEL_HEADER)
 
 $(LIBOBJS) : %.o: $(srcdir)/%.c
