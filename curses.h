@@ -1470,6 +1470,7 @@ PDCEX  int     scroll(WINDOW *);
 PDCEX  int     scrollok(WINDOW *, bool);
 PDCEX  SCREEN *set_term(SCREEN *);
 PDCEX  int     setscrreg(int, int);
+PDCEX  attr_t  slk_attr(void);
 PDCEX  int     slk_attroff(const chtype);
 PDCEX  int     slk_attr_off(const attr_t, void *);
 PDCEX  int     slk_attron(const chtype);
