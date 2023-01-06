@@ -231,8 +231,6 @@ int main( const int argc, const char **argv)
        _n_colors = COLORS;    /* use PDCursesMod's rgb palette */
     else if( !_n_colors)
     {
-        int i;
-
         while( _n_colors * (_n_colors + 1) / 2 < COLOR_PAIRS - COLOR0 &&
                          _n_colors < COLORS - COLOR0)
            _n_colors++;
