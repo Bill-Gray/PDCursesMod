@@ -251,7 +251,7 @@ void PDC_gotoyx(int row, int col)
     SDL_Rect src, dest;
     chtype ch;
     int oldrow, oldcol;
-#if defined(PDC_WIDE)
+#ifdef PDC_WIDE
 #if SDL_TTF_VERSION_ATLEAST(2,0,18)
     Uint16 chstr[2] = {0, 0};
 #endif
