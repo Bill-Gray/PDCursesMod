@@ -193,15 +193,30 @@ static void show_key_help( void)
 
 int main( const int argc, const char **argv)
 {
-    int c = 0, max_iter = 256;
+    int c = 0, max_iter = 256, i;
     double x = 0., y = 0., scale;
     bool show_splash_screen = TRUE, show_keys = TRUE;
     SCREEN *screen_pointer;
+    FILE *input_fp = stdin;
 #ifdef PDC_COLOR_PAIR_DEBUGGING_FUNCTIONS
     int results[5], rval;
 #endif
 
-    screen_pointer = newterm(NULL, stdout, stdin);
+    for( i = 1; i < argc; i++)
+        if( argv[i][0] == '-')
+            switch( argv[i][1])
+            {
+                case 'c':
+                   _n_colors = atoi( argv[i] + 2);
+                   break;
+                case 'i':
+                   input_fp = fopen( argv[i] + 2, "rb");
+                   break;
+                default:
+                   fprintf( stderr, "Unrecognized parameter '%s'\n", argv[i]);
+                   return( -1);
+            }
+    screen_pointer = newterm(NULL, stdout, input_fp);
     cbreak( );
     noecho( );
     clear( );
@@ -212,19 +227,16 @@ int main( const int argc, const char **argv)
 #else
     mousemask( BUTTON1_CLICKED | BUTTON4_PRESSED | BUTTON5_PRESSED, NULL);
 #endif
-    if( COLORS > 0x1000000 && COLOR_PAIRS >= 4096 && argc == 1)
+    if( COLORS > 0x1000000 && COLOR_PAIRS >= 4096 && !_n_colors)
        _n_colors = COLORS;    /* use PDCursesMod's rgb palette */
-    else
+    else if( !_n_colors)
     {
         int i;
 
-        _n_colors = 0;
         while( _n_colors * (_n_colors + 1) / 2 < COLOR_PAIRS - COLOR0 &&
                          _n_colors < COLORS - COLOR0)
            _n_colors++;
         _n_colors--;
-        if( argc == 2)
-            _n_colors = atoi( argv[1]);
         for( i = 0; i < _n_colors; i++)
         {
             const long rgb = cvt_to_rgb( (double)i / (double)_n_colors);
@@ -337,5 +349,7 @@ int main( const int argc, const char **argv)
     endwin( );
                             /* Not really needed,  but ensures Valgrind  */
     delscreen( screen_pointer);          /* says all memory was freed */
+    if( input_fp != stdin)
+        fclose( input_fp);
     return( 0);
 }
