@@ -129,11 +129,11 @@ IF (PDC_SDL2_DEPS_BUILD)
             ENDIF()
         ENDIF()        
         
-        SET(SDL2_TTF_RELEASE 2.0.15)
+        SET(SDL2_TTF_RELEASE 2.0.18)
 
         ExternalProject_Add(sdl2_ttf_ext
             URL https://www.libsdl.org/projects/SDL_ttf/release/SDL2_ttf-${SDL2_TTF_RELEASE}.zip
-            URL_HASH "SHA256=cdb72b5b1c3b27795fa128af36f369fee5d3e38a96c350855da0b81880555dbc"
+            URL_HASH "SHA256=64e6a93c7542aba1e32e1418413898dfde82be95fdd0c73ba265fbdada189b5f"
             PATCH_COMMAND cmake -E copy 
                 ${CMAKE_SOURCE_DIR}/cmake/sdl2_ttf/CMakeLists.txt 
                 ${CMAKE_BINARY_DIR}/sdl2_ttf/CMakeLists.txt

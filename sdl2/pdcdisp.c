@@ -251,9 +251,6 @@ void PDC_gotoyx(int row, int col)
     SDL_Rect src, dest;
     chtype ch;
     int oldrow, oldcol;
-#ifdef PDC_WIDE
-    Uint16 chstr[2] = {0, 0};
-#endif
 
     PDC_LOG(("PDC_gotoyx() - called: row %d col %d from row %d col %d\n",
              row, col, SP->cursrow, SP->curscol));
@@ -296,21 +293,21 @@ void PDC_gotoyx(int row, int col)
         if( _is_altcharset( ch))
             ch = acs_map[ch & 0x7f];
 
-        chstr[0] = (Uint16)( ch & A_CHARTEXT);
+        Uint32 ch32 = (Uint32)(ch & A_CHARTEXT);
 
         switch (pdc_sdl_render_mode)
         {
         case PDC_SDL_RENDER_SOLID:
-            pdc_font = TTF_RenderUNICODE_Solid(pdc_ttffont, chstr,
+            pdc_font = TTF_RenderGlyph32_Solid(pdc_ttffont, ch32,
                                                *(get_pdc_color( foregr)));
             break;
         case PDC_SDL_RENDER_SHADED:
-            pdc_font = TTF_RenderUNICODE_Shaded(pdc_ttffont, chstr,
+            pdc_font = TTF_RenderGlyph32_Shaded(pdc_ttffont, ch32,
                                                *(get_pdc_color( foregr)),
                                                *(get_pdc_color( backgr)));
             break;
         default:
-            pdc_font = TTF_RenderUNICODE_Blended(pdc_ttffont, chstr,
+            pdc_font = TTF_RenderGlyph32_Blended(pdc_ttffont, ch32,
                                                *(get_pdc_color( foregr)));
         }
 
@@ -387,7 +384,7 @@ void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
     SDL_Rect src, dest;
     int j;
 #ifdef PDC_WIDE
-    Uint16 chstr[2] = {0, 0};
+    Uint32 ch32 = 0;
 #endif
     attr_t sysattrs = SP->termattrs;
     short hcol = SP->line_color;
@@ -455,9 +452,9 @@ void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
 
         if (ch != ' ')
         {
-            if (chstr[0] != ch)
+            if (ch32 != ch)
             {
-                chstr[0] = (Uint16)ch;
+                ch32 = (Uint32)ch;
 
                 if (pdc_font)
                     SDL_FreeSurface(pdc_font);
@@ -465,16 +462,16 @@ void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
                 switch (pdc_sdl_render_mode)
                 {
                 case PDC_SDL_RENDER_SOLID:
-                    pdc_font = TTF_RenderUNICODE_Solid(pdc_ttffont, chstr,
+                    pdc_font = TTF_RenderGlyph32_Solid(pdc_ttffont, ch32,
                                                        *(get_pdc_color( foregr)));
                     break;
                 case PDC_SDL_RENDER_SHADED:
-                    pdc_font = TTF_RenderUNICODE_Shaded(pdc_ttffont, chstr,
+                    pdc_font = TTF_RenderGlyph32_Shaded(pdc_ttffont, ch32,
                                                        *(get_pdc_color( foregr)),
                                                        *(get_pdc_color( backgr)));
                     break;
                 default:
-                    pdc_font = TTF_RenderUNICODE_Blended(pdc_ttffont, chstr,
+                    pdc_font = TTF_RenderGlyph32_Blended(pdc_ttffont, ch32,
                                                        *(get_pdc_color( foregr)));
                 }
             }
