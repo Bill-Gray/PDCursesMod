@@ -212,7 +212,7 @@ static void sigwinchHandler( int sig)
    struct winsize ws;
 
    INTENTIONALLY_UNUSED_PARAMETER( sig);
-   if (ioctl(STDIN_FILENO, TIOCGWINSZ, &ws) != -1)
+   if( -1 != ioctl( STDOUT_FILENO, TIOCGWINSZ, &ws))
       if( PDC_rows != ws.ws_row || PDC_cols != ws.ws_col)
          {
          PDC_rows = ws.ws_row;
