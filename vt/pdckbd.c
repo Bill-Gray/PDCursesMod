@@ -45,6 +45,17 @@ static bool check_key( int *c)
 
     if( PDC_resize_occurred)
        return( TRUE);
+    if( SP->opaque->input_fd)
+    {
+        rval = !feof( SP->opaque->input_fd);
+        if( rval && c)
+        {
+            *c = fgetc( SP->opaque->input_fd);
+            if( *c == EOF)
+                rval = FALSE;
+        }
+        return( rval);
+    }
 #ifdef LINUX_FRAMEBUFFER_PORT
     PDC_check_for_blinking( );
 #endif
