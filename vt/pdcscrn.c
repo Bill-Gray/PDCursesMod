@@ -207,12 +207,15 @@ void PDC_scr_free( void)
 }
 
 #ifdef USE_TERMIOS
+
+int PDC_get_terminal_fd( void);        /* pdckbd.c */
+
 static void sigwinchHandler( int sig)
 {
    struct winsize ws;
 
    INTENTIONALLY_UNUSED_PARAMETER( sig);
-   if( -1 != ioctl( STDOUT_FILENO, TIOCGWINSZ, &ws))
+   if( -1 != ioctl( PDC_get_terminal_fd( ), TIOCGWINSZ, &ws))
       if( PDC_rows != ws.ws_row || PDC_cols != ws.ws_col)
          {
          PDC_rows = ws.ws_row;
