@@ -19,28 +19,9 @@
 #include "../common/acs_defs.h"
 #include "../common/pdccolor.h"
 
-                   /* Rarely,  writes to stdout fail if a signal handler is
-                      called.  In which case we just try to write out the
-                      remainder of the buffer until success happens.     */
-
-#define TBUFF_SIZE 512
-
-static void put_to_stdout( const char *buff, size_t bytes_out)
+int PDC_get_terminal_fd( void)
 {
-    static char *tbuff = NULL;
-    static size_t bytes_cached;
     static int stdout_fd = -1;
-
-    if( !buff && !tbuff)
-        return;
-
-    if( !buff && bytes_out == 1)        /* release memory at shutdown */
-    {
-        free( tbuff);
-        tbuff = NULL;
-        bytes_cached = 0;
-        return;
-    }
 
     if( stdout_fd == -1)
       {
@@ -59,9 +40,35 @@ static void put_to_stdout( const char *buff, size_t bytes_out)
          }
 #endif
       }
+   return( stdout_fd);
+}
+
+                   /* Rarely,  writes to stdout fail if a signal handler is
+                      called.  In which case we just try to write out the
+                      remainder of the buffer until success happens.     */
+
+#define TBUFF_SIZE 512
+
+static void put_to_stdout( const char *buff, size_t bytes_out)
+{
+    static char *tbuff = NULL;
+    static size_t bytes_cached;
+    int stdout_fd;
+
+    if( !buff && !tbuff)
+        return;
+
+    if( !buff && bytes_out == 1)        /* release memory at shutdown */
+    {
+        free( tbuff);
+        tbuff = NULL;
+        bytes_cached = 0;
+        return;
+    }
 
     if( buff && !tbuff)
         tbuff = (char *)malloc( TBUFF_SIZE);
+    stdout_fd = PDC_get_terminal_fd( );
     while( bytes_out || (!buff && bytes_cached))
     {
         if( buff)
