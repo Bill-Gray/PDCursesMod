@@ -7,6 +7,11 @@
 #include <SDL.h>
 #ifdef PDC_WIDE
 # include <SDL_ttf.h>
+#if SDL_TTF_VERSION_ATLEAST(2,0,18)
+/* SDL_ttf 2.0.18 introduced the the functions we use for rendering
+   individual characters beyond the BMP. */
+#define PDC_SDL_SUPPLEMENTARY_PLANES_SUPPORT 1
+#endif
 #endif
 
 #include <curspriv.h>
