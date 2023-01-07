@@ -242,6 +242,47 @@ static bool _grprint(chtype ch, const SDL_Rect dest)
         rval = FALSE;   /* didn't draw it -- fall back to acs_map */
     return( rval);
 }
+
+static SDL_Surface *_render_ttf_glyph(chtype ch)
+{
+    ch &= A_CHARTEXT;
+
+#ifdef PDC_SDL_SUPPLEMENTARY_PLANES_SUPPORT
+    switch (pdc_sdl_render_mode)
+    {
+    case PDC_SDL_RENDER_SOLID:
+        return TTF_RenderGlyph32_Solid(pdc_ttffont, (Uint32)ch,
+                                       *(get_pdc_color( foregr)));
+    case PDC_SDL_RENDER_SHADED:
+        return TTF_RenderGlyph32_Shaded(pdc_ttffont, (Uint32)ch,
+                                        *(get_pdc_color( foregr)),
+                                        *(get_pdc_color( backgr)));
+    default:
+        return TTF_RenderGlyph32_Blended(pdc_ttffont, (Uint32)ch,
+                                         *(get_pdc_color( foregr)));
+    }
+#else
+    /* no support for supplementary planes */
+    if (ch > 0xffff)
+        ch = '?';
+
+    switch (pdc_sdl_render_mode)
+    {
+    case PDC_SDL_RENDER_SOLID:
+        return TTF_RenderGlyph_Solid(pdc_ttffont, (Uint16)ch,
+                                     *(get_pdc_color( foregr)));
+        break;
+    case PDC_SDL_RENDER_SHADED:
+        return TTF_RenderGlyph_Shaded(pdc_ttffont, (Uint16)ch,
+                                      *(get_pdc_color( foregr)),
+                                      *(get_pdc_color( backgr)));
+    default:
+        return TTF_RenderGlyph_Blended(pdc_ttffont, (Uint16)ch,
+                                       *(get_pdc_color( foregr)));
+    }
+#endif
+}
+
 #endif
 
 /* draw a cursor at (y, x) */
@@ -251,11 +292,6 @@ void PDC_gotoyx(int row, int col)
     SDL_Rect src, dest;
     chtype ch;
     int oldrow, oldcol;
-#ifdef PDC_WIDE
-#if SDL_TTF_VERSION_ATLEAST(2,0,18)
-    Uint16 chstr[2] = {0, 0};
-#endif
-#endif
 
     PDC_LOG(("PDC_gotoyx() - called: row %d col %d from row %d col %d\n",
              row, col, SP->cursrow, SP->curscol));
@@ -298,43 +334,7 @@ void PDC_gotoyx(int row, int col)
         if( _is_altcharset( ch))
             ch = acs_map[ch & 0x7f];
 
-#if SDL_TTF_VERSION_ATLEAST(2,0,18)
-        Uint32 ch32 = (Uint32)(ch & A_CHARTEXT);
-
-        switch (pdc_sdl_render_mode)
-        {
-        case PDC_SDL_RENDER_SOLID:
-            pdc_font = TTF_RenderGlyph32_Solid(pdc_ttffont, ch32,
-                                               *(get_pdc_color( foregr)));
-            break;
-        case PDC_SDL_RENDER_SHADED:
-            pdc_font = TTF_RenderGlyph32_Shaded(pdc_ttffont, ch32,
-                                               *(get_pdc_color( foregr)),
-                                               *(get_pdc_color( backgr)));
-            break;
-        default:
-            pdc_font = TTF_RenderGlyph32_Blended(pdc_ttffont, ch32,
-                                               *(get_pdc_color( foregr)));
-        }
-#else
-        chstr[0] = (Uint16)( ch & A_CHARTEXT);
-
-        switch (pdc_sdl_render_mode)
-        {
-        case PDC_SDL_RENDER_SOLID:
-            pdc_font = TTF_RenderUNICODE_Solid(pdc_ttffont, chstr,
-                                               *(get_pdc_color( foregr)));
-            break;
-        case PDC_SDL_RENDER_SHADED:
-            pdc_font = TTF_RenderUNICODE_Shaded(pdc_ttffont, chstr,
-                                               *(get_pdc_color( foregr)),
-                                               *(get_pdc_color( backgr)));
-            break;
-        default:
-            pdc_font = TTF_RenderUNICODE_Blended(pdc_ttffont, chstr,
-                                               *(get_pdc_color( foregr)));
-        }
-#endif
+        pdc_font = _render_ttf_glyph(ch);
 
         if (pdc_font)
         {
@@ -409,11 +409,7 @@ void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
     SDL_Rect src, dest;
     int j;
 #ifdef PDC_WIDE
-#if SDL_TTF_VERSION_ATLEAST(2,0,18)
-    Uint32 ch32 = 0;
-#else
-    Uint16 chstr[2] = {0, 0};
-#endif
+    chtype prev_ch = 0;
 #endif
     attr_t sysattrs = SP->termattrs;
     short hcol = SP->line_color;
@@ -481,55 +477,14 @@ void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
 
         if (ch != ' ')
         {
-#if SDL_TTF_VERSION_ATLEAST(2,0,18)
-            if (ch32 != ch)
+            if (prev_ch != ch)
             {
-                ch32 = (Uint32)ch;
-
+                prev_ch = ch;
                 if (pdc_font)
                     SDL_FreeSurface(pdc_font);
 
-                switch (pdc_sdl_render_mode)
-                {
-                case PDC_SDL_RENDER_SOLID:
-                    pdc_font = TTF_RenderGlyph32_Solid(pdc_ttffont, ch32,
-                                                       *(get_pdc_color( foregr)));
-                    break;
-                case PDC_SDL_RENDER_SHADED:
-                    pdc_font = TTF_RenderGlyph32_Shaded(pdc_ttffont, ch32,
-                                                       *(get_pdc_color( foregr)),
-                                                       *(get_pdc_color( backgr)));
-                    break;
-                default:
-                    pdc_font = TTF_RenderGlyph32_Blended(pdc_ttffont, ch32,
-                                                       *(get_pdc_color( foregr)));
-                }
+                pdc_font = _render_ttf_glyph(ch);
             }
-#else
-            if (chstr[0] != ch)
-            {
-                chstr[0] = (Uint16)ch;
-
-                if (pdc_font)
-                    SDL_FreeSurface(pdc_font);
-
-                switch (pdc_sdl_render_mode)
-                {
-                case PDC_SDL_RENDER_SOLID:
-                    pdc_font = TTF_RenderUNICODE_Solid(pdc_ttffont, chstr,
-                                                       *(get_pdc_color( foregr)));
-                    break;
-                case PDC_SDL_RENDER_SHADED:
-                    pdc_font = TTF_RenderUNICODE_Shaded(pdc_ttffont, chstr,
-                                                       *(get_pdc_color( foregr)),
-                                                       *(get_pdc_color( backgr)));
-                    break;
-                default:
-                    pdc_font = TTF_RenderUNICODE_Blended(pdc_ttffont, chstr,
-                                                       *(get_pdc_color( foregr)));
-                }
-            }
-#endif
 
             if (pdc_font)
             {
