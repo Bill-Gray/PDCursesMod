@@ -51,15 +51,16 @@ void wait_a_while(long msec)
     c = getch();
 
 #ifdef KEY_RESIZE
-    if (c == KEY_RESIZE)
+    while( c == KEY_RESIZE)
     {
 # ifdef PDCURSES
         resize_term(0, 0);
 # endif
         sizecheck();
         backfill();
+        pflush();
+        c = getch();
     }
-    else
 #endif
     if (c == 'q')
     {
