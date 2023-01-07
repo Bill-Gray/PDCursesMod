@@ -1740,7 +1740,7 @@ void display_menu(int old_option, int new_option)
         int i;
 
         attrset(A_BOLD);
-        mvprintw( tmarg - 3, (COLS - strlen( longname( ))) / 2 - 6,
+        mvprintw( tmarg - 3, (COLS - (int)strlen( longname( ))) / 2 - 6,
                             "%s Test Program", longname( ));
         attrset(A_NORMAL);
 
