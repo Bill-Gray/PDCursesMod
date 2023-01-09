@@ -1,3 +1,43 @@
+PDCursesMod as of 2023 January 07
+=================================
+
+Minor new features
+------------------
+
+- SDL2 can now show Unicode past 0xffff (Supplemental Multilingual
+  Planes).  602bc380f81
+
+- VT port supports output redirection.  a6618d94d7  6925d0f571
+  65939aaccd
+
+- WinGUI support DPI awareness,  for better font display on high-res
+  screens.  012e3d90f8
+
+- SDL1 and 2 and X11 support user handling of the window close button,
+  using PDC_set_function_key.  89b2287d66  791318dfaa
+
+- 'terminfo' functions (really stubs) are compiled and linked in for
+  all platforms.  ab1c007273  248146021e
+
+Bug fixes
+---------
+
+- Resizing 'ptest' caused it to move to the next panel display
+  in the series.  0ed72b9f91
+
+- Negative window sizes for newwin() and resize() were not error-checked,
+  resulting in segfaults.  c6c7f2d074
+
+- Scrolling a window could result in a crash when the window was
+  freed.   72521a1697
+
+- Decoding UTF8 was broken for SMP.  ad7cd29a23
+
+- WinGUI could get confused if the window was resized,  resulting in
+  input being ignored.  bc340c0d20
+
+See the git log for more details.
+
 PDCursesMod 4.3.5 - 2022 November 27
 ====================================
 
