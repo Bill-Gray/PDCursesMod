@@ -180,6 +180,7 @@ static int _handle_alt_keys(int key)
 static int _process_key_event(void)
 {
     int i, key = 0;
+    static int _key_already_handled = 0;
 #ifdef PDC_WIDE
     size_t bytes;
 #endif
@@ -255,6 +256,7 @@ static int _process_key_event(void)
             _stored_timestamp = event.text.timestamp;
             rval = -1;
         }
+        _key_already_handled = rval;
         return( rval);
     }
 
@@ -315,8 +317,15 @@ static int _process_key_event(void)
     }
 
     /* SDL with TextInput ignores keys with CTRL */
-    if (key && SP->key_modifiers & PDC_KEY_MODIFIER_CONTROL)
-        return _handle_alt_keys(key);
+    if( key)
+        if( SP->key_modifiers & (PDC_KEY_MODIFIER_CONTROL | PDC_KEY_MODIFIER_ALT))
+        {
+            int rval = _handle_alt_keys( key);
+
+            if( rval == _key_already_handled)
+                rval = -1;         /* don't return this key twice */
+            return( rval);
+        }
     return -1;
 }
 
