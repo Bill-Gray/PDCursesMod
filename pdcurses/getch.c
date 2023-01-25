@@ -467,11 +467,11 @@ bool PDC_is_function_key( const int key)
 
 #define WAIT_FOREVER    -1
 
-int wgetch(WINDOW *win)
+int raw_wgetch(WINDOW *win)
 {
     int key = ERR, remaining_millisecs;
 
-    PDC_LOG(("wgetch() - called\n"));
+    PDC_LOG(("raw_wgetch() - called\n"));
 
     assert( SP);
     assert( win);
@@ -627,6 +627,54 @@ int wgetch(WINDOW *win)
             return SP->c_buffer[SP->c_gindex++];
         }
     }
+}
+
+int PDC_wc_to_utf8(char *dest, const int32_t code);
+
+/* deliver a byte sequence in UTF-8 or UTF-16 encoding.*/
+/* Supports supplentary unicode planes up to 20 bits (UTF-16). */
+int wgetch(WINDOW *win)
+{
+    PDC_LOG(("wgetch() - called\n"));
+
+#if !defined PDC_WIDE || !defined _WIN32
+    return raw_wgetch(win);
+#else
+    static wchar_t buff;
+    static size_t n_buff = 0;
+    int rval = 0;
+    if (!n_buff) /* Empty buffer, no pending bytes */
+    {
+        rval = raw_wgetch(win);
+        if (rval < 0)
+            rval = ERR;
+        if(  rval == ERR || (rval < 0x80) || PDC_is_function_key(rval))
+            return rval;
+        buff = rval;
+        if ( (rval & 0xF800) != 0xD800) /* single-unit UTF-16 unicode codepoint */
+            n_buff = 1;
+        else     /* Potential multiunit UTF-16 code */
+        {
+            rval = raw_wgetch(win);             /* get another UTF-16 unit from buffer*/
+            if ( (rval & 0xFC00) != 0xDC00)     /* mask check of second UTF-16 unit */
+            {
+                unget_wch((wchar_t)rval);
+                return ERR;
+            }                
+            n_buff = 1;
+            rval = (((int)(buff & 0x3FF) << 10) | (rval & 0x3FF)) + 0x10000; /* rval is the full unicode */
+        }
+#ifdef PDC_FORCE_UTF8
+        n_buff = PDC_wc_to_utf8((char *)&buff, rval);  /* rval has the raw unicode codepoint */
+#endif
+    }
+#ifdef PDC_FORCE_UTF8
+    rval = buff & 0xFF;
+#endif
+    n_buff--;
+    buff = buff >> 8;
+    return (rval);
+#endif /* PDC_WIDE */
 }
 
 int mvgetch(int y, int x)
