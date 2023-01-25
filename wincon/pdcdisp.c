@@ -169,8 +169,14 @@ static void _show_run_of_ansi_characters( const attr_t attr,
             ch = ' ';
 
 #ifdef PDC_WIDE
-        if( (ch & A_CHARTEXT) != DUMMY_CHAR_NEXT_TO_FULLWIDTH)
-            buffer[n_out++] = (WCHAR)( ch & A_CHARTEXT);
+        chtype uc = ch & A_CHARTEXT;  //o//
+        if( uc != DUMMY_CHAR_NEXT_TO_FULLWIDTH){
+            if (uc & 0xFF0000){
+                buffer[n_out++] = (WCHAR)((uc - 0x10000) >> 10 | 0xD800); /* first UTF-16 unit */
+                buffer[n_out++] = (WCHAR)(uc & 0x3FF) | 0xDC00;         /* second UTF-16 unit */
+            }else   
+               buffer[n_out++] = (WCHAR)( ch & A_CHARTEXT);
+        }
 #else
         buffer[n_out++] = (char)( ch & A_CHARTEXT);
 #endif
