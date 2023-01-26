@@ -729,8 +729,6 @@ static int _process_mouse_event(void)
 
 int PDC_get_key(void)
 {
-    SP->key_modifiers = 0L;
-
     if (!key_count)
     {
         DWORD count;
@@ -752,6 +750,7 @@ int PDC_get_key(void)
         switch (save_ip.EventType)
         {
         case KEY_EVENT:
+            SP->key_modifiers = 0L;
             return _process_key_event();
 
         case MOUSE_EVENT:
