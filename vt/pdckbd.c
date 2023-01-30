@@ -45,7 +45,7 @@ static bool check_key( int *c)
 
     if( PDC_resize_occurred)
        return( TRUE);
-    if( SP->opaque->input_fd)
+    if( SP->opaque && SP->opaque->input_fd)
     {
         rval = !feof( SP->opaque->input_fd);
         if( rval && c)
