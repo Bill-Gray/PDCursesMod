@@ -195,7 +195,7 @@ static void _show_run_of_nonansi_characters( const attr_t attr,
                            int fore, int back, const bool blink,
                            const int lineno, const int x, const chtype *srcp, const int len)
 {
-    CHAR_INFO buffer[MAX_PACKET_SIZE];
+    CHAR_INFO buffer[MAX_PACKET_SIZE*2];
     COORD bufSize, bufPos;
     SMALL_RECT sr;
     WORD mapped_attr;
