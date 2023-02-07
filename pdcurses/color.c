@@ -543,14 +543,12 @@ int PDC_set_line_color(short color)
 int PDC_init_atrtab(void)
 {
     assert( SP);
-    if( !SP->opaque)
+    assert( SP->opaque);
+
+    if( !SP->opaque->pairs)
     {
        PDC_PAIR *p;
 
-       SP->opaque = (struct _opaque_screen_t *)calloc( 1, sizeof( struct _opaque_screen_t));
-       assert( SP->opaque);
-       if( !SP->opaque)
-           return -1;
        SP->opaque->pairs_allocated = 1;
        SP->opaque->pairs = (PDC_PAIR *)calloc( 2, sizeof(PDC_PAIR));
        assert( SP->opaque->pairs);
@@ -579,9 +577,10 @@ void PDC_free_atrtab(void)
     SP->opaque->pair_hash_tbl = NULL;
     SP->opaque->pair_hash_tbl_size = SP->opaque->pair_hash_tbl_used = 0;
     if( SP->opaque->pairs)
+    {
        free( SP->opaque->pairs);
-    free( SP->opaque);
-    SP->opaque = NULL;
+       SP->opaque->pairs = NULL;
+    }
 }
 
 int init_pair( short pair, short fg, short bg)

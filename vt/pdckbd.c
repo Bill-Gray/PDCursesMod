@@ -38,24 +38,12 @@ static bool check_key( int *c)
 {
     bool rval;
 #ifndef USE_CONIO
-    const int STDIN = 0;
     struct timeval timeout;
     fd_set rdset;
     extern int PDC_n_ctrl_c;
 
     if( PDC_resize_occurred)
        return( TRUE);
-    if( SP->opaque && SP->opaque->input_fd)
-    {
-        rval = !feof( SP->opaque->input_fd);
-        if( rval && c)
-        {
-            *c = fgetc( SP->opaque->input_fd);
-            if( *c == EOF)
-                rval = FALSE;
-        }
-        return( rval);
-    }
 #ifdef LINUX_FRAMEBUFFER_PORT
     PDC_check_for_blinking( );
 #endif
@@ -69,14 +57,14 @@ static bool check_key( int *c)
        return( TRUE);
        }
     FD_ZERO( &rdset);
-    FD_SET( STDIN, &rdset);
+    FD_SET( fileno( SP->opaque->input_fd), &rdset);
     timeout.tv_sec = 0;
     timeout.tv_usec = 0;
-    if( select( STDIN + 1, &rdset, NULL, NULL, &timeout) > 0)
+    if( select( fileno( SP->opaque->input_fd) + 1, &rdset, NULL, NULL, &timeout) > 0)
        {
        rval = TRUE;
        if( c)
-          *c = getchar( );
+          *c = fgetc( SP->opaque->input_fd);
        }
     else
        rval = FALSE;

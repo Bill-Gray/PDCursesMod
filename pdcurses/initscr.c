@@ -148,11 +148,9 @@ MOUSE_STATUS Mouse_status;
 extern RIPPEDOFFLINE linesripped[5];
 extern char linesrippedoff;
 
-WINDOW *initscr(void)
+static WINDOW *PDC_initscreen(FILE *outfd, FILE *infd)
 {
     int i;
-
-    PDC_LOG(("initscr() - called\n"));
 
     if (SP && SP->alive)
         return NULL;
@@ -160,6 +158,14 @@ WINDOW *initscr(void)
     assert( SP);
     if (!SP)
         return NULL;
+
+    SP->opaque = (struct _opaque_screen_t *)calloc( 1, sizeof( struct _opaque_screen_t));
+    assert( SP->opaque);
+    if( !SP->opaque)
+        return NULL;
+
+    SP->opaque->input_fd = infd ? infd : stdin;
+    SP->opaque->output_fd = outfd ? outfd : stdout;
 
     if (PDC_scr_open() == ERR)
     {
@@ -289,6 +295,13 @@ WINDOW *initscr(void)
     return stdscr;
 }
 
+WINDOW *initscr(void)
+{
+    PDC_LOG(("initscr() - called\n"));
+
+    return PDC_initscreen(NULL, NULL);
+}
+
 #ifdef XCURSES
 WINDOW *Xinitscr(int argc, char **argv)
 {
@@ -330,11 +343,8 @@ SCREEN *newterm(const char *type, FILE *outfd, FILE *infd)
 
     PDC_LOG(("newterm() - called\n"));
     INTENTIONALLY_UNUSED_PARAMETER( type);
-    win = initscr( );
-    if( win && outfd != stdout)
-        SP->opaque->output_fd = outfd;
-    if( win && infd != stdin)
-        SP->opaque->input_fd = infd;
+
+    win = PDC_initscreen(outfd, infd);
     return win ? SP : NULL;
 }
 
@@ -384,7 +394,11 @@ void delscreen(SCREEN *sp)
 
     PDC_scr_free();
 
+    free( SP->opaque);
+    SP->opaque = NULL;
+
     free(SP);
+
     SP = (SCREEN *)NULL;
 }
 
