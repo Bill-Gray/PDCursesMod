@@ -57,7 +57,15 @@ static void _set_ansi_color(short f, short b, attr_t attr)
 
     p = esc + sprintf(esc, "\x1b[");
 
-    if (f != pdc_oldf)
+    bool set_transparent_bg = (b == 0 && b != pdc_oldb);
+    if (set_transparent_bg)
+    {
+        p += sprintf(p, "m\x1b[");
+        pdc_oldb = b;
+    }        
+    int initial_len = strlen(esc);
+
+    if (f != pdc_oldf || set_transparent_bg)
     {
         if (f < 8 && !pdc_color[f].mapped)
             p += sprintf(p, "%d", f + 30);
@@ -79,7 +87,7 @@ static void _set_ansi_color(short f, short b, attr_t attr)
 
     if (b != pdc_oldb)
     {
-        if (strlen(esc) > 2)
+        if (strlen(esc) > initial_len)
             p += sprintf(p, ";");
 
         if (b < 8 && !pdc_color[b].mapped)
@@ -100,9 +108,9 @@ static void _set_ansi_color(short f, short b, attr_t attr)
         pdc_oldb = b;
     }
 
-    if (italic != in_italic)
+    if (italic != in_italic || set_transparent_bg)
     {
-        if (strlen(esc) > 2)
+        if (strlen(esc) > initial_len )
             p += sprintf(p, ";");
 
         if (italic)
@@ -113,9 +121,9 @@ static void _set_ansi_color(short f, short b, attr_t attr)
         in_italic = italic;
     }
 
-    if (underline != pdc_oldu)
+    if (underline != pdc_oldu || set_transparent_bg)
     {
-        if (strlen(esc) > 2)
+        if (strlen(esc) > initial_len )
             p += sprintf(p, ";");
 
         if (underline)
@@ -152,7 +160,7 @@ static void _show_run_of_ansi_characters( const attr_t attr,
                            const int lineno, const int x, const chtype *srcp, const int len)
 {
 #ifdef PDC_WIDE
-    WCHAR buffer[MAX_PACKET_SIZE*2];
+    WCHAR buffer[MAX_PACKET_SIZE];
 #else
     char buffer[MAX_PACKET_SIZE];
 #endif
@@ -169,13 +177,13 @@ static void _show_run_of_ansi_characters( const attr_t attr,
             ch = ' ';
 
 #ifdef PDC_WIDE
-        chtype uc = ch & A_CHARTEXT;
+        chtype uc = ch & A_CHARTEXT;  //o//
         if( uc < 0x110000){
             if (uc & 0x1F0000){
                 buffer[n_out++] = (WCHAR)((uc - 0x10000) >> 10 | 0xD800); /* first UTF-16 unit */
-                buffer[n_out++] = (WCHAR)(uc & 0x3FF) | 0xDC00;         /* second UTF-16 unit */
+                buffer[n_out++] = (WCHAR)(uc & 0x3FF) | 0xDC00;   /* second UTF-16 unit */
             }else   
-               buffer[n_out++] = (WCHAR)( ch & A_CHARTEXT);
+                buffer[n_out++] = (WCHAR)uc;
         }
 #else
         buffer[n_out++] = (char)( ch & A_CHARTEXT);
@@ -195,7 +203,7 @@ static void _show_run_of_nonansi_characters( const attr_t attr,
                            int fore, int back, const bool blink,
                            const int lineno, const int x, const chtype *srcp, const int len)
 {
-    CHAR_INFO buffer[MAX_PACKET_SIZE*2];
+    CHAR_INFO buffer[MAX_PACKET_SIZE];
     COORD bufSize, bufPos;
     SMALL_RECT sr;
     WORD mapped_attr;
@@ -228,7 +236,7 @@ static void _show_run_of_nonansi_characters( const attr_t attr,
 
         buffer[n_out].Attributes = mapped_attr;
 #ifdef PDC_WIDE
-        chtype uc = ch & A_CHARTEXT;
+        chtype uc = ch & A_CHARTEXT;  //o//
         if( uc < 0x110000){
             if (uc & 0x1F0000){
                 buffer[n_out++].Char.UnicodeChar = (WCHAR)((uc - 0x10000) >> 10 | 0xD800); /* first UTF-16 unit */
@@ -240,6 +248,8 @@ static void _show_run_of_nonansi_characters( const attr_t attr,
 #else
         buffer[n_out++].Char.UnicodeChar = (WCHAR)( ch & A_CHARTEXT);
 #endif
+
+    }
 
     bufPos.X = bufPos.Y = 0;
     bufSize.X = (SHORT)n_out;
