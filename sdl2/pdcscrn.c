@@ -38,6 +38,7 @@ int pdc_sheight = 0, pdc_swidth = 0, pdc_yoffset = 0, pdc_xoffset = 0;
 
 int pdc_fheight, pdc_fwidth, pdc_fthick;
 bool pdc_own_window;
+bool pdc_own_renderer;
 
 static void _clean(void)
 {
@@ -70,12 +71,15 @@ static void _clean(void)
         pdc_render_target = NULL;
     }
 
+    if(pdc_own_renderer && pdc_renderer)
+    {
+        SDL_DestroyRenderer(pdc_renderer);
+        pdc_renderer = NULL;
+    }
+
     if( pdc_own_window && pdc_window)
     {
-        if(pdc_renderer)
-            SDL_DestroyRenderer(pdc_renderer);
         SDL_DestroyWindow(pdc_window);
-        pdc_renderer = NULL;
         pdc_window = NULL;
     }
 
@@ -131,6 +135,7 @@ int PDC_scr_open(void)
     PDC_LOG(("PDC_scr_open() - called\n"));
 
     pdc_own_window = !pdc_window;
+    pdc_own_renderer = !pdc_renderer;
 
     if (pdc_own_window)
     {
@@ -242,6 +247,11 @@ int PDC_scr_open(void)
             return ERR;
         }
 
+        SDL_SetWindowIcon(pdc_window, pdc_icon);
+    }
+
+    if (pdc_own_renderer)
+    {
         pdc_renderer = SDL_CreateRenderer(
             pdc_window, -1, SDL_RENDERER_ACCELERATED// | SDL_RENDERER_PRESENTVSYNC
         );
@@ -251,8 +261,6 @@ int PDC_scr_open(void)
             fprintf(stderr, "Could not open SDL renderer: %s\n", SDL_GetError());
             return ERR;
         }
-
-        SDL_SetWindowIcon(pdc_window, pdc_icon);
     }
 
     int h, w;
