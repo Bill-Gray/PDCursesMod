@@ -435,7 +435,6 @@ int PDC_get_key(void)
     case SDL_WINDOWEVENT:
         if (SDL_WINDOWEVENT_SIZE_CHANGED == event.window.event)
         {
-            pdc_screen = SDL_GetWindowSurface(pdc_window);
             pdc_sheight = event.window.data2 - pdc_xoffset;
             pdc_swidth = event.window.data1 - pdc_yoffset;
             if( curscr)
