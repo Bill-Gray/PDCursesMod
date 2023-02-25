@@ -54,8 +54,7 @@ else()
     
     if(PDC_SDL2_BUILD)
     
-        #add_subdirectory(sdl2)
-        add_subdirectory(sdl2ren)
+        add_subdirectory(sdl2)
         
     endif()
 

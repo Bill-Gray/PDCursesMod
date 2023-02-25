@@ -112,7 +112,6 @@ bool PDC_check_key(void)
     return haveevent;
 }
 
-#ifdef PDC_WIDE
 static int _utf8_to_unicode(char *chstr, size_t *b)
 {
     int i, bytes, unicode;
@@ -149,7 +148,6 @@ static int _utf8_to_unicode(char *chstr, size_t *b)
     *b = bytes;
     return unicode;
 }
-#endif
 
 /* Handle ALT and CTRL sequences */
 static int _handle_alt_keys(int key)
@@ -180,10 +178,7 @@ static int _handle_alt_keys(int key)
 static int _process_key_event(void)
 {
     int i, key = 0;
-    static int _key_already_handled = 0;
-#ifdef PDC_WIDE
-    size_t bytes;
-#endif
+    size_t bytes = 0;
 
     if (event.type == SDL_KEYUP)
     {
@@ -233,7 +228,6 @@ static int _process_key_event(void)
     {
         int rval;
 
-#ifdef PDC_WIDE
         if ((key = _utf8_to_unicode(event.text.text, &bytes)) == -1)
         {
             event.text.text[0] = '\0';
@@ -244,19 +238,12 @@ static int _process_key_event(void)
                     strlen(event.text.text) - bytes + 1);
         }
         rval = _handle_alt_keys(key);
-#else
-        key = (unsigned char)event.text.text[0];
-        memmove(event.text.text, event.text.text + 1,
-                strlen(event.text.text));
-        rval = (key > 0x7f ? -1 : _handle_alt_keys(key));
-#endif
         if( strchr( "/+*-", rval))  /* may actually be PADSLASH, PADPLUS, */
         {                           /* etc.  Wait 2 ms to see if a PADx   */
             _stored_key = rval;     /* keystroke is coming in.            */
             _stored_timestamp = event.text.timestamp;
             rval = -1;
         }
-        _key_already_handled = rval;
         return( rval);
     }
 
@@ -317,15 +304,8 @@ static int _process_key_event(void)
     }
 
     /* SDL with TextInput ignores keys with CTRL */
-    if( key)
-        if( SP->key_modifiers & (PDC_KEY_MODIFIER_CONTROL | PDC_KEY_MODIFIER_ALT))
-        {
-            int rval = _handle_alt_keys( key);
-
-            if( rval == _key_already_handled)
-                rval = -1;         /* don't return this key twice */
-            return( rval);
-        }
+    if (key && SP->key_modifiers & PDC_KEY_MODIFIER_CONTROL)
+        return _handle_alt_keys(key);
     return -1;
 }
 
@@ -455,9 +435,8 @@ int PDC_get_key(void)
     case SDL_WINDOWEVENT:
         if (SDL_WINDOWEVENT_SIZE_CHANGED == event.window.event)
         {
-            pdc_screen = SDL_GetWindowSurface(pdc_window);
-            pdc_sheight = pdc_screen->h - pdc_xoffset;
-            pdc_swidth = pdc_screen->w - pdc_yoffset;
+            pdc_sheight = event.window.data2 - pdc_xoffset;
+            pdc_swidth = event.window.data1 - pdc_yoffset;
             if( curscr)
             {
                 touchwin(curscr);

@@ -4,165 +4,83 @@
 
 #include <stdlib.h>
 #include <limits.h>
-#ifndef PDC_WIDE
-# include "../common/font437.h"
-#endif
 #include "../common/iconbmp.h"
 #include "../common/pdccolor.h"
 #include "../common/pdccolor.c"
 
-#ifdef PDC_WIDE
-# ifndef PDC_FONT_PATH
-#  ifdef _WIN32
-#   define PDC_FONT_PATH "C:/Windows/Fonts/consola.ttf"
-#  elif defined(__APPLE__)
-#   define PDC_FONT_PATH "/System/Library/Fonts/Menlo.ttc"
-#  else
-#   define PDC_FONT_PATH "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf"
-#   define PDC_FONT_PATH2 "/usr/share/fonts/dejavu-sans-mono-fonts/DejaVuSansMono.ttf"
-#  endif
+#ifndef PDC_FONT_PATH
+# ifdef _WIN32
+#  define PDC_FONT_PATH "C:/Windows/Fonts/consola.ttf"
+# elif defined(__APPLE__)
+#  define PDC_FONT_PATH "/System/Library/Fonts/Menlo.ttc"
+# else
+#  define PDC_FONT_PATH "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf"
+#  define PDC_FONT_PATH2 "/usr/share/fonts/dejavu-sans-mono-fonts/DejaVuSansMono.ttf"
 # endif
+#endif
 TTF_Font *pdc_ttffont = NULL;
 int pdc_font_size =
-# ifdef _WIN32
+#ifdef _WIN32
  16;
-# else
+#else
  17;
-# endif
-int pdc_sdl_render_mode = PDC_SDL_RENDER_BLENDED;
 #endif
+int pdc_sdl_render_mode = PDC_SDL_RENDER_BLENDED;
+int pdc_sdl_scaling = 1;
 
 SDL_Window *pdc_window = NULL;
-SDL_Surface *pdc_screen = NULL, *pdc_font = NULL, *pdc_icon = NULL,
-            *pdc_back = NULL, *pdc_tileback = NULL;
+SDL_Renderer* pdc_renderer = NULL;
+SDL_Surface *pdc_icon = NULL;
+SDL_Texture *pdc_render_target = NULL;
+SDL_Texture** pdc_glyph_cache[4] = {NULL, NULL, NULL, NULL};
+int pdc_glyph_cache_size[4] = {0, 0, 0, 0};
 int pdc_sheight = 0, pdc_swidth = 0, pdc_yoffset = 0, pdc_xoffset = 0;
 
-int pdc_fheight, pdc_fwidth, pdc_fthick, pdc_flastc;
+int pdc_fheight, pdc_fwidth, pdc_fthick;
 bool pdc_own_window;
-
-#ifndef PDC_WIDE
-
-/* Load a bitmap from bmp_rw and also determine its palette size.
-   ->format->palette->ncolors may be greater than the actual size.
-   To get the real palette size, some custom bitmap parsing is needed. */
-
-static SDL_Surface *_load_bmp_and_palette_size(SDL_RWops *bmp_rw, int *palette_size)
-{
-    SDL_Surface *bmp = NULL;
-    Sint64 start_offset;
-
-    *palette_size = -1;
-    if (!bmp_rw)
-        return( NULL);
-
-    start_offset = SDL_RWtell(bmp_rw);
-
-    /* Non-monochromatic bitmaps only */
-    if( start_offset >= 0 && (bmp = SDL_LoadBMP_RW(bmp_rw, 0)) != NULL
-                            && bmp->format->palette)
-    {
-        *palette_size = bmp->format->palette->ncolors;
-
-        /* Offsets from https://en.wikipedia.org/wiki/BMP_file_format#DIB_header_(bitmap_information_header) */
-        if (SDL_RWseek(bmp_rw, start_offset + 14, RW_SEEK_SET) >= 0)
-        {
-            const Uint32 header_size = SDL_ReadLE32(bmp_rw);
-
-            /* If the info header is at least 40 bytes in size, palette size
-               information is available. */
-            if (header_size >= 40
-                    && SDL_RWseek(bmp_rw, start_offset + 46, RW_SEEK_SET) >= 0)
-            {
-                Uint32 num_colors = SDL_ReadLE32(bmp_rw);
-
-                if (num_colors > 0 && num_colors <= (Uint32)INT_MAX &&
-                    (int)num_colors <= bmp->format->palette->ncolors)
-                         *palette_size = (int)num_colors;
-                else
-                {
-                    /* Fall back to calculating num_colors from bits_per_pixel. */
-
-                    if (SDL_RWseek(bmp_rw, start_offset + 28, RW_SEEK_SET) >= 0)
-                    {
-                        const Uint16 bits_per_pixel = SDL_ReadLE16(bmp_rw);
-
-                        num_colors = (Uint32)1 << bits_per_pixel;
-                        if (num_colors > 0 && num_colors <= (Uint32)INT_MAX &&
-                            (int)num_colors <= bmp->format->palette->ncolors)
-                                      *palette_size = (int)num_colors;
-                    }
-                }
-            }
-        }
-    }
-
-    SDL_RWclose(bmp_rw);
-    return bmp;
-}
-
-#endif
 
 static void _clean(void)
 {
-#ifdef PDC_WIDE
     if (pdc_ttffont)
     {
         TTF_CloseFont(pdc_ttffont);
         TTF_Quit();
         pdc_ttffont = NULL;
     }
-#endif
-    if( pdc_tileback)
-        SDL_FreeSurface(pdc_tileback);
-    if( pdc_back)
-        SDL_FreeSurface(pdc_back);
     if( pdc_icon)
         SDL_FreeSurface(pdc_icon);
-    if( pdc_font)
-        SDL_FreeSurface(pdc_font);
-    if( pdc_screen)
-        SDL_FreeSurface(pdc_screen);
-    pdc_screen = pdc_tileback = pdc_back = pdc_icon = pdc_font = NULL;
+
+    pdc_icon = NULL;
+    for(int i = 0; i < 4; ++i)
+    {
+        for(int j = 0; j < pdc_glyph_cache_size[i]; ++j)
+        {
+            if(pdc_glyph_cache[i][j])
+                SDL_DestroyTexture(pdc_glyph_cache[i][j]);
+        }
+        if(pdc_glyph_cache[i])
+            free(pdc_glyph_cache[i]);
+        pdc_glyph_cache[i] = NULL;
+        pdc_glyph_cache_size[i] = 0;
+    }
+
+    if(pdc_render_target)
+    {
+        SDL_DestroyTexture(pdc_render_target);
+        pdc_render_target = NULL;
+    }
+
     if( pdc_own_window && pdc_window)
     {
+        if(pdc_renderer)
+            SDL_DestroyRenderer(pdc_renderer);
         SDL_DestroyWindow(pdc_window);
+        pdc_renderer = NULL;
         pdc_window = NULL;
     }
 
     SDL_Quit();
     pdc_sheight = pdc_swidth = 0;
-}
-
-void PDC_retile(void)
-{
-    if (pdc_tileback)
-        SDL_FreeSurface(pdc_tileback);
-
-    pdc_tileback = SDL_ConvertSurface(pdc_screen, pdc_screen->format, 0);
-    if (pdc_tileback == NULL)
-        return;
-
-    if (pdc_back)
-    {
-        SDL_Rect dest;
-
-        dest.y = 0;
-
-        while (dest.y < pdc_tileback->h)
-        {
-            dest.x = 0;
-
-            while (dest.x < pdc_tileback->w)
-            {
-                SDL_BlitSurface(pdc_back, 0, pdc_tileback, &dest);
-                dest.x += pdc_back->w;
-            }
-
-            dest.y += pdc_back->h;
-        }
-
-        SDL_BlitSurface(pdc_tileback, 0, pdc_screen, 0);
-    }
 }
 
 void PDC_scr_close(void)
@@ -208,9 +126,7 @@ int PDC_scr_open(void)
 {
     SDL_Event event;
     int displaynum = 0;
-#ifdef PDC_WIDE
     const char *ptsz, *fname;
-#endif
 
     PDC_LOG(("PDC_scr_open() - called\n"));
 
@@ -229,7 +145,6 @@ int PDC_scr_open(void)
         displaynum = _get_displaynum();
     }
 
-#ifdef PDC_WIDE
     if (TTF_Init() == -1)
     {
         fprintf(stderr, "Could not start SDL_TTF: %s\n", SDL_GetError());
@@ -275,45 +190,8 @@ int PDC_scr_open(void)
     TTF_SetFontHinting(pdc_ttffont, TTF_HINTING_MONO);
 
     SP->mono = FALSE;
-#else
-    if (pdc_font)
-    {
-        if (pdc_font->format->palette)
-            pdc_flastc = pdc_font->format->palette->ncolors - 1;
-    }
-    else
-    {
-        int palette_size;
 
-        const char *fname = getenv("PDC_FONT");
-        SDL_RWops *file = SDL_RWFromFile(fname ? fname : "pdcfont.bmp", "r");
-        if (file)
-            pdc_font = _load_bmp_and_palette_size(file, &palette_size);
-
-        if (!pdc_font)
-            pdc_font = _load_bmp_and_palette_size(
-                SDL_RWFromMem(font437, sizeof(font437)), &palette_size);
-
-        if (!pdc_font)
-        {
-            fprintf(stderr, "Could not load font\n");
-            return ERR;
-        }
-
-        if (pdc_font->format->palette)
-            pdc_flastc = palette_size - 1;
-    }
-
-    SP->mono = !pdc_font->format->palette;
-#endif
-
-    if (!SP->mono && !pdc_back)
-    {
-        const char *bname = getenv("PDC_BACKGROUND");
-        pdc_back = SDL_LoadBMP(bname ? bname : "pdcback.bmp");
-    }
-
-    if (!SP->mono && (pdc_back || !pdc_own_window))
+    if (!SP->mono && !pdc_own_window)
     {
         SP->orig_attr = TRUE;
         SP->orig_fore = COLOR_WHITE;
@@ -322,14 +200,8 @@ int PDC_scr_open(void)
     else
         SP->orig_attr = FALSE;
 
-#ifdef PDC_WIDE
     TTF_SizeText(pdc_ttffont, "W", &pdc_fwidth, &pdc_fheight);
     pdc_fthick = pdc_font_size / 20 + 1;
-#else
-    pdc_fheight = pdc_font->h / 8;
-    pdc_fwidth = pdc_font->w / 32;
-    pdc_fthick = 1;
-#endif
 
     if (pdc_own_window && !pdc_icon)
     {
@@ -341,6 +213,7 @@ int PDC_scr_open(void)
                                                     sizeof(iconbmp)), 0);
     }
 
+    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, 0);
     if (pdc_own_window)
     {
         if( !pdc_sheight)
@@ -360,7 +233,8 @@ int PDC_scr_open(void)
         pdc_window = SDL_CreateWindow("PDCurses",
             SDL_WINDOWPOS_CENTERED_DISPLAY(displaynum),
             SDL_WINDOWPOS_CENTERED_DISPLAY(displaynum),
-            pdc_swidth, pdc_sheight, SDL_WINDOW_RESIZABLE);
+            pdc_swidth * pdc_sdl_scaling, pdc_sheight * pdc_sdl_scaling,
+            SDL_WINDOW_RESIZABLE);
 
         if (pdc_window == NULL)
         {
@@ -368,8 +242,25 @@ int PDC_scr_open(void)
             return ERR;
         }
 
+        pdc_renderer = SDL_CreateRenderer(
+            pdc_window, -1, SDL_RENDERER_ACCELERATED// | SDL_RENDERER_PRESENTVSYNC
+        );
+
+        if (pdc_renderer == NULL)
+        {
+            fprintf(stderr, "Could not open SDL renderer: %s\n", SDL_GetError());
+            return ERR;
+        }
+
         SDL_SetWindowIcon(pdc_window, pdc_icon);
     }
+
+    int h, w;
+    SDL_GetWindowSize(pdc_window, &w, &h);
+    w /= pdc_sdl_scaling;
+    h /= pdc_sdl_scaling;
+    pdc_render_target = SDL_CreateTexture(pdc_renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, w, h);
+    SDL_SetRenderTarget(pdc_renderer, pdc_render_target);
 
     /* Events must be pumped before calling SDL_GetWindowSurface, or
        initial modifiers (e.g. numlock) will be ignored and out-of-sync. */
@@ -383,26 +274,11 @@ int PDC_scr_open(void)
             SDL_WINDOWEVENT_EXPOSED == event.window.event)
             break;
 
-    if( !pdc_screen)
-    {
-        pdc_screen = SDL_GetWindowSurface(pdc_window);
-
-        if( !pdc_screen)
-        {
-            fprintf(stderr, "Could not open SDL window surface: %s\n",
-                    SDL_GetError());
-            return ERR;
-        }
-    }
-
     if (!pdc_sheight)
-        pdc_sheight = pdc_screen->h - pdc_yoffset;
+        pdc_sheight = h - pdc_yoffset;
 
     if (!pdc_swidth)
-        pdc_swidth = pdc_screen->w - pdc_xoffset;
-
-    if (SP->orig_attr)
-        PDC_retile();
+        pdc_swidth = w - pdc_xoffset;
 
     SDL_StartTextInput();
 
@@ -413,9 +289,7 @@ int PDC_scr_open(void)
 
     SP->termattrs = A_COLOR | A_UNDERLINE | A_LEFT | A_RIGHT | A_REVERSE
                             | A_OVERLINE | A_STRIKEOUT;
-#ifdef PDC_WIDE
     SP->termattrs |= A_ITALIC;
-#endif
 
     PDC_reset_prog_mode();
 
@@ -456,11 +330,7 @@ int PDC_resize_screen(int nlines, int ncols)
         pdc_swidth = ncols * pdc_fwidth;
 
         SDL_SetWindowSize(pdc_window, pdc_swidth, pdc_sheight);
-        pdc_screen = SDL_GetWindowSurface(pdc_window);
     }
-
-    if (pdc_tileback)
-        PDC_retile();
 
     return OK;
 }

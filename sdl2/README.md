@@ -19,7 +19,7 @@ Building
 
 - The makefile recognizes the optional PDCURSES_SRCDIR environment
   variable, and the option "DEBUG=Y", as with the console ports.
-  "WIDE=Y" builds a version that not only uses 32-bit Unicode
+  "WIDE=Y" builds a version that not only uses 16-bit Unicode
   characters, but depends on the SDL2_ttf library, instead of using
   simple bitmap fonts. "UTF8=Y" makes PDCurses ignore the system locale,
   and treat all narrow-character strings as UTF-8; this option has no
@@ -67,17 +67,15 @@ directory at the time of initscr(). If neither is found, it uses the
 built-in default font encoded in font437.h.
 
 
-### 32-bit mode
+### 16-bit mode
 
 Instead of a BMP, PDC_FONT points to a TrueType font. Only true
 monospaced fonts work well. The font can be set at compile time via
 PDC_FONT_PATH, and/or at runtime via pdc_ttffont. The environment
 variable PDC_FONT_SIZE is also available to control the font size (also
 as a compile-time define, and at runtime as pdc_font_size.) The
-character mapping for chtypes is UTF-32. However, with SDL2_ttf versions
-older than 2.0.18, only the Basic Multilingual Plane characters are
-available.
-
+character mapping for chtypes is 16-bit Unicode (the Basic Multilingual
+Plane).
 
 The default font (if not redefined) is based on the OS:
 
@@ -159,10 +157,10 @@ for the font, icon, and background, respectively. You can set any or all
 of them before initscr(), and thus override any of the other ways to set
 them. But note that pdc_icon will be ignored if pdc_screen is preset.
 
-pdc_sdl_render_mode (in 32-bit mode) can be set to `PDC_SDL_RENDER_SOLID`, 
+pdc_sdl_render_mode (in 16-bit mode) can be set to `PDC_SDL_RENDER_SOLID`, 
 `PDC_SDL_RENDER_SHADED` or `PDC_SDL_RENDER_BLENDED`. This determines which SDL TTF
-render mode will be used for rendering text: `TTF_RenderGlyph32_Solid()`,
-`TTF_RenderGlyph32_Shaded()` or `TTF_RenderGlyph32_Blended()` respectively.
+render mode will be used for rendering text: `TTF_RenderUNICODE_Solid()`, 
+`TTF_RenderUNICODE_Shaded()` or `TTF_RenderUNICODE_Blended()` respectively. 
 This will default to `PDC_SDL_RENDER_BLENDED`. If you wish to use this feature 
 without including `pdcsdl.h`, you must define the following constants:
 
