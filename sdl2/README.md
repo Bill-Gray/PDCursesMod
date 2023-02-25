@@ -19,7 +19,7 @@ Building
 
 - The makefile recognizes the optional PDCURSES_SRCDIR environment
   variable, and the option "DEBUG=Y", as with the console ports.
-  "WIDE=Y" builds a version that not only uses 16-bit Unicode
+  "WIDE=Y" builds a version that not only uses 32-bit Unicode
   characters, but depends on the SDL2_ttf library, instead of using
   simple bitmap fonts. "UTF8=Y" makes PDCurses ignore the system locale,
   and treat all narrow-character strings as UTF-8; this option has no
@@ -67,15 +67,17 @@ directory at the time of initscr(). If neither is found, it uses the
 built-in default font encoded in font437.h.
 
 
-### 16-bit mode
+### 32-bit mode
 
 Instead of a BMP, PDC_FONT points to a TrueType font. Only true
 monospaced fonts work well. The font can be set at compile time via
 PDC_FONT_PATH, and/or at runtime via pdc_ttffont. The environment
 variable PDC_FONT_SIZE is also available to control the font size (also
 as a compile-time define, and at runtime as pdc_font_size.) The
-character mapping for chtypes is 16-bit Unicode (the Basic Multilingual
-Plane).
+character mapping for chtypes is UTF-32. However, with SDL2_ttf versions
+older than 2.0.18, only the Basic Multilingual Plane characters are
+available.
+
 
 The default font (if not redefined) is based on the OS:
 
@@ -132,42 +134,34 @@ external variables and functions specific to the SDL ports; you could
 include pdcsdl.h, or just add the declarations you need in your code:
 
     PDCEX SDL_Window *pdc_window;
-    PDCEX SDL_Surface *pdc_screen, *pdc_font, *pdc_icon, *pdc_back;
+    PDCEX SDL_Renderer *pdc_renderer;
+    PDCEX SDL_Surface *pdc_icon;
+    PDCEX SDL_Texture *pdc_render_target;
     PDCEX int pdc_sheight, pdc_swidth, pdc_yoffset, pdc_xoffset, pdc_sdl_render_mode;
 
-    PDCEX void PDC_update_rects(void);
-    PDCEX void PDC_retile(void);
+pdc_window is the main window, created by SDL_CreateWindow(), unless it's
+preset before initscr(); and pdc_renderer is the renderer. You can perform
+normal SDL operations on this renderer, but PDCurses won't respect them when it
+updates. As an alternative, you can preinitialize this surface before calling
+initscr(). In that case, you can use pdc_sheight, pdc_swidth, pdc_yoffset
+and/or pdc_xoffset (q.v.) to confine PDCurses to only a specific area of the
+renderer, reserving the rest for other SDL operations. If you preinitialize
+pdc_window, you'll have to close it yourself; PDCurses will ignore resize
+events, and won't try to set the icon.
 
-pdc_window is the main window, created by SDL_CreateWindow(), unless
-it's preset before initscr(); and pdc_screen is the main surface, set by
-SDL_GetWindowSurface(pdc_window). (See sdltest.c for examples.) You can
-perform normal SDL operations on this surface, but PDCurses won't
-respect them when it updates. (For that, see PDC_retile().) As an
-alternative, you can preinitialize this surface before calling
-initscr(). In that case, you can use pdc_sheight, pdc_swidth,
-pdc_yoffset and/or pdc_xoffset (q.v.) to confine PDCurses to only a
-specific area of the surface, reserving the rest for other SDL
-operations. If you preinitialize pdc_window, you'll have to close it
-yourself; PDCurses will ignore resize events, and won't try to set the
-icon. Also note that if you preinitialize pdc_screen, it need not be the
-display surface.
+pdc_icon is the SDL_surface for the icon. You can set it before initscr(), and
+thus override any of the other ways to set it.
 
-pdc_font (in 8-bit mode), pdc_icon, and pdc_back are the SDL_surfaces
-for the font, icon, and background, respectively. You can set any or all
-of them before initscr(), and thus override any of the other ways to set
-them. But note that pdc_icon will be ignored if pdc_screen is preset.
-
-pdc_sdl_render_mode (in 16-bit mode) can be set to `PDC_SDL_RENDER_SOLID`, 
-`PDC_SDL_RENDER_SHADED` or `PDC_SDL_RENDER_BLENDED`. This determines which SDL TTF
-render mode will be used for rendering text: `TTF_RenderUNICODE_Solid()`, 
-`TTF_RenderUNICODE_Shaded()` or `TTF_RenderUNICODE_Blended()` respectively. 
-This will default to `PDC_SDL_RENDER_BLENDED`. If you wish to use this feature 
-without including `pdcsdl.h`, you must define the following constants:
+pdc_sdl_render_mode (in 32-bit mode) can be set to `PDC_SDL_RENDER_SOLID` or
+`PDC_SDL_RENDER_BLENDED`. This determines which SDL TTF render mode will be
+used for rendering text: `TTF_RenderGlyph32_Solid()` or
+`TTF_RenderGlyph32_Blended()` respectively. This will default to
+`PDC_SDL_RENDER_BLENDED`. If you wish to use this feature without including
+`pdcsdl.h`, you must define the following constants:
 
 ```
 #define PDC_SDL_RENDER_SOLID 1
-#define PDC_SDL_RENDER_SHADED 2
-#define PDC_SDL_RENDER_BLENDED 3
+#define PDC_SDL_RENDER_BLENDED 2
 ```
 
 pdc_sheight and pdc_swidth are the dimensions of the area of pdc_screen
@@ -177,19 +171,6 @@ as appropriate.
 
 pdc_xoffset and pdc_yoffset are the x and y offset for the area of
 pdc_screen to be used by PDCurses. See the sdltest demo for an example.
-
-PDC_retile() makes a copy of pdc_screen, then tiles it with the
-background image, if any. The resulting surface is used as the
-background for transparent character cells. PDC_retile() is called from
-initscr() and resize_term(). However, you can also use it at other
-times, to take advantage of the way it copies pdc_screen: Draw some SDL
-stuff; call PDC_retile(); do some curses stuff -- it will use whatever
-was on pdc_screen as the background. Then you can erase the curses
-screen, do some more SDL stuff, and call PDC_retile() again to make a
-new background. (If you don't erase the curses screen, it will be
-incorporated into the background when you call PDC_retile().) But this
-only works if no background image is set.
-
 
 Interaction with stdio
 ----------------------
