@@ -92,10 +92,14 @@ int PDC_set_bold(bool boldon)
     if (!SP)
         return ERR;
 
+#ifdef PDC_WIDE
     if (boldon)
         SP->termattrs |= A_BOLD;
     else
         SP->termattrs &= ~A_BOLD;
 
     return OK;
+#else
+    return boldon ? ERR : OK;
+#endif
 }

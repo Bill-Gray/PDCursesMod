@@ -5,14 +5,17 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define USE_UNICODE_ACS_CHARS 1
+# ifdef PDC_WIDE
+#  define USE_UNICODE_ACS_CHARS 1
+# else
+#  define USE_UNICODE_ACS_CHARS 0
+# endif
 
 # include "../common/acs_defs.h"
 # include "../common/pdccolor.h"
 
 static chtype oldch = (chtype)(-1);    /* current attribute */
 static int foregr = -2, backgr = -2; /* current foreground, background */
-static int cache_attr_index = 0;
 static bool blinked_off = FALSE;
 
 static SDL_Color get_pdc_color( const int color_idx)
@@ -26,6 +29,8 @@ static SDL_Color get_pdc_color( const int color_idx)
     return c;
 }
 
+#ifdef PDC_WIDE
+static int cache_attr_index = 0;
 static SDL_Texture* get_glyph_texture(Uint32 ch32)
 {
     SDL_Texture* glyph = NULL;
@@ -88,6 +93,7 @@ static SDL_Texture* get_glyph_texture(Uint32 ch32)
     SDL_SetTextureColorMod(glyph, color.r, color.g, color.b);
     return glyph;
 }
+#endif
 
 static void fill_rect(SDL_Rect* rect, SDL_Color col)
 {
@@ -106,6 +112,7 @@ static void _set_attr(chtype ch)
 {
     attr_t sysattrs = SP->termattrs;
 
+#ifdef PDC_WIDE
     int bold = (ch & A_BOLD) && (sysattrs & A_BOLD);
     int italic = (ch & A_ITALIC) && (sysattrs & A_ITALIC);
     cache_attr_index = (bold ? 1 : 0) | (italic ? 2 : 0);
@@ -113,6 +120,7 @@ static void _set_attr(chtype ch)
         pdc_ttffont,
         (bold ? TTF_STYLE_BOLD : 0) | (italic ? TTF_STYLE_ITALIC : 0)
     );
+#endif
 
     ch &= (A_COLOR|A_BOLD|A_BLINK|A_REVERSE);
 
@@ -137,13 +145,19 @@ static void _set_attr(chtype ch)
             newbg = tmp;
         }
 
-        if (newfg != foregr)
-        {
-            foregr = newfg;
-        }
+        foregr = newfg;
 
         if (newbg != backgr)
         {
+#ifndef PDC_WIDE
+            if (newbg == -1)
+                SDL_SetColorKey(pdc_font, SDL_TRUE, 0);
+            else
+            {
+                if (backgr == -1)
+                    SDL_SetColorKey(pdc_font, SDL_FALSE, 0);
+            }
+#endif
             backgr = newbg;
         }
 
@@ -151,6 +165,7 @@ static void _set_attr(chtype ch)
     }
 }
 
+#ifdef PDC_WIDE
 /* Draw some of the ACS_* "graphics" */
 
 #define BIT_UP       1
@@ -235,6 +250,7 @@ static bool _grprint(chtype ch, const SDL_Rect dest)
         rval = FALSE;   /* didn't draw it -- fall back to acs_map */
     return( rval);
 }
+#endif
 
 /* draw a cursor at (y, x) */
 
@@ -256,7 +272,7 @@ void PDC_gotoyx(int row, int col)
 
     if (!SP->visibility)
     {
-        //PDC_doupdate();
+        PDC_doupdate();
         return;
     }
 
@@ -276,6 +292,7 @@ void PDC_gotoyx(int row, int col)
     dest.h = src.h;
     dest.w = src.w;
 
+#ifdef PDC_WIDE
     fill_rect(&dest, get_pdc_color( backgr));
 
     if (!(SP->visibility == 2 && _is_altcharset( ch) &&
@@ -301,56 +318,34 @@ void PDC_gotoyx(int row, int col)
             glyph = NULL;
         }
     }
+#else
+    if( _is_altcharset( ch))
+        ch = acs_map[ch & 0x7f];
 
-    //PDC_doupdate();
-}
+    src.x = (ch & 0xff) % 32 * pdc_fwidth;
+    src.y = (ch & 0xff) / 32 * pdc_fheight + (pdc_fheight - src.h);
 
-static bool _merge_rects( SDL_Rect *a, const SDL_Rect *b)
-{
-    if( a->x == b->x && a->w == b->w)
-    {
-        const int ay = a->y + a->h;
-        const int by = b->y + b->h;
+    SDL_RenderCopy(pdc_renderer, pdc_font, &src, &dest);
+#endif
 
-        if( ay >= b->y && by >= a->y)
-        {
-            const int y1 = min( a->y, b->y);
-            const int y2 = max( ay, by);
-
-            a->y = y1;
-            a->h = y2 - y1;
-            return TRUE;
-        }
-    }
-    if( a->y == b->y && a->h == b->h)
-    {
-        const int ax = a->x + a->w;
-        const int bx = b->x + b->w;
-
-        if( ax >= b->x && bx >= a->x)
-        {
-            const int x1 = min( a->x, b->x);
-            const int x2 = max( ax, bx);
-
-            a->x = x1;
-            a->w = x2 - x1;
-            return TRUE;
-        }
-    }
-    return FALSE;
+    PDC_doupdate();
 }
 
 void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
 {
     SDL_Rect src, dest;
     int j;
+#ifdef PDC_WIDE
     Uint32 prev_ch = 0;
+#endif
     attr_t sysattrs = SP->termattrs;
     short hcol = SP->line_color;
     bool blink = blinked_off && (attr & A_BLINK) && (sysattrs & A_BLINK);
 
+#ifdef PDC_WIDE
     src.x = 0;
     src.y = 0;
+#endif
     src.h = pdc_fheight;
     src.w = pdc_fwidth;
 
@@ -361,7 +356,9 @@ void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
 
     _set_attr(attr);
 
+#ifdef PDC_WIDE
     fill_rect(&dest, get_pdc_color( backgr));
+#endif
 
     if (hcol == -1)
         hcol = (short)foregr;
@@ -378,14 +375,17 @@ void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
 
         if( _is_altcharset( ch))
         {
+#ifdef PDC_WIDE
             if (_grprint(ch & (0x7f | A_ALTCHARSET), dest))
             {
                 dest.x += pdc_fwidth;
                 continue;
             }
+#endif
             ch = acs_map[ch & 0x7f];
         }
 
+#ifdef PDC_WIDE
         ch &= A_CHARTEXT;
 
         if (ch != ' ')
@@ -407,6 +407,12 @@ void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
                 dest.x -= center;
             }
         }
+#else
+        src.x = (ch & 0xff) % 32 * pdc_fwidth;
+        src.y = (ch & 0xff) / 32 * pdc_fheight;
+
+        SDL_RenderCopy(pdc_renderer, pdc_font, &src, &dest);
+#endif
 
         if (!blink && (attr & (A_LEFT | A_RIGHT)))
         {

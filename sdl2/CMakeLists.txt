@@ -11,9 +11,11 @@ message(STATUS "${PROJECT_NAME} version: ${PROJECT_VERSION}")
 message(STATUS "SDL2_LIBRARIES = ${SDL2_LIBRARIES}")
 message(STATUS "SDL2_INCLUDE_DIR = ${SDL2_INCLUDE_DIR}")
 message(STATUS "SDL2_LIBRARY_DIR = ${SDL2_LIBRARY_DIR}")
-message(STATUS "SDL2_TTF_LIBRARY = ${SDL2_TTF_LIBRARY}")
-message(STATUS "SDL2_TTF_INCLUDE_DIR = ${SDL2_TTF_INCLUDE_DIR}")
-message(STATUS "SDL2_TTF_LIBRARY_DIR = ${SDL2_TTF_LIBRARY_DIR}")
+if(PDC_WIDE OR PDC_UTF8)
+    message(STATUS "SDL2_TTF_LIBRARY = ${SDL2_TTF_LIBRARY}")
+    message(STATUS "SDL2_TTF_INCLUDE_DIR = ${SDL2_TTF_INCLUDE_DIR}")
+    message(STATUS "SDL2_TTF_LIBRARY_DIR = ${SDL2_TTF_LIBRARY_DIR}")
+endif()
 
 include_directories(${SDL2_INCLUDE_DIR} ${SDL2_TTF_INCLUDE_DIR})
 link_directories(${SDL2_LIBRARY_DIR} ${SDL2_TTF_LIBRARY_DIR})
@@ -36,15 +38,19 @@ macro (sdl2_app dir targ)
         add_executable(${bin_name} ${src_files})
     endif()
 
-    target_link_libraries(${bin_name} ${PDCURSE_PROJ} ${EXTRA_LIBS}
-        "${SDL2_LIBRARIES};${SDL2_TTF_LIBRARY};${FT2_LIBRARY};${ZLIB_LIBRARY};${SDL2_DEP_LIBRARIES}")
+    if(PDC_WIDE OR PDC_UTF8)
+        target_link_libraries(${bin_name} ${PDCURSE_PROJ} ${EXTRA_LIBS}
+            "${SDL2_LIBRARIES};${SDL2_TTF_LIBRARY};${FT2_LIBRARY};${ZLIB_LIBRARY};${SDL2_DEP_LIBRARIES}")
+    else()
+        target_link_libraries(${bin_name} ${PDCURSE_PROJ} ${EXTRA_LIBS}
+        "${SDL2_LIBRARIES};${SDL2_TTF_DEP_LIBRARIES};${SDL2_DEP_LIBRARIES}")
+    endif()
 
     add_dependencies(${bin_name} ${PDCURSE_PROJ})
     set_target_properties(${bin_name} PROPERTIES OUTPUT_NAME ${targ})
 
-    if(PDC_INSTALL_TARGETS)
-        install(TARGETS ${bin_name} RUNTIME DESTINATION ${PDCURSES_DIST}/bin/${PROJECT_NAME} COMPONENT applications)
-    endif()
+    install(TARGETS ${bin_name} RUNTIME DESTINATION ${PDCURSES_DIST}/bin/${PROJECT_NAME} COMPONENT applications)
+    
 endmacro ()
 
 sdl2_app(../demos version)
@@ -60,9 +66,11 @@ sdl2_app(../demos xmas)
 sdl2_app(./ sdltest)
 
 if(PDC_SDL2_DEPS_BUILD)
-    add_dependencies(${PDCURSE_PROJ} sdl2_ext sdl2_ttf_ext)
-    target_link_libraries(${PDCURSE_PROJ} ${EXTRA_LIBS} "${SDL2_LIBRARIES};${SDL2_TTF_LIBRARY};${FT2_LIBRARY};${ZLIB_LIBRARY};${SDL2_DEP_LIBRARIES}")
-    target_include_directories(${PDCURSE_PROJ} PUBLIC ${SDL2_INCLUDE_DIR} ${SDL2_TTF_INCLUDE_DIR})
+    if(PDC_WIDE OR PDC_UTF8)
+        add_dependencies(${PDCURSE_PROJ} sdl2_ext sdl2_ttf_ext)
+    else()
+        add_dependencies(${PDCURSE_PROJ} sdl2_ext)
+    endif()
 endif()
 
 set(CPACK_COMPONENTS_ALL applications)
