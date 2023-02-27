@@ -58,6 +58,12 @@ else()
         
     endif()
 
+    if(PDC_GL_BUILD)
+    
+        add_subdirectory(gl)
+        
+    endif()
+
     if(UNIX)
         add_subdirectory(vt)
     endif()

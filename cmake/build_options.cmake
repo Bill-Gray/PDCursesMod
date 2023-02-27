@@ -10,6 +10,7 @@ option(PDC_DOSVGA_BUILD "Build DOSVGA Project" OFF)
 option(PDC_DOSVT_BUILD "Build VT Project" OFF)
 option(PDC_SDL2_BUILD "Build SDL2 Project" ON)
 option(PDC_SDL2_DEPS_BUILD "Build SDL2 and dependencies" ON)
+option(PDC_GL_BUILD "Build OpenGL Project" ON)
 
 message(STATUS "PDC_BUILD_SHARED ....... ${PDC_BUILD_SHARED}")
 message(STATUS "PDC_UTF8 ............... ${PDC_UTF8}")
