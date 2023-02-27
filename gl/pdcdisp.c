@@ -18,6 +18,59 @@ static chtype oldch = (chtype)(-1);    /* current attribute */
 static int foregr = -2, backgr = -2; /* current foreground, background */
 static bool blinked_off = FALSE;
 
+struct vertex_data
+{
+    int x;
+    int y;
+    float bg_r, bg_g, bg_b;
+    float fg_r, fg_g, fg_b;
+    int glyph;
+    int attr;
+};
+
+static struct vertex_data* vertices = NULL;
+static size_t vertices_w = 0, vertices_h = 0;
+
+static void ensure_vertices()
+{
+    if(COLS != vertices_w || LINES != vertices_h)
+    {
+        struct vertex_data* new_vertices = malloc(sizeof(struct vertex_data) * 6 * LINES * COLS);
+
+        for(int j = 0; j < LINES; ++j)
+        for(int i = 0; i < COLS; ++i)
+        {
+            struct vertex_data* vd = &new_vertices[(i + j * COLS) * 6];
+            for(int k = 0; k < 6; ++k)
+            {
+                vd[k].bg_r = vd[k].bg_g = vd[k].bg_b = 0.0f;
+                vd[k].fg_r = vd[k].fg_g = vd[k].fg_b = 0.0f;
+                vd[k].glyph = -1;
+                vd[k].attr = 0;
+            }
+            vd[0].x = vd[1].x = vd[3].x = i;
+            vd[2].x = vd[4].x = vd[5].x = i+1;
+            vd[0].y = vd[2].y = vd[5].y = j;
+            vd[1].y = vd[3].y = vd[4].y = j+1;
+        }
+
+        for(int j = 0; j < vertices_h && j < LINES; ++j)
+        for(int i = 0; i < vertices_w && i < COLS; ++i)
+        {
+            memcpy(
+                &new_vertices[(i + j * COLS) * 6],
+                &vertices[(i + j * vertices_w) * 6],
+                sizeof(struct vertex_data) * 6
+            );
+        }
+
+        free(vertices);
+        vertices = new_vertices;
+        vertices_w = COLS;
+        vertices_h = LINES;
+    }
+}
+
 static SDL_Color get_pdc_color( const int color_idx)
 {
     SDL_Color c;
@@ -30,18 +83,16 @@ static SDL_Color get_pdc_color( const int color_idx)
 }
 
 static int cache_attr_index = 0;
-static SDL_Texture* get_glyph_texture(Uint32 ch32)
+static int get_glyph_texture_index(Uint32 ch32)
 {
-    SDL_Texture* glyph = NULL;
-    SDL_Color color = get_pdc_color(foregr);
     SDL_Color white = {255,255,255,255};
 
     int *cache_size = &pdc_glyph_cache_size[cache_attr_index];
-    SDL_Texture*** cache = &pdc_glyph_cache[cache_attr_index];
+    int **cache = &pdc_glyph_cache[cache_attr_index];
 
-    if(ch32 < *cache_size && (*cache)[ch32] != NULL)
+    if(ch32 < *cache_size && (*cache)[ch32] != -1)
     {
-        glyph = (*cache)[ch32];
+        return (*cache)[ch32];
     }
     else
     {
@@ -56,38 +107,111 @@ static SDL_Texture* get_glyph_texture(Uint32 ch32)
 
         surf = TTF_RenderGlyph_Blended(pdc_ttffont, (Uint16)ch32, white);
 #endif
-        glyph = SDL_CreateTextureFromSurface(pdc_renderer, surf);
+        int index = pdc_glyph_index++;
+        if(index >= pdc_glyph_capacity)
+        {
+            GLuint new_font_texture = 0;
+            glGenTextures(1, &new_font_texture);
+            glBindTexture(GL_TEXTURE_2D_ARRAY, new_font_texture);
+            glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+            glTexImage3D(
+                GL_TEXTURE_2D_ARRAY,
+                0,
+                GL_RGBA8,
+                pdc_fwidth,
+                pdc_fheight,
+                pdc_glyph_capacity * 2,
+                0,
+                GL_RGBA,
+                GL_UNSIGNED_BYTE,
+                NULL
+            );
+            // And this is why we require OpenGL 4.3 instead of 3.3...
+            glCopyImageSubData(
+                pdc_font_texture, GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0,
+                new_font_texture, GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0,
+                pdc_fwidth, pdc_fheight, pdc_glyph_capacity
+            );
+            glDeleteTextures(1, &pdc_font_texture);
+            pdc_font_texture = new_font_texture;
+            pdc_glyph_capacity *= 2;
+        }
+        SDL_LockSurface(surf);
+        // ffs...
+        glPixelStorei(GL_UNPACK_ROW_LENGTH, surf->pitch/surf->format->BytesPerPixel);
+        glTexSubImage3D(
+            GL_TEXTURE_2D_ARRAY,
+            0,
+            0,
+            0,
+            index,
+            pdc_fwidth,
+            pdc_fheight,
+            1,
+            GL_BGRA,
+            GL_UNSIGNED_INT_8_8_8_8_REV,
+            surf->pixels
+        );
+        SDL_UnlockSurface(surf);
         SDL_FreeSurface(surf);
 
         if(ch32 >= *cache_size)
         {
             int new_cache_size = *cache_size;
             if(new_cache_size == 0) new_cache_size = 256;
-            while(new_cache_size < ch32) (new_cache_size) *= 2;
+            while(new_cache_size < ch32) new_cache_size *= 2;
 
-            *cache = realloc(*cache, sizeof(SDL_Texture*)*new_cache_size);
+            *cache = realloc(*cache, sizeof(int)*new_cache_size);
             memset(
-                (*cache) + *cache_size, 0,
-                sizeof(SDL_Texture*)*(new_cache_size - *cache_size)
+                (*cache) + *cache_size, -1,
+                sizeof(int)*(new_cache_size - *cache_size)
             );
             *cache_size = new_cache_size;
         }
-        (*cache)[ch32] = glyph;
+        (*cache)[ch32] = index;
+        return index;
     }
-
-    SDL_SetTextureColorMod(glyph, color.r, color.g, color.b);
-    return glyph;
 }
 
-static void fill_rect(SDL_Rect* rect, SDL_Color col)
+static void draw_background(int y, int x, SDL_Color background)
 {
-    SDL_SetRenderDrawColor(pdc_renderer, col.r, col.g, col.b, col.a);
-    SDL_RenderFillRect(pdc_renderer, rect);
+    ensure_vertices();
+    struct vertex_data* vd = &vertices[(x + y * COLS) * 6];
+    for(int i = 0; i < 6; ++i)
+    {
+        vd[i].bg_r = background.r * (1.0f / 255.0f);
+        vd[i].bg_g = background.g * (1.0f / 255.0f);
+        vd[i].bg_b = background.b * (1.0f / 255.0f);
+        vd[i].glyph = -1;
+        vd[i].attr = 0;
+    }
 }
 
-static void blit_texture(SDL_Texture* glyph, SDL_Rect* src, SDL_Rect* dest)
+static void draw_glyph(int y, int x, attr_t attr, int glyph_index, SDL_Color foreground)
 {
-    SDL_RenderCopy(pdc_renderer, glyph, src, dest);
+    ensure_vertices();
+    struct vertex_data* vd = &vertices[(x + y * COLS) * 6];
+    for(int i = 0; i < 6; ++i)
+    {
+        vd[i].fg_r = foreground.r * (1.0f / 255.0f);
+        vd[i].fg_g = foreground.g * (1.0f / 255.0f);
+        vd[i].fg_b = foreground.b * (1.0f / 255.0f);
+        vd[i].glyph = glyph_index;
+        // TODO: Other attributes?
+        vd[i].attr = 0;
+    }
+}
+
+static void draw_cursor(int y, int x)
+{
+    ensure_vertices();
+    struct vertex_data* vd = &vertices[(x + y * COLS) * 6];
+    for(int i = 0; i < 6; ++i)
+        vd[i].attr = 1;
 }
 
 /* set the font colors to match the chtype's attribute */
@@ -143,96 +267,10 @@ static void _set_attr(chtype ch)
     }
 }
 
-/* Draw some of the ACS_* "graphics" */
-
-#define BIT_UP       1
-#define BIT_DN       2
-#define BIT_RT       4
-#define BIT_LT       8
-#define HORIZ   (BIT_LT | BIT_RT)
-#define VERTIC  (BIT_UP | BIT_DN)
-         /* Macros used for deciphering ACS_S1, ACS_S3, ACS_S7, ACS_S9     */
-#define Sn_CHARS      0x10
-#define SCAN_LINE( n)      (Sn_CHARS | ((n - 1) << 8))
-
-static bool _grprint(chtype ch, const SDL_Rect dest)
-{
-    int i = 0;
-    bool rval;
-    const int remap_tbl[] = {
-            ACS_ULCORNER, BIT_DN | BIT_RT,   ACS_LLCORNER, BIT_UP | BIT_RT,
-            ACS_URCORNER, BIT_DN | BIT_LT,   ACS_LRCORNER, BIT_UP | BIT_LT,
-            ACS_LTEE, VERTIC | BIT_RT,       ACS_RTEE, VERTIC | BIT_LT,
-            ACS_TTEE, HORIZ | BIT_DN,        ACS_BTEE, HORIZ | BIT_UP,
-            ACS_HLINE, HORIZ,                ACS_VLINE, VERTIC,
-            ACS_PLUS, HORIZ | VERTIC,        ACS_BLOCK, 0,
-            ACS_S1, HORIZ | SCAN_LINE( 1),     ACS_S3, HORIZ | SCAN_LINE( 3),
-            ACS_S7, HORIZ | SCAN_LINE( 7),     ACS_S9, HORIZ | SCAN_LINE( 9),    0 };
-
-    while( remap_tbl[i] && remap_tbl[i] != (int)ch)
-        i += 2;
-    if( remap_tbl[i] == (int)ch)
-    {
-        const int hmid = (pdc_fheight - pdc_fthick) >> 1;
-        const int wmid = (pdc_fwidth - pdc_fthick) >> 1;
-        const int mask = remap_tbl[i + 1];
-        SDL_Rect temp = dest;
-        const SDL_Color col = get_pdc_color( foregr);
-
-        if( ch == ACS_BLOCK)
-            fill_rect(&temp, col);
-        if( mask & HORIZ)
-        {
-            temp.h = pdc_fthick;
-            if( mask & Sn_CHARS)    /* extract scan line for ACS_Sn characters */
-                temp.y += (mask >> 8) * hmid >> 2;
-            else
-                temp.y += hmid;
-            switch( mask & HORIZ)
-            {
-                case BIT_RT:
-                    temp.x += wmid;
-                    temp.w -= wmid;
-                    break;
-                case BIT_LT:
-                    temp.w = wmid + pdc_fthick;
-                    break;
-                case HORIZ:
-                    break;
-            }
-            fill_rect(&temp, col);
-        }
-        temp = dest;
-        if( mask & VERTIC)
-        {
-            temp.x += wmid;
-            temp.w = pdc_fthick;
-            switch( mask & VERTIC)
-            {
-                case BIT_DN:
-                    temp.y += hmid;
-                    temp.h -= hmid;
-                    break;
-                case BIT_UP:
-                    temp.h = hmid + pdc_fthick;
-                    break;
-                case VERTIC:
-                    break;
-            }
-            fill_rect(&temp, col);
-        }
-        rval = TRUE;
-    }
-    else
-        rval = FALSE;   /* didn't draw it -- fall back to acs_map */
-    return( rval);
-}
-
 /* draw a cursor at (y, x) */
 
 void PDC_gotoyx(int row, int col)
 {
-    SDL_Rect src, dest;
     chtype ch;
     int oldrow, oldcol;
 
@@ -260,146 +298,51 @@ void PDC_gotoyx(int row, int col)
 
     _set_attr(ch);
 
-    src.h = (SP->visibility == 1) ? pdc_fheight >> 2 : pdc_fheight;
-    src.w = pdc_fwidth;
+    if( _is_altcharset( ch))
+        ch = acs_map[ch & 0x7f];
 
-    dest.y = (row + 1) * pdc_fheight - src.h;
-    dest.x = col * pdc_fwidth;
-    dest.h = src.h;
-    dest.w = src.w;
+    Uint32 ch32 = (Uint32)(ch & A_CHARTEXT);
 
-    fill_rect(&dest, get_pdc_color( backgr));
+    int glyph = get_glyph_texture_index(ch32);
 
-    if (!(SP->visibility == 2 && _is_altcharset( ch) &&
-        _grprint(ch & (0x7f | A_ALTCHARSET), dest)))
-    {
-        if( _is_altcharset( ch))
-            ch = acs_map[ch & 0x7f];
+    if (glyph >= 0)
+        draw_glyph(row, col, ch & A_ATTRIBUTES, glyph, get_pdc_color(foregr));
 
-        Uint32 ch32 = (Uint32)(ch & A_CHARTEXT);
-
-        SDL_Texture* glyph = get_glyph_texture(ch32);
-
-        if (glyph)
-        {
-            int w = 0;
-            SDL_QueryTexture(glyph, NULL, NULL, &w, NULL);
-            int center = pdc_fwidth > w ? (pdc_fwidth - w) >> 1 : 0;
-            src.x = 0;
-            src.y = pdc_fheight - src.h;
-            dest.x += center;
-            blit_texture(glyph, &src, &dest);
-            dest.x -= center;
-            glyph = NULL;
-        }
-    }
+    draw_cursor(row, col);
 
     PDC_doupdate();
 }
 
 void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
 {
-    SDL_Rect src, dest;
     int j;
-    Uint32 prev_ch = 0;
     attr_t sysattrs = SP->termattrs;
-    short hcol = SP->line_color;
     bool blink = blinked_off && (attr & A_BLINK) && (sysattrs & A_BLINK);
-
-    src.x = 0;
-    src.y = 0;
-    src.h = pdc_fheight;
-    src.w = pdc_fwidth;
-
-    dest.y = pdc_fheight * lineno;
-    dest.x = pdc_fwidth * x;
-    dest.h = pdc_fheight;
-    dest.w = pdc_fwidth * len;
 
     _set_attr(attr);
 
-    fill_rect(&dest, get_pdc_color( backgr));
-
-    if (hcol == -1)
-        hcol = (short)foregr;
-
-    SDL_Texture* glyph = NULL;
     for (j = 0; j < len; j++)
     {
         chtype ch = srcp[j];
 
-        if (blink)
-            ch = ' ';
+        draw_background(lineno, x+j, get_pdc_color(backgr));
 
-        dest.w = pdc_fwidth;
+        if (blink) ch = ' ';
 
         if( _is_altcharset( ch))
-        {
-            if (_grprint(ch & (0x7f | A_ALTCHARSET), dest))
-            {
-                dest.x += pdc_fwidth;
-                continue;
-            }
             ch = acs_map[ch & 0x7f];
-        }
 
         ch &= A_CHARTEXT;
 
         if (ch != ' ')
         {
-            if (prev_ch != ch)
-            {
-                prev_ch = ch;
-
-                glyph = get_glyph_texture(prev_ch);
-            }
-
-            if (glyph)
-            {
-                int w = 0;
-                SDL_QueryTexture(glyph, NULL, NULL, &w, NULL);
-                int center = pdc_fwidth > w ? (pdc_fwidth - w) >> 1 : 0;
-                dest.x += center;
-                blit_texture(glyph, &src, &dest);
-                dest.x -= center;
-            }
+            int glyph = get_glyph_texture_index(ch);
+            if(glyph)
+                draw_glyph(lineno, x+j, attr, glyph, get_pdc_color(foregr));
         }
-
-        if (!blink && (attr & (A_LEFT | A_RIGHT)))
+        else
         {
-            dest.w = pdc_fthick;
-
-            if (attr & A_LEFT)
-                fill_rect(&dest, get_pdc_color( hcol));
-
-            if (attr & A_RIGHT)
-            {
-                dest.x += pdc_fwidth - pdc_fthick;
-                fill_rect(&dest, get_pdc_color( hcol));
-                dest.x -= pdc_fwidth - pdc_fthick;
-            }
-        }
-
-        dest.x += pdc_fwidth;
-    }
-
-    if (!blink && (attr & (A_UNDERLINE | A_OVERLINE | A_STRIKEOUT)))
-    {
-        dest.x = pdc_fwidth * x;
-        dest.h = pdc_fthick;
-        dest.w = pdc_fwidth * len;
-        if( attr & A_OVERLINE)
-           fill_rect(&dest, get_pdc_color( hcol));
-        if( attr & A_UNDERLINE)
-        {
-           dest.y += pdc_fheight - pdc_fthick;
-           fill_rect(&dest, get_pdc_color( hcol));
-           dest.y -= pdc_fheight - pdc_fthick;
-        }
-        if( attr & A_STRIKEOUT)
-        {
-           dest.y += (pdc_fheight - pdc_fthick) / 2;
-           fill_rect(&dest, get_pdc_color( hcol));
+            draw_glyph(lineno, x+j, attr, -1, get_pdc_color(foregr));
         }
     }
 }
@@ -485,11 +428,22 @@ void PDC_blink_text(void)
 
 void PDC_doupdate(void)
 {
-    SDL_SetRenderTarget(pdc_renderer, NULL);
-    SDL_RenderClear(pdc_renderer);
-    SDL_RenderCopy(pdc_renderer, pdc_render_target, NULL, NULL);
-    SDL_RenderPresent(pdc_renderer);
-    SDL_SetRenderTarget(pdc_renderer, pdc_render_target);
+    ensure_vertices();
+    glClearColor(1.0f,0.0f,0.0f,0.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    int u_screen_size = glGetUniformLocation(pdc_shader_program, "screen_size");
+    glUniform2i(u_screen_size, COLS, LINES);
+
+    glBufferData(
+        GL_ARRAY_BUFFER,
+        sizeof(struct vertex_data) * 6 * LINES * COLS,
+        vertices,
+        GL_DYNAMIC_DRAW
+    );
+    glDrawArrays(GL_TRIANGLES, 0, LINES * COLS * 6);
+
+    SDL_GL_SwapWindow(pdc_window);
 }
 
 void PDC_pump_and_peep(void)

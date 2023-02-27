@@ -20,7 +20,7 @@ link_directories(${SDL2_LIBRARY_DIR} ${SDL2_TTF_LIBRARY_DIR})
 
 include(project_common)
 
-target_sources(${PDCURSE_PROJ} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/glad/src/glad.c")
+target_sources(${PDCURSE_PROJ} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/glad/src/gl.c")
 
 macro (gl_app dir targ)
 

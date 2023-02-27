@@ -1,7 +1,7 @@
-PDCurses for OpenGL 3.3
+PDCurses for OpenGL 4.3
 =======================
 
-This is a port of PDCurses for OpenGL 3.3 on top of SDL2. It's based on the
+This is a port of PDCurses for OpenGL 4.3 on top of SDL2. It's based on the
 SDL2 port, but uses OpenGL for character drawing.
 
 
