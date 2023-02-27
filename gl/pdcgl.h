@@ -17,6 +17,7 @@
 
 PDCEX  TTF_Font *pdc_ttffont;
 PDCEX  int pdc_font_size;
+PDCEX  int pdc_sdl_scaling;
 extern int *pdc_glyph_cache[4];
 extern int pdc_glyph_cache_size[4];
 extern int pdc_glyph_index;

@@ -90,7 +90,7 @@ static int get_glyph_texture_index(Uint32 ch32)
     int *cache_size = &pdc_glyph_cache_size[cache_attr_index];
     int **cache = &pdc_glyph_cache[cache_attr_index];
 
-    if(ch32 < *cache_size && (*cache)[ch32] != -1)
+    if(ch32 < *cache_size && (*cache)[ch32] >= 0)
     {
         return (*cache)[ch32];
     }
@@ -305,7 +305,7 @@ void PDC_gotoyx(int row, int col)
 
     int glyph = get_glyph_texture_index(ch32);
 
-    if (glyph >= 0)
+    if(glyph >= 0)
         draw_glyph(row, col, ch & A_ATTRIBUTES, glyph, get_pdc_color(foregr));
 
     draw_cursor(row, col);
@@ -337,7 +337,7 @@ void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
         if (ch != ' ')
         {
             int glyph = get_glyph_texture_index(ch);
-            if(glyph)
+            if(glyph >= 0)
                 draw_glyph(lineno, x+j, attr, glyph, get_pdc_color(foregr));
         }
         else
@@ -429,7 +429,7 @@ void PDC_blink_text(void)
 void PDC_doupdate(void)
 {
     ensure_vertices();
-    glClearColor(1.0f,0.0f,0.0f,0.0f);
+    glClearColor(0.0f,0.0f,0.0f,0.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
     int u_screen_size = glGetUniformLocation(pdc_shader_program, "screen_size");

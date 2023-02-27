@@ -25,6 +25,7 @@ int pdc_font_size =
 #else
  17;
 #endif
+int pdc_sdl_scaling = 1;
 int *pdc_glyph_cache[4] = {NULL, NULL, NULL, NULL};
 int pdc_glyph_cache_size[4] = {0, 0, 0, 0};
 int pdc_glyph_index = 0;
@@ -323,7 +324,7 @@ int PDC_scr_open(void)
     pdc_window = SDL_CreateWindow("PDCurses",
         SDL_WINDOWPOS_CENTERED_DISPLAY(displaynum),
         SDL_WINDOWPOS_CENTERED_DISPLAY(displaynum),
-        pdc_swidth, pdc_sheight,
+        pdc_swidth * pdc_sdl_scaling, pdc_sheight * pdc_sdl_scaling,
         SDL_WINDOW_RESIZABLE|SDL_WINDOW_OPENGL);
 
     if (pdc_window == NULL)
@@ -336,6 +337,8 @@ int PDC_scr_open(void)
 
     int h, w;
     SDL_GetWindowSize(pdc_window, &w, &h);
+    w /= pdc_sdl_scaling;
+    h /= pdc_sdl_scaling;
 
     pdc_gl_context = SDL_GL_CreateContext(pdc_window);
     if (pdc_gl_context == NULL)
