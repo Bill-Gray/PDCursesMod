@@ -15,10 +15,12 @@ message(STATUS "SDL2_TTF_LIBRARY = ${SDL2_TTF_LIBRARY}")
 message(STATUS "SDL2_TTF_INCLUDE_DIR = ${SDL2_TTF_INCLUDE_DIR}")
 message(STATUS "SDL2_TTF_LIBRARY_DIR = ${SDL2_TTF_LIBRARY_DIR}")
 
-include_directories(${SDL2_INCLUDE_DIR} ${SDL2_TTF_INCLUDE_DIR})
+include_directories(${SDL2_INCLUDE_DIR} ${SDL2_TTF_INCLUDE_DIR} "${CMAKE_CURRENT_SOURCE_DIR}/glad/include")
 link_directories(${SDL2_LIBRARY_DIR} ${SDL2_TTF_LIBRARY_DIR})
 
 include(project_common)
+
+target_sources(${PDCURSE_PROJ} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/glad/src/glad.c")
 
 macro (gl_app dir targ)
 

@@ -1,6 +1,6 @@
 /* PDCurses */
 
-#include "pdcsdl.h"
+#include "pdcgl.h"
 
 /*man-start**************************************************************
 

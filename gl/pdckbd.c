@@ -1,6 +1,6 @@
 /* PDCurses */
 
-#include "pdcsdl.h"
+#include "pdcgl.h"
 
 #include <ctype.h>
 #include <string.h>
@@ -355,8 +355,8 @@ static int _process_mouse_event(void)
         SDL_GetMouseState( &event.motion.x, &event.motion.y);
     }
 
-    SP->mouse_status.x = (event.motion.x - pdc_xoffset) / pdc_fwidth;
-    SP->mouse_status.y = (event.motion.y - pdc_yoffset) / pdc_fheight;
+    SP->mouse_status.x = event.motion.x / pdc_fwidth;
+    SP->mouse_status.y = event.motion.y / pdc_fheight;
     if( SP->mouse_status.x >= COLS || SP->mouse_status.y >= LINES)
         return -1;
 
@@ -455,8 +455,8 @@ int PDC_get_key(void)
     case SDL_WINDOWEVENT:
         if (SDL_WINDOWEVENT_SIZE_CHANGED == event.window.event)
         {
-            pdc_sheight = event.window.data2 - pdc_xoffset;
-            pdc_swidth = event.window.data1 - pdc_yoffset;
+            pdc_sheight = event.window.data2;
+            pdc_swidth = event.window.data1;
             if( curscr)
             {
                 touchwin(curscr);

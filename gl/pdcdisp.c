@@ -1,6 +1,6 @@
 /* PDCurses */
 
-#include "pdcsdl.h"
+#include "pdcgl.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -48,27 +48,13 @@ static SDL_Texture* get_glyph_texture(Uint32 ch32)
         SDL_Surface* surf = NULL;
 
 #ifdef PDC_SDL_SUPPLEMENTARY_PLANES_SUPPORT
-        switch (pdc_sdl_render_mode)
-        {
-        case PDC_SDL_RENDER_SOLID:
-            surf = TTF_RenderGlyph32_Solid(pdc_ttffont, ch32, white);
-            break;
-        default:
-            surf = TTF_RenderGlyph32_Blended(pdc_ttffont, ch32, white);
-        }
+        surf = TTF_RenderGlyph32_Blended(pdc_ttffont, ch32, white);
 #else
         /* no support for supplementary planes */
         if (ch > 0xffff)
             ch = '?';
 
-        switch (pdc_sdl_render_mode)
-        {
-        case PDC_SDL_RENDER_SOLID:
-            surf = TTF_RenderGlyph_Solid(pdc_ttffont, (Uint16)ch32, white);
-            break;
-        default:
-            surf = TTF_RenderGlyph_Blended(pdc_ttffont, (Uint16)ch32, white);
-        }
+        surf = TTF_RenderGlyph_Blended(pdc_ttffont, (Uint16)ch32, white);
 #endif
         glyph = SDL_CreateTextureFromSurface(pdc_renderer, surf);
         SDL_FreeSurface(surf);
@@ -277,8 +263,8 @@ void PDC_gotoyx(int row, int col)
     src.h = (SP->visibility == 1) ? pdc_fheight >> 2 : pdc_fheight;
     src.w = pdc_fwidth;
 
-    dest.y = (row + 1) * pdc_fheight - src.h + pdc_yoffset;
-    dest.x = col * pdc_fwidth + pdc_xoffset;
+    dest.y = (row + 1) * pdc_fheight - src.h;
+    dest.x = col * pdc_fwidth;
     dest.h = src.h;
     dest.w = src.w;
 
@@ -325,8 +311,8 @@ void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
     src.h = pdc_fheight;
     src.w = pdc_fwidth;
 
-    dest.y = pdc_fheight * lineno + pdc_yoffset;
-    dest.x = pdc_fwidth * x + pdc_xoffset;
+    dest.y = pdc_fheight * lineno;
+    dest.x = pdc_fwidth * x;
     dest.h = pdc_fheight;
     dest.w = pdc_fwidth * len;
 
@@ -399,7 +385,7 @@ void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
 
     if (!blink && (attr & (A_UNDERLINE | A_OVERLINE | A_STRIKEOUT)))
     {
-        dest.x = pdc_fwidth * x + pdc_xoffset;
+        dest.x = pdc_fwidth * x;
         dest.h = pdc_fthick;
         dest.w = pdc_fwidth * len;
         if( attr & A_OVERLINE)

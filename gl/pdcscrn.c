@@ -1,6 +1,6 @@
 /* PDCurses */
 
-#include "pdcsdl.h"
+#include "pdcgl.h"
 
 #include <stdlib.h>
 #include <limits.h>
@@ -25,7 +25,6 @@ int pdc_font_size =
 #else
  17;
 #endif
-int pdc_sdl_render_mode = PDC_SDL_RENDER_BLENDED;
 SDL_Texture **pdc_glyph_cache[4] = {NULL, NULL, NULL, NULL};
 int pdc_glyph_cache_size[4] = {0, 0, 0, 0};
 
@@ -35,11 +34,9 @@ SDL_Window *pdc_window = NULL;
 SDL_Renderer *pdc_renderer = NULL;
 SDL_Surface *pdc_icon = NULL;
 SDL_Texture *pdc_render_target = NULL;
-int pdc_sheight = 0, pdc_swidth = 0, pdc_yoffset = 0, pdc_xoffset = 0;
+int pdc_sheight = 0, pdc_swidth = 0;
 
 int pdc_fheight, pdc_fwidth, pdc_fthick;
-bool pdc_own_window;
-bool pdc_own_renderer;
 
 static void _clean(void)
 {
@@ -73,13 +70,13 @@ static void _clean(void)
         pdc_render_target = NULL;
     }
 
-    if(pdc_own_renderer && pdc_renderer)
+    if(pdc_renderer)
     {
         SDL_DestroyRenderer(pdc_renderer);
         pdc_renderer = NULL;
     }
 
-    if( pdc_own_window && pdc_window)
+    if(pdc_window)
     {
         SDL_DestroyWindow(pdc_window);
         pdc_window = NULL;
@@ -136,21 +133,15 @@ int PDC_scr_open(void)
 
     PDC_LOG(("PDC_scr_open() - called\n"));
 
-    pdc_own_window = !pdc_window;
-    pdc_own_renderer = !pdc_renderer;
-
-    if (pdc_own_window)
+    if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER|SDL_INIT_EVENTS) < 0)
     {
-        if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER|SDL_INIT_EVENTS) < 0)
-        {
-            fprintf(stderr, "Could not start SDL: %s\n", SDL_GetError());
-            return ERR;
-        }
-
-        atexit(_clean);
-
-        displaynum = _get_displaynum();
+        fprintf(stderr, "Could not start SDL: %s\n", SDL_GetError());
+        return ERR;
     }
+
+    atexit(_clean);
+
+    displaynum = _get_displaynum();
 
     if (TTF_Init() == -1)
     {
@@ -198,19 +189,12 @@ int PDC_scr_open(void)
 
     SP->mono = FALSE;
 
-    if (!SP->mono && !pdc_own_window)
-    {
-        SP->orig_attr = TRUE;
-        SP->orig_fore = COLOR_WHITE;
-        SP->orig_back = -1;
-    }
-    else
-        SP->orig_attr = FALSE;
+    SP->orig_attr = FALSE;
 
     TTF_SizeText(pdc_ttffont, "W", &pdc_fwidth, &pdc_fheight);
     pdc_fthick = pdc_font_size / 20 + 1;
 
-    if (pdc_own_window && !pdc_icon)
+    if (!pdc_icon)
     {
         const char *iname = getenv("PDC_ICON");
         pdc_icon = SDL_LoadBMP(iname ? iname : "pdcicon.bmp");
@@ -221,46 +205,40 @@ int PDC_scr_open(void)
     }
 
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, 0);
-    if (pdc_own_window)
+    if( !pdc_sheight)
     {
-        if( !pdc_sheight)
-        {
-            const char *env = getenv("PDC_LINES");
-            pdc_sheight = (env ? atoi(env) : 25);
-        }
-        pdc_sheight *= pdc_fheight;
+        const char *env = getenv("PDC_LINES");
+        pdc_sheight = (env ? atoi(env) : 25);
+    }
+    pdc_sheight *= pdc_fheight;
 
-        if( !pdc_swidth)
-        {
-            const char *env = getenv("PDC_COLS");
-            pdc_swidth = (env ? atoi(env) : 80);
-        }
-        pdc_swidth *= pdc_fwidth;
+    if( !pdc_swidth)
+    {
+        const char *env = getenv("PDC_COLS");
+        pdc_swidth = (env ? atoi(env) : 80);
+    }
+    pdc_swidth *= pdc_fwidth;
 
-        pdc_window = SDL_CreateWindow("PDCurses",
-            SDL_WINDOWPOS_CENTERED_DISPLAY(displaynum),
-            SDL_WINDOWPOS_CENTERED_DISPLAY(displaynum),
-            pdc_swidth * pdc_sdl_scaling, pdc_sheight * pdc_sdl_scaling,
-            SDL_WINDOW_RESIZABLE);
+    pdc_window = SDL_CreateWindow("PDCurses",
+        SDL_WINDOWPOS_CENTERED_DISPLAY(displaynum),
+        SDL_WINDOWPOS_CENTERED_DISPLAY(displaynum),
+        pdc_swidth * pdc_sdl_scaling, pdc_sheight * pdc_sdl_scaling,
+        SDL_WINDOW_RESIZABLE);
 
-        if (pdc_window == NULL)
-        {
-            fprintf(stderr, "Could not open SDL window: %s\n", SDL_GetError());
-            return ERR;
-        }
-
-        SDL_SetWindowIcon(pdc_window, pdc_icon);
+    if (pdc_window == NULL)
+    {
+        fprintf(stderr, "Could not open SDL window: %s\n", SDL_GetError());
+        return ERR;
     }
 
-    if (pdc_own_renderer)
-    {
-        pdc_renderer = SDL_CreateRenderer(pdc_window, -1, SDL_RENDERER_ACCELERATED);
+    SDL_SetWindowIcon(pdc_window, pdc_icon);
 
-        if (pdc_renderer == NULL)
-        {
-            fprintf(stderr, "Could not open SDL renderer: %s\n", SDL_GetError());
-            return ERR;
-        }
+    pdc_renderer = SDL_CreateRenderer(pdc_window, -1, SDL_RENDERER_ACCELERATED);
+
+    if (pdc_renderer == NULL)
+    {
+        fprintf(stderr, "Could not open SDL renderer: %s\n", SDL_GetError());
+        return ERR;
     }
 
     int h, w;
@@ -283,10 +261,10 @@ int PDC_scr_open(void)
             break;
 
     if (!pdc_sheight)
-        pdc_sheight = h - pdc_yoffset;
+        pdc_sheight = h;
 
     if (!pdc_swidth)
-        pdc_swidth = w - pdc_xoffset;
+        pdc_swidth = w;
 
     SDL_StartTextInput();
 
@@ -316,9 +294,6 @@ int PDC_resize_screen(int nlines, int ncols)
         pdc_swidth = ncols;
         return OK;
     }
-
-    if (!pdc_own_window)
-        return ERR;
 
     if (nlines && ncols)
     {
