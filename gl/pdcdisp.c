@@ -18,48 +18,45 @@ static chtype oldch = (chtype)(-1);    /* current attribute */
 static int foregr = -2, backgr = -2; /* current foreground, background */
 static bool blinked_off = FALSE;
 
-struct vertex_data
+struct instance_data
 {
     Uint32 bg_color;
     Uint32 fg_color; // The most significant 8 bits contain the attribute data
     int glyph;
 };
 
-static struct vertex_data* vertices = NULL;
-static size_t vertices_w = 0, vertices_h = 0;
+static struct instance_data* instances = NULL;
+static size_t instances_w = 0, instances_h = 0;
 
-static void ensure_vertices()
+static void ensure_instances()
 {
-    if(SP->cols != vertices_w || SP->lines != vertices_h)
+    if(SP->cols != instances_w || SP->lines != instances_h)
     {
-        struct vertex_data* new_vertices = malloc(sizeof(struct vertex_data) * 6 * SP->lines * SP->cols);
+        struct instance_data* new_instances = malloc(sizeof(struct instance_data) * SP->lines * SP->cols);
 
         for(int j = 0; j < SP->lines; ++j)
         for(int i = 0; i < SP->cols; ++i)
         {
-            struct vertex_data* vd = &new_vertices[(i + j * SP->cols) * 6];
-            for(int k = 0; k < 6; ++k)
-            {
-                vd[k].bg_color = 0;
-                vd[k].fg_color = 0;
-                vd[k].glyph = -1;
-            }
+            struct instance_data* vd = &new_instances[i + j * SP->cols];
+            vd->bg_color = 0;
+            vd->fg_color = 0;
+            vd->glyph = -1;
         }
 
-        for(int j = 0; j < vertices_h && j < SP->lines; ++j)
-        for(int i = 0; i < vertices_w && i < SP->cols; ++i)
+        for(int j = 0; j < instances_h && j < SP->lines; ++j)
+        for(int i = 0; i < instances_w && i < SP->cols; ++i)
         {
             memcpy(
-                &new_vertices[(i + j * SP->cols) * 6],
-                &vertices[(i + j * vertices_w) * 6],
-                sizeof(struct vertex_data) * 6
+                &new_instances[i + j * SP->cols],
+                &instances[i + j * instances_w],
+                sizeof(struct instance_data)
             );
         }
 
-        free(vertices);
-        vertices = new_vertices;
-        vertices_w = SP->cols;
-        vertices_h = SP->lines;
+        free(instances);
+        instances = new_instances;
+        instances_w = SP->cols;
+        instances_h = SP->lines;
     }
 }
 
@@ -169,13 +166,10 @@ static void draw_background(int y, int x, Uint32 background)
     if(y < 0 || y >= SP->lines || x < 0 || x >= SP->cols)
         return;
 
-    ensure_vertices();
-    struct vertex_data* vd = &vertices[(x + y * SP->cols) * 6];
-    for(int i = 0; i < 6; ++i)
-    {
-        vd[i].bg_color = background;
-        vd[i].glyph = -1;
-    }
+    ensure_instances();
+    struct instance_data* vd = &instances[x + y * SP->cols];
+    vd->bg_color = background;
+    vd->glyph = -1;
 }
 
 static void draw_glyph(int y, int x, attr_t attr, int glyph_index, Uint32 foreground)
@@ -183,19 +177,16 @@ static void draw_glyph(int y, int x, attr_t attr, int glyph_index, Uint32 foregr
     if(y < 0 || y >= SP->lines || x < 0 || x >= SP->cols)
         return;
 
-    ensure_vertices();
-    struct vertex_data* vd = &vertices[(x + y * SP->cols) * 6];
-    for(int i = 0; i < 6; ++i)
-    {
-        vd[i].glyph = glyph_index;
-        Uint32 gl_attrs =
-            ((attr & A_UNDERLINE) ? 1<<2 : 0) |
-            ((attr & A_OVERLINE) ? 1<<3 : 0) |
-            ((attr & A_STRIKEOUT) ? 1<<4 : 0) |
-            ((attr & A_LEFT) ? 1<<5 : 0) |
-            ((attr & A_RIGHT) ? 1<<6 : 0);
-        vd[i].fg_color = foreground | (gl_attrs << 24);
-    }
+    ensure_instances();
+    struct instance_data* vd = &instances[x + y * SP->cols];
+    vd->glyph = glyph_index;
+    Uint32 gl_attrs =
+        ((attr & A_UNDERLINE) ? 1<<2 : 0) |
+        ((attr & A_OVERLINE) ? 1<<3 : 0) |
+        ((attr & A_STRIKEOUT) ? 1<<4 : 0) |
+        ((attr & A_LEFT) ? 1<<5 : 0) |
+        ((attr & A_RIGHT) ? 1<<6 : 0);
+    vd->fg_color = foreground | (gl_attrs << 24);
 }
 
 static void draw_cursor(int y, int x, int visibility)
@@ -203,10 +194,9 @@ static void draw_cursor(int y, int x, int visibility)
     if(y < 0 || y >= SP->lines || x < 0 || x >= SP->cols)
         return;
 
-    ensure_vertices();
-    struct vertex_data* vd = &vertices[(x + y * SP->cols) * 6];
-    for(int i = 0; i < 6; ++i)
-        vd[i].fg_color |= visibility >= 0 && visibility <= 2 ? visibility : 0;
+    ensure_instances();
+    struct instance_data* vd = &instances[x + y * SP->cols];
+    vd->fg_color |= visibility >= 0 && visibility <= 2 ? visibility : 0;
 }
 
 /* set the font colors to match the chtype's attribute */
@@ -399,7 +389,14 @@ void PDC_blink_text(void)
 
 void PDC_doupdate(void)
 {
-    ensure_vertices();
+    ensure_instances();
+
+    glBufferData(
+        GL_ARRAY_BUFFER,
+        sizeof(struct instance_data) * SP->lines * SP->cols,
+        instances,
+        GL_STREAM_DRAW
+    );
 
     int w, h;
     SDL_GetWindowSize(pdc_window, &w, &h);
@@ -418,13 +415,7 @@ void PDC_doupdate(void)
     int u_fthick = glGetUniformLocation(pdc_shader_program, "fthick");
     glUniform1i(u_fthick, pdc_fthick);
 
-    glBufferData(
-        GL_ARRAY_BUFFER,
-        sizeof(struct vertex_data) * 6 * SP->lines * SP->cols,
-        vertices,
-        GL_DYNAMIC_DRAW
-    );
-    glDrawArrays(GL_TRIANGLES, 0, SP->lines * SP->cols * 6);
+    glDrawArraysInstanced(GL_TRIANGLES, 0, 6, SP->lines * SP->cols);
 
     SDL_GL_SwapWindow(pdc_window);
 }

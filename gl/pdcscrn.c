@@ -64,7 +64,7 @@ static const char* pdc_vertex_shader_src =
     ");\n"
     "void main(void)\n"
     "{\n"
-    "   int cell_index = gl_VertexID/6;\n"
+    "   int cell_index = gl_InstanceID;\n"
     "   vec2 uv = uv_table[gl_VertexID%6];\n"
     "   int x = cell_index % screen_size.x;\n"
     "   int y = cell_index / screen_size.x;\n"
@@ -389,10 +389,13 @@ int PDC_scr_open(void)
 
     glEnableVertexAttribArray(0);
     glVertexAttribIPointer(0, 1, GL_INT, 3 * sizeof(float), (void*)(0 * sizeof(float)));
+    glVertexAttribDivisor(0, 1);
     glEnableVertexAttribArray(1);
     glVertexAttribIPointer(1, 1, GL_INT, 3 * sizeof(float), (void*)(1 * sizeof(float)));
+    glVertexAttribDivisor(1, 1);
     glEnableVertexAttribArray(2);
     glVertexAttribIPointer(2, 1, GL_INT, 3 * sizeof(float), (void*)(2 * sizeof(float)));
+    glVertexAttribDivisor(2, 1);
 
     glGenTextures(1, &pdc_font_texture);
     glActiveTexture(GL_TEXTURE0);
