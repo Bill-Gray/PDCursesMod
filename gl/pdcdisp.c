@@ -196,7 +196,8 @@ static void draw_cursor(int y, int x, int visibility)
 
     ensure_instances();
     struct instance_data* vd = &instances[x + y * SP->cols];
-    vd->fg_color |= visibility >= 0 && visibility <= 2 ? visibility : 0;
+    Uint32 gl_attrs = visibility >= 0 && visibility <= 2 ? visibility : 0;
+    vd->fg_color |= gl_attrs << 24;
 }
 
 /* set the font colors to match the chtype's attribute */
