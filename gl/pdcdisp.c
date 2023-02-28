@@ -179,6 +179,9 @@ static int get_glyph_texture_index(Uint32 ch32)
 
 static void draw_background(int y, int x, SDL_Color background)
 {
+    if(y < 0 || y >= LINES || x < 0 || x >= COLS)
+        return;
+
     ensure_vertices();
     struct vertex_data* vd = &vertices[(x + y * COLS) * 6];
     for(int i = 0; i < 6; ++i)
@@ -193,6 +196,9 @@ static void draw_background(int y, int x, SDL_Color background)
 
 static void draw_glyph(int y, int x, attr_t attr, int glyph_index, SDL_Color foreground)
 {
+    if(y < 0 || y >= LINES || x < 0 || x >= COLS)
+        return;
+
     ensure_vertices();
     struct vertex_data* vd = &vertices[(x + y * COLS) * 6];
     for(int i = 0; i < 6; ++i)
@@ -208,6 +214,9 @@ static void draw_glyph(int y, int x, attr_t attr, int glyph_index, SDL_Color for
 
 static void draw_cursor(int y, int x)
 {
+    if(y < 0 || y >= LINES || x < 0 || x >= COLS)
+        return;
+
     ensure_vertices();
     struct vertex_data* vd = &vertices[(x + y * COLS) * 6];
     for(int i = 0; i < 6; ++i)
