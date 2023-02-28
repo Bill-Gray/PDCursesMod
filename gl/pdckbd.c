@@ -395,9 +395,9 @@ static int _process_mouse_event(void)
 
         return KEY_MOUSE;
     }
-    else
+    else if(event.type == SDL_MOUSEBUTTONUP || event.type == SDL_MOUSEBUTTONDOWN)
     {
-        short action = (event.button.state == SDL_PRESSED) ?
+        short action = (event.type == SDL_MOUSEBUTTONDOWN) ?
                        BUTTON_PRESSED : BUTTON_RELEASED;
         Uint8 btn = event.button.button;
 

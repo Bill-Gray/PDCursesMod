@@ -86,14 +86,24 @@ static const char* pdc_fragment_shader_src =
     "} v_in;\n"
     "out vec4 color;\n"
     "uniform sampler2DArray glyphs;\n"
+    "uniform int fthick;\n"
     "void main(void)\n"
     "{\n"
     "   vec4 g_color = vec4(0);\n"
+    "   ivec2 glyph_size = textureSize(glyphs, 0).xy;\n"
+    "   ivec2 coord = ivec2(gl_FragCoord.xy) % glyph_size;\n"
     "   if(v_in.glyph >= 0)\n"
     "       g_color = texture(glyphs, vec3(v_in.uv, v_in.glyph));\n"
-    "   if(v_in.attr != 0 && v_in.uv.y > 0.8) g_color.a = 1;\n" // TODO: use fthick somehow?
+    "   if(((v_in.attr & 1) != 0 && v_in.uv.y > 0.75) || (v_in.attr & 2) != 0)\n"
+    "       g_color.a = 1 - g_color.a;\n"
+    "   if(\n"
+    "       ((v_in.attr & (1<<2)) != 0 && coord.y < fthick) ||\n" // Underline
+    "       ((v_in.attr & (1<<3)) != 0 && coord.y >= glyph_size.y-fthick) ||\n" // Overline
+    "       ((v_in.attr & (1<<4)) != 0 && coord.y <= glyph_size.y/2 && coord.y > glyph_size.y/2-fthick) ||\n" // Strikeout
+    "       ((v_in.attr & (1<<5)) != 0 && coord.x < fthick) ||\n" // Left
+    "       ((v_in.attr & (1<<6)) != 0 && coord.x >= glyph_size.x-fthick)\n" // Right
+    "   ) g_color.a = 1;\n"
     "   color = vec4(mix(v_in.bg, v_in.fg, g_color.a), 1.0f);\n"
-    //"   color = vec4(v_in.uv, 0.0f, 1.0f);\n"
     "}\n";
 
 static void _clean(void)

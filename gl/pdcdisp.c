@@ -207,12 +207,16 @@ static void draw_glyph(int y, int x, attr_t attr, int glyph_index, SDL_Color for
         vd[i].fg_g = foreground.g * (1.0f / 255.0f);
         vd[i].fg_b = foreground.b * (1.0f / 255.0f);
         vd[i].glyph = glyph_index;
-        // TODO: Other attributes?
-        vd[i].attr = 0;
+        vd[i].attr =
+            ((attr & A_UNDERLINE) ? 1<<2 : 0) |
+            ((attr & A_OVERLINE) ? 1<<3 : 0) |
+            ((attr & A_STRIKEOUT) ? 1<<4 : 0) |
+            ((attr & A_LEFT) ? 1<<5 : 0) |
+            ((attr & A_RIGHT) ? 1<<6 : 0);
     }
 }
 
-static void draw_cursor(int y, int x)
+static void draw_cursor(int y, int x, int visibility)
 {
     if(y < 0 || y >= SP->lines || x < 0 || x >= SP->cols)
         return;
@@ -220,7 +224,7 @@ static void draw_cursor(int y, int x)
     ensure_vertices();
     struct vertex_data* vd = &vertices[(x + y * SP->cols) * 6];
     for(int i = 0; i < 6; ++i)
-        vd[i].attr = 1;
+        vd[i].attr |= visibility >= 0 && visibility <= 2 ? visibility : 0;
 }
 
 /* set the font colors to match the chtype's attribute */
@@ -293,32 +297,8 @@ void PDC_gotoyx(int row, int col)
 
     PDC_transform_line(oldrow, oldcol, 1, curscr->_y[oldrow] + oldcol);
 
-    if (!SP->visibility)
-    {
-        PDC_doupdate();
-        return;
-    }
-
-    /* draw a new cursor by overprinting the existing character in
-       reverse, either the full cell (when visibility == 2) or the
-       lowest quarter of it (when visibility == 1) */
-
-    ch = curscr->_y[row][col] ^ A_REVERSE;
-
-    _set_attr(ch);
-
-    if( _is_altcharset( ch))
-        ch = acs_map[ch & 0x7f];
-
-    Uint32 ch32 = (Uint32)(ch & A_CHARTEXT);
-
-    int glyph = get_glyph_texture_index(ch32);
-
-    if(glyph >= 0)
-        draw_glyph(row, col, ch & A_ATTRIBUTES, glyph, get_pdc_color(foregr));
-
-    draw_cursor(row, col);
-
+    if (SP->visibility)
+        draw_cursor(row, col, SP->visibility);
     PDC_doupdate();
 }
 
@@ -452,6 +432,9 @@ void PDC_doupdate(void)
 
     int u_screen_size = glGetUniformLocation(pdc_shader_program, "screen_size");
     glUniform2i(u_screen_size, SP->cols, SP->lines);
+
+    int u_fthick = glGetUniformLocation(pdc_shader_program, "fthick");
+    glUniform1i(u_fthick, pdc_fthick);
 
     glBufferData(
         GL_ARRAY_BUFFER,
