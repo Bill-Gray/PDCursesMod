@@ -20,12 +20,9 @@ static bool blinked_off = FALSE;
 
 struct vertex_data
 {
-    int x;
-    int y;
-    float bg_r, bg_g, bg_b;
-    float fg_r, fg_g, fg_b;
+    Uint32 bg_color;
+    Uint32 fg_color; // The most significant 8 bits contain the attribute data
     int glyph;
-    int attr;
 };
 
 static struct vertex_data* vertices = NULL;
@@ -43,15 +40,10 @@ static void ensure_vertices()
             struct vertex_data* vd = &new_vertices[(i + j * SP->cols) * 6];
             for(int k = 0; k < 6; ++k)
             {
-                vd[k].bg_r = vd[k].bg_g = vd[k].bg_b = 0.0f;
-                vd[k].fg_r = vd[k].fg_g = vd[k].fg_b = 0.0f;
+                vd[k].bg_color = 0;
+                vd[k].fg_color = 0;
                 vd[k].glyph = -1;
-                vd[k].attr = 0;
             }
-            vd[0].x = vd[1].x = vd[3].x = i;
-            vd[2].x = vd[4].x = vd[5].x = i+1;
-            vd[0].y = vd[2].y = vd[5].y = j;
-            vd[1].y = vd[3].y = vd[4].y = j+1;
         }
 
         for(int j = 0; j < vertices_h && j < SP->lines; ++j)
@@ -71,15 +63,10 @@ static void ensure_vertices()
     }
 }
 
-static SDL_Color get_pdc_color( const int color_idx)
+static Uint32 get_pdc_color( const int color_idx)
 {
-    SDL_Color c;
     const PACKED_RGB rgb = PDC_get_palette_entry( color_idx > 0 ? color_idx : 0);
-
-    c.r = (Uint8)Get_RValue( rgb);
-    c.g = (Uint8)Get_GValue( rgb);
-    c.b = (Uint8)Get_BValue( rgb);
-    return c;
+    return ((Uint32)Get_RValue(rgb) | (Uint32)Get_GValue(rgb)<<8 |  (Uint32)Get_BValue(rgb)<<16);
 }
 
 static int cache_attr_index = 0;
@@ -177,7 +164,7 @@ static int get_glyph_texture_index(Uint32 ch32)
     }
 }
 
-static void draw_background(int y, int x, SDL_Color background)
+static void draw_background(int y, int x, Uint32 background)
 {
     if(y < 0 || y >= SP->lines || x < 0 || x >= SP->cols)
         return;
@@ -186,15 +173,12 @@ static void draw_background(int y, int x, SDL_Color background)
     struct vertex_data* vd = &vertices[(x + y * SP->cols) * 6];
     for(int i = 0; i < 6; ++i)
     {
-        vd[i].bg_r = background.r * (1.0f / 255.0f);
-        vd[i].bg_g = background.g * (1.0f / 255.0f);
-        vd[i].bg_b = background.b * (1.0f / 255.0f);
+        vd[i].bg_color = background;
         vd[i].glyph = -1;
-        vd[i].attr = 0;
     }
 }
 
-static void draw_glyph(int y, int x, attr_t attr, int glyph_index, SDL_Color foreground)
+static void draw_glyph(int y, int x, attr_t attr, int glyph_index, Uint32 foreground)
 {
     if(y < 0 || y >= SP->lines || x < 0 || x >= SP->cols)
         return;
@@ -203,16 +187,14 @@ static void draw_glyph(int y, int x, attr_t attr, int glyph_index, SDL_Color for
     struct vertex_data* vd = &vertices[(x + y * SP->cols) * 6];
     for(int i = 0; i < 6; ++i)
     {
-        vd[i].fg_r = foreground.r * (1.0f / 255.0f);
-        vd[i].fg_g = foreground.g * (1.0f / 255.0f);
-        vd[i].fg_b = foreground.b * (1.0f / 255.0f);
         vd[i].glyph = glyph_index;
-        vd[i].attr =
+        Uint32 gl_attrs =
             ((attr & A_UNDERLINE) ? 1<<2 : 0) |
             ((attr & A_OVERLINE) ? 1<<3 : 0) |
             ((attr & A_STRIKEOUT) ? 1<<4 : 0) |
             ((attr & A_LEFT) ? 1<<5 : 0) |
             ((attr & A_RIGHT) ? 1<<6 : 0);
+        vd[i].fg_color = foreground | (gl_attrs << 24);
     }
 }
 
@@ -224,7 +206,7 @@ static void draw_cursor(int y, int x, int visibility)
     ensure_vertices();
     struct vertex_data* vd = &vertices[(x + y * SP->cols) * 6];
     for(int i = 0; i < 6; ++i)
-        vd[i].attr |= visibility >= 0 && visibility <= 2 ? visibility : 0;
+        vd[i].fg_color |= visibility >= 0 && visibility <= 2 ? visibility : 0;
 }
 
 /* set the font colors to match the chtype's attribute */

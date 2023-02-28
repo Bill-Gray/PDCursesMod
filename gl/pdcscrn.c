@@ -43,11 +43,9 @@ static GLuint pdc_vao = 0;
 static SDL_GLContext pdc_gl_context = NULL;
 static const char* pdc_vertex_shader_src =
     "#version 430 core\n"
-    "layout(location = 0) in ivec2 v_pos;\n"
-    "layout(location = 1) in vec3 v_bg;\n"
-    "layout(location = 2) in vec3 v_fg;\n"
-    "layout(location = 3) in int v_glyph;\n"
-    "layout(location = 4) in int v_attr; // R = texture index, G = attr_t\n"
+    "layout(location = 0) in uint v_bg;\n"
+    "layout(location = 1) in uint v_fg;\n"
+    "layout(location = 2) in int v_glyph;\n"
     "uniform ivec2 screen_size;\n"
     "out vertex_data {\n"
     "    flat int glyph;\n"
@@ -66,13 +64,17 @@ static const char* pdc_vertex_shader_src =
     ");\n"
     "void main(void)\n"
     "{\n"
-    "   vec2 pos = 2.0f * vec2(v_pos)/vec2(screen_size) - 1.0f;\n"
+    "   int cell_index = gl_VertexID/6;\n"
+    "   vec2 uv = uv_table[gl_VertexID%6];\n"
+    "   int x = cell_index % screen_size.x;\n"
+    "   int y = cell_index / screen_size.x;\n"
+    "   vec2 pos = 2.0f * (vec2(x, y)+uv)/vec2(screen_size) - 1.0f;\n"
     "   gl_Position = vec4(pos.x, -pos.y, 0.0f, 1.0f);\n"
     "   v_out.glyph = v_glyph;\n"
-    "   v_out.attr = v_attr;\n"
-    "   v_out.bg = v_bg;\n"
-    "   v_out.fg = v_fg;\n"
-    "   v_out.uv = uv_table[gl_VertexID%6];\n"
+    "   v_out.attr = int(v_fg>>24);\n"
+    "   v_out.bg = unpackUnorm4x8(v_bg).rgb;\n"
+    "   v_out.fg = unpackUnorm4x8(v_fg).rgb;\n"
+    "   v_out.uv = uv;\n"
     "}\n"
     ;
 static const char* pdc_fragment_shader_src =
@@ -386,15 +388,11 @@ int PDC_scr_open(void)
     glBindBuffer(GL_ARRAY_BUFFER, pdc_vbo);
 
     glEnableVertexAttribArray(0);
-    glVertexAttribIPointer(0, 2, GL_INT, 10 * sizeof(float), (void*)(0 * sizeof(float)));
+    glVertexAttribIPointer(0, 1, GL_INT, 3 * sizeof(float), (void*)(0 * sizeof(float)));
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 10 * sizeof(float), (void*)(2 * sizeof(float)));
+    glVertexAttribIPointer(1, 1, GL_INT, 3 * sizeof(float), (void*)(1 * sizeof(float)));
     glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 10 * sizeof(float), (void*)(5 * sizeof(float)));
-    glEnableVertexAttribArray(3);
-    glVertexAttribIPointer(3, 1, GL_INT, 10 * sizeof(float), (void*)(8 * sizeof(float)));
-    glEnableVertexAttribArray(4);
-    glVertexAttribIPointer(4, 1, GL_INT, 10 * sizeof(float), (void*)(9 * sizeof(float)));
+    glVertexAttribIPointer(2, 1, GL_INT, 3 * sizeof(float), (void*)(2 * sizeof(float)));
 
     glGenTextures(1, &pdc_font_texture);
     glActiveTexture(GL_TEXTURE0);
