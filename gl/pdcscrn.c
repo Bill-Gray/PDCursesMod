@@ -25,7 +25,6 @@ int pdc_font_size =
 #else
  17;
 #endif
-int pdc_sdl_scaling = 1;
 int *pdc_glyph_cache[4] = {NULL, NULL, NULL, NULL};
 int pdc_glyph_cache_size[4] = {0, 0, 0, 0};
 int pdc_glyph_index = 0;
@@ -94,6 +93,7 @@ static const char* pdc_fragment_shader_src =
     "       g_color = texture(glyphs, vec3(v_in.uv, v_in.glyph));\n"
     "   if(v_in.attr != 0 && v_in.uv.y > 0.8) g_color.a = 1;\n" // TODO: use fthick somehow?
     "   color = vec4(mix(v_in.bg, v_in.fg, g_color.a), 1.0f);\n"
+    //"   color = vec4(v_in.uv, 0.0f, 1.0f);\n"
     "}\n";
 
 static void _clean(void)
@@ -324,7 +324,7 @@ int PDC_scr_open(void)
     pdc_window = SDL_CreateWindow("PDCurses",
         SDL_WINDOWPOS_CENTERED_DISPLAY(displaynum),
         SDL_WINDOWPOS_CENTERED_DISPLAY(displaynum),
-        pdc_swidth * pdc_sdl_scaling, pdc_sheight * pdc_sdl_scaling,
+        pdc_swidth, pdc_sheight,
         SDL_WINDOW_RESIZABLE|SDL_WINDOW_OPENGL);
 
     if (pdc_window == NULL)
@@ -337,8 +337,6 @@ int PDC_scr_open(void)
 
     int h, w;
     SDL_GetWindowSize(pdc_window, &w, &h);
-    w /= pdc_sdl_scaling;
-    h /= pdc_sdl_scaling;
 
     pdc_gl_context = SDL_GL_CreateContext(pdc_window);
     if (pdc_gl_context == NULL)

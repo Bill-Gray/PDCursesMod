@@ -33,14 +33,14 @@ static size_t vertices_w = 0, vertices_h = 0;
 
 static void ensure_vertices()
 {
-    if(COLS != vertices_w || LINES != vertices_h)
+    if(SP->cols != vertices_w || SP->lines != vertices_h)
     {
-        struct vertex_data* new_vertices = malloc(sizeof(struct vertex_data) * 6 * LINES * COLS);
+        struct vertex_data* new_vertices = malloc(sizeof(struct vertex_data) * 6 * SP->lines * SP->cols);
 
-        for(int j = 0; j < LINES; ++j)
-        for(int i = 0; i < COLS; ++i)
+        for(int j = 0; j < SP->lines; ++j)
+        for(int i = 0; i < SP->cols; ++i)
         {
-            struct vertex_data* vd = &new_vertices[(i + j * COLS) * 6];
+            struct vertex_data* vd = &new_vertices[(i + j * SP->cols) * 6];
             for(int k = 0; k < 6; ++k)
             {
                 vd[k].bg_r = vd[k].bg_g = vd[k].bg_b = 0.0f;
@@ -54,11 +54,11 @@ static void ensure_vertices()
             vd[1].y = vd[3].y = vd[4].y = j+1;
         }
 
-        for(int j = 0; j < vertices_h && j < LINES; ++j)
-        for(int i = 0; i < vertices_w && i < COLS; ++i)
+        for(int j = 0; j < vertices_h && j < SP->lines; ++j)
+        for(int i = 0; i < vertices_w && i < SP->cols; ++i)
         {
             memcpy(
-                &new_vertices[(i + j * COLS) * 6],
+                &new_vertices[(i + j * SP->cols) * 6],
                 &vertices[(i + j * vertices_w) * 6],
                 sizeof(struct vertex_data) * 6
             );
@@ -66,8 +66,8 @@ static void ensure_vertices()
 
         free(vertices);
         vertices = new_vertices;
-        vertices_w = COLS;
-        vertices_h = LINES;
+        vertices_w = SP->cols;
+        vertices_h = SP->lines;
     }
 }
 
@@ -179,11 +179,11 @@ static int get_glyph_texture_index(Uint32 ch32)
 
 static void draw_background(int y, int x, SDL_Color background)
 {
-    if(y < 0 || y >= LINES || x < 0 || x >= COLS)
+    if(y < 0 || y >= SP->lines || x < 0 || x >= SP->cols)
         return;
 
     ensure_vertices();
-    struct vertex_data* vd = &vertices[(x + y * COLS) * 6];
+    struct vertex_data* vd = &vertices[(x + y * SP->cols) * 6];
     for(int i = 0; i < 6; ++i)
     {
         vd[i].bg_r = background.r * (1.0f / 255.0f);
@@ -196,11 +196,11 @@ static void draw_background(int y, int x, SDL_Color background)
 
 static void draw_glyph(int y, int x, attr_t attr, int glyph_index, SDL_Color foreground)
 {
-    if(y < 0 || y >= LINES || x < 0 || x >= COLS)
+    if(y < 0 || y >= SP->lines || x < 0 || x >= SP->cols)
         return;
 
     ensure_vertices();
-    struct vertex_data* vd = &vertices[(x + y * COLS) * 6];
+    struct vertex_data* vd = &vertices[(x + y * SP->cols) * 6];
     for(int i = 0; i < 6; ++i)
     {
         vd[i].fg_r = foreground.r * (1.0f / 255.0f);
@@ -214,11 +214,11 @@ static void draw_glyph(int y, int x, attr_t attr, int glyph_index, SDL_Color for
 
 static void draw_cursor(int y, int x)
 {
-    if(y < 0 || y >= LINES || x < 0 || x >= COLS)
+    if(y < 0 || y >= SP->lines || x < 0 || x >= SP->cols)
         return;
 
     ensure_vertices();
-    struct vertex_data* vd = &vertices[(x + y * COLS) * 6];
+    struct vertex_data* vd = &vertices[(x + y * SP->cols) * 6];
     for(int i = 0; i < 6; ++i)
         vd[i].attr = 1;
 }
@@ -438,19 +438,28 @@ void PDC_blink_text(void)
 void PDC_doupdate(void)
 {
     ensure_vertices();
+
+    int w, h;
+    SDL_GetWindowSize(pdc_window, &w, &h);
+
+    glViewport(0, 0, w, h);
     glClearColor(0.0f,0.0f,0.0f,0.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
+    int aligned_w = SP->cols * pdc_fwidth;
+    int aligned_h = SP->lines * pdc_fheight;
+    glViewport(0, h-aligned_h, aligned_w, aligned_h);
+
     int u_screen_size = glGetUniformLocation(pdc_shader_program, "screen_size");
-    glUniform2i(u_screen_size, COLS, LINES);
+    glUniform2i(u_screen_size, SP->cols, SP->lines);
 
     glBufferData(
         GL_ARRAY_BUFFER,
-        sizeof(struct vertex_data) * 6 * LINES * COLS,
+        sizeof(struct vertex_data) * 6 * SP->lines * SP->cols,
         vertices,
         GL_DYNAMIC_DRAW
     );
-    glDrawArrays(GL_TRIANGLES, 0, LINES * COLS * 6);
+    glDrawArrays(GL_TRIANGLES, 0, SP->lines * SP->cols * 6);
 
     SDL_GL_SwapWindow(pdc_window);
 }
