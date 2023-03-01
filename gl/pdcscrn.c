@@ -53,7 +53,6 @@ static const char* pdc_vertex_shader_src =
     "    flat int attr;\n"
     "    vec3 bg;\n"
     "    vec3 fg;\n"
-    "    vec2 uv;\n"
     "} v_out;\n"
     "const vec2[6] uv_table = vec2[](\n"
     "    vec2(0, 0),\n"
@@ -75,7 +74,6 @@ static const char* pdc_vertex_shader_src =
     "   v_out.attr = int(v_fg>>24);\n"
     "   v_out.bg = unpackUnorm4x8(v_bg).rgb;\n"
     "   v_out.fg = unpackUnorm4x8(v_fg).rgb;\n"
-    "   v_out.uv = uv;\n"
     "}\n"
     ;
 static const char* pdc_fragment_shader_src =
@@ -85,7 +83,6 @@ static const char* pdc_fragment_shader_src =
     "    flat int attr;\n"
     "    vec3 bg;\n"
     "    vec3 fg;\n"
-    "    vec2 uv;\n"
     "} v_in;\n"
     "out vec4 color;\n"
     "uniform sampler2D glyphs;\n"
@@ -100,7 +97,7 @@ static const char* pdc_fragment_shader_src =
     "           v_in.glyph_offset.x * glyph_size.x + coord.x,\n"
     "           (v_in.glyph_offset.y+1) * glyph_size.y - 1 - coord.y\n"
     "       ), 0).r;\n"
-    "   if(((v_in.attr & 1) != 0 && v_in.uv.y > 0.75) || (v_in.attr & 2) != 0)\n"
+    "   if(((v_in.attr & 1) != 0 && coord.y > 0.75 * glyph_size.y) || (v_in.attr & 2) != 0)\n"
     "       g_color = 1 - g_color;\n"
     "   if(\n"
     "       ((v_in.attr & (1<<2)) != 0 && coord.y < fthick) ||\n" /* Underline */

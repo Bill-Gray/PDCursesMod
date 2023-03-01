@@ -27,6 +27,7 @@ struct instance_data
 
 static struct instance_data* instances = NULL;
 static size_t instances_w = 0, instances_h = 0;
+static int cache_attr_index = 0;
 
 static unsigned next_pow_2(unsigned n)
 {
@@ -125,7 +126,7 @@ static void ensure_instances()
             struct instance_data* vd = &new_instances[i + j * SP->cols];
             vd->bg_color = 0;
             vd->fg_color = 0;
-            vd->glyph = -1;
+            vd->glyph = 0;
         }
 
         for(int j = 0; j < instances_h && j < SP->lines; ++j)
@@ -151,7 +152,6 @@ static Uint32 get_pdc_color( const int color_idx)
     return ((Uint32)Get_RValue(rgb) | (Uint32)Get_GValue(rgb)<<8 |  (Uint32)Get_BValue(rgb)<<16);
 }
 
-static int cache_attr_index = 0;
 static int get_glyph_texture_index(Uint32 ch32)
 {
     SDL_Color white = {255,255,255,255};
@@ -220,7 +220,7 @@ static void draw_background(int y, int x, Uint32 background)
     ensure_instances();
     struct instance_data* vd = &instances[x + y * SP->cols];
     vd->bg_color = background;
-    vd->glyph = -1;
+    vd->glyph = 0;
 }
 
 static void draw_glyph(int y, int x, attr_t attr, Uint32 glyph_index, Uint32 foreground)
@@ -349,13 +349,13 @@ void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
 
         if (ch != ' ')
         {
-            int glyph = get_glyph_texture_index(ch);
+            Uint32 glyph = get_glyph_texture_index(ch);
             if(glyph > 0)
                 draw_glyph(lineno, x+j, attr, glyph, get_pdc_color(foregr));
         }
         else
         {
-            draw_glyph(lineno, x+j, attr, -1, get_pdc_color(foregr));
+            draw_glyph(lineno, x+j, attr, 0, get_pdc_color(foregr));
         }
     }
 }
