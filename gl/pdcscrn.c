@@ -25,10 +25,11 @@ int pdc_font_size =
 #else
  17;
 #endif
-int *pdc_glyph_cache[4] = {NULL, NULL, NULL, NULL};
-int pdc_glyph_cache_size[4] = {0, 0, 0, 0};
-int pdc_glyph_index = 0;
-int pdc_glyph_capacity = 0;
+Uint32 *pdc_glyph_cache[4] = {NULL, NULL, NULL, NULL};
+size_t pdc_glyph_cache_size[4] = {0, 0, 0, 0};
+unsigned pdc_glyph_row_capacity = 0, pdc_glyph_col_capacity = 0;
+unsigned pdc_glyph_cache_w = 0, pdc_glyph_cache_h = 0;
+unsigned* pdc_glyph_start_col = NULL;
 
 SDL_Window *pdc_window = NULL;
 SDL_Surface *pdc_icon = NULL;
@@ -45,10 +46,10 @@ static const char* pdc_vertex_shader_src =
     "#version 430 core\n"
     "layout(location = 0) in uint v_bg;\n"
     "layout(location = 1) in uint v_fg;\n"
-    "layout(location = 2) in int v_glyph;\n"
+    "layout(location = 2) in uint v_glyph;\n"
     "uniform ivec2 screen_size;\n"
     "out vertex_data {\n"
-    "    flat int glyph;\n"
+    "    flat ivec2 glyph_offset;\n"
     "    flat int attr;\n"
     "    vec3 bg;\n"
     "    vec3 fg;\n"
@@ -70,7 +71,7 @@ static const char* pdc_vertex_shader_src =
     "   int y = cell_index / screen_size.x;\n"
     "   vec2 pos = 2.0f * (vec2(x, y)+uv)/vec2(screen_size) - 1.0f;\n"
     "   gl_Position = vec4(pos.x, -pos.y, 0.0f, 1.0f);\n"
-    "   v_out.glyph = v_glyph;\n"
+    "   v_out.glyph_offset = ivec2(v_glyph&0xFFFF, v_glyph>>16);\n"
     "   v_out.attr = int(v_fg>>24);\n"
     "   v_out.bg = unpackUnorm4x8(v_bg).rgb;\n"
     "   v_out.fg = unpackUnorm4x8(v_fg).rgb;\n"
@@ -80,30 +81,33 @@ static const char* pdc_vertex_shader_src =
 static const char* pdc_fragment_shader_src =
     "#version 430 core\n"
     "in vertex_data {\n"
-    "    flat int glyph;\n"
+    "    flat ivec2 glyph_offset;\n"
     "    flat int attr;\n"
     "    vec3 bg;\n"
     "    vec3 fg;\n"
     "    vec2 uv;\n"
     "} v_in;\n"
     "out vec4 color;\n"
-    "uniform sampler2DArray glyphs;\n"
+    "uniform sampler2D glyphs;\n"
     "uniform int fthick;\n"
+    "uniform ivec2 glyph_size;\n"
     "void main(void)\n"
     "{\n"
     "   float g_color = 0;\n"
-    "   ivec2 glyph_size = textureSize(glyphs, 0).xy;\n"
     "   ivec2 coord = ivec2(gl_FragCoord.xy) % glyph_size;\n"
-    "   if(v_in.glyph >= 0)\n"
-    "       g_color = texture(glyphs, vec3(v_in.uv, v_in.glyph)).r;\n"
+    "   if(v_in.glyph_offset.x > 0 || v_in.glyph_offset.y > 0)\n"
+    "       g_color = texelFetch(glyphs, ivec2(\n"
+    "           v_in.glyph_offset.x * glyph_size.x + coord.x,\n"
+    "           (v_in.glyph_offset.y+1) * glyph_size.y - 1 - coord.y\n"
+    "       ), 0).r;\n"
     "   if(((v_in.attr & 1) != 0 && v_in.uv.y > 0.75) || (v_in.attr & 2) != 0)\n"
     "       g_color = 1 - g_color;\n"
     "   if(\n"
-    "       ((v_in.attr & (1<<2)) != 0 && coord.y < fthick) ||\n" // Underline
-    "       ((v_in.attr & (1<<3)) != 0 && coord.y >= glyph_size.y-fthick) ||\n" // Overline
-    "       ((v_in.attr & (1<<4)) != 0 && coord.y <= glyph_size.y/2 && coord.y > glyph_size.y/2-fthick) ||\n" // Strikeout
-    "       ((v_in.attr & (1<<5)) != 0 && coord.x < fthick) ||\n" // Left
-    "       ((v_in.attr & (1<<6)) != 0 && coord.x >= glyph_size.x-fthick)\n" // Right
+    "       ((v_in.attr & (1<<2)) != 0 && coord.y < fthick) ||\n" /* Underline */
+    "       ((v_in.attr & (1<<3)) != 0 && coord.y >= glyph_size.y-fthick) ||\n" /* Overline */
+    "       ((v_in.attr & (1<<4)) != 0 && coord.y <= glyph_size.y/2 && coord.y > glyph_size.y/2-fthick) ||\n" /* Strikeout */
+    "       ((v_in.attr & (1<<5)) != 0 && coord.x < fthick) ||\n" /* Left */
+    "       ((v_in.attr & (1<<6)) != 0 && coord.x >= glyph_size.x-fthick)\n" /* Right */
     "   ) g_color = 1;\n"
     "   color = vec4(mix(v_in.bg, v_in.fg, g_color), 1.0f);\n"
     "}\n";
@@ -122,6 +126,12 @@ static void _clean(void)
             free(pdc_glyph_cache[i]);
         pdc_glyph_cache[i] = NULL;
         pdc_glyph_cache_size[i] = 0;
+    }
+
+    if(pdc_glyph_start_col)
+    {
+        free(pdc_glyph_start_col);
+        pdc_glyph_start_col = NULL;
     }
 
     if( pdc_icon)
@@ -396,32 +406,6 @@ int PDC_scr_open(void)
     glEnableVertexAttribArray(2);
     glVertexAttribIPointer(2, 1, GL_INT, 3 * sizeof(float), (void*)(2 * sizeof(float)));
     glVertexAttribDivisor(2, 1);
-
-    glGenTextures(1, &pdc_font_texture);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D_ARRAY, pdc_font_texture);
-    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-    glPixelStorei(GL_PACK_ALIGNMENT, 1);
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
-    pdc_glyph_index = 0;
-    pdc_glyph_capacity = 256;
-    glTexImage3D(
-        GL_TEXTURE_2D_ARRAY,
-        0,
-        GL_R8,
-        pdc_fwidth,
-        pdc_fheight,
-        pdc_glyph_capacity,
-        0,
-        GL_RGBA,
-        GL_UNSIGNED_BYTE,
-        NULL
-    );
 
     glUniform1i(glGetUniformLocation(pdc_shader_program, "glyphs"), 0);
 

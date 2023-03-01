@@ -21,12 +21,97 @@ static bool blinked_off = FALSE;
 struct instance_data
 {
     Uint32 bg_color;
-    Uint32 fg_color; // The most significant 8 bits contain the attribute data
-    int glyph;
+    Uint32 fg_color; /* The most significant 8 bits contain the attribute data */
+    Uint32 glyph;
 };
 
 static struct instance_data* instances = NULL;
 static size_t instances_w = 0, instances_h = 0;
+
+static unsigned next_pow_2(unsigned n)
+{
+    n--;
+    n |= n >> 1;
+    n |= n >> 2;
+    n |= n >> 4;
+    n |= n >> 8;
+    n |= n >> 16;
+    n++;
+    return n;
+}
+
+static void enlarge_glyph_cache()
+{
+    GLuint new_font_texture = 0;
+    unsigned new_glyph_cache_w = 2 * pdc_glyph_cache_w;
+    unsigned new_glyph_cache_h = 2 * pdc_glyph_cache_h;
+    if(new_glyph_cache_w == 0 || new_glyph_cache_h == 0)
+    {
+        new_glyph_cache_h = new_glyph_cache_w =
+            next_pow_2((pdc_fwidth > pdc_fheight ? pdc_fwidth : pdc_fheight) * 16);
+    }
+    // TODO: Ensure new_glyph_cache_w & new_glyph_cache_h don't exceed maximums,
+    // and clear cache if that happens!
+
+    glGenTextures(1, &new_font_texture);
+    glBindTexture(GL_TEXTURE_2D, new_font_texture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexImage2D(
+        GL_TEXTURE_2D,
+        0,
+        GL_R8,
+        new_glyph_cache_w,
+        new_glyph_cache_h,
+        0,
+        GL_RGBA,
+        GL_UNSIGNED_BYTE,
+        NULL
+    );
+    if(pdc_font_texture != 0)
+    {
+        /* And this is why we require OpenGL 4.3 instead of 3.3... */
+        glCopyImageSubData(
+            pdc_font_texture, GL_TEXTURE_2D, 0, 0, 0, 0,
+            new_font_texture, GL_TEXTURE_2D, 0, 0, 0, 0,
+            pdc_glyph_cache_w, pdc_glyph_cache_h, 1
+        );
+        glDeleteTextures(1, &pdc_font_texture);
+    }
+    pdc_font_texture = new_font_texture;
+    pdc_glyph_cache_w = new_glyph_cache_w;
+    pdc_glyph_cache_h = new_glyph_cache_h;
+    int new_glyph_row_capacity = pdc_glyph_cache_h / pdc_fheight;
+    pdc_glyph_col_capacity = pdc_glyph_cache_w / pdc_fwidth;
+    pdc_glyph_start_col = realloc(pdc_glyph_start_col, sizeof(unsigned) * new_glyph_row_capacity);
+    for(unsigned i = pdc_glyph_row_capacity; i < new_glyph_row_capacity; ++i)
+        pdc_glyph_start_col[i] = 0;
+    // Reserve room for the reserved space cell (we want to use index 0 to mark
+    // empty)
+    pdc_glyph_start_col[0] = pdc_glyph_start_col[0] > 1 ? pdc_glyph_start_col[0] : 1;
+    pdc_glyph_row_capacity = new_glyph_row_capacity;
+}
+
+static Uint32 alloc_glyph_cache()
+{
+    for(unsigned row = 0; row < pdc_glyph_row_capacity; ++row)
+    {
+        unsigned *col = &pdc_glyph_start_col[row];
+        if(*col < pdc_glyph_col_capacity)
+        {
+            Uint32 index = (Uint32)(*col) | (((Uint32)row)<<16);
+            (*col)++;
+            return index;
+        }
+    }
+
+    /* If we're here, we failed to allocate the glyph, so we need to enlarge
+     * the glyph cache. */
+    enlarge_glyph_cache();
+    return alloc_glyph_cache();
+}
 
 static void ensure_instances()
 {
@@ -70,11 +155,16 @@ static int cache_attr_index = 0;
 static int get_glyph_texture_index(Uint32 ch32)
 {
     SDL_Color white = {255,255,255,255};
+    size_t *cache_size = &pdc_glyph_cache_size[cache_attr_index];
+    Uint32 **cache = &pdc_glyph_cache[cache_attr_index];
 
-    int *cache_size = &pdc_glyph_cache_size[cache_attr_index];
-    int **cache = &pdc_glyph_cache[cache_attr_index];
+#ifndef PDC_SDL_SUPPLEMENTARY_PLANES_SUPPORT
+    /* no support for supplementary planes */
+    if (ch32 > 0xffff)
+        ch32 = '?';
+#endif
 
-    if(ch32 < *cache_size && (*cache)[ch32] >= 0)
+    if(ch32 < *cache_size && (*cache)[ch32] > 0)
     {
         return (*cache)[ch32];
     }
@@ -85,57 +175,18 @@ static int get_glyph_texture_index(Uint32 ch32)
 #ifdef PDC_SDL_SUPPLEMENTARY_PLANES_SUPPORT
         surf = TTF_RenderGlyph32_Blended(pdc_ttffont, ch32, white);
 #else
-        /* no support for supplementary planes */
-        if (ch > 0xffff)
-            ch = '?';
-
         surf = TTF_RenderGlyph_Blended(pdc_ttffont, (Uint16)ch32, white);
 #endif
-        int index = pdc_glyph_index++;
-        if(index >= pdc_glyph_capacity)
-        {
-            GLuint new_font_texture = 0;
-            glGenTextures(1, &new_font_texture);
-            glBindTexture(GL_TEXTURE_2D_ARRAY, new_font_texture);
-            glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-            glTexImage3D(
-                GL_TEXTURE_2D_ARRAY,
-                0,
-                GL_R8,
-                pdc_fwidth,
-                pdc_fheight,
-                pdc_glyph_capacity * 2,
-                0,
-                GL_RGBA,
-                GL_UNSIGNED_BYTE,
-                NULL
-            );
-            // And this is why we require OpenGL 4.3 instead of 3.3...
-            glCopyImageSubData(
-                pdc_font_texture, GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0,
-                new_font_texture, GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0,
-                pdc_fwidth, pdc_fheight, pdc_glyph_capacity
-            );
-            glDeleteTextures(1, &pdc_font_texture);
-            pdc_font_texture = new_font_texture;
-            pdc_glyph_capacity *= 2;
-        }
         SDL_LockSurface(surf);
-        // ffs...
+        Uint32 index = alloc_glyph_cache();
         glPixelStorei(GL_UNPACK_ROW_LENGTH, surf->pitch/surf->format->BytesPerPixel);
-        glTexSubImage3D(
-            GL_TEXTURE_2D_ARRAY,
+        glTexSubImage2D(
+            GL_TEXTURE_2D,
             0,
-            0,
-            0,
-            index,
-            pdc_fwidth,
-            pdc_fheight,
-            1,
+            (index&0xFFFF) * pdc_fwidth,
+            (index>>16) * pdc_fheight,
+            surf->w,
+            surf->h,
             GL_RGBA,
             GL_UNSIGNED_INT_8_8_8_8,
             surf->pixels
@@ -149,10 +200,10 @@ static int get_glyph_texture_index(Uint32 ch32)
             if(new_cache_size == 0) new_cache_size = 256;
             while(new_cache_size < ch32) new_cache_size *= 2;
 
-            *cache = realloc(*cache, sizeof(int)*new_cache_size);
+            *cache = realloc(*cache, sizeof(Uint32)*new_cache_size);
             memset(
-                (*cache) + *cache_size, -1,
-                sizeof(int)*(new_cache_size - *cache_size)
+                (*cache) + *cache_size, 0,
+                sizeof(Uint32)*(new_cache_size - *cache_size)
             );
             *cache_size = new_cache_size;
         }
@@ -172,7 +223,7 @@ static void draw_background(int y, int x, Uint32 background)
     vd->glyph = -1;
 }
 
-static void draw_glyph(int y, int x, attr_t attr, int glyph_index, Uint32 foreground)
+static void draw_glyph(int y, int x, attr_t attr, Uint32 glyph_index, Uint32 foreground)
 {
     if(y < 0 || y >= SP->lines || x < 0 || x >= SP->cols)
         return;
@@ -299,7 +350,7 @@ void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
         if (ch != ' ')
         {
             int glyph = get_glyph_texture_index(ch);
-            if(glyph >= 0)
+            if(glyph > 0)
                 draw_glyph(lineno, x+j, attr, glyph, get_pdc_color(foregr));
         }
         else
@@ -412,6 +463,9 @@ void PDC_doupdate(void)
 
     int u_screen_size = glGetUniformLocation(pdc_shader_program, "screen_size");
     glUniform2i(u_screen_size, SP->cols, SP->lines);
+
+    int u_glyph_size = glGetUniformLocation(pdc_shader_program, "glyph_size");
+    glUniform2i(u_glyph_size, pdc_fwidth, pdc_fheight);
 
     int u_fthick = glGetUniformLocation(pdc_shader_program, "fthick");
     glUniform1i(u_fthick, pdc_fthick);
