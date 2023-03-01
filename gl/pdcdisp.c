@@ -46,7 +46,9 @@ static void enlarge_glyph_cache()
     GLuint new_font_texture = 0;
     unsigned new_glyph_cache_w = 2 * pdc_glyph_cache_w;
     unsigned new_glyph_cache_h = 2 * pdc_glyph_cache_h;
-    GLint max_texture_size = 0; 
+    GLint max_texture_size = 0;
+    unsigned i, j;
+
     if(new_glyph_cache_w == 0 || new_glyph_cache_h == 0)
     {
         new_glyph_cache_h = new_glyph_cache_w = next_pow_2(
@@ -84,6 +86,9 @@ static void enlarge_glyph_cache()
         new_glyph_cache_w != pdc_glyph_cache_w ||
         new_glyph_cache_h != pdc_glyph_cache_h
     ){
+        int new_glyph_row_capacity = new_glyph_cache_h / pdc_fheight;
+        pdc_glyph_col_capacity = new_glyph_cache_w / pdc_fwidth;
+
         /* Enlarging the texture should be possible if we're here. */
         if(pdc_font_texture != 0)
         {
@@ -96,19 +101,12 @@ static void enlarge_glyph_cache()
         }
         pdc_glyph_cache_w = new_glyph_cache_w;
         pdc_glyph_cache_h = new_glyph_cache_h;
-        int new_glyph_row_capacity = pdc_glyph_cache_h / pdc_fheight;
-        pdc_glyph_col_capacity = pdc_glyph_cache_w / pdc_fwidth;
         pdc_glyph_start_col = realloc(
             pdc_glyph_start_col,
             sizeof(unsigned) * new_glyph_row_capacity
         );
-        for(
-            unsigned i = pdc_glyph_row_capacity;
-            i < new_glyph_row_capacity;
-            ++i
-        ){
+        for(i = pdc_glyph_row_capacity; i < new_glyph_row_capacity; ++i)
             pdc_glyph_start_col[i] = 0;
-        }
 
         /* Reserve room for index 0 (we want to use index 0 to mark empty) */
         pdc_glyph_start_col[0] =
@@ -117,25 +115,25 @@ static void enlarge_glyph_cache()
     }
     else
     {
-        /* If we're here, it's not possible to enlarge the texture, so we have 
+        /* If we're here, it's not possible to enlarge the texture, so we have
          * to evict everything that's not needed out of the texture. This can
          * be really slow, but at least the output should be fine...
          */
-        for(unsigned i = 0; i < pdc_glyph_row_capacity; ++i)
+        for(i = 0; i < pdc_glyph_row_capacity; ++i)
             pdc_glyph_start_col[i] = 0;
         /* Reserve room for index 0 (we want to use index 0 to mark empty) */
         pdc_glyph_start_col[0] = 1;
 
         for(int attr = 0; attr < 4; ++attr)
-        for(size_t i = 0; i < pdc_glyph_cache_size[attr]; ++i)
+        for(i = 0; i < pdc_glyph_cache_size[attr]; ++i)
         {
             Uint32* cached_glyph = pdc_glyph_cache[attr]+i;
             Uint32 old_glyph = *cached_glyph;
+            bool used = FALSE;
             if(old_glyph == 0)
                 continue;
 
-            bool used = FALSE;
-            for(size_t j = 0; j < instances_w * instances_h; ++j)
+            for(j = 0; j < instances_w * instances_h; ++j)
             {
                 if(instances[j].glyph == old_glyph)
                 {
@@ -171,7 +169,7 @@ static void enlarge_glyph_cache()
                 }
             }
 
-            for(size_t j = 0; j < instances_w * instances_h; ++j)
+            for(j = 0; j < instances_w * instances_h; ++j)
             {
                 if(instances[j].glyph == old_glyph)
                 {
@@ -183,7 +181,7 @@ static void enlarge_glyph_cache()
             }
         }
 
-        for(size_t j = 0; j < instances_w * instances_h; ++j)
+        for(j = 0; j < instances_w * instances_h; ++j)
         {
             /* We can clear the top-most bit on all glyphs now. */
             instances[j].glyph &= ~(1u<<31);
@@ -221,7 +219,9 @@ static void ensure_instances()
 {
     if(SP->cols != instances_w || SP->lines != instances_h)
     {
-        struct instance_data* new_instances = malloc(sizeof(struct instance_data) * SP->lines * SP->cols);
+        struct instance_data* new_instances = malloc(
+            sizeof(struct instance_data) * SP->lines * SP->cols
+        );
 
         for(int j = 0; j < SP->lines; ++j)
         for(int i = 0; i < SP->cols; ++i)
@@ -251,8 +251,11 @@ static void ensure_instances()
 
 static Uint32 get_pdc_color( const int color_idx)
 {
-    const PACKED_RGB rgb = PDC_get_palette_entry( color_idx > 0 ? color_idx : 0);
-    return ((Uint32)Get_RValue(rgb) | (Uint32)Get_GValue(rgb)<<8 |  (Uint32)Get_BValue(rgb)<<16);
+    const PACKED_RGB rgb = PDC_get_palette_entry(color_idx > 0 ? color_idx : 0);
+    return
+        (Uint32)Get_RValue(rgb) |
+        (Uint32)Get_GValue(rgb)<<8 |
+        (Uint32)Get_BValue(rgb)<<16;
 }
 
 static int get_glyph_texture_index(Uint32 ch32)
@@ -282,7 +285,10 @@ static int get_glyph_texture_index(Uint32 ch32)
 #endif
         SDL_LockSurface(surf);
         Uint32 index = alloc_glyph_cache();
-        glPixelStorei(GL_UNPACK_ROW_LENGTH, surf->pitch/surf->format->BytesPerPixel);
+        glPixelStorei(
+            GL_UNPACK_ROW_LENGTH,
+            surf->pitch / surf->format->BytesPerPixel
+        );
         glTexSubImage2D(
             GL_TEXTURE_2D,
             0,
@@ -326,8 +332,9 @@ static void draw_background(int y, int x, Uint32 background)
     vd->glyph = 0;
 }
 
-static void draw_glyph(int y, int x, attr_t attr, Uint32 glyph_index, Uint32 foreground)
-{
+static void draw_glyph(
+    int y, int x, attr_t attr, Uint32 glyph_index, Uint32 foreground
+){
     if(y < 0 || y >= SP->lines || x < 0 || x >= SP->cols)
         return;
 
@@ -595,16 +602,15 @@ void PDC_pump_and_peep(void)
 {
     SDL_Event event;
 
-    if (SDL_PollEvent(&event))
+    if(SDL_PeepEvents(&event, 1, SDL_PEEKEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT) > 0)
     {
         if (SDL_WINDOWEVENT == event.type &&
             (SDL_WINDOWEVENT_RESTORED == event.window.event ||
              SDL_WINDOWEVENT_EXPOSED == event.window.event ||
              SDL_WINDOWEVENT_SHOWN == event.window.event))
         {
+            SDL_PollEvent(&event);
             PDC_doupdate();
         }
-        else
-            SDL_PushEvent(&event);
     }
 }

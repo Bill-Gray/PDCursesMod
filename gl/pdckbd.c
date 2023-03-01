@@ -457,7 +457,6 @@ int PDC_get_key(void)
         {
             pdc_sheight = event.window.data2;
             pdc_swidth = event.window.data1;
-            //glViewport(0, 0, event.window.data1/pdc_fwidth*pdc_fwidth, event.window.data2/pdc_fheight*pdc_fheight);
             if( curscr)
             {
                 touchwin(curscr);

@@ -53,6 +53,7 @@ static const char* pdc_vertex_shader_src =
     "    flat int attr;\n"
     "    vec3 bg;\n"
     "    vec3 fg;\n"
+    "    vec2 uv;\n"
     "} v_out;\n"
     "const vec2[6] uv_table = vec2[](\n"
     "    vec2(0, 0),\n"
@@ -74,6 +75,7 @@ static const char* pdc_vertex_shader_src =
     "   v_out.attr = int(v_fg>>24);\n"
     "   v_out.bg = unpackUnorm4x8(v_bg).rgb;\n"
     "   v_out.fg = unpackUnorm4x8(v_fg).rgb;\n"
+    "   v_out.uv = uv;\n"
     "}\n";
 
 static const char* pdc_fragment_shader_src =
@@ -83,6 +85,7 @@ static const char* pdc_fragment_shader_src =
     "    flat int attr;\n"
     "    vec3 bg;\n"
     "    vec3 fg;\n"
+    "    vec2 uv;\n"
     "} v_in;\n"
     "out vec4 color;\n"
     "uniform sampler2D glyphs;\n"
@@ -92,19 +95,16 @@ static const char* pdc_fragment_shader_src =
     "void main(void)\n"
     "{\n"
     "   float g_alpha = 0;\n"
-    "   ivec2 coord = ivec2(gl_FragCoord.xy) % glyph_size;\n"
+    "   ivec2 coord = ivec2(v_in.uv * glyph_size);\n"
     "   if(v_in.glyph_offset.x > 0 || v_in.glyph_offset.y > 0)\n"
-    "       g_alpha = texelFetch(glyphs, ivec2(\n"
-    "           v_in.glyph_offset.x * glyph_size.x + coord.x,\n"
-    "           (v_in.glyph_offset.y+1) * glyph_size.y - 1 - coord.y\n"
-    "       ), 0).r;\n"
-    "   if(((v_in.attr & 1) != 0 && coord.y < 0.25 * glyph_size.y) || (v_in.attr & 2) != 0)\n"
+    "       g_alpha = texelFetch(glyphs, v_in.glyph_offset * glyph_size + coord, 0).r;\n"
+    "   if(((v_in.attr & 1) != 0 && coord.y >= 0.75 * glyph_size.y) || (v_in.attr & 2) != 0)\n"
     "       g_alpha = 1 - g_alpha;\n"
     "   vec3 c = mix(v_in.bg, v_in.fg, g_alpha);\n"
     "   if(\n"
-    "       ((v_in.attr & (1<<2)) != 0 && coord.y < fthick) ||\n" /* Underline */
-    "       ((v_in.attr & (1<<3)) != 0 && coord.y >= glyph_size.y-fthick) ||\n" /* Overline */
-    "       ((v_in.attr & (1<<4)) != 0 && coord.y <= glyph_size.y/2 && coord.y > glyph_size.y/2-fthick) ||\n" /* Strikeout */
+    "       ((v_in.attr & (1<<2)) != 0 && coord.y >= glyph_size.y-fthick) ||\n" /* Underline */
+    "       ((v_in.attr & (1<<3)) != 0 && coord.y < fthick) ||\n" /* Overline */
+    "       ((v_in.attr & (1<<4)) != 0 && coord.y >= glyph_size.y/2-fthick && coord.y < glyph_size.y/2) ||\n" /* Strikeout */
     "       ((v_in.attr & (1<<5)) != 0 && coord.x < fthick) ||\n" /* Left */
     "       ((v_in.attr & (1<<6)) != 0 && coord.x >= glyph_size.x-fthick)\n" /* Right */
     "   ) c = all(greaterThanEqual(line_color, vec3(0))) ? line_color : v_in.fg;\n"
@@ -338,9 +338,13 @@ int PDC_scr_open(void)
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    SDL_GL_SetAttribute(
+        SDL_GL_CONTEXT_PROFILE_MASK,
+        SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
     SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
+    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 0);
 
     pdc_window = SDL_CreateWindow("PDCurses",
         SDL_WINDOWPOS_CENTERED_DISPLAY(displaynum),
@@ -358,6 +362,9 @@ int PDC_scr_open(void)
 
     int h, w;
     SDL_GetWindowSize(pdc_window, &w, &h);
+
+    if (!pdc_sheight) pdc_sheight = h;
+    if (!pdc_swidth) pdc_swidth = w;
 
     pdc_gl_context = SDL_GL_CreateContext(pdc_window);
     if (pdc_gl_context == NULL)
@@ -397,35 +404,19 @@ int PDC_scr_open(void)
     glBindBuffer(GL_ARRAY_BUFFER, pdc_vbo);
 
     glEnableVertexAttribArray(0);
-    glVertexAttribIPointer(0, 1, GL_INT, 3 * sizeof(float), (void*)(0 * sizeof(float)));
+    glVertexAttribIPointer(
+        0, 1, GL_INT, 3 * sizeof(float), (void*)(0 * sizeof(float)));
     glVertexAttribDivisor(0, 1);
     glEnableVertexAttribArray(1);
-    glVertexAttribIPointer(1, 1, GL_INT, 3 * sizeof(float), (void*)(1 * sizeof(float)));
+    glVertexAttribIPointer(
+        1, 1, GL_INT, 3 * sizeof(float), (void*)(1 * sizeof(float)));
     glVertexAttribDivisor(1, 1);
     glEnableVertexAttribArray(2);
-    glVertexAttribIPointer(2, 1, GL_INT, 3 * sizeof(float), (void*)(2 * sizeof(float)));
+    glVertexAttribIPointer(
+        2, 1, GL_INT, 3 * sizeof(float), (void*)(2 * sizeof(float)));
     glVertexAttribDivisor(2, 1);
 
     glUniform1i(glGetUniformLocation(pdc_shader_program, "glyphs"), 0);
-
-
-    /* Events must be pumped before calling SDL_GetWindowSurface, or
-       initial modifiers (e.g. numlock) will be ignored and out-of-sync. */
-
-    SDL_PumpEvents();
-
-    /* Wait until window is exposed before getting surface */
-
-    while (SDL_PollEvent(&event))
-        if (SDL_WINDOWEVENT == event.type &&
-            SDL_WINDOWEVENT_EXPOSED == event.window.event)
-            break;
-
-    if (!pdc_sheight)
-        pdc_sheight = h;
-
-    if (!pdc_swidth)
-        pdc_swidth = w;
 
     SDL_StartTextInput();
 
