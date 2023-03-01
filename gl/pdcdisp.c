@@ -105,7 +105,7 @@ static int get_glyph_texture_index(Uint32 ch32)
             glTexImage3D(
                 GL_TEXTURE_2D_ARRAY,
                 0,
-                GL_RGBA8,
+                GL_R8,
                 pdc_fwidth,
                 pdc_fheight,
                 pdc_glyph_capacity * 2,
@@ -136,8 +136,8 @@ static int get_glyph_texture_index(Uint32 ch32)
             pdc_fwidth,
             pdc_fheight,
             1,
-            GL_BGRA,
-            GL_UNSIGNED_INT_8_8_8_8_REV,
+            GL_RGBA,
+            GL_UNSIGNED_INT_8_8_8_8,
             surf->pixels
         );
         SDL_UnlockSurface(surf);
