@@ -18,10 +18,10 @@
 PDCEX  TTF_Font *pdc_ttffont;
 PDCEX  int pdc_font_size;
 extern Uint32 *pdc_glyph_cache[4];
-extern size_t pdc_glyph_cache_size[4];
-extern unsigned pdc_glyph_row_capacity, pdc_glyph_col_capacity;
-extern unsigned pdc_glyph_cache_w, pdc_glyph_cache_h;
-extern unsigned* pdc_glyph_start_col;
+extern int pdc_glyph_cache_size[4];
+extern int pdc_glyph_row_capacity, pdc_glyph_col_capacity;
+extern int pdc_glyph_cache_w, pdc_glyph_cache_h;
+extern int* pdc_glyph_start_col;
 
 extern GLuint pdc_vbo;
 extern GLuint pdc_shader_program;

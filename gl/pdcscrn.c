@@ -26,10 +26,10 @@ int pdc_font_size =
  17;
 #endif
 Uint32 *pdc_glyph_cache[4] = {NULL, NULL, NULL, NULL};
-size_t pdc_glyph_cache_size[4] = {0, 0, 0, 0};
-unsigned pdc_glyph_row_capacity = 0, pdc_glyph_col_capacity = 0;
-unsigned pdc_glyph_cache_w = 0, pdc_glyph_cache_h = 0;
-unsigned* pdc_glyph_start_col = NULL;
+int pdc_glyph_cache_size[4] = {0, 0, 0, 0};
+int pdc_glyph_row_capacity = 0, pdc_glyph_col_capacity = 0;
+int pdc_glyph_cache_w = 0, pdc_glyph_cache_h = 0;
+int* pdc_glyph_start_col = NULL;
 
 SDL_Window *pdc_window = NULL;
 SDL_Surface *pdc_icon = NULL;
@@ -245,7 +245,6 @@ int _get_displaynum(void)
 
 int PDC_scr_open(void)
 {
-    SDL_Event event;
     int displaynum = 0;
     const char *ptsz, *fname;
 
@@ -375,7 +374,7 @@ int PDC_scr_open(void)
     SDL_GL_MakeCurrent(pdc_window, pdc_gl_context);
 
     SDL_GL_SetSwapInterval(0);
-    gladLoadGL(SDL_GL_GetProcAddress);
+    gladLoadGL((GLADloadfunc)SDL_GL_GetProcAddress);
 
     pdc_shader_program = glCreateProgram();
     add_shader(GL_VERTEX_SHADER, pdc_vertex_shader_src);

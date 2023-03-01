@@ -26,10 +26,10 @@ struct instance_data
 };
 
 static struct instance_data* instances = NULL;
-static size_t instances_w = 0, instances_h = 0;
+static int instances_w = 0, instances_h = 0;
 static int cache_attr_index = 0;
 
-static unsigned next_pow_2(unsigned n)
+static int next_pow_2(int n)
 {
     n--;
     n |= n >> 1;
@@ -44,10 +44,10 @@ static unsigned next_pow_2(unsigned n)
 static void enlarge_glyph_cache()
 {
     GLuint new_font_texture = 0;
-    unsigned new_glyph_cache_w = 2 * pdc_glyph_cache_w;
-    unsigned new_glyph_cache_h = 2 * pdc_glyph_cache_h;
+    int new_glyph_cache_w = 2 * pdc_glyph_cache_w;
+    int new_glyph_cache_h = 2 * pdc_glyph_cache_h;
     GLint max_texture_size = 0;
-    unsigned i, j;
+    int i, j;
 
     if(new_glyph_cache_w == 0 || new_glyph_cache_h == 0)
     {
@@ -103,7 +103,7 @@ static void enlarge_glyph_cache()
         pdc_glyph_cache_h = new_glyph_cache_h;
         pdc_glyph_start_col = realloc(
             pdc_glyph_start_col,
-            sizeof(unsigned) * new_glyph_row_capacity
+            sizeof(int) * new_glyph_row_capacity
         );
         for(i = pdc_glyph_row_capacity; i < new_glyph_row_capacity; ++i)
             pdc_glyph_start_col[i] = 0;
@@ -147,9 +147,9 @@ static void enlarge_glyph_cache()
                 continue;
 
             /* Used glyphs are given a new index and copied over. */
-            for(unsigned row = 0; row < pdc_glyph_row_capacity; ++row)
+            for(int row = 0; row < pdc_glyph_row_capacity; ++row)
             {
-                unsigned *col = &pdc_glyph_start_col[row];
+                int *col = &pdc_glyph_start_col[row];
                 if(*col < pdc_glyph_col_capacity)
                 {
                     Uint32 index = (Uint32)(*col) | (((Uint32)row)<<16);
@@ -198,9 +198,9 @@ static Uint32 alloc_glyph_cache()
     /* Keep trying until we succeed. */
     for(;;)
     {
-        for(unsigned row = 0; row < pdc_glyph_row_capacity; ++row)
+        for(int row = 0; row < pdc_glyph_row_capacity; ++row)
         {
-            unsigned *col = &pdc_glyph_start_col[row];
+            int *col = &pdc_glyph_start_col[row];
             if(*col < pdc_glyph_col_capacity)
             {
                 Uint32 index = (Uint32)(*col) | (((Uint32)row)<<16);
@@ -261,7 +261,7 @@ static Uint32 get_pdc_color( const int color_idx)
 static int get_glyph_texture_index(Uint32 ch32)
 {
     SDL_Color white = {255,255,255,255};
-    size_t *cache_size = &pdc_glyph_cache_size[cache_attr_index];
+    int *cache_size = &pdc_glyph_cache_size[cache_attr_index];
     Uint32 **cache = &pdc_glyph_cache[cache_attr_index];
 
 #ifndef PDC_SDL_SUPPLEMENTARY_PLANES_SUPPORT
@@ -270,7 +270,7 @@ static int get_glyph_texture_index(Uint32 ch32)
         ch32 = '?';
 #endif
 
-    if(ch32 < *cache_size && (*cache)[ch32] > 0)
+    if(ch32 < (Uint32)*cache_size && (*cache)[ch32] > 0)
     {
         return (*cache)[ch32];
     }
@@ -303,11 +303,11 @@ static int get_glyph_texture_index(Uint32 ch32)
         SDL_UnlockSurface(surf);
         SDL_FreeSurface(surf);
 
-        if(ch32 >= *cache_size)
+        if(ch32 >= (Uint32)*cache_size)
         {
             int new_cache_size = *cache_size;
             if(new_cache_size == 0) new_cache_size = 256;
-            while(new_cache_size < ch32) new_cache_size *= 2;
+            while((Uint32)new_cache_size < ch32) new_cache_size *= 2;
 
             *cache = realloc(*cache, sizeof(Uint32)*new_cache_size);
             memset(
@@ -418,7 +418,6 @@ static void _set_attr(chtype ch)
 
 void PDC_gotoyx(int row, int col)
 {
-    chtype ch;
     int oldrow, oldcol;
 
     PDC_LOG(("PDC_gotoyx() - called: row %d col %d from row %d col %d\n",
