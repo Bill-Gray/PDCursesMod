@@ -46,13 +46,21 @@ static void enlarge_glyph_cache()
     GLuint new_font_texture = 0;
     unsigned new_glyph_cache_w = 2 * pdc_glyph_cache_w;
     unsigned new_glyph_cache_h = 2 * pdc_glyph_cache_h;
+    GLint max_texture_size = 0; 
     if(new_glyph_cache_w == 0 || new_glyph_cache_h == 0)
     {
-        new_glyph_cache_h = new_glyph_cache_w =
-            next_pow_2((pdc_fwidth > pdc_fheight ? pdc_fwidth : pdc_fheight) * 16);
+        new_glyph_cache_h = new_glyph_cache_w = next_pow_2(
+            (pdc_fwidth > pdc_fheight ? pdc_fwidth : pdc_fheight) * 16);
     }
-    // TODO: Ensure new_glyph_cache_w & new_glyph_cache_h don't exceed maximums,
-    // and clear cache if that happens!
+
+    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
+    if(
+        new_glyph_cache_w > max_texture_size ||
+        new_glyph_cache_h > max_texture_size
+    ){
+        new_glyph_cache_w = max_texture_size;
+        new_glyph_cache_h = max_texture_size;
+    }
 
     glGenTextures(1, &new_font_texture);
     glBindTexture(GL_TEXTURE_2D, new_font_texture);
@@ -71,33 +79,125 @@ static void enlarge_glyph_cache()
         GL_UNSIGNED_BYTE,
         NULL
     );
-    if(pdc_font_texture != 0)
-    {
-        /* And this is why we require OpenGL 4.3 instead of 3.3... */
-        glCopyImageSubData(
-            pdc_font_texture, GL_TEXTURE_2D, 0, 0, 0, 0,
-            new_font_texture, GL_TEXTURE_2D, 0, 0, 0, 0,
-            pdc_glyph_cache_w, pdc_glyph_cache_h, 1
+
+    if(
+        new_glyph_cache_w != pdc_glyph_cache_w ||
+        new_glyph_cache_h != pdc_glyph_cache_h
+    ){
+        /* Enlarging the texture should be possible if we're here. */
+        if(pdc_font_texture != 0)
+        {
+            /* And this is why we require OpenGL 4.3 instead of 3.3... */
+            glCopyImageSubData(
+                pdc_font_texture, GL_TEXTURE_2D, 0, 0, 0, 0,
+                new_font_texture, GL_TEXTURE_2D, 0, 0, 0, 0,
+                pdc_glyph_cache_w, pdc_glyph_cache_h, 1
+            );
+        }
+        pdc_glyph_cache_w = new_glyph_cache_w;
+        pdc_glyph_cache_h = new_glyph_cache_h;
+        int new_glyph_row_capacity = pdc_glyph_cache_h / pdc_fheight;
+        pdc_glyph_col_capacity = pdc_glyph_cache_w / pdc_fwidth;
+        pdc_glyph_start_col = realloc(
+            pdc_glyph_start_col,
+            sizeof(unsigned) * new_glyph_row_capacity
         );
-        glDeleteTextures(1, &pdc_font_texture);
+        for(
+            unsigned i = pdc_glyph_row_capacity;
+            i < new_glyph_row_capacity;
+            ++i
+        ){
+            pdc_glyph_start_col[i] = 0;
+        }
+
+        /* Reserve room for index 0 (we want to use index 0 to mark empty) */
+        pdc_glyph_start_col[0] =
+            pdc_glyph_start_col[0] > 1 ? pdc_glyph_start_col[0] : 1;
+        pdc_glyph_row_capacity = new_glyph_row_capacity;
     }
+    else
+    {
+        /* If we're here, it's not possible to enlarge the texture, so we have 
+         * to evict everything that's not needed out of the texture. This can
+         * be really slow, but at least the output should be fine...
+         */
+        for(unsigned i = 0; i < pdc_glyph_row_capacity; ++i)
+            pdc_glyph_start_col[i] = 0;
+        /* Reserve room for index 0 (we want to use index 0 to mark empty) */
+        pdc_glyph_start_col[0] = 1;
+
+        for(int attr = 0; attr < 4; ++attr)
+        for(size_t i = 0; i < pdc_glyph_cache_size[attr]; ++i)
+        {
+            Uint32* cached_glyph = pdc_glyph_cache[attr]+i;
+            Uint32 old_glyph = *cached_glyph;
+            if(old_glyph == 0)
+                continue;
+
+            bool used = FALSE;
+            for(size_t j = 0; j < instances_w * instances_h; ++j)
+            {
+                if(instances[j].glyph == old_glyph)
+                {
+                    used = TRUE;
+                    break;
+                }
+            }
+
+            *cached_glyph = 0;
+            if(!used) /* Unused glyphs get thrown out. */
+                continue;
+
+            /* Used glyphs are given a new index and copied over. */
+            for(unsigned row = 0; row < pdc_glyph_row_capacity; ++row)
+            {
+                unsigned *col = &pdc_glyph_start_col[row];
+                if(*col < pdc_glyph_col_capacity)
+                {
+                    Uint32 index = (Uint32)(*col) | (((Uint32)row)<<16);
+                    *cached_glyph = index;
+
+                    glCopyImageSubData(
+                        pdc_font_texture, GL_TEXTURE_2D, 0,
+                        (old_glyph&0xFFFF) * pdc_fwidth,
+                        (old_glyph>>16) * pdc_fheight, 0,
+                        new_font_texture, GL_TEXTURE_2D, 0,
+                        (*col) * pdc_fwidth, row * pdc_fheight, 0,
+                        pdc_fwidth, pdc_fheight, 1
+                    );
+
+                    (*col)++;
+                    break;
+                }
+            }
+
+            for(size_t j = 0; j < instances_w * instances_h; ++j)
+            {
+                if(instances[j].glyph == old_glyph)
+                {
+                    /* Setting the top-most bit allows us to not mix the
+                     * already-changed glyph indices up with old ones that need
+                     * updating. It's just used as an arbitrary marker. */
+                    instances[j].glyph = *cached_glyph | (1u<<31);
+                }
+            }
+        }
+
+        for(size_t j = 0; j < instances_w * instances_h; ++j)
+        {
+            /* We can clear the top-most bit on all glyphs now. */
+            instances[j].glyph &= ~(1u<<31);
+        }
+
+    }
+    if(pdc_font_texture != 0)
+        glDeleteTextures(1, &pdc_font_texture);
     pdc_font_texture = new_font_texture;
-    pdc_glyph_cache_w = new_glyph_cache_w;
-    pdc_glyph_cache_h = new_glyph_cache_h;
-    int new_glyph_row_capacity = pdc_glyph_cache_h / pdc_fheight;
-    pdc_glyph_col_capacity = pdc_glyph_cache_w / pdc_fwidth;
-    pdc_glyph_start_col = realloc(pdc_glyph_start_col, sizeof(unsigned) * new_glyph_row_capacity);
-    for(unsigned i = pdc_glyph_row_capacity; i < new_glyph_row_capacity; ++i)
-        pdc_glyph_start_col[i] = 0;
-    // Reserve room for the reserved space cell (we want to use index 0 to mark
-    // empty)
-    pdc_glyph_start_col[0] = pdc_glyph_start_col[0] > 1 ? pdc_glyph_start_col[0] : 1;
-    pdc_glyph_row_capacity = new_glyph_row_capacity;
 }
 
 static Uint32 alloc_glyph_cache()
 {
-    // Keep trying until we succeed.
+    /* Keep trying until we succeed. */
     for(;;)
     {
         for(unsigned row = 0; row < pdc_glyph_row_capacity; ++row)

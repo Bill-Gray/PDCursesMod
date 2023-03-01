@@ -74,8 +74,8 @@ static const char* pdc_vertex_shader_src =
     "   v_out.attr = int(v_fg>>24);\n"
     "   v_out.bg = unpackUnorm4x8(v_bg).rgb;\n"
     "   v_out.fg = unpackUnorm4x8(v_fg).rgb;\n"
-    "}\n"
-    ;
+    "}\n";
+
 static const char* pdc_fragment_shader_src =
     "#version 430 core\n"
     "in vertex_data {\n"
