@@ -97,21 +97,24 @@ static void enlarge_glyph_cache()
 
 static Uint32 alloc_glyph_cache()
 {
-    for(unsigned row = 0; row < pdc_glyph_row_capacity; ++row)
+    // Keep trying until we succeed.
+    for(;;)
     {
-        unsigned *col = &pdc_glyph_start_col[row];
-        if(*col < pdc_glyph_col_capacity)
+        for(unsigned row = 0; row < pdc_glyph_row_capacity; ++row)
         {
-            Uint32 index = (Uint32)(*col) | (((Uint32)row)<<16);
-            (*col)++;
-            return index;
+            unsigned *col = &pdc_glyph_start_col[row];
+            if(*col < pdc_glyph_col_capacity)
+            {
+                Uint32 index = (Uint32)(*col) | (((Uint32)row)<<16);
+                (*col)++;
+                return index;
+            }
         }
-    }
 
-    /* If we're here, we failed to allocate the glyph, so we need to enlarge
-     * the glyph cache. */
-    enlarge_glyph_cache();
-    return alloc_glyph_cache();
+        /* If we're here, we failed to allocate the glyph, so we need to enlarge
+         * the glyph cache. */
+        enlarge_glyph_cache();
+    }
 }
 
 static void ensure_instances()
@@ -469,6 +472,19 @@ void PDC_doupdate(void)
 
     int u_fthick = glGetUniformLocation(pdc_shader_program, "fthick");
     glUniform1i(u_fthick, pdc_fthick);
+
+    int u_line_color = glGetUniformLocation(pdc_shader_program, "line_color");
+    short hcol = SP->line_color;
+    if(hcol >= 0)
+    {
+        PACKED_RGB rgb = PDC_get_palette_entry(hcol);
+        glUniform3f(u_line_color,
+            Get_RValue(rgb)/255.0f,
+            Get_GValue(rgb)/255.0f,
+            Get_BValue(rgb)/255.0f
+        );
+    }
+    else glUniform3f(u_line_color, -1, -1, -1);
 
     glDrawArraysInstanced(GL_TRIANGLES, 0, 6, SP->lines * SP->cols);
 

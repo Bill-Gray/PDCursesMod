@@ -88,25 +88,27 @@ static const char* pdc_fragment_shader_src =
     "uniform sampler2D glyphs;\n"
     "uniform int fthick;\n"
     "uniform ivec2 glyph_size;\n"
+    "uniform vec3 line_color;\n"
     "void main(void)\n"
     "{\n"
-    "   float g_color = 0;\n"
+    "   float g_alpha = 0;\n"
     "   ivec2 coord = ivec2(gl_FragCoord.xy) % glyph_size;\n"
     "   if(v_in.glyph_offset.x > 0 || v_in.glyph_offset.y > 0)\n"
-    "       g_color = texelFetch(glyphs, ivec2(\n"
+    "       g_alpha = texelFetch(glyphs, ivec2(\n"
     "           v_in.glyph_offset.x * glyph_size.x + coord.x,\n"
     "           (v_in.glyph_offset.y+1) * glyph_size.y - 1 - coord.y\n"
     "       ), 0).r;\n"
-    "   if(((v_in.attr & 1) != 0 && coord.y > 0.75 * glyph_size.y) || (v_in.attr & 2) != 0)\n"
-    "       g_color = 1 - g_color;\n"
+    "   if(((v_in.attr & 1) != 0 && coord.y < 0.25 * glyph_size.y) || (v_in.attr & 2) != 0)\n"
+    "       g_alpha = 1 - g_alpha;\n"
+    "   vec3 c = mix(v_in.bg, v_in.fg, g_alpha);\n"
     "   if(\n"
     "       ((v_in.attr & (1<<2)) != 0 && coord.y < fthick) ||\n" /* Underline */
     "       ((v_in.attr & (1<<3)) != 0 && coord.y >= glyph_size.y-fthick) ||\n" /* Overline */
     "       ((v_in.attr & (1<<4)) != 0 && coord.y <= glyph_size.y/2 && coord.y > glyph_size.y/2-fthick) ||\n" /* Strikeout */
     "       ((v_in.attr & (1<<5)) != 0 && coord.x < fthick) ||\n" /* Left */
     "       ((v_in.attr & (1<<6)) != 0 && coord.x >= glyph_size.x-fthick)\n" /* Right */
-    "   ) g_color = 1;\n"
-    "   color = vec4(mix(v_in.bg, v_in.fg, g_color), 1.0f);\n"
+    "   ) c = all(greaterThanEqual(line_color, vec3(0))) ? line_color : v_in.fg;\n"
+    "   color = vec4(c, 1.0f);\n"
     "}\n";
 
 static void _clean(void)
