@@ -20,6 +20,9 @@ static bool blinked_off = FALSE;
 
 struct instance_data
 {
+    /* The most significant 8 bits of bg_color contain character width flags
+     * (0 = normal, 1 = fullwidth, 2 = empty)
+     */
     Uint32 bg_color;
     Uint32 fg_color; /* The most significant 8 bits contain the attribute data */
     Uint32 glyph;
@@ -115,6 +118,7 @@ static void enlarge_glyph_cache()
     }
     else
     {
+        int minx, maxx, w;
         /* If we're here, it's not possible to enlarge the texture, so we have
          * to evict everything that's not needed out of the texture. This can
          * be really slow, but at least the output should be fine...
@@ -146,11 +150,14 @@ static void enlarge_glyph_cache()
             if(!used) /* Unused glyphs get thrown out. */
                 continue;
 
+            TTF_GlyphMetrics32(pdc_ttffont, i, &minx, &maxx, NULL, NULL, NULL);
+            w = (maxx - minx + pdc_fwidth-1)/pdc_fwidth;
+
             /* Used glyphs are given a new index and copied over. */
             for(int row = 0; row < pdc_glyph_row_capacity; ++row)
             {
                 int *col = &pdc_glyph_start_col[row];
-                if(*col < pdc_glyph_col_capacity)
+                if(*col + w <= pdc_glyph_col_capacity)
                 {
                     Uint32 index = (Uint32)(*col) | (((Uint32)row)<<16);
                     *cached_glyph = index;
@@ -161,10 +168,10 @@ static void enlarge_glyph_cache()
                         (old_glyph>>16) * pdc_fheight, 0,
                         new_font_texture, GL_TEXTURE_2D, 0,
                         (*col) * pdc_fwidth, row * pdc_fheight, 0,
-                        pdc_fwidth, pdc_fheight, 1
+                        pdc_fwidth * w, pdc_fheight, 1
                     );
 
-                    (*col)++;
+                    (*col) += w;
                     break;
                 }
             }
@@ -193,7 +200,7 @@ static void enlarge_glyph_cache()
     pdc_font_texture = new_font_texture;
 }
 
-static Uint32 alloc_glyph_cache()
+static Uint32 alloc_glyph_cache(int w)
 {
     /* Keep trying until we succeed. */
     for(;;)
@@ -201,10 +208,10 @@ static Uint32 alloc_glyph_cache()
         for(int row = 0; row < pdc_glyph_row_capacity; ++row)
         {
             int *col = &pdc_glyph_start_col[row];
-            if(*col < pdc_glyph_col_capacity)
+            if(*col+w <= pdc_glyph_col_capacity)
             {
                 Uint32 index = (Uint32)(*col) | (((Uint32)row)<<16);
-                (*col)++;
+                (*col) += w;
                 return index;
             }
         }
@@ -260,6 +267,8 @@ static Uint32 get_pdc_color( const int color_idx)
 
 static int get_glyph_texture_index(Uint32 ch32)
 {
+    if(ch32 == ' ') return 0;
+
     SDL_Color white = {255,255,255,255};
     int *cache_size = &pdc_glyph_cache_size[cache_attr_index];
     Uint32 **cache = &pdc_glyph_cache[cache_attr_index];
@@ -284,7 +293,8 @@ static int get_glyph_texture_index(Uint32 ch32)
         surf = TTF_RenderGlyph_Blended(pdc_ttffont, (Uint16)ch32, white);
 #endif
         SDL_LockSurface(surf);
-        Uint32 index = alloc_glyph_cache();
+        int w = (surf->w + pdc_fwidth-1)/pdc_fwidth;
+        Uint32 index = alloc_glyph_cache(w);
         glPixelStorei(
             GL_UNPACK_ROW_LENGTH,
             surf->pitch / surf->format->BytesPerPixel
@@ -321,26 +331,18 @@ static int get_glyph_texture_index(Uint32 ch32)
     }
 }
 
-static void draw_background(int y, int x, Uint32 background)
-{
-    if(y < 0 || y >= SP->lines || x < 0 || x >= SP->cols)
-        return;
-
-    ensure_instances();
-    struct instance_data* vd = &instances[x + y * SP->cols];
-    vd->bg_color = background;
-    vd->glyph = 0;
-}
-
 static void draw_glyph(
-    int y, int x, attr_t attr, Uint32 glyph_index, Uint32 foreground
+    int y, int x, attr_t attr, Uint32 ch32,
+    Uint32 background,
+    Uint32 foreground
 ){
+    struct instance_data* vd;
     if(y < 0 || y >= SP->lines || x < 0 || x >= SP->cols)
         return;
 
     ensure_instances();
-    struct instance_data* vd = &instances[x + y * SP->cols];
-    vd->glyph = glyph_index;
+    vd = &instances[x + y * SP->cols];
+    vd->bg_color = background;
     Uint32 gl_attrs =
         ((attr & A_UNDERLINE) ? 1<<2 : 0) |
         ((attr & A_OVERLINE) ? 1<<3 : 0) |
@@ -348,15 +350,23 @@ static void draw_glyph(
         ((attr & A_LEFT) ? 1<<5 : 0) |
         ((attr & A_RIGHT) ? 1<<6 : 0);
     vd->fg_color = foreground | (gl_attrs << 24);
+#ifdef PDC_WIDE
+    if(PDC_wcwidth(ch32) == 2) vd->bg_color |= 1<<24;
+    /* Fullwidth dummy char, we use this to widen the char at x-1 and hide
+     * the current char. */
+    else if(ch32 == 0x110000) vd->bg_color |= 2<<24;
+#endif
+    vd->glyph = get_glyph_texture_index(ch32);
 }
 
 static void draw_cursor(int y, int x, int visibility)
 {
+    struct instance_data* vd;
     if(y < 0 || y >= SP->lines || x < 0 || x >= SP->cols)
         return;
 
     ensure_instances();
-    struct instance_data* vd = &instances[x + y * SP->cols];
+    vd = &instances[x + y * SP->cols];
     Uint32 gl_attrs = visibility >= 0 && visibility <= 2 ? visibility : 0;
     vd->fg_color |= gl_attrs << 24;
 }
@@ -447,8 +457,6 @@ void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
     {
         chtype ch = srcp[j];
 
-        draw_background(lineno, x+j, get_pdc_color(backgr));
-
         if (blink) ch = ' ';
 
         if( _is_altcharset( ch))
@@ -456,16 +464,7 @@ void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
 
         ch &= A_CHARTEXT;
 
-        if (ch != ' ')
-        {
-            Uint32 glyph = get_glyph_texture_index(ch);
-            if(glyph > 0)
-                draw_glyph(lineno, x+j, attr, glyph, get_pdc_color(foregr));
-        }
-        else
-        {
-            draw_glyph(lineno, x+j, attr, 0, get_pdc_color(foregr));
-        }
+        draw_glyph(lineno, x+j, attr, ch, get_pdc_color(backgr), get_pdc_color(foregr));
     }
 }
 
