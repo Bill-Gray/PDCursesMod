@@ -334,6 +334,7 @@ static int _process_mouse_event(void)
     SDL_Keymod keymods;
     short shift_flags = 0;
     int wheel_x = 0, wheel_y = 0;
+    int mouse_x = 0, mouse_y = 0;
 
     memset(&SP->mouse_status, 0, sizeof(MOUSE_STATUS));
 
@@ -355,10 +356,13 @@ static int _process_mouse_event(void)
         SDL_GetMouseState( &event.motion.x, &event.motion.y);
     }
 
-    SP->mouse_status.x = event.motion.x / pdc_fwidth;
-    SP->mouse_status.y = event.motion.y / pdc_fheight;
-    if( SP->mouse_status.x >= COLS || SP->mouse_status.y >= LINES)
+    mouse_x = event.motion.x / pdc_fwidth;
+    mouse_y = event.motion.y / pdc_fheight;
+    if(mouse_x < 0 || mouse_x >= COLS || mouse_y < 0 || mouse_y >= LINES)
         return -1;
+
+    SP->mouse_status.x = mouse_x;
+    SP->mouse_status.y = mouse_y;
 
     if (event.type == SDL_MOUSEMOTION)
     {
