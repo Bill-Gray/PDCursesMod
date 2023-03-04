@@ -170,6 +170,7 @@ static void enlarge_glyph_cache()
     else
     {
         bool* visited = calloc(grid_w * grid_h * grid_layers, sizeof(bool));
+        int attr;
 
         /* If we're here, it's not possible to enlarge the texture, so we have
          * to evict everything that's not needed out of the texture. This can
@@ -178,13 +179,14 @@ static void enlarge_glyph_cache()
         for(i = 0; i < pdc_glyph_row_capacity; ++i)
             pdc_glyph_start_col[i] = 0;
 
-        for(int attr = 0; attr < 4; ++attr)
+        for(attr = 0; attr < 4; ++attr)
         for(i = 0; i < pdc_glyph_cache_size[attr]; ++i)
         {
             Uint32* cached_glyph = pdc_glyph_cache[attr]+i;
             Uint32 old_glyph = *cached_glyph;
             bool used = FALSE;
             int w = old_glyph >> 30;
+            int row;
             if(old_glyph == 0)
                 continue;
 
@@ -206,7 +208,7 @@ static void enlarge_glyph_cache()
                 continue;
 
             /* Used glyphs are given a new index and copied over. */
-            for(int row = 0; row < pdc_glyph_row_capacity; ++row)
+            for(row = 0; row < pdc_glyph_row_capacity; ++row)
             {
                 int *col = &pdc_glyph_start_col[row];
                 if(*col + w <= pdc_glyph_col_capacity)
@@ -258,8 +260,9 @@ static Uint32 alloc_glyph_cache(int w)
     /* Keep trying until we succeed. */
     for(;;)
     {
+        int row;
         /* We try to fill the glyph cache in rows, from bottom to top. */
-        for(int row = 0; row < pdc_glyph_row_capacity; ++row)
+        for(row = 0; row < pdc_glyph_row_capacity; ++row)
         {
             int *col = &pdc_glyph_start_col[row];
             if(*col+w <= pdc_glyph_col_capacity)
@@ -392,12 +395,12 @@ static Uint32 get_pdc_color( const int color_idx)
 
 static Uint32 get_glyph_texture_index(Uint32 ch32)
 {
-    /* Fullwidth dummy char! 0 makes it stop existing! */
-    if(ch32 == 0x110000) return 0;
-
     SDL_Color white = {255,255,255,255};
     int *cache_size = &pdc_glyph_cache_size[cache_attr_index];
     Uint32 **cache = &pdc_glyph_cache[cache_attr_index];
+
+    /* Fullwidth dummy char! 0 makes it stop existing! */
+    if(ch32 == 0x110000) return 0;
 
 #ifndef PDC_SDL_SUPPLEMENTARY_PLANES_SUPPORT
     /* no support for supplementary planes */
@@ -413,6 +416,8 @@ static Uint32 get_glyph_texture_index(Uint32 ch32)
     else
     {
         /* Here we need to render the character, it's not cached. */
+        int w = 0;
+        Uint32 index;
         SDL_Surface* surf = NULL;
 
 #ifdef PDC_SDL_SUPPLEMENTARY_PLANES_SUPPORT
@@ -424,8 +429,8 @@ static Uint32 get_glyph_texture_index(Uint32 ch32)
         /* Kind-of-fullwidthness-but-not-really: Italics can also overstep
          * and cause w = 2, which should still render completely fine.
          */
-        int w = (surf->w + pdc_fwidth-1)/pdc_fwidth;
-        Uint32 index = alloc_glyph_cache(w);
+        w = (surf->w + pdc_fwidth-1)/pdc_fwidth;
+        index = alloc_glyph_cache(w);
         /* The SDL_Surface pitch may not match with the width, so we use this
          * to get glTexSubImage2D to deal with the proper pitch.
          */
@@ -469,7 +474,7 @@ static Uint32 get_glyph_texture_index(Uint32 ch32)
 }
 
 #ifdef USING_COMBINING_CHARACTER_SCHEME
-int PDC_expand_combined_characters( const cchar_t c, cchar_t *added);  /* addch.c */
+int PDC_expand_combined_characters( const cchar_t c, cchar_t *added);
 #endif
 
 static void draw_glyph(
@@ -478,20 +483,22 @@ static void draw_glyph(
     Uint32 foreground
 ){
     struct color_data* cd;
+#ifdef USING_COMBINING_CHARACTER_SCHEME
     int layer = 0;
+#endif
     int i = x + y * SP->cols;
-    if(y < 0 || y >= SP->lines || x < 0 || x >= SP->cols)
-        return;
-
-    ensure_glyph_grid(1);
-    cd = &color_grid[i];
-    cd->bg_color = background;
     Uint32 gl_attrs =
         ((attr & A_UNDERLINE) ? 1<<2 : 0) |
         ((attr & A_OVERLINE) ? 1<<3 : 0) |
         ((attr & A_STRIKEOUT) ? 1<<4 : 0) |
         ((attr & A_LEFT) ? 1<<5 : 0) |
         ((attr & A_RIGHT) ? 1<<6 : 0);
+    if(y < 0 || y >= SP->lines || x < 0 || x >= SP->cols)
+        return;
+
+    ensure_glyph_grid(1);
+    cd = &color_grid[i];
+    cd->bg_color = background;
     cd->fg_color = foreground | (gl_attrs << 24);
 
 #ifdef USING_COMBINING_CHARACTER_SCHEME
@@ -529,12 +536,12 @@ static void draw_glyph(
 static void draw_cursor(int y, int x, int visibility)
 {
     struct color_data* cd;
+    Uint32 gl_attrs = visibility >= 0 && visibility <= 2 ? visibility : 0;
     if(y < 0 || y >= SP->lines || x < 0 || x >= SP->cols)
         return;
 
     ensure_glyph_grid(1);
     cd = &color_grid[x + y * SP->cols];
-    Uint32 gl_attrs = visibility >= 0 && visibility <= 2 ? visibility : 0;
     cd->fg_color |= gl_attrs << 24;
 }
 
@@ -717,6 +724,14 @@ void PDC_blink_text(void)
 
 void PDC_doupdate(void)
 {
+    int w, h;
+    SDL_Rect viewport = PDC_get_viewport();
+    bool use_render_target = pdc_interpolation_mode == PDC_GL_INTERPOLATE_BILINEAR &&
+        pdc_resize_mode != PDC_GL_RESIZE_NORMAL;
+    int u_screen_size, u_glyph_size, u_fthick, u_line_color;
+    short hcol = SP->line_color;
+    int layer;
+
     ensure_glyph_grid(1);
 
     /* Upload grid buffers at the start, before we queue the commands that need
@@ -737,17 +752,11 @@ void PDC_doupdate(void)
         GL_STREAM_DRAW
     );
 
-    int w, h;
     SDL_GetWindowSize(pdc_window, &w, &h);
 
     glViewport(0, 0, w, h);
     glClearColor(0.0f,0.0f,0.0f,0.0f);
     glClear(GL_COLOR_BUFFER_BIT);
-
-    SDL_Rect viewport = PDC_get_viewport();
-    bool use_render_target =
-        pdc_interpolation_mode == PDC_GL_INTERPOLATE_BILINEAR &&
-        pdc_resize_mode != PDC_GL_RESIZE_NORMAL;
 
     if(use_render_target)
     {
@@ -756,15 +765,15 @@ void PDC_doupdate(void)
          * their edges would still appear sharp, as they could not blend
          * between cell edges.
          */
+        int content_w = SP->cols * pdc_fwidth;
+        int content_h = SP->lines * pdc_fheight;
+
         if(!pdc_render_target_texture)
         {
             /* Need to allocate the render target texture. */
             glGenTextures(1, &pdc_render_target_texture);
             cur_render_target_w = cur_render_target_h = 0;
         }
-
-        int content_w = SP->cols * pdc_fwidth;
-        int content_h = SP->lines * pdc_fheight;
 
         if(cur_render_target_w != content_w || cur_render_target_h != content_h)
         {
@@ -815,10 +824,12 @@ void PDC_doupdate(void)
 
     /* Draw background colors */
     glUseProgram(pdc_background_shader_program);
-    int u_screen_size = glGetUniformLocation(pdc_background_shader_program, "screen_size");
+    u_screen_size = glGetUniformLocation(
+        pdc_background_shader_program, "screen_size");
     glUniform2i(u_screen_size, SP->cols, SP->lines);
 
-    int u_glyph_size = glGetUniformLocation(pdc_background_shader_program, "glyph_size");
+    u_glyph_size = glGetUniformLocation(
+        pdc_background_shader_program, "glyph_size");
     glUniform2i(u_glyph_size, pdc_fwidth, pdc_fheight);
 
     glDrawArraysInstanced(GL_TRIANGLES, 0, 6, SP->lines * SP->cols);
@@ -826,17 +837,20 @@ void PDC_doupdate(void)
     /* Prepare for drawing foreground glyphs. */
     glUseProgram(pdc_foreground_shader_program);
 
-    u_screen_size = glGetUniformLocation(pdc_foreground_shader_program, "screen_size");
+    u_screen_size = glGetUniformLocation(
+        pdc_foreground_shader_program, "screen_size");
     glUniform2i(u_screen_size, SP->cols, SP->lines);
 
-    u_glyph_size = glGetUniformLocation(pdc_foreground_shader_program, "glyph_size");
+    u_glyph_size = glGetUniformLocation(
+        pdc_foreground_shader_program, "glyph_size");
     glUniform2i(u_glyph_size, pdc_fwidth, pdc_fheight);
 
-    int u_fthick = glGetUniformLocation(pdc_foreground_shader_program, "fthick");
+    u_fthick = glGetUniformLocation(pdc_foreground_shader_program, "fthick");
     glUniform1i(u_fthick, pdc_fthick);
 
-    int u_line_color = glGetUniformLocation(pdc_foreground_shader_program, "line_color");
-    short hcol = SP->line_color;
+    u_line_color = glGetUniformLocation(
+        pdc_foreground_shader_program, "line_color");
+    hcol = SP->line_color;
     if(hcol >= 0)
     {
         PACKED_RGB rgb = PDC_get_palette_entry(hcol);
@@ -849,7 +863,7 @@ void PDC_doupdate(void)
     else glUniform3f(u_line_color, -1, -1, -1);
 
     /* Draw foreground colors, layer by layer. */
-    for(int layer = 0; layer < grid_layers; ++layer)
+    for(layer = 0; layer < grid_layers; ++layer)
     {
         if(layer != 0)
         {
@@ -898,7 +912,9 @@ void PDC_pump_and_peep(void)
 {
     SDL_Event event;
 
-    if(SDL_PeepEvents(&event, 1, SDL_PEEKEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT) > 0)
+    int res = SDL_PeepEvents(
+        &event, 1, SDL_PEEKEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT);
+    if(res > 0)
     {
         if (SDL_WINDOWEVENT == event.type &&
             (SDL_WINDOWEVENT_RESTORED == event.window.event ||

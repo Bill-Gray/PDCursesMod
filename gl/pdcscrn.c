@@ -144,13 +144,14 @@ static const char* pdc_foreground_fragment_shader_src =
 
 static void _clean(void)
 {
+    int i;
     if (pdc_ttffont)
     {
         TTF_CloseFont(pdc_ttffont);
         TTF_Quit();
         pdc_ttffont = NULL;
     }
-    for(int i = 0; i < 4; ++i)
+    for(i = 0; i < 4; ++i)
     {
         if(pdc_glyph_cache[i])
             free(pdc_glyph_cache[i]);
@@ -213,20 +214,24 @@ static void _clean(void)
     pdc_sheight = pdc_swidth = 0;
 }
 
-static void add_shader(GLuint shader_program, GLenum shader_type, const char* src)
-{
+static void add_shader(
+    GLuint shader_program,
+    GLenum shader_type,
+    const char* src
+){
+    GLint status = GL_FALSE;
     GLuint shader = glCreateShader(shader_type);
     glShaderSource(shader, 1, &src, NULL);
     glCompileShader(shader);
 
-    GLint status = GL_FALSE;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
 
     if(status != GL_TRUE)
     {
+        char* err;
         GLsizei length = 0;
         glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
-        char* err = malloc(length+1);
+        err = malloc(length+1);
         glGetShaderInfoLog(shader, length+1, &length, err);
         fprintf(stderr, "%s shader compilation error: %s\n",
             (shader_type == GL_VERTEX_SHADER ? "Vertex" : "Fragment"),
@@ -241,16 +246,17 @@ static void add_shader(GLuint shader_program, GLenum shader_type, const char* sr
 
 static void build_shader_program(GLuint shader_program)
 {
+    GLint status = GL_FALSE;
     glLinkProgram(shader_program);
 
-    GLint status = GL_FALSE;
     glGetProgramiv(shader_program, GL_LINK_STATUS, &status);
 
     if(status != GL_TRUE)
     {
+        char* err;
         GLsizei length = 0;
         glGetProgramiv(shader_program, GL_INFO_LOG_LENGTH, &length);
-        char* err = malloc(length+1);
+        err = malloc(length+1);
         glGetProgramInfoLog(shader_program, length+1, &length, err);
         fprintf(stderr, "Shader program linking: %s\n", err);
         exit(1);
@@ -299,6 +305,7 @@ int _get_displaynum(void)
 int PDC_scr_open(void)
 {
     int displaynum = 0;
+    int h, w;
     const char *ptsz, *fname;
 
     PDC_LOG(("PDC_scr_open() - called\n"));
@@ -412,7 +419,6 @@ int PDC_scr_open(void)
 
     SDL_SetWindowIcon(pdc_window, pdc_icon);
 
-    int h, w;
     SDL_GetWindowSize(pdc_window, &w, &h);
 
     if (!pdc_sheight) pdc_sheight = h;
@@ -428,7 +434,7 @@ int PDC_scr_open(void)
 
     SDL_GL_SetSwapInterval(0);
 
-    // Load the GL functions we use.
+    /* Load the GL functions we use. */
     load_gl_funcs();
 
     /* Build foreground shader. */
@@ -489,7 +495,8 @@ int PDC_scr_open(void)
     glVertexAttribIPointer(2, 1, GL_INT, sizeof(Uint32), NULL);
     glVertexAttribDivisor(2, 1);
 
-    glUniform1i(glGetUniformLocation(pdc_foreground_shader_program, "glyphs"), 0);
+    glUniform1i(
+        glGetUniformLocation(pdc_foreground_shader_program, "glyphs"), 0);
 
     /* This FBO is not only used in the bilinear filtering mode, but also
      * temporarily in various glyph cache operations.
@@ -625,14 +632,13 @@ void PDC_set_resize_limits( const int new_min_lines, const int new_max_lines,
 
 SDL_Rect PDC_get_viewport(void)
 {
-    int w, h;
-    SDL_GetWindowSize(pdc_window, &w, &h);
-
     int content_w = SP->cols * pdc_fwidth;
     int content_h = SP->lines * pdc_fheight;
     int scale = 0;
-
+    int w, h;
     SDL_Rect rect;
+
+    SDL_GetWindowSize(pdc_window, &w, &h);
 
     switch(pdc_resize_mode)
     {

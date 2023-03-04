@@ -335,6 +335,7 @@ static int _process_mouse_event(void)
     short shift_flags = 0;
     int wheel_x = 0, wheel_y = 0;
     int mouse_x = 0, mouse_y = 0;
+    SDL_Rect viewport = PDC_get_viewport();
 
     memset(&SP->mouse_status, 0, sizeof(MOUSE_STATUS));
 
@@ -355,8 +356,6 @@ static int _process_mouse_event(void)
         wheel_y = event.wheel.y;
         SDL_GetMouseState( &event.motion.x, &event.motion.y);
     }
-
-    SDL_Rect viewport = PDC_get_viewport();
 
     if(viewport.w == 0) viewport.w = 1;
     if(viewport.h == 0) viewport.h = 1;
@@ -461,8 +460,10 @@ int PDC_get_key(void)
         }
         return PDC_get_function_key( FUNCTION_KEY_SHUT_DOWN);
     case SDL_WINDOWEVENT:
-        if (SDL_WINDOWEVENT_SIZE_CHANGED == event.window.event || SDL_WINDOWEVENT_RESIZED == event.window.event)
-        {
+        if(
+            SDL_WINDOWEVENT_SIZE_CHANGED == event.window.event ||
+            SDL_WINDOWEVENT_RESIZED == event.window.event
+        ){
             if(pdc_resize_mode == PDC_GL_RESIZE_NORMAL)
             {
                 pdc_sheight = event.window.data2;
