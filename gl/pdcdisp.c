@@ -255,7 +255,7 @@ static void ensure_glyph_grid(int min_layers)
         for(j = 0; j < SP->lines; ++j)
         {
             i = 0;
-            if(j < grid_h)
+            if(j < grid_h && color_grid)
             {
                 int w = grid_w < SP->cols ? grid_w : SP->cols;
                 memcpy(
@@ -289,7 +289,7 @@ static void ensure_glyph_grid(int min_layers)
             grid_layers = min_layers;
         }
 
-        for(layer = 0; layer < min_layers; ++layer)
+        for(layer = 0; layer < grid_layers; ++layer)
         {
             Uint32* new_glyphs = malloc(sizeof(Uint32) * SP->lines * SP->cols);
             for(j = 0; j < SP->lines; ++j)
@@ -415,7 +415,7 @@ static Uint32 get_glyph_texture_index(Uint32 ch32)
 }
 
 #ifdef USING_COMBINING_CHARACTER_SCHEME
-   int PDC_expand_combined_characters( const cchar_t c, cchar_t *added);  /* addch.c */
+int PDC_expand_combined_characters( const cchar_t c, cchar_t *added);  /* addch.c */
 #endif
 
 static void draw_glyph(
@@ -439,6 +439,7 @@ static void draw_glyph(
         ((attr & A_LEFT) ? 1<<5 : 0) |
         ((attr & A_RIGHT) ? 1<<6 : 0);
     cd->fg_color = foreground | (gl_attrs << 24);
+
 #ifdef USING_COMBINING_CHARACTER_SCHEME
     for(layer = 1; layer < grid_layers; ++layer)
     {
