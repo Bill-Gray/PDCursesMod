@@ -66,10 +66,10 @@ PDCURSES_WIN_H	= $(osdir)/pdcwin.h
 
 CC	= $(PREFIX)gcc
 
-AR	= ar
-STRIP	= strip
+AR	= $(PREFIX)ar
+STRIP	= $(PREFIX)strip
 
-CFLAGS  = -Wall -Wextra -pedantic
+CFLAGS  += -Wall -Wextra -pedantic
 ifeq ($(DEBUG),Y)
 	CFLAGS  += -g -DPDCDEBUG
 	LDFLAGS = -g
