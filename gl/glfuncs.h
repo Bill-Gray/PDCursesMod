@@ -1,9 +1,17 @@
-/* This header declares the internally-used OpenGL stuff.
+/* This header declares the internally-used OpenGL stuff. OpenGL is a bit
+ * annoying in that its functions have to be loaded during runtime; we use
+ * SDL_GL_GetProcAddress for that. GLEW or Glad could be used for this as well,
+ * but it's hard to justify adding such large dependencies for this kind of
+ * minimal OpenGL usage.
  */
 #include "pdcgl.h"
 #include <SDL_opengl.h>
 #include <SDL_opengl_glext.h>
 
+/* We can't just declare our own function pointers with the real function
+ * names, since those prototypes already come from SDL_opengl.h :/ But what we
+ * can do, is use defines to make the OpenGL functions look like they should :)
+ */
 #define glCreateProgram pdc_glCreateProgram
 #define glGenVertexArrays pdc_glGenVertexArrays
 #define glBindVertexArray pdc_glBindVertexArray

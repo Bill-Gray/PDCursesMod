@@ -48,6 +48,12 @@ unsigned pdc_tex_fbo = 0;
 static GLuint pdc_vao = 0;
 
 static SDL_GLContext pdc_gl_context = NULL;
+
+/* The same vertex shader is used in both shader programs, the one that draws
+ * the background colors and the one that draws the foreground glyphs. Vertex
+ * attribs are actually instance attributes here, and vertices are just
+ * calculated on-the-fly instead of being read from a buffer.
+ */
 static const char* pdc_vertex_shader_src =
     "#version 330 core\n"
     "layout(location = 0) in uint v_bg;\n"
@@ -425,16 +431,37 @@ int PDC_scr_open(void)
     // Load the GL functions we use.
     load_gl_funcs();
 
+    /* Build foreground shader. */
     pdc_foreground_shader_program = glCreateProgram();
-    add_shader(pdc_foreground_shader_program, GL_VERTEX_SHADER, pdc_vertex_shader_src);
-    add_shader(pdc_foreground_shader_program, GL_FRAGMENT_SHADER, pdc_foreground_fragment_shader_src);
+    add_shader(
+        pdc_foreground_shader_program,
+        GL_VERTEX_SHADER,
+        pdc_vertex_shader_src
+    );
+    add_shader(
+        pdc_foreground_shader_program,
+        GL_FRAGMENT_SHADER,
+        pdc_foreground_fragment_shader_src
+    );
     build_shader_program(pdc_foreground_shader_program);
 
+    /* Build background shader. */
     pdc_background_shader_program = glCreateProgram();
-    add_shader(pdc_background_shader_program, GL_VERTEX_SHADER, pdc_vertex_shader_src);
-    add_shader(pdc_background_shader_program, GL_FRAGMENT_SHADER, pdc_background_fragment_shader_src);
+    add_shader(
+        pdc_background_shader_program,
+        GL_VERTEX_SHADER,
+        pdc_vertex_shader_src
+    );
+    add_shader(
+        pdc_background_shader_program,
+        GL_FRAGMENT_SHADER,
+        pdc_background_fragment_shader_src
+    );
     build_shader_program(pdc_background_shader_program);
 
+    /* A VAO is just needed in OpenGL 3.3, even though we don't ever change the
+     * vertex attribs...
+     */
     glGenVertexArrays(1, &pdc_vao);
     glBindVertexArray(pdc_vao);
 
@@ -442,6 +469,9 @@ int PDC_scr_open(void)
     glGenBuffers(1, &pdc_glyph_buffer);
     glBindBuffer(GL_ARRAY_BUFFER, pdc_color_buffer);
 
+    /* See 'struct color_data' in pdcdisp.c, these map the contents of that
+     * struct into the vertex shader inputs.
+     */
     glEnableVertexAttribArray(0);
     glVertexAttribIPointer(
         0, 1, GL_INT, 2 * sizeof(Uint32), (void*)(0 * sizeof(Uint32)));
@@ -451,6 +481,9 @@ int PDC_scr_open(void)
         1, 1, GL_INT, 2 * sizeof(Uint32), (void*)(1 * sizeof(Uint32)));
     glVertexAttribDivisor(1, 1);
 
+    /* The glyph buffer is separate, because that makes rendering multiple
+     * character layers (needed for combining characters) faster and simpler.
+     */
     glBindBuffer(GL_ARRAY_BUFFER, pdc_glyph_buffer);
     glEnableVertexAttribArray(2);
     glVertexAttribIPointer(2, 1, GL_INT, sizeof(Uint32), NULL);
@@ -458,11 +491,17 @@ int PDC_scr_open(void)
 
     glUniform1i(glGetUniformLocation(pdc_foreground_shader_program, "glyphs"), 0);
 
+    /* This FBO is not only used in the bilinear filtering mode, but also
+     * temporarily in various glyph cache operations.
+     */
     glGenFramebuffers(1, &pdc_tex_fbo);
     glBindFramebuffer(GL_FRAMEBUFFER, pdc_tex_fbo);
     glDrawBuffer(GL_COLOR_ATTACHMENT0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+    /* Glyphs are alpha-blended on top of the background (and each other, if
+     * combing chars)
+     */
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -603,12 +642,14 @@ SDL_Rect PDC_get_viewport(void)
         rect.w = content_w;
         rect.h = content_h;
         break;
+
     case PDC_GL_RESIZE_STRETCH:
         rect.x = 0;
         rect.y = 0;
         rect.w = w;
         rect.h = h;
         break;
+
     case PDC_GL_RESIZE_SCALE:
         if(content_h == 0) content_h = 1;
         if(content_w == 0) content_w = 1;
@@ -629,6 +670,7 @@ SDL_Rect PDC_get_viewport(void)
             rect.h = h;
         }
         break;
+
     case PDC_GL_RESIZE_INTEGER:
         if(content_h == 0) content_h = 1;
         if(content_w == 0) content_w = 1;

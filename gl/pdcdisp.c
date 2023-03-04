@@ -19,8 +19,6 @@ static chtype oldch = (chtype)(-1);    /* current attribute */
 static int foregr = -2, backgr = -2; /* current foreground, background */
 static bool blinked_off = FALSE;
 
-#define BUILD_GLYPH_INDEX(col, row, w) \
-    ((Uint32)(col) | (((Uint32)row) << 15u) | (((Uint32)w) << 30u))
 
 struct color_data
 {
@@ -34,20 +32,34 @@ struct color_data
     Uint32 fg_color;
 };
 
+/* We store all of the color pairs in the same format in which we'll also upload
+ * them to OpenGL buffers. There's one per character grid cell on screen.
+ * They're uploaded in one batch, the entire screen at once. If you want to
+ * modify the contents of color_data, you'll also have to update the shaders
+ * and vertex attrib arrays in pdcscrn.c!
+ */
 static struct color_data* color_grid = NULL;
 
+#define BUILD_GLYPH_INDEX(col, row, w) \
+    ((Uint32)(col) | (((Uint32)row) << 15u) | (((Uint32)w) << 30u))
+
 /* Glyphs are stored in multiple layers, in order to support combining chars.
- * If none are used, there should only ever be one layer.
+ * If none are used, there should only ever be one layer. The first layer is
+ * always the one with regular characters.
  */
 struct glyph_grid_layer
 {
-    /* We track the number of non-empty glyphs in the grid
+    /* We track the number of non-empty glyphs in the grid, so that we can know
+     * when we can delete the layer.
      */
     Uint32 occupancy;
+
     /* The glyph info format is as below:
      *  0-14: character x offset in glyph cache
      * 15-29: character y offset in glyph cache
      * 30-31: Width; 0 = empty, 1 = normal, 2 = fullwidth.
+     *
+     * See also: BUILD_GLYPH_INDEX
      */
     Uint32* grid;
 };
@@ -68,6 +80,9 @@ static int next_pow_2(int n)
     return n;
 }
 
+/* This function attempts to double the glyph cache size, but can also evict
+ * unused characters out if growing is not an option.
+ */
 static void enlarge_glyph_cache()
 {
     GLuint new_font_texture = 0;
@@ -111,12 +126,15 @@ static void enlarge_glyph_cache()
     );
 
     glBindFramebuffer(GL_FRAMEBUFFER, pdc_tex_fbo);
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, new_font_texture, 0);
+    glFramebufferTexture(
+        GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, new_font_texture, 0);
     glClearBufferfv(GL_COLOR, 0, clear_color);
 
     if(pdc_font_texture != 0)
     {
-        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, pdc_font_texture, 0);
+        /* Prepare old texture for re-use */
+        glFramebufferTexture(
+            GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, pdc_font_texture, 0);
         glReadBuffer(GL_COLOR_ATTACHMENT0);
     }
 
@@ -124,12 +142,15 @@ static void enlarge_glyph_cache()
         new_glyph_cache_w != pdc_glyph_cache_w ||
         new_glyph_cache_h != pdc_glyph_cache_h
     ){
+        /* Enlarging the texture should be possible if we're here. */
         int new_glyph_row_capacity = new_glyph_cache_h / pdc_fheight;
         pdc_glyph_col_capacity = new_glyph_cache_w / pdc_fwidth;
 
-        /* Enlarging the texture should be possible if we're here. */
         if(pdc_font_texture != 0)
         {
+            /* Just keep the old data in the lower left corner; that also lets
+             * us keep the old row capacities intact.
+             */
             glCopyTexSubImage2D(
                 GL_TEXTURE_2D,
                 0, 0, 0, 0, 0, pdc_glyph_cache_w, pdc_glyph_cache_h
@@ -167,11 +188,14 @@ static void enlarge_glyph_cache()
             if(old_glyph == 0)
                 continue;
 
+            /* Check if glyph is used in any layer */
             for(layer = 0; layer < grid_layers; ++layer)
             for(j = 0; j < grid_w * grid_h; ++j)
             {
-                if(glyph_grid_layers[layer].grid[j] == old_glyph && !visited[j + layer * grid_w * grid_h])
-                {
+                if(
+                    glyph_grid_layers[layer].grid[j] == old_glyph &&
+                    !visited[j + layer * grid_w * grid_h]
+                ){
                     used = TRUE;
                     break;
                 }
@@ -204,11 +228,14 @@ static void enlarge_glyph_cache()
                 }
             }
 
+            /* Update existing uses of the updated glyph */
             for(layer = 0; layer < grid_layers; ++layer)
             for(j = 0; j < grid_w * grid_h; ++j)
             {
-                if(glyph_grid_layers[layer].grid[j] == old_glyph && !visited[j + layer * grid_w * grid_h])
-                {
+                if(
+                    glyph_grid_layers[layer].grid[j] == old_glyph &&
+                    !visited[j + layer * grid_w * grid_h]
+                ){
                     glyph_grid_layers[layer].grid[j] = *cached_glyph;
                     visited[j + layer * grid_w * grid_h] = TRUE;
                 }
@@ -223,11 +250,15 @@ static void enlarge_glyph_cache()
     pdc_font_texture = new_font_texture;
 }
 
+/* Attempts to find an empty slot in the glyph cache of 'w' character widths.
+ * (w = 2 for fullwidth, otherwise typically just 1)
+ */
 static Uint32 alloc_glyph_cache(int w)
 {
     /* Keep trying until we succeed. */
     for(;;)
     {
+        /* We try to fill the glyph cache in rows, from bottom to top. */
         for(int row = 0; row < pdc_glyph_row_capacity; ++row)
         {
             int *col = &pdc_glyph_start_col[row];
@@ -240,16 +271,22 @@ static Uint32 alloc_glyph_cache(int w)
         }
 
         /* If we're here, we failed to allocate the glyph, so we need to enlarge
-         * the glyph cache. */
+         * the glyph cache and try again.
+         */
         enlarge_glyph_cache();
     }
 }
 
+/* This one makes sure that the color and glyph grids are of the correct size
+ * and have enough layers. It's a bit complicated, because resizing shouldn't
+ * throw existing characters away.
+ */
 static void ensure_glyph_grid(int min_layers)
 {
     int i, j, layer;
     if(SP->cols != grid_w || SP->lines != grid_h || grid_layers < min_layers)
     {
+        /* Update color grid first */
         struct color_data* new_colors = malloc(
             sizeof(struct color_data) * SP->lines * SP->cols
         );
@@ -276,6 +313,7 @@ static void ensure_glyph_grid(int min_layers)
         free(color_grid);
         color_grid = new_colors;
 
+        /* Make sure we have enough grid layers */
         if(grid_layers < min_layers)
         {
             glyph_grid_layers = realloc(
@@ -290,6 +328,7 @@ static void ensure_glyph_grid(int min_layers)
             grid_layers = min_layers;
         }
 
+        /* Update the glyph grids on each layer.  */
         for(layer = 0; layer < grid_layers; ++layer)
         {
             Uint32* new_glyphs = malloc(sizeof(Uint32) * SP->lines * SP->cols);
@@ -319,6 +358,9 @@ static void ensure_glyph_grid(int min_layers)
     }
 }
 
+/* Tries to find unused layers and delete them, so that we don't waste time on
+ * unused glyph grids.
+ */
 static void shrink_glyph_grid()
 {
     int layer;
@@ -350,7 +392,7 @@ static Uint32 get_pdc_color( const int color_idx)
 
 static Uint32 get_glyph_texture_index(Uint32 ch32)
 {
-    /* Fullwidth dummy char!*/
+    /* Fullwidth dummy char! 0 makes it stop existing! */
     if(ch32 == 0x110000) return 0;
 
     SDL_Color white = {255,255,255,255};
@@ -365,10 +407,12 @@ static Uint32 get_glyph_texture_index(Uint32 ch32)
 
     if(ch32 < (Uint32)*cache_size && (*cache)[ch32] > 0)
     {
+        /* Nice, the character was alreadt cached */
         return (*cache)[ch32];
     }
     else
     {
+        /* Here we need to render the character, it's not cached. */
         SDL_Surface* surf = NULL;
 
 #ifdef PDC_SDL_SUPPLEMENTARY_PLANES_SUPPORT
@@ -377,8 +421,14 @@ static Uint32 get_glyph_texture_index(Uint32 ch32)
         surf = TTF_RenderGlyph_Blended(pdc_ttffont, (Uint16)ch32, white);
 #endif
         SDL_LockSurface(surf);
+        /* Kind-of-fullwidthness-but-not-really: Italics can also overstep
+         * and cause w = 2, which should still render completely fine.
+         */
         int w = (surf->w + pdc_fwidth-1)/pdc_fwidth;
         Uint32 index = alloc_glyph_cache(w);
+        /* The SDL_Surface pitch may not match with the width, so we use this
+         * to get glTexSubImage2D to deal with the proper pitch.
+         */
         glPixelStorei(
             GL_UNPACK_ROW_LENGTH,
             surf->pitch / surf->format->BytesPerPixel
@@ -399,6 +449,9 @@ static Uint32 get_glyph_texture_index(Uint32 ch32)
 
         if(ch32 >= (Uint32)*cache_size)
         {
+            /* Our list of cached glyph indices is too small, so it has to grow
+             * too.
+             */
             int new_cache_size = *cache_size;
             if(new_cache_size == 0) new_cache_size = 256;
             while((Uint32)new_cache_size < ch32) new_cache_size *= 2;
@@ -442,6 +495,7 @@ static void draw_glyph(
     cd->fg_color = foreground | (gl_attrs << 24);
 
 #ifdef USING_COMBINING_CHARACTER_SCHEME
+    /* Clear all layers above the base */
     for(layer = 1; layer < grid_layers; ++layer)
     {
         if(glyph_grid_layers[layer].grid[i] != 0)
@@ -451,6 +505,8 @@ static void draw_glyph(
         }
     }
     layer = 0;
+    /* Go through the glyph combo if necessary, putting each on a different
+     * layer. */
     while(ch32 > 0x110000)
     {
         layer++;
@@ -575,7 +631,8 @@ void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
 
         ch &= A_CHARTEXT;
 
-        draw_glyph(lineno, x+j, attr, ch, get_pdc_color(backgr), get_pdc_color(foregr));
+        draw_glyph(lineno, x+j, attr, ch,
+            get_pdc_color(backgr), get_pdc_color(foregr));
     }
 }
 
@@ -662,6 +719,9 @@ void PDC_doupdate(void)
 {
     ensure_glyph_grid(1);
 
+    /* Upload grid buffers at the start, before we queue the commands that need
+     * them.
+     */
     glBindBuffer(GL_ARRAY_BUFFER, pdc_color_buffer);
     glBufferData(
         GL_ARRAY_BUFFER,
@@ -698,6 +758,7 @@ void PDC_doupdate(void)
          */
         if(!pdc_render_target_texture)
         {
+            /* Need to allocate the render target texture. */
             glGenTextures(1, &pdc_render_target_texture);
             cur_render_target_w = cur_render_target_h = 0;
         }
@@ -707,6 +768,7 @@ void PDC_doupdate(void)
 
         if(cur_render_target_w != content_w || cur_render_target_h != content_h)
         {
+            /* Need to resize the render target texture. */
             glBindTexture(GL_TEXTURE_2D, pdc_render_target_texture);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -727,7 +789,8 @@ void PDC_doupdate(void)
             cur_render_target_h = content_h;
         }
         glBindFramebuffer(GL_FRAMEBUFFER, pdc_tex_fbo);
-        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, pdc_render_target_texture, 0);
+        glFramebufferTexture(
+            GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, pdc_render_target_texture, 0);
 
         glViewport(0, 0, content_w, content_h);
         glBindTexture(GL_TEXTURE_2D, pdc_font_texture);
@@ -739,6 +802,9 @@ void PDC_doupdate(void)
          */
         if(pdc_render_target_texture)
         {
+            /* The user may have disabled bilinear interpolation, so we can
+             * just free the render target here since we don't need it anymore.
+             */
             glDeleteTextures(1, &pdc_render_target_texture);
             pdc_render_target_texture = 0;
             cur_render_target_w = cur_render_target_h = 0;
@@ -757,7 +823,7 @@ void PDC_doupdate(void)
 
     glDrawArraysInstanced(GL_TRIANGLES, 0, 6, SP->lines * SP->cols);
 
-    /* Draw foreground colors, layer by layer. */
+    /* Prepare for drawing foreground glyphs. */
     glUseProgram(pdc_foreground_shader_program);
 
     u_screen_size = glGetUniformLocation(pdc_foreground_shader_program, "screen_size");
@@ -782,6 +848,7 @@ void PDC_doupdate(void)
     }
     else glUniform3f(u_line_color, -1, -1, -1);
 
+    /* Draw foreground colors, layer by layer. */
     for(int layer = 0; layer < grid_layers; ++layer)
     {
         if(layer != 0)
@@ -819,6 +886,7 @@ void PDC_doupdate(void)
             GL_COLOR_BUFFER_BIT,
             GL_LINEAR
         );
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
     SDL_GL_SwapWindow(pdc_window);
