@@ -1,5 +1,5 @@
-PDCursesMod as of 2023 January 07
-=================================
+PDCursesMod as of 2023 March 04
+===============================
 
 Minor new features
 ------------------
@@ -35,6 +35,9 @@ Bug fixes
 
 - WinGUI could get confused if the window was resized,  resulting in
   input being ignored.  bc340c0d20
+
+- Text selection & copying could cause memory corruption with 4 byte UTF-8
+  codepoints when WIDE=Y.  bff53ab114
 
 See the git log for more details.
 
