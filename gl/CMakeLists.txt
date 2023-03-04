@@ -15,12 +15,10 @@ message(STATUS "SDL2_TTF_LIBRARY = ${SDL2_TTF_LIBRARY}")
 message(STATUS "SDL2_TTF_INCLUDE_DIR = ${SDL2_TTF_INCLUDE_DIR}")
 message(STATUS "SDL2_TTF_LIBRARY_DIR = ${SDL2_TTF_LIBRARY_DIR}")
 
-include_directories(${SDL2_INCLUDE_DIR} ${SDL2_TTF_INCLUDE_DIR} "${CMAKE_CURRENT_SOURCE_DIR}/glad/include")
+include_directories(${SDL2_INCLUDE_DIR} ${SDL2_TTF_INCLUDE_DIR})
 link_directories(${SDL2_LIBRARY_DIR} ${SDL2_TTF_LIBRARY_DIR})
 
 include(project_common)
-
-target_sources(${PDCURSE_PROJ} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/glad/src/gl.c")
 
 macro (gl_app dir targ)
 
@@ -62,7 +60,7 @@ gl_app(../demos xmas)
 if(PDC_SDL2_DEPS_BUILD)
     add_dependencies(${PDCURSE_PROJ} sdl2_ext sdl2_ttf_ext)
     target_link_libraries(${PDCURSE_PROJ} ${EXTRA_LIBS} "${SDL2_LIBRARIES};${SDL2_TTF_LIBRARY};${FT2_LIBRARY};${ZLIB_LIBRARY};${SDL2_DEP_LIBRARIES}")
-    target_include_directories(${PDCURSE_PROJ} PUBLIC ${SDL2_INCLUDE_DIR} ${SDL2_TTF_INCLUDE_DIR} "${CMAKE_CURRENT_SOURCE_DIR}/glad/include")
+    target_include_directories(${PDCURSE_PROJ} PUBLIC ${SDL2_INCLUDE_DIR} ${SDL2_TTF_INCLUDE_DIR})
 endif()
 
 set(CPACK_COMPONENTS_ALL applications)

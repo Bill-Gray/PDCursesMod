@@ -24,8 +24,6 @@ SDL2_INCLUDE = -I$(SDLBASE)\include
 SDL2_LIB = $(SDLBASE)\lib\$(PLATFORM)\SDL2.lib
 SDL2_LIBMAIN = $(SDLBASE)\lib\$(PLATFORM)\SDL2main.lib
 
-GLAD_INCLUDE = -I$(osdir)\glad\include
-
 PDCURSES_WIN_H	= $(osdir)\pdcgl.h
 
 CC		= cl.exe -nologo
@@ -113,10 +111,7 @@ pdcurses.res pdcurses.obj: $(common)\pdcurses.rc
 	$(BUILD) $<
 
 {$(osdir)\}.c{}.obj::
-	$(BUILD) -Dmain=SDL_main $(SDL2_INCLUDE) $(TTF_INCLUDE) ${GLAD_INCLUDE} $<
-
-{$(osdir)\glad\src}.c{}.obj::
-	$(BUILD) -Dmain=SDL_main $(SDL2_INCLUDE) $(TTF_INCLUDE) ${GLAD_INCLUDE} $<
+	$(BUILD) -Dmain=SDL_main $(SDL2_INCLUDE) $(TTF_INCLUDE) $<
 
 {$(demodir)\}.c{}.obj::
 	$(BUILD) -Dmain=SDL_main $<

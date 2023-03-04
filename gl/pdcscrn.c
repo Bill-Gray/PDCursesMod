@@ -1,6 +1,8 @@
 /* PDCurses */
 
 #include "pdcgl.h"
+#define GLFUNC_IMPL
+#include "glfuncs.h"
 
 #include <stdlib.h>
 #include <limits.h>
@@ -36,10 +38,10 @@ SDL_Surface *pdc_icon = NULL;
 int pdc_sheight = 0, pdc_swidth = 0;
 
 int pdc_fheight, pdc_fwidth, pdc_fthick;
-GLuint pdc_vbo = 0;
-GLuint pdc_background_shader_program = 0, pdc_foreground_shader_program = 0;
-GLuint pdc_font_texture = 0;
-GLuint pdc_tex_fbo = 0;
+unsigned pdc_vbo = 0;
+unsigned pdc_background_shader_program = 0, pdc_foreground_shader_program = 0;
+unsigned pdc_font_texture = 0;
+unsigned pdc_tex_fbo = 0;
 static GLuint pdc_vao = 0;
 
 static SDL_GLContext pdc_gl_context = NULL;
@@ -409,7 +411,9 @@ int PDC_scr_open(void)
     SDL_GL_MakeCurrent(pdc_window, pdc_gl_context);
 
     SDL_GL_SetSwapInterval(0);
-    gladLoadGL((GLADloadfunc)SDL_GL_GetProcAddress);
+
+    // Load the GL functions we use.
+    load_gl_funcs();
 
     pdc_foreground_shader_program = glCreateProgram();
     add_shader(pdc_foreground_shader_program, GL_VERTEX_SHADER, pdc_vertex_shader_src);

@@ -1,6 +1,7 @@
 /* PDCurses */
 
 #include "pdcgl.h"
+#include "glfuncs.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -150,7 +151,7 @@ static void enlarge_glyph_cache()
             Uint32* cached_glyph = pdc_glyph_cache[attr]+i;
             Uint32 old_glyph = *cached_glyph;
             bool used = FALSE;
-            Uint32 w = old_glyph >> 30;
+            int w = old_glyph >> 30;
             if(old_glyph == 0)
                 continue;
 
@@ -208,7 +209,7 @@ static void enlarge_glyph_cache()
     pdc_font_texture = new_font_texture;
 }
 
-static Uint32 alloc_glyph_cache(Uint32 w)
+static Uint32 alloc_glyph_cache(int w)
 {
     /* Keep trying until we succeed. */
     for(;;)

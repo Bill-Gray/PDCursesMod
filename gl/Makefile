@@ -34,17 +34,17 @@ ifeq ($(OS),Windows_NT)
 
 	PLATFORM = $(shell $(CC) -dumpmachine)
 
-	SFLAGS = -I$(SDLBASE)/$(PLATFORM)/include/SDL2 -I$(osdir)/glad/include
+	SFLAGS = -I$(SDLBASE)/$(PLATFORM)/include/SDL2
 	SLIBS = -L$(SDLBASE)/$(PLATFORM)/lib -lSDL2main -lSDL2
 
-	TFLAGS = -I$(TTFBASE)/$(PLATFORM)/include/SDL2 -I$(osdir)/glad/include
+	TFLAGS = -I$(TTFBASE)/$(PLATFORM)/include/SDL2
 	TLIBS =-L$(TTFBASE)/$(PLATFORM)/lib -lSDL2_ttf
 
 	DEMOFLAGS = -mwindows
 else
 	RM = rm -f
 
-	SFLAGS = $(shell sdl2-config --cflags) -I$(osdir)/glad/include
+	SFLAGS = $(shell sdl2-config --cflags)
 	SLIBS = $(shell sdl2-config --libs)
 
 	TLIBS = -lSDL2_ttf
@@ -161,9 +161,6 @@ $(LIBOBJS) : %.o: $(srcdir)/%.c
 	$(BUILD) -c $<
 
 $(PDCOBJS) : %.o: $(osdir)/%.c
-	$(BUILD) $(SFLAGS) -c $<
-
-$(PDCOBJS) : glad/src/%.o: $(osdir)/glad/src/%.c
 	$(BUILD) $(SFLAGS) -c $<
 
 calendar$(E): $(demodir)/calendar.c
