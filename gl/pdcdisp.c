@@ -22,7 +22,7 @@ static bool blinked_off = FALSE;
 #define BUILD_GLYPH_INDEX(col, row, w) \
     ((Uint32)(col) | (((Uint32)row) << 15u) | (((Uint32)w) << 30u))
 
-struct instance_data
+struct color_data
 {
     /* The low three bytes are just the 8-bit RGB channel values. The most
      * significant byte is currently unused.
@@ -32,16 +32,27 @@ struct instance_data
      * bytes are just the 8-bit RGB channel values.
      */
     Uint32 fg_color;
+};
+
+static struct color_data* color_grid = NULL;
+
+/* Glyphs are stored in multiple layers, in order to support combining chars.
+ * If none are used, there should only ever be one layer.
+ */
+struct glyph_grid_layer
+{
+    /* We track the number of non-empty glyphs in the grid
+     */
+    Uint32 occupancy;
     /* The glyph info format is as below:
      *  0-14: character x offset in glyph cache
      * 15-29: character y offset in glyph cache
      * 30-31: Width; 0 = empty, 1 = normal, 2 = fullwidth.
      */
-    Uint32 glyph;
+    Uint32* grid;
 };
-
-static struct instance_data* instances = NULL;
-static int instances_w = 0, instances_h = 0;
+static struct glyph_grid_layer* glyph_grid_layers = NULL;
+static int grid_w = 0, grid_h = 0, grid_layers = 0;
 static int cache_attr_index = 0;
 
 static int next_pow_2(int n)
@@ -62,7 +73,7 @@ static void enlarge_glyph_cache()
     int new_glyph_cache_w = 2 * pdc_glyph_cache_w;
     int new_glyph_cache_h = 2 * pdc_glyph_cache_h;
     GLint max_texture_size = 0;
-    int i, j;
+    int i, j, layer;
     const float clear_color[4] = {0,0,0,0};
 
     if(new_glyph_cache_w == 0 || new_glyph_cache_h == 0)
@@ -136,7 +147,7 @@ static void enlarge_glyph_cache()
     }
     else
     {
-        bool* visited = calloc(instances_w * instances_h, sizeof(bool));
+        bool* visited = calloc(grid_w * grid_h * grid_layers, sizeof(bool));
 
         /* If we're here, it's not possible to enlarge the texture, so we have
          * to evict everything that's not needed out of the texture. This can
@@ -155,9 +166,10 @@ static void enlarge_glyph_cache()
             if(old_glyph == 0)
                 continue;
 
-            for(j = 0; j < instances_w * instances_h; ++j)
+            for(layer = 0; layer < grid_layers; ++layer)
+            for(j = 0; j < grid_w * grid_h; ++j)
             {
-                if(instances[j].glyph == old_glyph && !visited[j])
+                if(glyph_grid_layers[layer].grid[j] == old_glyph && !visited[j + layer * grid_w * grid_h])
                 {
                     used = TRUE;
                     break;
@@ -191,12 +203,13 @@ static void enlarge_glyph_cache()
                 }
             }
 
-            for(j = 0; j < instances_w * instances_h; ++j)
+            for(layer = 0; layer < grid_layers; ++layer)
+            for(j = 0; j < grid_w * grid_h; ++j)
             {
-                if(instances[j].glyph == old_glyph && !visited[j])
+                if(glyph_grid_layers[layer].grid[j] == old_glyph && !visited[j + layer * grid_w * grid_h])
                 {
-                    instances[j].glyph = *cached_glyph;
-                    visited[j] = TRUE;
+                    glyph_grid_layers[layer].grid[j] = *cached_glyph;
+                    visited[j + layer * grid_w * grid_h] = TRUE;
                 }
             }
         }
@@ -231,37 +244,97 @@ static Uint32 alloc_glyph_cache(int w)
     }
 }
 
-static void ensure_instances()
+static void ensure_glyph_grid(int min_layers)
 {
-    if(SP->cols != instances_w || SP->lines != instances_h)
+    int i, j, layer;
+    if(SP->cols != grid_w || SP->lines != grid_h || grid_layers < min_layers)
     {
-        struct instance_data* new_instances = malloc(
-            sizeof(struct instance_data) * SP->lines * SP->cols
+        struct color_data* new_colors = malloc(
+            sizeof(struct color_data) * SP->lines * SP->cols
         );
-
-        for(int j = 0; j < SP->lines; ++j)
-        for(int i = 0; i < SP->cols; ++i)
+        for(j = 0; j < SP->lines; ++j)
         {
-            struct instance_data* vd = &new_instances[i + j * SP->cols];
-            vd->bg_color = 0;
-            vd->fg_color = 0;
-            vd->glyph = BUILD_GLYPH_INDEX(0, 0, 1);
+            i = 0;
+            if(j < grid_h)
+            {
+                int w = grid_w < SP->cols ? grid_w : SP->cols;
+                memcpy(
+                    &new_colors[j * SP->cols],
+                    &color_grid[j * grid_w],
+                    sizeof(struct color_data) * w
+                );
+                i = w;
+            }
+            for(; i < SP->cols; ++i)
+            {
+                struct color_data* cd = &new_colors[i + j * SP->cols];
+                cd->bg_color = 0;
+                cd->fg_color = 0;
+            }
         }
+        free(color_grid);
+        color_grid = new_colors;
 
-        for(int j = 0; j < instances_h && j < SP->lines; ++j)
-        for(int i = 0; i < instances_w && i < SP->cols; ++i)
+        if(grid_layers < min_layers)
         {
-            memcpy(
-                &new_instances[i + j * SP->cols],
-                &instances[i + j * instances_w],
-                sizeof(struct instance_data)
+            glyph_grid_layers = realloc(
+                glyph_grid_layers,
+                sizeof(struct glyph_grid_layer) * min_layers
             );
+            for(layer = grid_layers; layer < min_layers; ++layer)
+            {
+                glyph_grid_layers[layer].occupancy = 0;
+                glyph_grid_layers[layer].grid = NULL;
+            }
+            grid_layers = min_layers;
         }
 
-        free(instances);
-        instances = new_instances;
-        instances_w = SP->cols;
-        instances_h = SP->lines;
+        for(layer = 0; layer < min_layers; ++layer)
+        {
+            Uint32* new_glyphs = malloc(sizeof(Uint32) * SP->lines * SP->cols);
+            for(j = 0; j < SP->lines; ++j)
+            {
+                i = 0;
+                if(j < grid_h && glyph_grid_layers[layer].grid)
+                {
+                    int w = grid_w < SP->cols ? grid_w : SP->cols;
+                    memcpy(
+                        &new_glyphs[j * SP->cols],
+                        &glyph_grid_layers[layer].grid[j * grid_w],
+                        sizeof(Uint32) * w
+                    );
+                    i = w;
+                }
+                for(; i < SP->cols; ++i)
+                    new_glyphs[i + j * SP->cols] = BUILD_GLYPH_INDEX(0, 0, 1);
+            }
+
+            free(glyph_grid_layers[layer].grid);
+            glyph_grid_layers[layer].grid = new_glyphs;
+        }
+
+        grid_w = SP->cols;
+        grid_h = SP->lines;
+    }
+}
+
+static void shrink_glyph_grid()
+{
+    int layer;
+    for(layer = 1; layer < grid_layers;)
+    {
+        if(glyph_grid_layers[layer].occupancy != 0)
+        {
+            ++layer;
+            continue;
+        }
+        free(glyph_grid_layers[layer].grid);
+        memmove(
+            glyph_grid_layers+layer,
+            glyph_grid_layers+layer+1,
+            grid_layers-layer-1
+        );
+        grid_layers--;
     }
 }
 
@@ -274,7 +347,7 @@ static Uint32 get_pdc_color( const int color_idx)
         (Uint32)Get_BValue(rgb)<<16;
 }
 
-static int get_glyph_texture_index(Uint32 ch32)
+static Uint32 get_glyph_texture_index(Uint32 ch32)
 {
     /* Fullwidth dummy char!*/
     if(ch32 == 0x110000) return 0;
@@ -341,38 +414,70 @@ static int get_glyph_texture_index(Uint32 ch32)
     }
 }
 
+#ifdef USING_COMBINING_CHARACTER_SCHEME
+   int PDC_expand_combined_characters( const cchar_t c, cchar_t *added);  /* addch.c */
+#endif
+
 static void draw_glyph(
     int y, int x, attr_t attr, Uint32 ch32,
     Uint32 background,
     Uint32 foreground
 ){
-    struct instance_data* vd;
+    struct color_data* cd;
+    int layer = 0;
+    int i = x + y * SP->cols;
     if(y < 0 || y >= SP->lines || x < 0 || x >= SP->cols)
         return;
 
-    ensure_instances();
-    vd = &instances[x + y * SP->cols];
-    vd->bg_color = background;
+    ensure_glyph_grid(1);
+    cd = &color_grid[i];
+    cd->bg_color = background;
     Uint32 gl_attrs =
         ((attr & A_UNDERLINE) ? 1<<2 : 0) |
         ((attr & A_OVERLINE) ? 1<<3 : 0) |
         ((attr & A_STRIKEOUT) ? 1<<4 : 0) |
         ((attr & A_LEFT) ? 1<<5 : 0) |
         ((attr & A_RIGHT) ? 1<<6 : 0);
-    vd->fg_color = foreground | (gl_attrs << 24);
-    vd->glyph = get_glyph_texture_index(ch32);
+    cd->fg_color = foreground | (gl_attrs << 24);
+#ifdef USING_COMBINING_CHARACTER_SCHEME
+    for(layer = 1; layer < grid_layers; ++layer)
+    {
+        if(glyph_grid_layers[layer].grid[i] != 0)
+        {
+            glyph_grid_layers[layer].occupancy--;
+            glyph_grid_layers[layer].grid[i] = 0;
+        }
+    }
+    layer = 0;
+    while(ch32 > 0x110000)
+    {
+        layer++;
+        ensure_glyph_grid(layer+1);
+
+        cchar_t added = 0;
+        ch32 = PDC_expand_combined_characters(ch32, &added);
+        Uint32 glyph_index = get_glyph_texture_index(added);
+        if(glyph_index != 0)
+        {
+            glyph_grid_layers[layer].occupancy++;
+            glyph_grid_layers[layer].grid[i] = glyph_index;
+        }
+    }
+#endif
+
+    glyph_grid_layers[0].grid[i] = get_glyph_texture_index(ch32);
 }
 
 static void draw_cursor(int y, int x, int visibility)
 {
-    struct instance_data* vd;
+    struct color_data* cd;
     if(y < 0 || y >= SP->lines || x < 0 || x >= SP->cols)
         return;
 
-    ensure_instances();
-    vd = &instances[x + y * SP->cols];
+    ensure_glyph_grid(1);
+    cd = &color_grid[x + y * SP->cols];
     Uint32 gl_attrs = visibility >= 0 && visibility <= 2 ? visibility : 0;
-    vd->fg_color |= gl_attrs << 24;
+    cd->fg_color |= gl_attrs << 24;
 }
 
 /* set the font colors to match the chtype's attribute */
@@ -553,12 +658,20 @@ void PDC_blink_text(void)
 
 void PDC_doupdate(void)
 {
-    ensure_instances();
+    ensure_glyph_grid(1);
 
+    glBindBuffer(GL_ARRAY_BUFFER, pdc_color_buffer);
     glBufferData(
         GL_ARRAY_BUFFER,
-        sizeof(struct instance_data) * SP->lines * SP->cols,
-        instances,
+        sizeof(struct color_data) * SP->lines * SP->cols,
+        color_grid,
+        GL_STREAM_DRAW
+    );
+    glBindBuffer(GL_ARRAY_BUFFER, pdc_glyph_buffer);
+    glBufferData(
+        GL_ARRAY_BUFFER,
+        sizeof(Uint32) * SP->lines * SP->cols,
+        glyph_grid_layers[0].grid,
         GL_STREAM_DRAW
     );
 
@@ -573,6 +686,7 @@ void PDC_doupdate(void)
     int aligned_h = SP->lines * pdc_fheight;
     glViewport(0, h-aligned_h, aligned_w, aligned_h);
 
+    /* Draw background colors */
     glUseProgram(pdc_background_shader_program);
     int u_screen_size = glGetUniformLocation(pdc_background_shader_program, "screen_size");
     glUniform2i(u_screen_size, SP->cols, SP->lines);
@@ -582,6 +696,7 @@ void PDC_doupdate(void)
 
     glDrawArraysInstanced(GL_TRIANGLES, 0, 6, SP->lines * SP->cols);
 
+    /* Draw foreground colors, layer by layer. */
     glUseProgram(pdc_foreground_shader_program);
 
     u_screen_size = glGetUniformLocation(pdc_foreground_shader_program, "screen_size");
@@ -606,9 +721,27 @@ void PDC_doupdate(void)
     }
     else glUniform3f(u_line_color, -1, -1, -1);
 
-    glDrawArraysInstanced(GL_TRIANGLES, 0, 6, SP->lines * SP->cols);
+    for(int layer = 0; layer < grid_layers; ++layer)
+    {
+        if(layer != 0)
+        {
+            /* The first layer had to be uploaded earlier to make sure that we
+             * have some data in it for the background shader as well. Which is
+             * why we only upload here if the layer isn't the first one.
+             */
+            glBufferData(
+                GL_ARRAY_BUFFER,
+                sizeof(Uint32) * SP->lines * SP->cols,
+                glyph_grid_layers[layer].grid,
+                GL_STREAM_DRAW
+            );
+        }
+        glDrawArraysInstanced(GL_TRIANGLES, 0, 6, SP->lines * SP->cols);
+    }
 
     SDL_GL_SwapWindow(pdc_window);
+
+    shrink_glyph_grid();
 }
 
 void PDC_pump_and_peep(void)

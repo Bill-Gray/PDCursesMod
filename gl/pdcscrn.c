@@ -38,7 +38,7 @@ SDL_Surface *pdc_icon = NULL;
 int pdc_sheight = 0, pdc_swidth = 0;
 
 int pdc_fheight, pdc_fwidth, pdc_fthick;
-unsigned pdc_vbo = 0;
+unsigned pdc_color_buffer = 0, pdc_glyph_buffer = 0;
 unsigned pdc_background_shader_program = 0, pdc_foreground_shader_program = 0;
 unsigned pdc_font_texture = 0;
 unsigned pdc_tex_fbo = 0;
@@ -169,8 +169,11 @@ static void _clean(void)
     if(pdc_vao)
         glDeleteVertexArrays(1, &pdc_vao);
 
-    if(pdc_vbo)
-        glDeleteBuffers(1, &pdc_vbo);
+    if(pdc_color_buffer)
+        glDeleteBuffers(1, &pdc_color_buffer);
+
+    if(pdc_glyph_buffer)
+        glDeleteBuffers(1, &pdc_glyph_buffer);
 
     if(pdc_foreground_shader_program)
         glDeleteProgram(pdc_foreground_shader_program);
@@ -178,8 +181,9 @@ static void _clean(void)
     if(pdc_background_shader_program)
         glDeleteProgram(pdc_background_shader_program);
 
-    pdc_tex_fbo = pdc_font_texture = pdc_vao = pdc_vbo =
-        pdc_background_shader_program = pdc_foreground_shader_program = 0;
+    pdc_tex_fbo = pdc_font_texture = pdc_vao = pdc_color_buffer =
+        pdc_glyph_buffer = pdc_background_shader_program =
+        pdc_foreground_shader_program = 0;
 
     if(pdc_gl_context)
     {
@@ -428,20 +432,22 @@ int PDC_scr_open(void)
     glGenVertexArrays(1, &pdc_vao);
     glBindVertexArray(pdc_vao);
 
-    glGenBuffers(1, &pdc_vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, pdc_vbo);
+    glGenBuffers(1, &pdc_color_buffer);
+    glGenBuffers(1, &pdc_glyph_buffer);
+    glBindBuffer(GL_ARRAY_BUFFER, pdc_color_buffer);
 
     glEnableVertexAttribArray(0);
     glVertexAttribIPointer(
-        0, 1, GL_INT, 3 * sizeof(float), (void*)(0 * sizeof(float)));
+        0, 1, GL_INT, 2 * sizeof(Uint32), (void*)(0 * sizeof(Uint32)));
     glVertexAttribDivisor(0, 1);
     glEnableVertexAttribArray(1);
     glVertexAttribIPointer(
-        1, 1, GL_INT, 3 * sizeof(float), (void*)(1 * sizeof(float)));
+        1, 1, GL_INT, 2 * sizeof(Uint32), (void*)(1 * sizeof(Uint32)));
     glVertexAttribDivisor(1, 1);
+
+    glBindBuffer(GL_ARRAY_BUFFER, pdc_glyph_buffer);
     glEnableVertexAttribArray(2);
-    glVertexAttribIPointer(
-        2, 1, GL_INT, 3 * sizeof(float), (void*)(2 * sizeof(float)));
+    glVertexAttribIPointer(2, 1, GL_INT, sizeof(Uint32), NULL);
     glVertexAttribDivisor(2, 1);
 
     glUniform1i(glGetUniformLocation(pdc_foreground_shader_program, "glyphs"), 0);
