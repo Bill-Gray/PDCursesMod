@@ -42,6 +42,7 @@
 #define glUseProgram pdc_glUseProgram
 #define glBufferData pdc_glBufferData
 #define glDrawArraysInstanced pdc_glDrawArraysInstanced
+#define glBlitFramebuffer pdc_glBlitFramebuffer
 #define glClear pdc_glClear
 #define glClearColor pdc_glClearColor
 #define glViewport pdc_glViewport
@@ -99,6 +100,7 @@
     GLFUNC(USEPROGRAM, UseProgram) \
     GLFUNC(BUFFERDATA, BufferData) \
     GLFUNC(DRAWARRAYSINSTANCED, DrawArraysInstanced) \
+    GLFUNC(BLITFRAMEBUFFER, BlitFramebuffer) \
     GLFUNCPROTO(CLEAR, Clear, (GLbitfield)) \
     GLFUNCPROTO(CLEARCOLOR, ClearColor, (GLclampf, GLclampf, GLclampf, GLclampf)) \
     GLFUNCPROTO(VIEWPORT, Viewport, (GLint, GLint, GLsizei, GLsizei)) \

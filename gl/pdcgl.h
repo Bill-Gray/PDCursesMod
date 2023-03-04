@@ -34,7 +34,7 @@ extern int* pdc_glyph_start_col;
 
 extern unsigned pdc_color_buffer, pdc_glyph_buffer;
 extern unsigned pdc_background_shader_program, pdc_foreground_shader_program;
-extern unsigned pdc_font_texture;
+extern unsigned pdc_font_texture, pdc_render_target_texture;
 extern unsigned pdc_tex_fbo;
 
 PDCEX  SDL_Window *pdc_window;

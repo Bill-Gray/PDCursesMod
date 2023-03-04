@@ -53,6 +53,7 @@ struct glyph_grid_layer
 };
 static struct glyph_grid_layer* glyph_grid_layers = NULL;
 static int grid_w = 0, grid_h = 0, grid_layers = 0;
+static int cur_render_target_w = 0, cur_render_target_h = 0;
 static int cache_attr_index = 0;
 
 static int next_pow_2(int n)
@@ -684,7 +685,67 @@ void PDC_doupdate(void)
     glClear(GL_COLOR_BUFFER_BIT);
 
     SDL_Rect viewport = PDC_get_viewport();
-    glViewport(viewport.x, viewport.y, viewport.w, viewport.h);
+    bool use_render_target =
+        pdc_interpolation_mode == PDC_GL_INTERPOLATE_BILINEAR &&
+        pdc_resize_mode != PDC_GL_RESIZE_NORMAL;
+
+    if(use_render_target)
+    {
+        /* For bilinear interpolation, we unfortunately need a temporary render
+         * target. If we tried to do interpolation on the glyphs in the shader,
+         * their edges would still appear sharp, as they could not blend
+         * between cell edges.
+         */
+        if(!pdc_render_target_texture)
+        {
+            glGenTextures(1, &pdc_render_target_texture);
+            cur_render_target_w = cur_render_target_h = 0;
+        }
+
+        int content_w = SP->cols * pdc_fwidth;
+        int content_h = SP->lines * pdc_fheight;
+
+        if(cur_render_target_w != content_w || cur_render_target_h != content_h)
+        {
+            glBindTexture(GL_TEXTURE_2D, pdc_render_target_texture);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glTexImage2D(
+                GL_TEXTURE_2D,
+                0,
+                GL_RGBA8,
+                content_w,
+                content_h,
+                0,
+                GL_RGBA,
+                GL_UNSIGNED_BYTE,
+                NULL
+            );
+            cur_render_target_w = content_w;
+            cur_render_target_h = content_h;
+        }
+        glBindFramebuffer(GL_FRAMEBUFFER, pdc_tex_fbo);
+        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, pdc_render_target_texture, 0);
+
+        glViewport(0, 0, content_w, content_h);
+        glBindTexture(GL_TEXTURE_2D, pdc_font_texture);
+    }
+    else
+    {
+        /* If we're doing nearest-neighbor interpolation, we can just render
+         * directly to the default framebuffer.
+         */
+        if(pdc_render_target_texture)
+        {
+            glDeleteTextures(1, &pdc_render_target_texture);
+            pdc_render_target_texture = 0;
+            cur_render_target_w = cur_render_target_h = 0;
+        }
+
+        glViewport(viewport.x, viewport.y, viewport.w, viewport.h);
+    }
 
     /* Draw background colors */
     glUseProgram(pdc_background_shader_program);
@@ -737,6 +798,27 @@ void PDC_doupdate(void)
             );
         }
         glDrawArraysInstanced(GL_TRIANGLES, 0, 6, SP->lines * SP->cols);
+    }
+
+    if(use_render_target)
+    {
+        /* Since the bilinear interpolation case was rendering to a texture,
+         * we still need to blit that over to the screen.
+         */
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, pdc_tex_fbo);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+        glBlitFramebuffer(
+            0,
+            0,
+            cur_render_target_w,
+            cur_render_target_h,
+            viewport.x,
+            viewport.y,
+            viewport.x+viewport.w,
+            viewport.y+viewport.h,
+            GL_COLOR_BUFFER_BIT,
+            GL_LINEAR
+        );
     }
 
     SDL_GL_SwapWindow(pdc_window);

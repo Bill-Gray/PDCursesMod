@@ -43,7 +43,7 @@ int pdc_sheight = 0, pdc_swidth = 0;
 int pdc_fheight, pdc_fwidth, pdc_fthick;
 unsigned pdc_color_buffer = 0, pdc_glyph_buffer = 0;
 unsigned pdc_background_shader_program = 0, pdc_foreground_shader_program = 0;
-unsigned pdc_font_texture = 0;
+unsigned pdc_font_texture = 0, pdc_render_target_texture = 0;
 unsigned pdc_tex_fbo = 0;
 static GLuint pdc_vao = 0;
 
@@ -169,6 +169,9 @@ static void _clean(void)
     if(pdc_font_texture)
         glDeleteTextures(1, &pdc_font_texture);
 
+    if(pdc_render_target_texture)
+        glDeleteTextures(1, &pdc_render_target_texture);
+
     if(pdc_vao)
         glDeleteVertexArrays(1, &pdc_vao);
 
@@ -184,8 +187,8 @@ static void _clean(void)
     if(pdc_background_shader_program)
         glDeleteProgram(pdc_background_shader_program);
 
-    pdc_tex_fbo = pdc_font_texture = pdc_vao = pdc_color_buffer =
-        pdc_glyph_buffer = pdc_background_shader_program =
+    pdc_tex_fbo = pdc_font_texture = pdc_render_target_texture = pdc_vao =
+        pdc_color_buffer = pdc_glyph_buffer = pdc_background_shader_program =
         pdc_foreground_shader_program = 0;
 
     if(pdc_gl_context)

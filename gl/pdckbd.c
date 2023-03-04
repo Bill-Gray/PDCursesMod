@@ -358,6 +358,8 @@ static int _process_mouse_event(void)
 
     SDL_Rect viewport = PDC_get_viewport();
 
+    if(viewport.w == 0) viewport.w = 1;
+    if(viewport.h == 0) viewport.h = 1;
     mouse_x = (event.motion.x-viewport.x) * SP->cols / viewport.w;
     mouse_y = (event.motion.y-viewport.y) * SP->lines / viewport.h;
     if(mouse_x < 0 || mouse_x >= COLS || mouse_y < 0 || mouse_y >= LINES)
