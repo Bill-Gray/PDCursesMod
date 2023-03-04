@@ -18,13 +18,24 @@ static chtype oldch = (chtype)(-1);    /* current attribute */
 static int foregr = -2, backgr = -2; /* current foreground, background */
 static bool blinked_off = FALSE;
 
+#define BUILD_GLYPH_INDEX(col, row, w) \
+    ((Uint32)(col) | (((Uint32)row) << 15u) | (((Uint32)w) << 30u))
+
 struct instance_data
 {
-    /* The most significant 8 bits of bg_color contain character width flags
-     * (0 = normal, 1 = fullwidth, 2 = empty)
+    /* The low three bytes are just the 8-bit RGB channel values. The most
+     * significant byte is currently unused.
      */
     Uint32 bg_color;
-    Uint32 fg_color; /* The most significant 8 bits contain the attribute data */
+    /* The most significant 8 bits contain the attribute data. The low three
+     * bytes are just the 8-bit RGB channel values.
+     */
+    Uint32 fg_color;
+    /* The glyph info format is as below:
+     *  0-14: character x offset in glyph cache
+     * 15-29: character y offset in glyph cache
+     * 30-31: Width; 0 = empty, 1 = normal, 2 = fullwidth.
+     */
     Uint32 glyph;
 };
 
@@ -51,6 +62,7 @@ static void enlarge_glyph_cache()
     int new_glyph_cache_h = 2 * pdc_glyph_cache_h;
     GLint max_texture_size = 0;
     int i, j;
+    const float clear_color[4] = {0,0,0,0};
 
     if(new_glyph_cache_w == 0 || new_glyph_cache_h == 0)
     {
@@ -85,6 +97,16 @@ static void enlarge_glyph_cache()
         NULL
     );
 
+    glBindFramebuffer(GL_FRAMEBUFFER, pdc_tex_fbo);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, new_font_texture, 0);
+    glClearBufferfv(GL_COLOR, 0, clear_color);
+
+    if(pdc_font_texture != 0)
+    {
+        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, pdc_font_texture, 0);
+        glReadBuffer(GL_COLOR_ATTACHMENT0);
+    }
+
     if(
         new_glyph_cache_w != pdc_glyph_cache_w ||
         new_glyph_cache_h != pdc_glyph_cache_h
@@ -95,11 +117,9 @@ static void enlarge_glyph_cache()
         /* Enlarging the texture should be possible if we're here. */
         if(pdc_font_texture != 0)
         {
-            /* And this is why we require OpenGL 4.3 instead of 3.3... */
-            glCopyImageSubData(
-                pdc_font_texture, GL_TEXTURE_2D, 0, 0, 0, 0,
-                new_font_texture, GL_TEXTURE_2D, 0, 0, 0, 0,
-                pdc_glyph_cache_w, pdc_glyph_cache_h, 1
+            glCopyTexSubImage2D(
+                GL_TEXTURE_2D,
+                0, 0, 0, 0, 0, pdc_glyph_cache_w, pdc_glyph_cache_h
             );
         }
         pdc_glyph_cache_w = new_glyph_cache_w;
@@ -111,22 +131,18 @@ static void enlarge_glyph_cache()
         for(i = pdc_glyph_row_capacity; i < new_glyph_row_capacity; ++i)
             pdc_glyph_start_col[i] = 0;
 
-        /* Reserve room for index 0 (we want to use index 0 to mark empty) */
-        pdc_glyph_start_col[0] =
-            pdc_glyph_start_col[0] > 1 ? pdc_glyph_start_col[0] : 1;
         pdc_glyph_row_capacity = new_glyph_row_capacity;
     }
     else
     {
-        int minx, maxx, w;
+        bool* visited = calloc(instances_w * instances_h, sizeof(bool));
+
         /* If we're here, it's not possible to enlarge the texture, so we have
          * to evict everything that's not needed out of the texture. This can
          * be really slow, but at least the output should be fine...
          */
         for(i = 0; i < pdc_glyph_row_capacity; ++i)
             pdc_glyph_start_col[i] = 0;
-        /* Reserve room for index 0 (we want to use index 0 to mark empty) */
-        pdc_glyph_start_col[0] = 1;
 
         for(int attr = 0; attr < 4; ++attr)
         for(i = 0; i < pdc_glyph_cache_size[attr]; ++i)
@@ -134,12 +150,13 @@ static void enlarge_glyph_cache()
             Uint32* cached_glyph = pdc_glyph_cache[attr]+i;
             Uint32 old_glyph = *cached_glyph;
             bool used = FALSE;
+            Uint32 w = old_glyph >> 30;
             if(old_glyph == 0)
                 continue;
 
             for(j = 0; j < instances_w * instances_h; ++j)
             {
-                if(instances[j].glyph == old_glyph)
+                if(instances[j].glyph == old_glyph && !visited[j])
                 {
                     used = TRUE;
                     break;
@@ -150,25 +167,22 @@ static void enlarge_glyph_cache()
             if(!used) /* Unused glyphs get thrown out. */
                 continue;
 
-            TTF_GlyphMetrics32(pdc_ttffont, i, &minx, &maxx, NULL, NULL, NULL);
-            w = (maxx - minx + pdc_fwidth-1)/pdc_fwidth;
-
             /* Used glyphs are given a new index and copied over. */
             for(int row = 0; row < pdc_glyph_row_capacity; ++row)
             {
                 int *col = &pdc_glyph_start_col[row];
                 if(*col + w <= pdc_glyph_col_capacity)
                 {
-                    Uint32 index = (Uint32)(*col) | (((Uint32)row)<<16);
-                    *cached_glyph = index;
+                    *cached_glyph = BUILD_GLYPH_INDEX(*col, row, w);
 
-                    glCopyImageSubData(
-                        pdc_font_texture, GL_TEXTURE_2D, 0,
-                        (old_glyph&0xFFFF) * pdc_fwidth,
-                        (old_glyph>>16) * pdc_fheight, 0,
-                        new_font_texture, GL_TEXTURE_2D, 0,
-                        (*col) * pdc_fwidth, row * pdc_fheight, 0,
-                        pdc_fwidth * w, pdc_fheight, 1
+                    glCopyTexSubImage2D(
+                        GL_TEXTURE_2D,
+                        0,
+                        (*col)*pdc_fwidth,
+                        row * pdc_fheight,
+                        (old_glyph&0x7FFF) * pdc_fwidth,
+                        (old_glyph>>15&0x7FFF) * pdc_fheight,
+                        pdc_fwidth * w, pdc_fheight
                     );
 
                     (*col) += w;
@@ -178,29 +192,23 @@ static void enlarge_glyph_cache()
 
             for(j = 0; j < instances_w * instances_h; ++j)
             {
-                if(instances[j].glyph == old_glyph)
+                if(instances[j].glyph == old_glyph && !visited[j])
                 {
-                    /* Setting the top-most bit allows us to not mix the
-                     * already-changed glyph indices up with old ones that need
-                     * updating. It's just used as an arbitrary marker. */
-                    instances[j].glyph = *cached_glyph | (1u<<31);
+                    instances[j].glyph = *cached_glyph;
+                    visited[j] = TRUE;
                 }
             }
         }
 
-        for(j = 0; j < instances_w * instances_h; ++j)
-        {
-            /* We can clear the top-most bit on all glyphs now. */
-            instances[j].glyph &= ~(1u<<31);
-        }
-
+        free(visited);
     }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
     if(pdc_font_texture != 0)
         glDeleteTextures(1, &pdc_font_texture);
     pdc_font_texture = new_font_texture;
 }
 
-static Uint32 alloc_glyph_cache(int w)
+static Uint32 alloc_glyph_cache(Uint32 w)
 {
     /* Keep trying until we succeed. */
     for(;;)
@@ -210,7 +218,7 @@ static Uint32 alloc_glyph_cache(int w)
             int *col = &pdc_glyph_start_col[row];
             if(*col+w <= pdc_glyph_col_capacity)
             {
-                Uint32 index = (Uint32)(*col) | (((Uint32)row)<<16);
+                Uint32 index = BUILD_GLYPH_INDEX(*col, row, w);
                 (*col) += w;
                 return index;
             }
@@ -236,7 +244,7 @@ static void ensure_instances()
             struct instance_data* vd = &new_instances[i + j * SP->cols];
             vd->bg_color = 0;
             vd->fg_color = 0;
-            vd->glyph = 0;
+            vd->glyph = BUILD_GLYPH_INDEX(0, 0, 1);
         }
 
         for(int j = 0; j < instances_h && j < SP->lines; ++j)
@@ -267,7 +275,8 @@ static Uint32 get_pdc_color( const int color_idx)
 
 static int get_glyph_texture_index(Uint32 ch32)
 {
-    if(ch32 == ' ') return 0;
+    /* Fullwidth dummy char!*/
+    if(ch32 == 0x110000) return 0;
 
     SDL_Color white = {255,255,255,255};
     int *cache_size = &pdc_glyph_cache_size[cache_attr_index];
@@ -302,8 +311,8 @@ static int get_glyph_texture_index(Uint32 ch32)
         glTexSubImage2D(
             GL_TEXTURE_2D,
             0,
-            (index&0xFFFF) * pdc_fwidth,
-            (index>>16) * pdc_fheight,
+            (index&0x7FFF) * pdc_fwidth,
+            (index>>15&0x7FFF) * pdc_fheight,
             surf->w,
             surf->h,
             GL_RGBA,
@@ -350,12 +359,6 @@ static void draw_glyph(
         ((attr & A_LEFT) ? 1<<5 : 0) |
         ((attr & A_RIGHT) ? 1<<6 : 0);
     vd->fg_color = foreground | (gl_attrs << 24);
-#ifdef PDC_WIDE
-    if(PDC_wcwidth(ch32) == 2) vd->bg_color |= 1<<24;
-    /* Fullwidth dummy char, we use this to widen the char at x-1 and hide
-     * the current char. */
-    else if(ch32 == 0x110000) vd->bg_color |= 2<<24;
-#endif
     vd->glyph = get_glyph_texture_index(ch32);
 }
 
@@ -569,16 +572,27 @@ void PDC_doupdate(void)
     int aligned_h = SP->lines * pdc_fheight;
     glViewport(0, h-aligned_h, aligned_w, aligned_h);
 
-    int u_screen_size = glGetUniformLocation(pdc_shader_program, "screen_size");
+    glUseProgram(pdc_background_shader_program);
+    int u_screen_size = glGetUniformLocation(pdc_background_shader_program, "screen_size");
     glUniform2i(u_screen_size, SP->cols, SP->lines);
 
-    int u_glyph_size = glGetUniformLocation(pdc_shader_program, "glyph_size");
+    int u_glyph_size = glGetUniformLocation(pdc_background_shader_program, "glyph_size");
     glUniform2i(u_glyph_size, pdc_fwidth, pdc_fheight);
 
-    int u_fthick = glGetUniformLocation(pdc_shader_program, "fthick");
+    glDrawArraysInstanced(GL_TRIANGLES, 0, 6, SP->lines * SP->cols);
+
+    glUseProgram(pdc_foreground_shader_program);
+
+    u_screen_size = glGetUniformLocation(pdc_foreground_shader_program, "screen_size");
+    glUniform2i(u_screen_size, SP->cols, SP->lines);
+
+    u_glyph_size = glGetUniformLocation(pdc_foreground_shader_program, "glyph_size");
+    glUniform2i(u_glyph_size, pdc_fwidth, pdc_fheight);
+
+    int u_fthick = glGetUniformLocation(pdc_foreground_shader_program, "fthick");
     glUniform1i(u_fthick, pdc_fthick);
 
-    int u_line_color = glGetUniformLocation(pdc_shader_program, "line_color");
+    int u_line_color = glGetUniformLocation(pdc_foreground_shader_program, "line_color");
     short hcol = SP->line_color;
     if(hcol >= 0)
     {

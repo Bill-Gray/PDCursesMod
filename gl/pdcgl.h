@@ -24,8 +24,9 @@ extern int pdc_glyph_cache_w, pdc_glyph_cache_h;
 extern int* pdc_glyph_start_col;
 
 extern GLuint pdc_vbo;
-extern GLuint pdc_shader_program;
+extern GLuint pdc_background_shader_program, pdc_foreground_shader_program;
 extern GLuint pdc_font_texture;
+extern GLuint pdc_tex_fbo;
 
 PDCEX  SDL_Window *pdc_window;
 PDCEX  SDL_Surface *pdc_icon;
