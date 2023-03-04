@@ -55,12 +55,10 @@ endif
 # Only decision is:  are we doing a 64-bit compile (_w64 defined)?
 
 ifndef ON_WINDOWS
-	PREFIX  = i686-w64-mingw32-
 	ifdef _w64
-		PREFIX  = x86_64-w64-mingw32-
-	endif
-	ifdef _a64
-		PREFIX  = aarch64-w64-mingw32-
+	   PREFIX  = x86_64-w64-mingw32-
+	else
+	   PREFIX  = i686-w64-mingw32-
 	endif
 endif
 
@@ -68,10 +66,10 @@ PDCURSES_WIN_H	= $(osdir)/pdcwin.h
 
 CC	= $(PREFIX)gcc
 
-AR	= $(PREFIX)ar
-STRIP	= $(PREFIX)strip
+AR	= ar
+STRIP	= strip
 
-CFLAGS  += -Wall -Wextra -pedantic
+CFLAGS  = -Wall -Wextra -pedantic
 ifeq ($(DEBUG),Y)
 	CFLAGS  += -g -DPDCDEBUG
 	LDFLAGS = -g

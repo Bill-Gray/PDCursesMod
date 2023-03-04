@@ -10,8 +10,6 @@ Minor new features
 - WINCON: supports full unicode output including codepoints
   above 0xFFFF, for instance emojis. [6c501d6](https://github.com/Bill-Gray/PDCursesMod/pull/273/commits/6c501d627b34447e987eaec1593bc560d530fed7)
 
-- WINCON: Support for cross compilation for Windows on Arm. [a185262](https://github.com/Bill-Gray/PDCursesMod/pull/273/commits/a18526233c71353f5040a310efcfb2d44fe1b4fa)
-
 Bug fixes
 ---------
 
@@ -21,16 +19,9 @@ Bug fixes
 - WINCON: Transparent background was not working in terminals supporting the 
   feature when using ANSI mode. [6e0d482](https://github.com/Bill-Gray/PDCursesMod/pull/273/commits/6e0d48229ddc169e90e749b26dc2f8da8e981940)
 
-- WINCON: Makefile was not compatible with LLVM-MinGW as prefix was missing
-  in AR and STRIP utilities. [bf201ec](https://github.com/Bill-Gray/PDCursesMod/pull/273/commits/bf201ec2f7c826469a743d116855d0a3f0c9bebe)
-
-- WINCON: Makefile was clearing CFLAGS variable. Now it can accept custom
-  flags. [bf201ec](https://github.com/Bill-Gray/PDCursesMod/pull/273/commits/bf201ec2f7c826469a743d116855d0a3f0c9bebe)
-
 See the git log for more details.
-
-PDCursesMod as of 2023 January 07
-=================================
+PDCursesMod as of 2023 March 04
+===============================
 
 Minor new features
 ------------------
@@ -66,6 +57,9 @@ Bug fixes
 
 - WinGUI could get confused if the window was resized,  resulting in
   input being ignored.  bc340c0d20
+
+- Text selection & copying could cause memory corruption with 4 byte UTF-8
+  codepoints when WIDE=Y.  bff53ab114
 
 See the git log for more details.
 
