@@ -22,7 +22,8 @@ didn't match,  or the size of chtypes differed.  */
 int main( void)
 {
    static const char *port_text[] = { "X11", "Win32 console", "Win32a",
-         "DOS", "OS/2", "SDL1", "SDL2", "VT" };
+         "DOS", "OS/2", "SDL1", "SDL2", "VT", "DOSVGA", "Plan9", "Linux FB",
+         "OpenGL" };
    PDC_VERSION vinfo;
 
    printf( "Compiled as version %d.%d.%d, chtype size %d\n",
