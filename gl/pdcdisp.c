@@ -683,9 +683,8 @@ void PDC_doupdate(void)
     glClearColor(0.0f,0.0f,0.0f,0.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    int aligned_w = SP->cols * pdc_fwidth;
-    int aligned_h = SP->lines * pdc_fheight;
-    glViewport(0, h-aligned_h, aligned_w, aligned_h);
+    SDL_Rect viewport = PDC_get_viewport();
+    glViewport(viewport.x, viewport.y, viewport.w, viewport.h);
 
     /* Draw background colors */
     glUseProgram(pdc_background_shader_program);

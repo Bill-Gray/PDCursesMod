@@ -27,6 +27,9 @@ int pdc_font_size =
 #else
  17;
 #endif
+int pdc_resize_mode = PDC_GL_RESIZE_NORMAL;
+int pdc_interpolation_mode = PDC_GL_INTERPOLATE_BILINEAR;
+
 Uint32 *pdc_glyph_cache[4] = {NULL, NULL, NULL, NULL};
 int pdc_glyph_cache_size[4] = {0, 0, 0, 0};
 int pdc_glyph_row_capacity = 0, pdc_glyph_col_capacity = 0;
@@ -576,4 +579,65 @@ void PDC_set_resize_limits( const int new_min_lines, const int new_max_lines,
    INTENTIONALLY_UNUSED_PARAMETER( new_max_lines);
    INTENTIONALLY_UNUSED_PARAMETER( new_min_cols);
    INTENTIONALLY_UNUSED_PARAMETER( new_max_cols);
+}
+
+SDL_Rect PDC_get_viewport(void)
+{
+    int w, h;
+    SDL_GetWindowSize(pdc_window, &w, &h);
+
+    int content_w = SP->cols * pdc_fwidth;
+    int content_h = SP->lines * pdc_fheight;
+    int scale = 0;
+
+    SDL_Rect rect;
+
+    switch(pdc_resize_mode)
+    {
+    case PDC_GL_RESIZE_NORMAL:
+        rect.x = 0;
+        rect.y = h-content_h;
+        rect.w = content_w;
+        rect.h = content_h;
+        break;
+    case PDC_GL_RESIZE_STRETCH:
+        rect.x = 0;
+        rect.y = 0;
+        rect.w = w;
+        rect.h = h;
+        break;
+    case PDC_GL_RESIZE_SCALE:
+        if(content_h == 0) content_h = 1;
+        if(content_w == 0) content_w = 1;
+        if(w * content_h < content_w * h)
+        {
+            scale = content_h * w / content_w;
+            rect.x = 0;
+            rect.y = (h - scale)/2;
+            rect.w = w;
+            rect.h = scale;
+        }
+        else
+        {
+            scale = content_w * h / content_h;
+            rect.x = (w - scale)/2;
+            rect.y = 0;
+            rect.w = scale;
+            rect.h = h;
+        }
+        break;
+    case PDC_GL_RESIZE_INTEGER:
+        if(content_h == 0) content_h = 1;
+        if(content_w == 0) content_w = 1;
+        scale = h/content_h < w/content_w ? h/content_h : w/content_w;
+        if(scale <= 0) scale = 1;
+        content_w = scale * content_w;
+        content_h = scale * content_h;
+        rect.x = (w-content_w)/2;
+        rect.y = (h-content_h)/2;
+        rect.w = content_w;
+        rect.h = content_h;
+        break;
+    }
+    return rect;
 }

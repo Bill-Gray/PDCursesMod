@@ -356,8 +356,10 @@ static int _process_mouse_event(void)
         SDL_GetMouseState( &event.motion.x, &event.motion.y);
     }
 
-    mouse_x = event.motion.x / pdc_fwidth;
-    mouse_y = event.motion.y / pdc_fheight;
+    SDL_Rect viewport = PDC_get_viewport();
+
+    mouse_x = (event.motion.x-viewport.x) * SP->cols / viewport.w;
+    mouse_y = (event.motion.y-viewport.y) * SP->lines / viewport.h;
     if(mouse_x < 0 || mouse_x >= COLS || mouse_y < 0 || mouse_y >= LINES)
         return -1;
 
@@ -459,17 +461,27 @@ int PDC_get_key(void)
     case SDL_WINDOWEVENT:
         if (SDL_WINDOWEVENT_SIZE_CHANGED == event.window.event || SDL_WINDOWEVENT_RESIZED == event.window.event)
         {
-            pdc_sheight = event.window.data2;
-            pdc_swidth = event.window.data1;
-            if( curscr)
+            if(pdc_resize_mode == PDC_GL_RESIZE_NORMAL)
             {
-                touchwin(curscr);
-                wrefresh(curscr);
+                pdc_sheight = event.window.data2;
+                pdc_swidth = event.window.data1;
+                if( curscr)
+                {
+                    touchwin(curscr);
+                    wrefresh(curscr);
+                }
+                if (!SP->resized)
+                {
+                    SP->resized = TRUE;
+                    return KEY_RESIZE;
+                }
             }
-            if (!SP->resized)
+            else
             {
-                SP->resized = TRUE;
-                return KEY_RESIZE;
+                /* Other resize modes don't care about changing sheight or
+                 * swidth!
+                 */
+                PDC_doupdate();
             }
         }
         break;
