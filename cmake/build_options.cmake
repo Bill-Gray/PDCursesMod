@@ -23,6 +23,7 @@ message(STATUS "PDC_DOSVGA_BUILD ....... ${PDC_DOSVGA_BUILD}")
 message(STATUS "PDC_DOSVT_BUILD ........ ${PDC_DOSVT_BUILD}")
 message(STATUS "PDC_SDL2_BUILD ......... ${PDC_SDL2_BUILD}")
 message(STATUS "PDC_SDL2_DEPS_BUILD .... ${PDC_SDL2_DEPS_BUILD}")
+message(STATUS "PDC_GL_BUILD ........... ${PDC_GL_BUILD}")
 
 # normalize a windows path
 file(TO_CMAKE_PATH "${CMAKE_INSTALL_PREFIX}" CMAKE_INSTALL_PREFIX)
