@@ -43,11 +43,11 @@ testcurs.exe test_pan.exe tuidemo.exe widetest.exe worm.exe xmas.exe
 all:    $(LIBCURSES)
 
 clean:
-   -del *.obj
-   -del *.lib
-   -del *.exe
-   -del *.map
-   -del advapi32.def
+   -del *.obj 2>NUL
+   -del *.lib 2>NUL
+   -del *.exe 2>NUL
+   -del *.map 2>NUL
+   -del advapi32.def 2>NUL
 
 demos:  $(LIBCURSES) $(DEMOS)
 

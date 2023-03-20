@@ -42,9 +42,9 @@ LIBCURSES	= pdcurses.lib
 all:	$(LIBCURSES) $(DEMOS)
 
 clean:
-	-del *.obj
-	-del *.lib
-	-del *.exe
+	-del *.obj 2>NUL
+	-del *.lib 2>NUL
+	-del *.exe 2>NUL
 
 demos:	$(DEMOS)
 

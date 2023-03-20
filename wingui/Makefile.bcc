@@ -43,13 +43,13 @@ LIBCURSES	= pdcurses.lib
 all:	$(LIBCURSES) $(DEMOS)
 
 clean:
-	-del *.obj
-	-del *.lib
-	-del *.tds
-	-del *.exe
+	-del *.obj 2>NUL
+	-del *.lib 2>NUL
+	-del *.tds 2>NUL
+	-del *.exe 2>NUL
 
 $(LIBCURSES) : $(LIBOBJS) $(PDCOBJS)
-	-del $@
+	-del $@ 2>NUL
 	$(LIBEXE) $@ $(LIBOBJS) $(PDCOBJS)
 	-copy $(LIBCURSES) panel.lib
 
