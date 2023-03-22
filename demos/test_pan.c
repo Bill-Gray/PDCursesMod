@@ -69,7 +69,7 @@ PANEL *panel_from_point( const int y, const int x)
    return( NULL);
 }
 
-int main()
+int main(void)
 {
    WINDOW *my_wins[3];
    PANEL  *my_panels[3];
