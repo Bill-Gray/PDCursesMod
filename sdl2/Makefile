@@ -5,7 +5,6 @@
 #
 # where target can be any of:
 # [all|demos|libpdcurses.a|testcurs]...
-# Requires $TTFBASE and $SDLBASE environmental variables.
 
 O = o
 
@@ -18,13 +17,19 @@ common		= $(PDCURSES_SRCDIR)/common
 
 include $(common)/libobjs.mif
 
-PREFIX=i686-w64-mingw32
-E = .exe
+PREFIX = $(shell $(CC) -dumpmachine)
+
 ifdef _w64
-	PREFIX=x86_64-w64-mingw32
+	PREFIX = i686-w64-mingw32
+	E = .exe
+endif
+ifdef _w64
+	PREFIX = x86_64-w64-mingw32
+	E = .exe
 endif
 ifdef _a64
-	PREFIX=aarch64-w64-mingw32
+	PREFIX = aarch64-w64-mingw32
+	E = .exe
 endif
 
 ifeq ($(OS),Windows_NT)
