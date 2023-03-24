@@ -1,7 +1,8 @@
-# GNU MAKE Makefile for PDCurses library - WIN32 MinGW GCC WinGUI
+# GNU MAKE Makefile for PDCurses library - WIN32/64/ARM MinGW GCC/LLVM
 #
 # Usage: [g]make [-f path\Makefile] [DEBUG=Y] [DLL=Y] [WIDE=Y] [UTF8=Y]
-#        [LIBNAME=(name)] [DLLNAME=(name)] [target]
+#        [INFOEX=N] [LIBNAME=(name)] [DLLNAME=(name)] [target]
+#        [_w32=Y | _w64=Y | _a64=Y ]
 #
 # where target can be any of:
 # [all|demos|pdcurses.a|testcurs.exe...]
@@ -55,10 +56,12 @@ endif
 # Only decision is:  are we doing a 64-bit compile (_w64 defined)?
 
 ifndef ON_WINDOWS
+	PREFIX  = i686-w64-mingw32-
 	ifdef _w64
-	   PREFIX  = x86_64-w64-mingw32-
-	else
-	   PREFIX  = i686-w64-mingw32-
+		PREFIX  = x86_64-w64-mingw32-
+	endif
+	ifdef _a64
+		PREFIX  = aarch64-w64-mingw32-
 	endif
 endif
 
@@ -66,10 +69,10 @@ PDCURSES_WIN_H	= $(osdir)/pdcwin.h
 
 CC	= $(PREFIX)gcc
 
-AR	= ar
-STRIP	= strip
+AR	= $(PREFIX)ar
+STRIP	= $(PREFIX)strip
 
-CFLAGS  = -Wall -Wextra -pedantic
+CFLAGS  += -Wall -Wextra -pedantic
 ifeq ($(DEBUG),Y)
 	CFLAGS  += -g -DPDCDEBUG
 	LDFLAGS = -g

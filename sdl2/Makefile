@@ -17,12 +17,18 @@ common		= $(PDCURSES_SRCDIR)/common
 
 include $(common)/libobjs.mif
 
-ifdef _w64
-	PREFIX=x86_64-w64-mingw32-
+PREFIX = $(shell $(CC) -dumpmachine)
+
+ifdef _w32
+	PREFIX = i686-w64-mingw32
 	E = .exe
 endif
-ifdef _w32
-	PREFIX=i686-w64-mingw32-
+ifdef _w64
+	PREFIX = x86_64-w64-mingw32
+	E = .exe
+endif
+ifdef _a64
+	PREFIX = aarch64-w64-mingw32
 	E = .exe
 endif
 
@@ -38,7 +44,7 @@ ifeq ($(OS),Windows_NT)
 	SLIBS = -L$(SDLBASE)/$(PLATFORM)/lib -lSDL2main -lSDL2
 
 	TFLAGS = -I$(TTFBASE)/$(PLATFORM)/include/SDL2
-	TLIBS =-L$(TTFBASE)/$(PLATFORM)/lib -lSDL2_ttf
+	TLIBS = -L$(TTFBASE)/$(PLATFORM)/lib -lSDL2_ttf
 
 	DEMOFLAGS = -mwindows
 else
@@ -47,10 +53,11 @@ else
 	SFLAGS = $(shell sdl2-config --cflags)
 	SLIBS = $(shell sdl2-config --libs)
 
-	TLIBS = -lSDL2_ttf
+	TFLAGS = -I$(TTFBASE)/$(PREFIX)/include/SDL2
+	TLIBS = -L$(TTFBASE)/$(PREFIX)/lib -lSDL2_ttf
 endif
 
-CC		= $(PREFIX)gcc
+CC		= $(PREFIX)-gcc
 WINDRES		= windres
 
 PDCURSES_SDL_H	= $(osdir)/pdcsdl.h
@@ -107,7 +114,7 @@ ifeq ($(DLL),Y)
 		CLEAN = *$(DLL_SUFFIX)
 	endif
 else
-	LIBEXE = $(AR)
+	LIBEXE = $(PREFIX)-$(AR)
 	LIBFLAGS = rcv
 	LIBCURSES = lib$(LIBNAME).a
 	LDFLAGS = $(LIBCURSES) $(SLIBS)
@@ -131,7 +138,7 @@ clean:
 
 demos:	$(DEMOS)
 ifneq ($(DEBUG),Y)
-	strip $(DEMOS)
+	$(PREFIX)-strip $(DEMOS)
 endif
 
 install:
