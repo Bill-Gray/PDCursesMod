@@ -59,6 +59,11 @@ ifdef _w32
 	E = .exe
 endif
 
+ifdef _a64
+	PREFIX  = aarch64-w64-mingw32-
+	E = .exe
+endif
+
 ifeq ($(OS),Windows_NT)
 	E = .exe
 	RM = cmd /c del
@@ -99,7 +104,7 @@ BUILD		= $(CC) $(CFLAGS) -I$(PDCURSES_SRCDIR)
 
 LINK		= $(CC)
 LDFLAGS		= $(LIBCURSES)
-RANLIB		= ranlib
+RANLIB		= $(PREFIX)ranlib
 
 .PHONY: all libs clean demos
 
