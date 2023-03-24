@@ -19,7 +19,7 @@ include $(common)/libobjs.mif
 
 PREFIX = $(shell $(CC) -dumpmachine)
 
-ifdef _w64
+ifdef _w32
 	PREFIX = i686-w64-mingw32
 	E = .exe
 endif
