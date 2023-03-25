@@ -26,7 +26,7 @@ jobs:
          make CLANG=Y demos
 
   buildWindows:
-    runs-on: windows-2022
+    runs-on: windows-latest
 
     steps:
     - uses: actions/checkout@master
@@ -40,3 +40,55 @@ jobs:
         cd ..\vt
         nmake CHTYPE_32=Y -f Makefile.vc demos
       shell: cmd
+
+  XbuildWindows:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: W32_VT,     arch: _w32, ENV: vt,     PREFIX: i686-w64-mingw32 }
+          - { name: W32_WINCON, arch: _w32, ENV: wincon, PREFIX: i686-w64-mingw32 }
+          - { name: W32_WINGUI, arch: _w32, ENV: wingui, PREFIX: i686-w64-mingw32 }
+          - { name: W32_SDL2,   arch: _w32, ENV: sdl2,   PREFIX: i686-w64-mingw32 }
+          - { name: W64_VT,     arch: _w64, ENV: vt,     PREFIX: x86_64-w64-mingw32 }
+          - { name: W64_WINCON, arch: _w64, ENV: wincon, PREFIX: x86_64-w64-mingw32 }
+          - { name: W64_WINGUI, arch: _w64, ENV: wingui, PREFIX: x86_64-w64-mingw32 }
+          - { name: W64_SDL2,   arch: _w64, ENV: sdl2,   PREFIX: x86_64-w64-mingw32 }
+          - { name: WoA_VT,     arch: _a64, ENV: vt,     PREFIX: aarch64-w64-mingw32 }
+          - { name: WoA_WINCON, arch: _a64, ENV: wincon, PREFIX: aarch64-w64-mingw32 }
+          - { name: WoA_WINGUI, arch: _a64, ENV: wingui, PREFIX: aarch64-w64-mingw32 }
+    steps:
+    - uses: actions/checkout@master
+    - name: ${{ matrix.name }}
+      shell: bash
+      run: |
+        ## download llvm-MinGW
+        assetsUrl=$(wget -qO- https://github.com/mstorsjo/llvm-mingw/releases/latest | grep "expanded_assets" | grep -Po 'https[^"]+')
+        pkgUrl="http://github.com$(wget -qO- $assetsUrl | grep 'href.*ucrt.*x86_64.tar.xz' | grep -Po '/[^"]+')"
+        wget -qO- $pkgUrl | tar -Jxvf -
+        mv llvm* llvm-mingw
+        LLVMBASE="$(pwd)/llvm-mingw"
+
+        if [[ "${{ matrix.ENV }}" == "sdl2" ]]; then
+            ## download SDL2
+            assetsUrl=$(wget -qO- https://github.com/libsdl-org/SDL/releases/latest | grep "expanded_assets" | grep -Po 'https[^"]+')
+            pkgUrl="http://github.com$(wget -qO- $assetsUrl | grep 'href.*mingw.tar.gz' | grep -Po '/[^"]+')"
+            wget -qO- $pkgUrl | tar xzvf -
+            mv SDL2-* SDL2-dev
+            export SDLBASE="$(pwd)/SDL2-dev"
+
+            ## download SDL2_ttf
+            assetsUrl=$(wget -qO- https://github.com/libsdl-org/SDL_ttf/releases/latest | grep "expanded_assets" | grep -Po 'https[^"]+')
+            pkgUrl="http://github.com$(wget -qO- $assetsUrl | grep 'href.*mingw.tar.gz' | grep -Po '/[^"]+')"
+            wget -qO- $pkgUrl | tar xzvf -
+            mv SDL2_ttf* SDL2_ttf-dev
+            export TTFBASE="$(pwd)/SDL2_ttf-dev"
+
+            export PATH="$SDLBASE/${{ matrix.PREFIX }}/bin:$TTFBASE/${{ matrix.PREFIX }}/bin:$PATH"
+        fi
+
+        export PATH="$LLVMBASE/bin:$PATH"
+
+        cd ${{ matrix.ENV }}
+        make demos ${{ matrix.arch }}=Y WIDE=Y UTF8=Y
