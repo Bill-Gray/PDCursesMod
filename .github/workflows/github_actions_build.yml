@@ -91,4 +91,6 @@ jobs:
         export PATH="$LLVMBASE/bin:$PATH"
 
         cd ${{ matrix.ENV }}
+        make demos ${{ matrix.arch }}=Y
+        make clean
         make demos ${{ matrix.arch }}=Y WIDE=Y UTF8=Y
