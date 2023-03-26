@@ -88,6 +88,7 @@ jobs:
             wget -qO- $pkgUrl | tar xzvf -
             mv SDL2-* SDL2-dev
             export SDLBASE="$(pwd)/SDL2-dev"
+            cp $SDLBASE/${{ matrix.PREFIX }}/bin/*.dll sdl2
 
             ## download SDL2_ttf
             assetsUrl=$(wget -qO- https://github.com/libsdl-org/SDL_ttf/releases/latest | grep "expanded_assets" | grep -Po 'https[^"]+')
@@ -95,6 +96,7 @@ jobs:
             wget -qO- $pkgUrl | tar xzvf -
             mv SDL2_ttf* SDL2_ttf-dev
             export TTFBASE="$(pwd)/SDL2_ttf-dev"
+            cp $TTFBASE/${{ matrix.PREFIX }}/bin/*.dll sdl2
 
             export PATH="$SDLBASE/${{ matrix.PREFIX }}/bin:$TTFBASE/${{ matrix.PREFIX }}/bin:$PATH"
         fi
