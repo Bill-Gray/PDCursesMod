@@ -102,7 +102,7 @@ jobs:
         export PATH="$LLVMBASE/bin:$PATH"
 
         cd ${{ matrix.ENV }}
-        [[ "${{ matrix.UTF8 }}" == "Y" ]] && make -j$(nproc) demos ${ARCH}=Y WIDE=Y UTF8=Y || make -j$(nproc) demos ${ARCH}=Y
+        [[ "${{ matrix.UTF8 }}" == "Y" ]] && make -j$(nproc) demos ${{ matrix.ARCH }}=Y WIDE=Y UTF8=Y || make -j$(nproc) demos ${{ matrix.ARCH }}=Y
 
     - name: "Upload Artifact"
       uses: actions/upload-artifact@v3
