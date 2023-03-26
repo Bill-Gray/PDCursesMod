@@ -47,17 +47,28 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { name: W32_VT,     arch: _w32, ENV: vt,     PREFIX: i686-w64-mingw32 }
-          - { name: W32_WINCON, arch: _w32, ENV: wincon, PREFIX: i686-w64-mingw32 }
-          - { name: W32_WINGUI, arch: _w32, ENV: wingui, PREFIX: i686-w64-mingw32 }
-          - { name: W32_SDL2,   arch: _w32, ENV: sdl2,   PREFIX: i686-w64-mingw32 }
-          - { name: W64_VT,     arch: _w64, ENV: vt,     PREFIX: x86_64-w64-mingw32 }
-          - { name: W64_WINCON, arch: _w64, ENV: wincon, PREFIX: x86_64-w64-mingw32 }
-          - { name: W64_WINGUI, arch: _w64, ENV: wingui, PREFIX: x86_64-w64-mingw32 }
-          - { name: W64_SDL2,   arch: _w64, ENV: sdl2,   PREFIX: x86_64-w64-mingw32 }
-          - { name: WoA_VT,     arch: _a64, ENV: vt,     PREFIX: aarch64-w64-mingw32 }
-          - { name: WoA_WINCON, arch: _a64, ENV: wincon, PREFIX: aarch64-w64-mingw32 }
-          - { name: WoA_WINGUI, arch: _a64, ENV: wingui, PREFIX: aarch64-w64-mingw32 }
+          - { name: VT_W32,          arch: _w32, ENV: vt,     UTF8: N, PREFIX: i686-w64-mingw32 }
+          - { name: WINCON_W32,      arch: _w32, ENV: wincon, UTF8: N, PREFIX: i686-w64-mingw32 }
+          - { name: WINGUI_W32,      arch: _w32, ENV: wingui, UTF8: N, PREFIX: i686-w64-mingw32 }
+          - { name: SDL2_W32,        arch: _w32, ENV: sdl2,   UTF8: N, PREFIX: i686-w64-mingw32 }
+          - { name: VT_W64,          arch: _w64, ENV: vt,     UTF8: N, PREFIX: x86_64-w64-mingw32 }
+          - { name: WINCON_W64,      arch: _w64, ENV: wincon, UTF8: N, PREFIX: x86_64-w64-mingw32 }
+          - { name: WINGUI_W64,      arch: _w64, ENV: wingui, UTF8: N, PREFIX: x86_64-w64-mingw32 }
+          - { name: SDL2_W64,        arch: _w64, ENV: sdl2,   UTF8: N, PREFIX: x86_64-w64-mingw32 }
+          - { name: VT_WoA,          arch: _a64, ENV: vt,     UTF8: N, PREFIX: aarch64-w64-mingw32 }
+          - { name: WINCON_WoA,      arch: _a64, ENV: wincon, UTF8: N, PREFIX: aarch64-w64-mingw32 }
+          - { name: WINGUI_WoA,      arch: _a64, ENV: wingui, UTF8: N, PREFIX: aarch64-w64-mingw32 }
+          - { name: VT_W32_UTF8,     arch: _w32, ENV: vt,     UTF8: Y, PREFIX: i686-w64-mingw32 }
+          - { name: WINCON_W32_UTF8, arch: _w32, ENV: wincon, UTF8: Y, PREFIX: i686-w64-mingw32 }
+          - { name: WINGUI_W32_UTF8, arch: _w32, ENV: wingui, UTF8: Y, PREFIX: i686-w64-mingw32 }
+          - { name: SDL2_W32_UTF8,   arch: _w32, ENV: sdl2,   UTF8: Y, PREFIX: i686-w64-mingw32 }
+          - { name: VT_W64_UTF8,     arch: _w64, ENV: vt,     UTF8: Y, PREFIX: x86_64-w64-mingw32 }
+          - { name: WINCON_W64_UTF8, arch: _w64, ENV: wincon, UTF8: Y, PREFIX: x86_64-w64-mingw32 }
+          - { name: WINGUI_W64_UTF8, arch: _w64, ENV: wingui, UTF8: Y, PREFIX: x86_64-w64-mingw32 }
+          - { name: SDL2_W64_UTF8,   arch: _w64, ENV: sdl2,   UTF8: Y, PREFIX: x86_64-w64-mingw32 }
+          - { name: VT_WoA_UTF8,     arch: _a64, ENV: vt,     UTF8: Y, PREFIX: aarch64-w64-mingw32 }
+          - { name: WINCON_WoA_UTF8, arch: _a64, ENV: wincon, UTF8: Y, PREFIX: aarch64-w64-mingw32 }
+          - { name: WINGUI_WoA_UTF8, arch: _a64, ENV: wingui, UTF8: Y, PREFIX: aarch64-w64-mingw32 }
     steps:
     - uses: actions/checkout@master
     - name: ${{ matrix.name }}
@@ -91,6 +102,12 @@ jobs:
         export PATH="$LLVMBASE/bin:$PATH"
 
         cd ${{ matrix.ENV }}
-        make -j$(($(nproc)*2)) demos ${{ matrix.arch }}=Y
-        make clean
-        make -j$(($(nproc)*2)) demos ${{ matrix.arch }}=Y WIDE=Y UTF8=Y
+        [[ "${{ matrix.UTF8 }}" == "Y" ]] && make -j$(nproc) demos ${ARCH}=Y WIDE=Y UTF8=Y || make -j$(nproc) demos ${ARCH}=Y
+
+    - name: "Upload Artifact"
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ matrix.name }}
+        path: |
+          ${{ matrix.ENV }}/*.exe
+          ${{ matrix.ENV }}/*.dll
