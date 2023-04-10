@@ -1,4 +1,4 @@
-PDCursesMod as of 2023 March 04
+PDCursesMod as of 2023 April 10
 ===============================
 
 Minor new features
@@ -19,14 +19,26 @@ Minor new features
 - 'terminfo' functions (really stubs) are compiled and linked in for
   all platforms.  ab1c007273  248146021e
 
+- Build support added for LLVM and Windows on ARM,  from Mioki.
+  158e8ae5b7  2fb65608b3  86c1296d89  4884ce2c6d
+
 Bug fixes
 ---------
+
+- HiDPI support for WinGUI crashed (reported by Chuck Haatvedt),  fixed
+  by Casey Langen.  489f5d6317
 
 - Resizing 'ptest' caused it to move to the next panel display
   in the series.  0ed72b9f91
 
+- Partial fix so that getch( ) will return byte codes,  expanding characters
+  beyond 256 into multi-byte strings.  bd50b2b2ab
+
 - Negative window sizes for newwin() and resize() were not error-checked,
   resulting in segfaults.  c6c7f2d074
+
+- In Windows SDL2,  Alt-keystrokes were ignored (see wmcbrine/PDCurses#142).
+  Fix provided by Benjamin Adamson.  7f1e1bba34
 
 - Scrolling a window could result in a crash when the window was
   freed.   72521a1697
