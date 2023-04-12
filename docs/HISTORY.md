@@ -1,5 +1,5 @@
-PDCursesMod as of 2023 April 10
-===============================
+PDCursesMod 4.3.6 - 2023 April 12
+=================================
 
 Minor new features
 ------------------
