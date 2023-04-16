@@ -1215,9 +1215,8 @@ an exact number of rows/columns results in cascading resize attempts.
 So we check on initialization to see if we're in Wine;  if we are,
 resizes are skipped. */
 
-typedef const char *(CDECL *wine_version_func)(void);
 
-static wine_version_func wine_version;
+static FARPROC wine_version;
 
 static void HandleSize( const WPARAM wParam, const LPARAM lParam)
 {
@@ -2221,13 +2220,13 @@ int PDC_scr_open(void)
     PDC_LOG(("PDC_scr_open() - called\n"));
 
     if( hntdll)
-        wine_version = (wine_version_func)GetProcAddress(hntdll, "wine_get_version");
+        wine_version = GetProcAddress(hntdll, "wine_get_version");
 
     if ( shcoredll) {
-        typedef HRESULT(STDAPICALLTYPE *set_process_dpi_awareness_t)(int);
-        static set_process_dpi_awareness_t set_process_dpi_awareness_func;
         static int ADJUST_DPI_PER_MONITOR = 2;
-        set_process_dpi_awareness_func = (set_process_dpi_awareness_t)GetProcAddress(shcoredll, "SetProcessDpiAwareness");
+        FARPROC set_process_dpi_awareness_func =
+                     GetProcAddress(shcoredll, "SetProcessDpiAwareness");
+
         if ( set_process_dpi_awareness_func) {
             set_process_dpi_awareness_func(ADJUST_DPI_PER_MONITOR);
         }
