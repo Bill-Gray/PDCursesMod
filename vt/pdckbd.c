@@ -321,7 +321,7 @@ static int xlate_vt_codes( const int *c, const int count, int *modifiers)
          }
       else if( c[0] >= 1 && c[0] <= 26)
          {
-         rval = ALT_A + c[0];
+         rval = ALT_A + c[0] - 1;
          *modifiers = CTL;
          }
       else if( c[0] >= '0' && c[0] <= '9')
