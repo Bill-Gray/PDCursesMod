@@ -4,6 +4,7 @@
 
 PANEL *p1, *p2, *p3, *p4, *p5;
 WINDOW *w4, *w5;
+static SCREEN *screen_pointer;
 
 long nap_msec = 1;
 
@@ -26,6 +27,7 @@ void sizecheck(void)
         refresh();
         napms(5000);
         endwin();
+        delscreen( screen_pointer);
         exit(-1);
     }
 }
@@ -65,6 +67,7 @@ void wait_a_while(long msec)
     if (c == 'q')
     {
         endwin();
+        delscreen( screen_pointer);
         exit(1);
     }
 }
@@ -117,7 +120,6 @@ void fill_panel(PANEL *pan)
 
 int main(int argc, char **argv)
 {
-    SCREEN *screen_pointer;
     int itmp, y;
 
     if (argc > 1 && atol(argv[1]))
