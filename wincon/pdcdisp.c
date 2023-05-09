@@ -185,7 +185,7 @@ static void _show_run_of_ansi_characters( const attr_t attr,
 #endif
 }
 
-static void _show_run_of_nonansi_characters( const attr_t attr,
+static void _show_run_of_nonansi_characters( attr_t attr,
                            int fore, int back, const bool blink,
                            const int lineno, const int x, const chtype *srcp, const int len)
 {
@@ -238,7 +238,8 @@ static void _show_run_of_nonansi_characters( const attr_t attr,
     WriteConsoleOutput(pdc_con_out, buffer, bufSize, bufPos, &sr);
 }
 
-static void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
+static void _new_packet( attr_t attr, const int lineno,
+                                 int x, int len, const chtype *srcp)
 {
     int fore, back;
     bool blink, ansi;
@@ -295,11 +296,11 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
 
     PDC_LOG(("PDC_transform_line() - called: lineno=%d\n", lineno));
 
-    old_attr = *srcp & (A_ATTRIBUTES ^ A_ALTCHARSET);
+    old_attr = *srcp & (A_ATTRIBUTES | A_ALTCHARSET);
 
     for (i = 1, j = 1; j < len; i++, j++)
     {
-        attr = srcp[i] & (A_ATTRIBUTES ^ A_ALTCHARSET);
+        attr = srcp[i] & (A_ATTRIBUTES | A_ALTCHARSET);
 
         if (attr != old_attr)
         {
