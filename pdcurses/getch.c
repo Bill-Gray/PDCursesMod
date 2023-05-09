@@ -467,11 +467,11 @@ bool PDC_is_function_key( const int key)
 
 #define WAIT_FOREVER    -1
 
-static int _raw_wgetch(WINDOW *win)
+static int _raw_wgetch_no_surrogate_pairs( WINDOW *win)
 {
     int key = ERR, remaining_millisecs;
 
-    PDC_LOG(("_raw_wgetch() - called\n"));
+    PDC_LOG(("_raw_wgetch_no_surrogate_pairs() - called\n"));
 
     assert( SP);
     assert( win);
@@ -627,6 +627,23 @@ static int _raw_wgetch(WINDOW *win)
             return SP->c_buffer[SP->c_gindex++];
         }
     }
+}
+
+#define IS_HIGH_SURROGATE( x)  ((x) >= 0xd800 && (x) < 0xdc00)
+#define IS_LOW_SURROGATE( x)   ((x) >= 0xdc00 && (x) < 0xe000)
+
+static int _raw_wgetch( WINDOW *win)
+{
+   int rval = _raw_wgetch_no_surrogate_pairs( win);
+
+   if( IS_HIGH_SURROGATE( rval))
+      {
+      const int c = _raw_wgetch_no_surrogate_pairs( win);
+
+      if( IS_LOW_SURROGATE( c))
+         rval = ((rval - 0xd800) << 10) + 0x10000 + c - 0xdc00;
+      }
+   return( rval);
 }
 
 int mvgetch(int y, int x)
