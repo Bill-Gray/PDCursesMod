@@ -1,3 +1,36 @@
+Changes as of 2023 May 09
+
+Minor new features
+------------------
+
+- Support on Windows for Unicode input in the SMP (codepoints above
+  above 0xFFFF, for instance emojis.) 2050706649  75b62ea015
+
+- WinCon: supports full unicode output including SMP.  3ec63c9067
+  7089b2eae1
+
+- 'newtest': extended the SLK testing.  'newtest' and 'testcurs' now
+  use wget_wch( ) in wide builds,  so the actual character is shown on
+  input tests (instead of the multibyte stream).  'testcurs' gradient
+  example (showing colors beyond 256 palette entries) is a little more
+  logically set out.  c744e3ec03  7089b57d07
+
+- WinCon can support a 'default' (transparent) background.  81cbefbd4b
+
+Bug fixes
+---------
+
+- WinCon: Key modifiers were incorrectly cleared without a key event.
+  9229f08604
+
+- VT: Ctrl-Alt-letter input was off by one.  Hit,  say,  Ctrl-Alt-T,
+  and you'd get Ctrl-Alt-U.  65568582af
+
+- Fixed some casting issues with GetProcAddress( ) in Windows and a
+  deprecation warning with MinGW,  with considerable help from Arnold
+  Tremblay and Chuck Haatvedt.  Further work may be required (it works,
+  but pedantic compilation can get you warnings).  bbae4bb0e8  28cbcfcc34
+
 PDCursesMod 4.3.6 - 2023 April 12
 =================================
 
