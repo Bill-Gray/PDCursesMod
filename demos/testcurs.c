@@ -444,7 +444,16 @@ void inputTest(WINDOW *win)
         wclrtoeol(win);
         while (1)
         {
+#ifdef PDC_WIDE
+            wint_t wch;
+
+            if( ERR == wget_wch( win, &wch))
+               c = ERR;
+            else
+               c = (int)wch;
+#else
             c = wgetch(win);
+#endif
 
             if (c == ERR)
             {
@@ -1570,29 +1579,23 @@ void gradient(int tmarg)
             const short oval = (short)( j * 1000 / len);
             const short reverse = 1000 - oval;
 
-            if (!i)
+            if (!i || i == 3)
             {
-                init_color(cnum, 1000, oval, oval);
-                init_color(cnum + 1, 0, reverse, 0);
+                init_color(cnum,    (i ? 0 : 1000), oval, oval);
+                init_color(cnum + 1,(i ? 1000 : 0), reverse, 0);
             }
-            else if (i == 1)
+            else if (i == 1 || i == 4)
             {
-                init_color(cnum, 0, 0, reverse);
-                init_color(cnum + 1, 1000, reverse, 0);
+                init_color(cnum,     (i == 4 ? 1000 : 0), 0, reverse);
+                init_color(cnum + 1, (i == 4 ? 0 : 1000), reverse, 0);
             }
-            else if( i == 2)
+            else if( i == 2 || i == 5)
             {
-                init_color(cnum, reverse, 1000, reverse);
-                init_color(cnum + 1, reverse, 0, oval);
-            }
-            else
-            {
-                const short r = (short)( rand( ) % 400);
-                const short g = (short)( rand( ) % 400);
-                const short b = (short)( rand( ) % 400);
-
-                init_color( cnum, r, g, b);
-                init_color( cnum + 1, 1000 - r, 1000 - g, 1000 - b);
+                init_color(cnum,     reverse, (i == 2 ? 1000 : 0), reverse);
+                if( i == 2)
+                   init_color(cnum + 1, reverse, 0, oval);
+                else
+                   init_color(cnum + 1, oval, oval, oval);
             }
             init_pair(pnum, cnum, cnum + 1);
             attrset(COLOR_PAIR(pnum));
