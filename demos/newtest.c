@@ -34,9 +34,9 @@ int PDC_write_screen_to_file( const char *filename, WINDOW *win);
 #endif
 
 static const char *labels[] = {
-               "Quit", "No labels", "431", "2134", "55",
+               "Quit", "No labels", "431", "2134", "55", "323", "666",
                "62-really-longer-than-it-should-be-just-for-testing",
-               "83", "7", "b", "25 (seven total)", "32", NULL };
+               "83", "7", "b", "25 (seven total)", "32", "4", "414", "88", "a8", "5454", NULL };
 
 static void slk_setup( const int slk_format)
 {
@@ -276,7 +276,13 @@ int main( int argc, char **argv)
         const int xmax = getmaxx( stdscr);
         const int ymax = getmaxy( stdscr);
         const int color_block_start = 54;
-        int c, color_block_cols = (xmax - color_block_start) / 2;
+        int color_block_cols = (xmax - color_block_start) / 2;
+#ifdef HAVE_WIDE
+        wint_t c;
+        int is_keycode;
+#else
+        int c;
+#endif
         const int color_block_lines = 19;
         const char *cursor_state_text[N_CURSORS] = {
                   "Invisible (click to change) ",
@@ -474,7 +480,11 @@ int main( int argc, char **argv)
         }
         move( cursor_y, cursor_x);
         refresh();
+#ifdef HAVE_WIDE
+        is_keycode = get_wch( &c);
+#else
         c = getch( );
+#endif
         attrset( COLOR_PAIR( 1));
         if( c == KEY_RESIZE)
         {
@@ -487,7 +497,7 @@ int main( int argc, char **argv)
             getchar( );
             refresh( );
         }
-        else if( c == KEY_F(1) || c == 27)
+        else if( c == KEY_F(1))
             quit = 1;
         else if( c == KEY_F(2))   /* toggle SLKs */
         {
@@ -497,7 +507,7 @@ int main( int argc, char **argv)
             else
                 slk_clear( );
         }
-        else if( c >= KEY_F(3) && c < KEY_F(12))
+        else if( c >= KEY_F(3) && c <= KEY_F(18))
         {
             sscanf( labels[c - KEY_F(1)], "%x", (unsigned *)&fmt);
             if( use_slk)
@@ -506,6 +516,10 @@ int main( int argc, char **argv)
         if( c != KEY_MOUSE)
         {
             sprintf( buff, "Key %s", keyname( c));
+#ifdef HAVE_WIDE
+            if( is_keycode == KEY_CODE_YES)
+               *buff = '!';
+#endif
             if( !memcmp( buff + 4, "UNKNOWN", 7))
                 sprintf( buff + 11, " (%x)", c);
             if( c == KEY_RESIZE)
