@@ -1,7 +1,7 @@
 # GNU MAKE Makefile for PDCurses library - WIN32/64/ARM MinGW GCC/LLVM
 #
 # Usage: [g]make [-f path\Makefile] [DEBUG=Y] [DLL=Y] [WIDE=Y] [UTF8=Y]
-#        [INFOEX=N] [LIBNAME=(name)] [DLLNAME=(name)] [target]
+#        [LIBNAME=(name)] [DLLNAME=(name)] [target]
 #        [_w32=Y | _w64=Y | _a64=Y ]
 #
 # where target can be any of:
