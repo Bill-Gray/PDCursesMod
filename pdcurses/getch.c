@@ -411,7 +411,7 @@ millisecond precision on older compilers/systems.  We'll
 use gettimeofday() when available.        */
 
 #if defined(__TURBOC__) || defined(__EMX__) || defined(__DJGPP__) || \
-    defined( __DMC__) || defined(__WATCOMC__) || defined(_MSC_VER)
+    defined( __DMC__) || defined(__WATCOMC__) || defined(_WIN32)
 #include <sys/timeb.h>
 
 long PDC_millisecs( void)
