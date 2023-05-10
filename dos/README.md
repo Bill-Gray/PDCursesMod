@@ -18,6 +18,8 @@ Building
   Watcom, specifying "MODEL=f" (flat) will automatically switch to a
   32-bit build.
 
+  Note: if you want WIDE support use the DOSVGA port instead.
+
 - Optionally, you can build in a different directory than the platform
   directory by setting PDCURSES_SRCDIR to point to the directory where
   you unpacked PDCurses, and changing to your target directory:

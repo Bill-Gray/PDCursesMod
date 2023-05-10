@@ -1,6 +1,11 @@
 /* PDCurses */
 
 #include <curspriv.h>
+
+#if defined( PDC_WIDE)
+   #error DOS port has no WIDE support
+#endif
+
 #include <string.h>
 
 /*----------------------------------------------------------------------
