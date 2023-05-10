@@ -227,9 +227,12 @@ int main( const int argc, const char **argv)
 #else
     mousemask( BUTTON1_CLICKED | BUTTON4_PRESSED | BUTTON5_PRESSED, NULL);
 #endif
+#ifndef CHTYPE_32
     if( COLORS > 0x1000000 && COLOR_PAIRS >= 4096 && !_n_colors)
        _n_colors = COLORS;    /* use PDCursesMod's rgb palette */
-    else if( !_n_colors)
+    else
+#endif
+    if( !_n_colors)
     {
         while( _n_colors * (_n_colors + 1) / 2 < COLOR_PAIRS - COLOR0 &&
                          _n_colors < COLORS - COLOR0)

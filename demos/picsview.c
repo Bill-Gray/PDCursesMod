@@ -60,13 +60,13 @@ image consumes exactly width * height * 3 bytes. */
    #define ACS_BBLOCK 0x2584
 #endif
 
-static int get_rgb_value( const char *iptr)
+static int32_t get_rgb_value( const char *iptr)
 {
    unsigned char red = (unsigned char)iptr[0];
    unsigned char grn = (unsigned char)iptr[1];
    unsigned char blu = (unsigned char)iptr[2];
 
-   return( (int)red | ((int)grn << 8) | ((int)blu << 16));
+   return( (int32_t)red | ((int32_t)grn << 8) | ((int32_t)blu << 16));
 }
 
 /* Image rotation isn't done fancily here.  We allocate another array of equal
@@ -185,11 +185,13 @@ entry is a simple shift by 256.  For 'traditional' 256-color systems
 with a 6x6x6 color cube,  the math is slightly harder.  Dithering is
 used to make the results marginally less ugly. */
 
-static int find_in_palette( const int rgb, const int dither)
+static int find_in_palette( const int32_t rgb, const int dither)
 {
+#ifndef CHTYPE_32
    if( COLORS > 0x100000)
       return( rgb + 256);
    else
+#endif
       {        /* find entry in 6x6x6 color cube */
       const int red = (rgb & 0xff);
       const int grn = ((rgb >> 8) & 0xff);

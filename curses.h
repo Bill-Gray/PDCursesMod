@@ -42,7 +42,7 @@ Defined by this header:
 #define PDC_VER_CHANGE   6
 #define PDC_VER_YEAR   2023
 #define PDC_VER_MONTH    05
-#define PDC_VER_DAY      09
+#define PDC_VER_DAY      10
 
 #define PDC_STRINGIZE( x) #x
 #define PDC_stringize( x) PDC_STRINGIZE( x)
@@ -972,9 +972,9 @@ ones are a PDCursesMod extension. */
  */
 
 #ifdef PDC_WIDE
-   #define KEY_OFFSET 0xec00
+   #define KEY_OFFSET (int)0xec00
 #else
-   #define KEY_OFFSET 0x100
+   #define KEY_OFFSET (int)0x100
 #endif
 
 #define KEY_CODE_YES     (KEY_OFFSET + 0x00) /* If get_wch() gives a key code */
