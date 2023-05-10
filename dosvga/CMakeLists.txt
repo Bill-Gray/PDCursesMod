@@ -5,7 +5,7 @@ if(NOT CMAKE_BUILD_TYPE)
     message(STATUS "No build type specified, defaulting to MinSizeRel.")
 endif()
 
-PROJECT(dos VERSION "${PROJECT_VERSION}" LANGUAGES C)
+PROJECT(dosvga VERSION "${PROJECT_VERSION}" LANGUAGES C)
 MESSAGE(STATUS "${PROJECT_NAME} version: ${PROJECT_VERSION}")
 
 include(project_common)
