@@ -85,6 +85,9 @@ int main( const int argc, char **argv)
 #endif
     cbreak( );
     noecho();
+    start_color( );
+    init_pair( 1, COLOR_GREEN, COLOR_BLACK);
+    init_pair( 2, COLOR_BLUE, COLOR_BLACK);
     refresh();
     keypad( stdscr, 1);
     nodelay(stdscr, TRUE);
@@ -99,14 +102,20 @@ int main( const int argc, char **argv)
 
       n_frames++;
       sprintf( buff, " %9u", (n_frames * 31415926u) % 1000000000u);
-      attrset(A_BOLD);
+      attrset(A_BOLD | COLOR_PAIR( 0));
       for( i = 0; i < lines; i++)
          {
          move( i, 0);
-         if( i == (int)n_frames % lines)
-            attrset( A_NORMAL);
          for( j = 0; j + 10 < cols; j += 10)
+            {
+            if( j == 20 || i == 8)
+               attrset( COLOR_PAIR( 1));
+            else if( j == 50 || i == 16)
+               attrset( COLOR_PAIR( 2));
+            else
+               attrset( A_NORMAL);
             addstr( buff);
+            }
          }
       }
     nodelay(stdscr, FALSE);
