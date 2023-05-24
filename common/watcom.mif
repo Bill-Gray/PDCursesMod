@@ -45,7 +45,7 @@ cflags_dll_os2     = -bd -DPDC_DLL_BUILD
 cflags_dll_imp_nt  = -DPDC_DLL_BUILD
 !endif
 
-CFLAGS += -bt=$(TARGET) -m$(MODEL) -wx -zq -i=$(PDCURSES_SRCDIR)
+CFLAGS += -bt=$(TARGET) -m$(MODEL) -wx -we -zq -i=$(PDCURSES_SRCDIR)
 !ifeq DEBUG Y
 CFLAGS += -d2 -DDEBUG -DPDCDEBUG
 !ifdef TARGET16
