@@ -305,7 +305,7 @@ static int _paste(void)
 
 static int _mouse_key(void)
 {
-    int i, key = KEY_MOUSE;
+    int i, key = (int)KEY_MOUSE;
     const int changes = SP->mouse_status.changes;
     const mmask_t mbe = SP->_trap_mbe;
     bool can_select = !(mbe & (BUTTON1_MOVED | BUTTON1_PRESSED | BUTTON1_RELEASED));

@@ -13,7 +13,13 @@
  *    These values are for strict IBM keyboard compatibles only         *
  ************************************************************************/
 
-static int key_table[] =
+#ifdef PDC_WIDE
+   typedef int32_t key_t;
+#else
+   typedef int key_t;
+#endif
+
+static key_t key_table[] =
 {
     -1,             ALT_ESC,        -1,             0,
     -1,             -1,             -1,             -1,
@@ -214,7 +220,7 @@ static int _process_mouse_events(void)
         SP->mouse_status.x = ms_regs.W.cx / PDC_state.font_width;
         SP->mouse_status.y = ms_regs.W.dx / PDC_state.font_height;
 
-        return KEY_MOUSE;
+        return (int)KEY_MOUSE;
     }
 
     if (mouse_moved)
@@ -274,7 +280,7 @@ static int _process_mouse_events(void)
 
     old_ms = ms_regs;
 
-    return KEY_MOUSE;
+    return (int)KEY_MOUSE;
 }
 
 /* return the next available key or mouse event */
@@ -282,7 +288,8 @@ static int _process_mouse_events(void)
 int PDC_get_key(void)
 {
     PDCREGS regs;
-    int key, scan;
+    key_t key;
+    int scan;
 
     SP->key_modifiers = 0;
 
@@ -402,7 +409,7 @@ int PDC_get_key(void)
 
     key_pressed = TRUE;
 
-    return key;
+    return (int)key;
 }
 
 /* discard any pending keyboard or mouse input -- this is the core
