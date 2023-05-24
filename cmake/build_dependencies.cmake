@@ -138,7 +138,7 @@ IF (PDC_SDL2_DEPS_BUILD)
             GIT_TAG "release-${SDL2_TTF_RELEASE}"
             GIT_SHALLOW true
             PATCH_COMMAND cmake -E copy 
-                ${CMAKE_SOURCE_DIR}/cmake/sdl2_ttf/CMakeLists.txt 
+                ${CMAKE_CURRENT_SOURCE_DIR}/cmake/sdl2_ttf/CMakeLists.txt 
                 ${CMAKE_BINARY_DIR}/sdl2_ttf/CMakeLists.txt
             UPDATE_COMMAND ""
             DOWNLOAD_DIR ${CMAKE_BINARY_DIR}
