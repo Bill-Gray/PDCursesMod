@@ -11,6 +11,10 @@
 #define CURSES_LIBRARY
 #include <curses.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #if defined(__TURBOC__) || defined(__EMX__) || defined(__DJGPP__) || \
     defined(PDC_99) || defined(__WATCOMC__)
 # if !defined( HAVE_VSSCANF) && !defined( __DMC__)
@@ -157,5 +161,9 @@ struct _opaque_screen_t
    bool want_trace_fflush;
    FILE *output_fd, *input_fd;
 };
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __CURSES_INTERNALS__ */
