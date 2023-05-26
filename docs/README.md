@@ -20,6 +20,7 @@ Also consult the README for each specific platform you'll be using:
 - [Windows in console mode (WinCon)]
 - [Windows in graphical mode (WinGUI)]
 - [X11]
+- [OpenGL]
 
 Building
 --------
@@ -47,3 +48,4 @@ The files in this directory are released to the public domain.
 [Windows console]: ../wincon/README.md
 [Windows graphical]: ../wingui/README.md
 [X11]: ../x11/README.md
+[OpenGL]: ../gl/README.md

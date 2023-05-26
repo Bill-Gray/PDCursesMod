@@ -1,7 +1,7 @@
 Welcome to PDCursesMod!
 =======================
 
-Public Domain Curses (Modified), aka PDCursesMod, is an implementation of X/Open curses for multiple platforms. As the name suggests,  it is a modified version of the ['official' PDCurses project](https://www.github.com/wmcbrine/PDCurses),  adding a variety of improvements, such as Windows GUI, VT-like console,  Linux/*BSD framebuffer,  DOSVGA,  and Plan 9 "flavors" of Curses.  It expands many of the capabilities of the flavors inherited from PDCurses (SDL1,  SDL2,  X11, Win32 console, OS/2, and DOS).  Some details and screen shots are at
+Public Domain Curses (Modified), aka PDCursesMod, is an implementation of X/Open curses for multiple platforms. As the name suggests,  it is a modified version of the ['official' PDCurses project](https://www.github.com/wmcbrine/PDCurses),  adding a variety of improvements, such as Windows GUI, VT-like console,  Linux/*BSD framebuffer,  DOSVGA,  OpenGL,  and Plan 9 "flavors" of Curses.  It expands many of the capabilities of the flavors inherited from PDCurses (SDL1,  SDL2,  X11, Win32 console, OS/2, and DOS).  Some details and screen shots are at
 
 https://www.projectpluto.com/win32a.htm
 
@@ -34,6 +34,7 @@ Build instructions are in the README file for each platform:
 -  [WinGUI](wingui/README.md) for use on Windows Graphics Mode
 -  [X11](x11/README.md) (also called XCurses) for use as separate X11 window
 -  [VT](vt/README.md) for use on terminal
+-  [OpenGL](gl/README.md) for use as separate window with OpenGL rendering
 
 Distribution Status
 -------------------
