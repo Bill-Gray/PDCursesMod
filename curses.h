@@ -763,9 +763,10 @@ Some won't work in non-wide X11 builds (see 'acs_defs.h' for details). */
 
 /* Box char aliases.  The four characters tell you if a Single
 line points up, right, down,  and/or left from the center;
-or if it's Blank;  or if it's Thick or Double.  The Thick
-ones are an ncurses extension;  the Double and Single/Double
-ones are a PDCursesMod extension. */
+or if it's Blank;  or if it's Thick or Double.
+The wide Thick and Double ones are a ncurses extension;
+the non-wide Double ones as well as the Single/Double ones
+are a PDCursesMod extension. */
 
 #define ACS_BSSB      ACS_ULCORNER
 #define ACS_SSBB      ACS_LLCORNER
