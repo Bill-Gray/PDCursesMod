@@ -202,7 +202,7 @@ they would enable rounded box corners when Unicode is available.
 #define BOX_T_ULCORNER                    CHOOSE( 0xda,  0x250f,   13)
 #define BOX_T_LLCORNER                    CHOOSE( 0xc0,  0x2517,   14)
 #define BOX_T_BTEE                        CHOOSE( 0xc1,  0x253b,   23)
-#define BOX_T_TTEE                        CHOOSE( 0xc2,  0x252f,   24)
+#define BOX_T_TTEE                        CHOOSE( 0xc2,  0x2533,   24)
 #define BOX_T_LTEE                        CHOOSE( 0xc3,  0x2523,   21)
 #define BOX_T_RTEE                        CHOOSE( 0xb4,  0x252b,   22)
 #define BOX_T_HLINE                       CHOOSE( 0xc4,  0x2501,   18)
