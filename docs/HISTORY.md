@@ -1,4 +1,11 @@
-Changes as of 2023 May 09
+Changes as of 2023 June 02
+
+Major new features
+------------------
+
+- SDL2 GL port,  from Julius Ikkala.  This is (on most systems)
+  faster than the "traditional" SDL2 port.  Many commits,  starting
+  at 4678131a39.
 
 Minor new features
 ------------------
@@ -7,7 +14,9 @@ Minor new features
   above 0xFFFF, for instance emojis.) 2050706649  75b62ea015
 
 - WinCon: supports full unicode output including SMP.  3ec63c9067
-  7089b2eae1
+  7089b2eae1  fac87bd938
+
+- WinCon, WinGUI can be cross-compiled for Windows on Arm.  158e8ae5b7
 
 - 'newtest': extended the SLK testing.  'newtest' and 'testcurs' now
   use wget_wch( ) in wide builds,  so the actual character is shown on
@@ -16,6 +25,18 @@ Minor new features
   logically set out.  c744e3ec03  7089b57d07
 
 - WinCon can support a 'default' (transparent) background.  81cbefbd4b
+
+- 'curspriv.h' modified to allow C++ compilation.  52a2fdf518
+
+- Clarified compatibility for ACS_ and WACS_ box characters,  and added
+  many missing aliases.  From a suggestion by Simon Sobisch.  e8f7b33bbf
+
+- Fixed warnings with OpenWATCOM.  We now compile with -we ("treat
+  warnings as errors").  f27369e93b  abbd8f5268  89e3426248
+
+- If you try to compile the DOS version with WIDE=Y,  you get an error
+  message explaining that wide characters don't work on that platform.
+  d07b884502
 
 Bug fixes
 ---------
@@ -30,6 +51,9 @@ Bug fixes
   deprecation warning with MinGW,  with considerable help from Arnold
   Tremblay and Chuck Haatvedt.  Further work may be required (it works,
   but pedantic compilation can get you warnings).  bbae4bb0e8  28cbcfcc34
+
+- CMake's list of demos is now up to date for DOS,  DOSVGA,  WinCon,
+  WinGUI.  Others to follow.  4f3dc96436
 
 PDCursesMod 4.3.6 - 2023 April 12
 =================================
