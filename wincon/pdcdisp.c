@@ -154,6 +154,7 @@ static void _set_ansi_color(short f, short b, attr_t attr)
 const chtype MAX_UNICODE = 0x10ffff;
 const chtype DUMMY_CHAR_NEXT_TO_FULLWIDTH = 0x110000;
 
+#define IS_SUPPLEMENTAL_MULTILINGUAL_PLANE( c) ((c) & 0x1f0000)
 #endif
 
 static void _show_run_of_ansi_characters( const attr_t attr,
@@ -181,7 +182,7 @@ static void _show_run_of_ansi_characters( const attr_t attr,
         ch &= A_CHARTEXT;
         if( ch <= MAX_UNICODE)
         {
-            if (ch & 0x1F0000)
+            if( IS_SUPPLEMENTAL_MULTILINGUAL_PLANE( ch))
             {
                 buffer[n_out++] = (WCHAR)((ch - 0x10000) >> 10 | 0xD800); /* first UTF-16 unit */
                 buffer[n_out++] = (WCHAR)(ch & 0x3FF) | 0xDC00;   /* second UTF-16 unit */
@@ -243,7 +244,7 @@ static void _show_run_of_nonansi_characters( attr_t attr,
         ch &= A_CHARTEXT;
         if( ch <= MAX_UNICODE)
         {
-            if (ch & 0x1F0000)
+            if( IS_SUPPLEMENTAL_MULTILINGUAL_PLANE( ch))
             {
                 buffer[n_out++].Char.UnicodeChar = (WCHAR)((ch - 0x10000) >> 10 | 0xD800); /* first UTF-16 unit */
                 buffer[n_out].Attributes = mapped_attr;
@@ -274,8 +275,23 @@ static void _new_packet( attr_t attr, const int lineno,
 {
     int fore, back;
     bool blink, ansi;
+#ifdef PDC_WIDE
+    int i = 0;
+#endif
 
     assert( len >= 0);
+#ifdef PDC_WIDE
+    while( i < len && MAX_UNICODE >= (srcp[i] & A_CHARTEXT))
+        i++;
+    if( i < len)
+    {
+        _new_packet( attr, lineno, x, i, srcp);
+        i++;         /* skip the 'dummy' character */
+        srcp += i;
+        x += i;
+        len -= i;
+    }
+#endif
     while( len > MAX_PACKET_SIZE)
     {
         _new_packet( attr, lineno, x, MAX_PACKET_SIZE, srcp);
