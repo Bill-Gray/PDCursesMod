@@ -564,7 +564,7 @@ xmas.o: $(demodir)/xmas.c
 # This section provides for compiling and linking the
 # ncurses test programs.
 
-ncurses_testdir	= $(HOME)/ncurses-6.3/test
+ncurses_testdir	= $(HOME)/ncurses-6.4/test
 
 NCURSES_TESTS	= back_ground background blue \
 bs cardfile chgat clip_printw color_content \

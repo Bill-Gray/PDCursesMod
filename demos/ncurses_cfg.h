@@ -1,6 +1,6 @@
 /* This file is only used with the ncurses test programs.
  *
- * Have ncurses-6.3 unpacked in your $(HOME) (you don't need to build
+ * Have ncurses-6.4 unpacked in your $(HOME) (you don't need to build
  * it), or edit ncurses_testdir appropriately in the Makefile or
  * nctests.mif. Configure and build PDCursesMod, and:
  *
@@ -29,6 +29,8 @@
 #define HAVE_ALLOC_PAIR 1
 #define HAVE_ASSUME_DEFAULT_COLORS 1
 #define HAVE_CHGAT 1
+#define HAVE_COLOR_CONTENT 1
+#define HAVE_COPYWIN 1
 #define HAVE_CURSES_VERSION 1
 #define HAVE_GETBEGX 1
 #define HAVE_GETCURX 1
@@ -37,7 +39,10 @@
 #define HAVE_GETTIMEOFDAY 1
 #define HAVE_GETWIN 1
 #define HAVE_HALFDELAY 1
+#define HAVE_INIT_EXTENDED_COLOR 1
 #define HAVE_LIBPANEL 1
+#define HAVE_LIBFORM 1
+#define HAVE_LIBMENU 1
 #define HAVE_LOCALE_H 1
 #define HAVE_MATH_H 1
 #define HAVE_MATH_FUNCS 1
@@ -45,6 +50,7 @@
 #define HAVE_NEWPAD 1
 #define HAVE_PANEL_H 1
 #define HAVE_PUTWIN 1
+/* #define HAVE_SCR_DUMP 1 */
 #define HAVE_SLK_COLOR 1
 #define HAVE_SLK_INIT 1
 #define HAVE_STRSTR 1

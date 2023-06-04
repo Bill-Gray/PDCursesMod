@@ -1,6 +1,6 @@
 # This provides for compiling and linking the ncurses test programs.
 
-ncurses_testdir = $(HOME)/ncurses-6.3/test
+ncurses_testdir = $(HOME)/ncurses-6.4/test
 
 NCURSES_TESTS	= back_ground$(E) background$(E) blue$(E) \
 bs$(E) cardfile$(E) chgat$(E) clip_printw$(E) color_content$(E) \
