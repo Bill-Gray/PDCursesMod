@@ -278,8 +278,8 @@ static int _paste(void)
         return -1;
 
 #ifdef PDC_WIDE
-    wpaste = (wchar_t *)malloc(len * sizeof(wchar_t));
-    len = (long)PDC_mbstowcs(wpaste, paste, len);
+    wpaste = (wchar_t *)malloc((len + 1) * sizeof(wchar_t));
+    len = (long)PDC_mbstowcs(wpaste, paste, len + 1);
 #endif
     newmax = len + SP->c_ungind;
     if (newmax > SP->c_ungmax)
