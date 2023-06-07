@@ -228,14 +228,36 @@ void PDC_sync(WINDOW *win)
         wsyncup(win);
 }
 
+/* See the OpenBSD and FreeBSD reallocarray() extension.  This is similar,  but
+exists for all platforms,  and always frees the pointer and returns NULL for a
+zero-byte allocation.  realloc() does this on most platforms, but not FreeBSD,
+and it's not guaranteed in the C specifications. */
+
+static void *PDC_realloc_array( void *ptr, const size_t nmemb, const size_t size)
+{
+    if( !nmemb || !size)
+    {
+        free( ptr);
+        ptr = NULL;
+    }
+    else
+    {
+        const size_t nbytes = nmemb * size;
+
+        assert( nbytes / size == nmemb);
+        ptr = realloc( ptr, nbytes);
+    }
+    return( ptr);
+}
+
 #define is_power_of_two( X)   (!((X) & ((X) - 1)))
 
 static void _resize_window_list( SCREEN *scr_ptr)
 {
    if( is_power_of_two( scr_ptr->opaque->n_windows))
       scr_ptr->opaque->window_list =
-                 (WINDOW **)realloc( scr_ptr->opaque->window_list,
-                     scr_ptr->opaque->n_windows * 2 * sizeof( WINDOW *));
+                 (WINDOW **)PDC_realloc_array( scr_ptr->opaque->window_list,
+                     scr_ptr->opaque->n_windows * 2, sizeof( WINDOW *));
 }
 
 void PDC_add_window_to_list( WINDOW *win)
