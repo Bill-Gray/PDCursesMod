@@ -288,7 +288,7 @@ static const uint8_t *_get_glyph( const chtype ch, const int cursor_type,
         if( root)
         {
             while( (root = PDC_expand_combined_characters( root,
-                           &newchar)) > (int)MAX_UNICODE)
+                           &newchar)) > (cchar_t)MAX_UNICODE)
                 _add_combining_character_glyph( scratch, (int)newchar);
             _add_combining_character_glyph( scratch, (int)newchar);
         }
