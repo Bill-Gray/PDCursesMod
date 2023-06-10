@@ -11,7 +11,7 @@
 # define _XOPEN_SOURCE_EXTENDED 1
 #endif
 
-#if defined (PDC_WIDE)
+#if defined (PDC_WIDE) || defined( PDC_FORCE_UTF8)
    #include <curses.h>
    #define HAVE_WIDE
 #elif defined (HAVE_NCURSESW)
