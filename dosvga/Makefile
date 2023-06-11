@@ -65,12 +65,13 @@ $(LIBCURSES) : $(LIBOBJS) $(PDCOBJS)
 	$(LIBEXE) $(LIBFLAGS)S $@ addch.o addchstr.o addstr.o attr.o beep.o bkgd.o border.o clear.o color.o debug.o delch.o deleteln.o
 	$(LIBEXE) $(LIBFLAGS)S $@ getch.o getstr.o getyx.o inch.o inchstr.o initscr.o inopts.o insch.o insstr.o instr.o kernel.o keyname.o
 	$(LIBEXE) $(LIBFLAGS)S $@ mouse.o move.o outopts.o overlay.o pad.o panel.o pdcclip.o pdcdisp.o pdcgetsc.o pdckbd.o pdcscrn.o pdcsetsc.o
-	$(LIBEXE) $(LIBFLAGS)  $@ pdcutil.o printw.o refresh.o scanw.o scr_dump.o scroll.o slk.o termattr.o touch.o util.o window.o
+	$(LIBEXE) $(LIBFLAGS)  $@ pdcutil.o printw.o refresh.o scanw.o scr_dump.o scroll.o slk.o termattr.o terminfo.o touch.o util.o window.o
 
 $(LIBOBJS) $(PDCOBJS) : $(PDCURSES_HEADERS)
 $(PDCOBJS) : $(PDCURSES_DOS_H)
 $(DEMOS) : $(PDCURSES_CURSES_H) $(LIBCURSES)
 panel.o : $(PANEL_HEADER)
+terminfo.o : $(TERM_HEADER)
 
 $(LIBOBJS) : %.o: $(srcdir)/%.c
 	$(CC) -c $(CFLAGS) $<
