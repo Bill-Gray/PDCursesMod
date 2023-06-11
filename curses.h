@@ -42,7 +42,7 @@ Defined by this header:
 #define PDC_VER_CHANGE   6
 #define PDC_VER_YEAR   2023
 #define PDC_VER_MONTH    06
-#define PDC_VER_DAY      07
+#define PDC_VER_DAY      11
 
 #define PDC_STRINGIZE( x) #x
 #define PDC_stringize( x) PDC_STRINGIZE( x)
@@ -1790,7 +1790,6 @@ PDCEX  bool    is_idlok(const WINDOW *);
 PDCEX  bool    is_immedok(const WINDOW *);
 PDCEX  bool    is_keypad(const WINDOW *);
 PDCEX  bool    is_leaveok(const WINDOW *);
-PDCEX  bool    is_leaveok(const WINDOW *);
 PDCEX  bool    is_nodelay(const WINDOW *);
 PDCEX  bool    is_notimeout(const WINDOW *);
 PDCEX  bool    is_pad(const WINDOW *);
@@ -1913,7 +1912,7 @@ PDCEX  int     wunderscore(WINDOW *);
 #define getparyx(w, y, x)  (y = getpary(w), x = getparx(w))
 #define getyx(w, y, x)     (y = getcury(w), x = getcurx(w))
 
-#define getsyx(y, x)       { if (curscr->_leaveit) (y)=(x)=-1; \
+#define getsyx(y, x)       { if (is_leaveok( curscr)) (y)=(x)=-1; \
                              else getyx(curscr,(y),(x)); }
 
 #ifdef NCURSES_MOUSE_VERSION
