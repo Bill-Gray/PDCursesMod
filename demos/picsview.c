@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <locale.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -220,6 +221,7 @@ int main( const int argc, const char *argv[])
    double scale = 0., xpix = 0., ypix = 0.;
    bool show_help = TRUE;
 
+   setlocale(LC_ALL, "");
    for( i = 1; i < argc; i++)
       if( argv[i][0] == '-')
          switch( argv[i][1])
@@ -340,27 +342,17 @@ int main( const int argc, const char *argv[])
                {
                int low_rgb = (pptr ? get_rgb_value( pptr + xloc[i] * 3) : 0);
                int low_idx = find_in_palette( low_rgb, calc_dither( i, j));
-#ifndef __PDCURSES__
                wchar_t bblock_char = ACS_BBLOCK;
-#endif
 
                if( low_idx != prev_low_idx || idxs[i] != prev_idx)
                   {
-#ifdef __PDCURSES__
                   init_extended_pair( pair_num, low_idx, idxs[i]);
-#else
-                  init_pair( pair_num, low_idx, idxs[i]);
-#endif
-                  attrset( COLOR_PAIR( pair_num));
+                  attr_set( A_NORMAL, pair_num, 0);
                   pair_num++;
                   prev_low_idx = low_idx;
                   prev_idx = idxs[i];
                   }
-#ifdef __PDCURSES__
-               addch( ACS_BBLOCK);
-#else
                addnwstr( &bblock_char, 1);
-#endif
                }
             }
          }

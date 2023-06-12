@@ -5,6 +5,7 @@
 
 #include <curses.h>
 #include <stdlib.h>
+#include <locale.h>
 #include <assert.h>
 #include <locale.h>
 
@@ -202,6 +203,7 @@ int main( const int argc, const char **argv)
     int results[5], rval;
 #endif
 
+    setlocale(LC_ALL, "");
     for( i = 1; i < argc; i++)
         if( argv[i][0] == '-')
             switch( argv[i][1])
