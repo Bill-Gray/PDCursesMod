@@ -15,6 +15,10 @@
     #include <unistd.h>
 #endif
 
+#ifdef WACS_S1
+# define HAVE_WIDE
+#endif
+
 /* This is inspired by,  but not really based on,  Thomas E. Dickey's
 'picsmap' program for ncurses.  Its real purpose is to demonstrate the
 ability to use large palettes (basically,  full RGB) and large numbers
@@ -57,8 +61,9 @@ double aspect = 1.1;       /* The 'bottom block' (half-height cell character) */
 /* PNM files give each pixel as an RGB triplet of bytes.  A width by height
 image consumes exactly width * height * 3 bytes. */
 
+#define UNICODE_BBLOCK      0x2584
 #ifndef ACS_BBLOCK
-   #define ACS_BBLOCK 0x2584
+   #define ACS_BBLOCK       0xdc
 #endif
 
 static int32_t get_rgb_value( const char *iptr)
@@ -342,17 +347,27 @@ int main( const int argc, const char *argv[])
                {
                int low_rgb = (pptr ? get_rgb_value( pptr + xloc[i] * 3) : 0);
                int low_idx = find_in_palette( low_rgb, calc_dither( i, j));
-               wchar_t bblock_char = ACS_BBLOCK;
+#ifdef HAVE_WIDE
+               wchar_t bblock_char = (wchar_t)UNICODE_BBLOCK;
+#endif
 
                if( low_idx != prev_low_idx || idxs[i] != prev_idx)
                   {
+#ifdef NCURSES_VERSION
+                  init_pair( pair_num, low_idx, idxs[i]);
+#else
                   init_extended_pair( pair_num, low_idx, idxs[i]);
+#endif
                   attr_set( A_NORMAL, pair_num, 0);
                   pair_num++;
                   prev_low_idx = low_idx;
                   prev_idx = idxs[i];
                   }
+#ifdef HAVE_WIDE
                addnwstr( &bblock_char, 1);
+#else
+               addch( ACS_BBLOCK);
+#endif
                }
             }
          }
