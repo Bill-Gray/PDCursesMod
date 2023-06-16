@@ -1,4 +1,4 @@
-Changes as of 2023 June 02
+Changes as of 2023 June 12
 
 Major new features
 ------------------
@@ -38,6 +38,8 @@ Minor new features
   message explaining that wide characters don't work on that platform.
   d07b884502
 
+- Now using ncurses-6.4 tests instead of 6.3.
+
 Bug fixes
 ---------
 
@@ -54,6 +56,22 @@ Bug fixes
 
 - CMake's list of demos is now up to date for DOS,  DOSVGA,  WinCon,
   WinGUI.  Others to follow.  4f3dc96436
+
+- Pasting text from the clipboard was done with a buffer lacking room
+  for a null terminator,  resulting in a memory overwrite.  Reported by
+  nhmall (issue #295).  0a4e1e9065
+
+- realloc( ptr, 0); was assumed to free ptr and return NULL.  This is
+  usually true,  but isn't guaranteed and isn't true on FreeBSD,  and
+  caused an assert to be triggered in endwin().  abbb6de7de
+
+- 'terminfo' functions were not included in the DOSVGA builds,  nor in
+  WinCon when using the Microsoft VC makefile.  Also,  the WinCon Digital
+  Mars makefile was broken.  c51efbbf88
+
+- 'picsview' and 'mbrot' demos now work correctly with ncurses.  Some
+  unnecessary distinctions between PDCurses* and ncurses were removed.
+  89727917e7
 
 PDCursesMod 4.3.6 - 2023 April 12
 =================================

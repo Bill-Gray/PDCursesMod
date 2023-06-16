@@ -464,16 +464,23 @@ int PDC_get_key(void)
             SDL_WINDOWEVENT_SIZE_CHANGED == event.window.event ||
             SDL_WINDOWEVENT_RESIZED == event.window.event
         ){
+
             if(pdc_resize_mode == PDC_GL_RESIZE_NORMAL)
             {
+                const int prev_rows = pdc_sheight / pdc_fheight;
+                const int prev_cols = pdc_swidth / pdc_fwidth;
+                bool size_actually_changed;
+
                 pdc_sheight = event.window.data2;
                 pdc_swidth = event.window.data1;
-                if( curscr)
+                size_actually_changed = ( pdc_sheight / pdc_fheight != prev_rows ||
+                                          pdc_swidth / pdc_fwidth != prev_cols);
+                if( size_actually_changed && curscr)
                 {
                     touchwin(curscr);
                     wrefresh(curscr);
                 }
-                if (!SP->resized)
+                if( size_actually_changed && !SP->resized)
                 {
                     SP->resized = TRUE;
                     return KEY_RESIZE;

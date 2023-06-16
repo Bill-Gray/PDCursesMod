@@ -455,15 +455,21 @@ int PDC_get_key(void)
     case SDL_WINDOWEVENT:
         if (SDL_WINDOWEVENT_SIZE_CHANGED == event.window.event)
         {
+            const int prev_rows = pdc_sheight / pdc_fheight;
+            const int prev_cols = pdc_swidth / pdc_fwidth;
+            bool size_actually_changed;
+
             pdc_screen = SDL_GetWindowSurface(pdc_window);
             pdc_sheight = pdc_screen->h - pdc_xoffset;
             pdc_swidth = pdc_screen->w - pdc_yoffset;
-            if( curscr)
+            size_actually_changed = ( pdc_sheight / pdc_fheight != prev_rows ||
+                                      pdc_swidth / pdc_fwidth != prev_cols);
+            if( size_actually_changed && curscr)
             {
                 touchwin(curscr);
                 wrefresh(curscr);
             }
-            if (!SP->resized)
+            if( size_actually_changed && !SP->resized)
             {
                 SP->resized = TRUE;
                 return KEY_RESIZE;
