@@ -1,4 +1,5 @@
-Changes as of 2023 June 12
+PDCursesMod 4.3.7 - 2023 June 17
+================================
 
 Major new features
 ------------------
@@ -114,6 +115,9 @@ Bug fixes
 
 - In Windows SDL2,  Alt-keystrokes were ignored (see wmcbrine/PDCurses#142).
   Fix provided by Benjamin Adamson.  7f1e1bba34
+
+- In SDL2,  programmatic resizes caused further spurious resizes,
+  leading to KEY_RESIZE events.  b09c91ea15
 
 - Scrolling a window could result in a crash when the window was
   freed.   72521a1697
