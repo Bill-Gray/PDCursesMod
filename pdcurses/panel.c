@@ -141,15 +141,16 @@ struct panelobs
 struct panel
 {
     WINDOW *win;
-    int wstarty;
-    int wendy;
-    int wstartx;
-    int wendx;
     struct panel *below;
     struct panel *above;
     const void *user;
     struct panelobs *obscure;
 };
+
+#define _startx( pan)  ((pan)->win->_begx)
+#define _starty( pan)  ((pan)->win->_begy)
+#define _endx( pan)  ((pan)->win->_begx + (pan)->win->_maxx)
+#define _endy( pan)  ((pan)->win->_begy + (pan)->win->_maxy)
 
 static PANEL *_bottom_panel = (PANEL *)0;
 static PANEL *_top_panel = (PANEL *)0;
@@ -162,7 +163,7 @@ static void dPanel(char *text, PANEL *pan)
     PDC_LOG(("%s id=%s b=%s a=%s y=%d x=%d", text, pan->user,
              pan->below ? pan->below->user : "--",
              pan->above ? pan->above->user : "--",
-             pan->wstarty, pan->wstartx));
+             _starty( pan), _startx( pan)));
 }
 
 static void dStack(char *fmt, int num, PANEL *pan)
@@ -225,10 +226,10 @@ static bool _panels_overlapped(PANEL *pan1, PANEL *pan2)
     if (!pan1 || !pan2)
         return FALSE;
 
-    return ((pan1->wstarty >= pan2->wstarty && pan1->wstarty < pan2->wendy)
-         || (pan2->wstarty >= pan1->wstarty && pan2->wstarty < pan1->wendy))
-        && ((pan1->wstartx >= pan2->wstartx && pan1->wstartx < pan2->wendx)
-         || (pan2->wstartx >= pan1->wstartx && pan2->wstartx < pan1->wendx));
+    return ((_starty( pan1) >= _starty( pan2) && _starty( pan1) < _endy( pan2))
+         || (_starty( pan2) >= _starty( pan1) && _starty( pan2) < _endy( pan1)))
+        && ((_startx( pan1) >= _startx( pan2) && _startx( pan1) < _endx( pan2))
+         || (_startx( pan2) >= _startx( pan1) && _startx( pan2) < _endx( pan1)));
 }
 
 static void _free_obscure(PANEL *pan)
@@ -247,7 +248,6 @@ static void _free_obscure(PANEL *pan)
 
 static void _override(PANEL *pan, int show)
 {
-    int y;
     PANEL *pan2;
     PANELOBS *tobs = pan->obscure;      /* "this" one */
 
@@ -265,12 +265,14 @@ static void _override(PANEL *pan, int show)
     while (tobs)
     {
         if ((pan2 = tobs->pan) != pan)
-            for (y = pan->wstarty; y < pan->wendy; y++)
-                if ((y >= pan2->wstarty) && (y < pan2->wendy) &&
-                   ((is_linetouched(pan->win, y - pan->wstarty)) ||
-                    (is_linetouched(stdscr, y))))
-                    Touchline(pan2, y - pan2->wstarty, 1);
+        {
+            int y;
 
+            for( y = _starty( pan2); y < _endy( pan2); y++)
+               if( is_linetouched(pan->win, y - _starty( pan)) ||
+                   is_linetouched(stdscr, y))
+                  Touchline(pan2, y - _starty( pan2), 1);
+        }
         tobs = tobs->above;
     }
 }
@@ -487,7 +489,7 @@ int hide_panel(PANEL *pan)
 int move_panel(PANEL *pan, int starty, int startx)
 {
     WINDOW *win;
-    int maxy, maxx, rval;
+    int rval;
 
     assert( pan);
     if (!pan)
@@ -499,13 +501,6 @@ int move_panel(PANEL *pan, int starty, int startx)
     win = pan->win;
 
     rval = mvwin(win, starty, startx);
-    if( rval != ERR)
-    {
-        getbegyx(win, pan->wstarty, pan->wstartx);
-        getmaxyx(win, maxy, maxx);
-        pan->wendy = pan->wstarty + maxy;
-        pan->wendx = pan->wstartx + maxx;
-    }
 
     if (_panel_is_linked(pan))
         _calculate_obscure();
@@ -526,25 +521,15 @@ PANEL *new_panel(WINDOW *win)
     if (!_stdscr_pseudo_panel.win)
     {
         _stdscr_pseudo_panel.win = stdscr;
-        _stdscr_pseudo_panel.wstarty = 0;
-        _stdscr_pseudo_panel.wstartx = 0;
-        _stdscr_pseudo_panel.wendy = LINES;
-        _stdscr_pseudo_panel.wendx = COLS;
         _stdscr_pseudo_panel.user = "stdscr";
         _stdscr_pseudo_panel.obscure = (PANELOBS *)0;
     }
 
     if (pan)
     {
-        int maxy, maxx;
-
         pan->win = win;
         pan->above = (PANEL *)0;
         pan->below = (PANEL *)0;
-        getbegyx(win, pan->wstarty, pan->wstartx);
-        getmaxyx(win, maxy, maxx);
-        pan->wendy = pan->wstarty + maxy;
-        pan->wendx = pan->wstartx + maxx;
 #ifdef PANEL_DEBUG
         pan->user = "new";
 #else
@@ -607,8 +592,6 @@ WINDOW *panel_window(const PANEL *pan)
 
 int replace_panel(PANEL *pan, WINDOW *win)
 {
-    int maxy, maxx;
-
     assert( pan);
     assert( win);
     if (!pan)
@@ -618,10 +601,6 @@ int replace_panel(PANEL *pan, WINDOW *win)
         _override(pan, 0);
 
     pan->win = win;
-    getbegyx(win, pan->wstarty, pan->wstartx);
-    getmaxyx(win, maxy, maxx);
-    pan->wendy = pan->wstarty + maxy;
-    pan->wendx = pan->wstartx + maxx;
 
     if (_panel_is_linked(pan))
         _calculate_obscure();
