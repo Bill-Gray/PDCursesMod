@@ -156,68 +156,9 @@ static PANEL *_bottom_panel = (PANEL *)0;
 static PANEL *_top_panel = (PANEL *)0;
 static PANEL _stdscr_pseudo_panel;
 
-#ifdef PANEL_DEBUG
-
-static void dPanel(char *text, PANEL *pan)
-{
-    PDC_LOG(("%s id=%s b=%s a=%s y=%d x=%d", text, pan->user,
-             pan->below ? pan->below->user : "--",
-             pan->above ? pan->above->user : "--",
-             _starty( pan), _startx( pan)));
-}
-
-static void dStack(char *fmt, int num, PANEL *pan)
-{
-    char s80[80];
-
-    sprintf(s80, fmt, num, pan);
-    PDC_LOG(("%s b=%s t=%s", s80, _bottom_panel ? _bottom_panel->user : "--",
-             _top_panel    ? _top_panel->user    : "--"));
-
-    if (pan)
-        PDC_LOG(("pan id=%s", pan->user));
-
-    pan = _bottom_panel;
-
-    while (pan)
-    {
-        dPanel("stk", pan);
-        pan = pan->above;
-    }
-}
-
-/* debugging hook for wnoutrefresh */
-
-static void Wnoutrefresh(PANEL *pan)
-{
-    dPanel("wnoutrefresh", pan);
-    wnoutrefresh(pan->win);
-}
-
-static void Touchpan(PANEL *pan)
-{
-    dPanel("Touchpan", pan);
-    touchwin(pan->win);
-}
-
-static void Touchline(PANEL *pan, int start, int count)
-{
-    char s80[80];
-
-    sprintf(s80, "Touchline s=%d c=%d", start, count);
-    dPanel(s80, pan);
-    touchline(pan->win, start, count);
-}
-
-#else   /* PANEL_DEBUG */
-
-#define dPanel(text, pan)
-#define dStack(fmt, num, pan)
 #define Wnoutrefresh(pan) wnoutrefresh((pan)->win)
 #define Touchpan(pan) touchwin((pan)->win)
 #define Touchline(pan, start, count) touchline((pan)->win, start, count)
-
-#endif  /* PANEL_DEBUG */
 
 static bool _panels_overlapped(PANEL *pan1, PANEL *pan2)
 {
@@ -301,7 +242,6 @@ static void _calculate_obscure(void)
                     return;
 
                 tobs->pan = pan2;
-                dPanel("obscured", pan2);
                 tobs->above = (PANELOBS *)0;
 
                 if (lobs)
@@ -342,7 +282,6 @@ static bool _panel_is_linked(const PANEL *pan)
 static void _panel_link_top(PANEL *pan)
 {
 #ifdef PANEL_DEBUG
-    dStack("<lt%d>", 1, pan);
     if (_panel_is_linked(pan))
         return;
 #endif
@@ -361,7 +300,6 @@ static void _panel_link_top(PANEL *pan)
         _bottom_panel = pan;
 
     _calculate_obscure();
-    dStack("<lt%d>", 9, pan);
 }
 
 /* link panel into stack at bottom */
@@ -369,7 +307,6 @@ static void _panel_link_top(PANEL *pan)
 static void _panel_link_bottom(PANEL *pan)
 {
 #ifdef PANEL_DEBUG
-    dStack("<lb%d>", 1, pan);
     if (_panel_is_linked(pan))
         return;
 #endif
@@ -388,7 +325,6 @@ static void _panel_link_bottom(PANEL *pan)
         _top_panel = pan;
 
     _calculate_obscure();
-    dStack("<lb%d>", 9, pan);
 }
 
 static void _panel_unlink(PANEL *pan)
@@ -397,7 +333,6 @@ static void _panel_unlink(PANEL *pan)
     PANEL *next;
 
 #ifdef PANEL_DEBUG
-    dStack("<u%d>", 1, pan);
     if (!_panel_is_linked(pan))
         return;
 #endif
@@ -410,12 +345,8 @@ static void _panel_unlink(PANEL *pan)
     /* if non-zero, we will not update the list head */
 
     if (prev)
-    {
         prev->above = next;
-        if(next)
-            next->below = prev;
-    }
-    else if (next)
+    if (next)
         next->below = prev;
 
     if (pan == _bottom_panel)
@@ -428,8 +359,6 @@ static void _panel_unlink(PANEL *pan)
 
     pan->above = (PANEL *)0;
     pan->below = (PANEL *)0;
-    dStack("<u%d>", 9, pan);
-
 }
 
 /************************************************************************
