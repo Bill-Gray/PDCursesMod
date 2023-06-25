@@ -147,10 +147,10 @@ struct panel
     struct panelobs *obscure;
 };
 
-#define _startx( pan)  ((pan)->win->_begx)
-#define _starty( pan)  ((pan)->win->_begy)
-#define _endx( pan)  ((pan)->win->_begx + (pan)->win->_maxx)
-#define _endy( pan)  ((pan)->win->_begy + (pan)->win->_maxy)
+#define _startx( pan)  (getbegx( (pan)->win))
+#define _starty( pan)  (getbegy( (pan)->win))
+#define _endx( pan)    (_startx( pan) + getmaxx( (pan)->win))
+#define _endy( pan)    (_starty( pan) + getmaxy( (pan)->win))
 
 static PANEL *_bottom_panel = (PANEL *)0;
 static PANEL *_top_panel = (PANEL *)0;
@@ -187,6 +187,21 @@ static void _free_obscure(PANEL *pan)
     pan->obscure = (PANELOBS *)0;
 }
 
+static void _pairwise_override( PANEL *pan, PANEL *pan2)
+{
+    int y = (_starty( pan) > _starty( pan2) ?
+                 _starty( pan) : _starty( pan2));
+    const int end_y = (_endy( pan) < _endy( pan2) ?
+                 _endy( pan) : _endy( pan2));
+
+    while( y < end_y)
+    {
+       if( is_linetouched(pan->win, y - _starty( pan)))
+          Touchline(pan2, y - _starty( pan2), 1);
+       y++;
+    }
+}
+
 static void _override(PANEL *pan, int show)
 {
     PANEL *pan2;
@@ -206,16 +221,10 @@ static void _override(PANEL *pan, int show)
     while (tobs)
     {
         if ((pan2 = tobs->pan) != pan)
-        {
-            int y;
-
-            for( y = _starty( pan2); y < _endy( pan2); y++)
-               if( is_linetouched(pan->win, y - _starty( pan)) ||
-                   is_linetouched(stdscr, y))
-                  Touchline(pan2, y - _starty( pan2), 1);
-        }
+            _pairwise_override( pan, pan2);
         tobs = tobs->above;
     }
+    _pairwise_override( &_stdscr_pseudo_panel, pan);
 }
 
 static void _calculate_obscure(void)
