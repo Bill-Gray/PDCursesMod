@@ -160,7 +160,7 @@ static PANEL _stdscr_pseudo_panel;
 #define Touchpan(pan) touchwin((pan)->win)
 #define Touchline(pan, start, count) touchline((pan)->win, start, count)
 
-static bool _panels_overlapped(PANEL *pan1, PANEL *pan2)
+static bool _panels_overlapped( const PANEL *pan1, const PANEL *pan2)
 {
     assert( pan1);
     assert( pan2);
@@ -202,9 +202,8 @@ static void _pairwise_override( PANEL *pan, PANEL *pan2)
     }
 }
 
-static void _override(PANEL *pan, int show)
+static void _override(PANEL *pan, const int show)
 {
-    PANEL *pan2;
     PANELOBS *tobs = pan->obscure;      /* "this" one */
 
     if (show == 1)
@@ -214,14 +213,14 @@ static void _override(PANEL *pan, int show)
         Touchpan(pan);
         Touchpan(&_stdscr_pseudo_panel);
     }
-    else if (show == -1)
+    else if (show == -1)  /* only check panels overlapping 'pan' */
         while (tobs && (tobs->pan != pan))
             tobs = tobs->above;
 
     while (tobs)
     {
-        if ((pan2 = tobs->pan) != pan)
-            _pairwise_override( pan, pan2);
+        if( pan != tobs->pan)
+            _pairwise_override( pan, tobs->pan);
         tobs = tobs->above;
     }
     _pairwise_override( &_stdscr_pseudo_panel, pan);
