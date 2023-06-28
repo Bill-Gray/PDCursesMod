@@ -22,7 +22,7 @@
 #define HAVE_UNISTD_H 1
 #define HAVE_TERMATTRS 1
 
-#include <curses.h>
+#include <curspriv.h>
 
 #define ExitProgram exit
 
@@ -56,6 +56,7 @@
 #define HAVE_STRSTR 1
 #define HAVE_USE_DEFAULT_COLORS 1
 #define HAVE_WRESIZE 1
+#define USE_STRING_HACKS 1
 
 #ifdef PDC_WIDE
 # define USE_WIDEC_SUPPORT 1
