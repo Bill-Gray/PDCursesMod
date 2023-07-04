@@ -40,15 +40,12 @@ theory,  they use the same underlying code for the purpose as
 the VT flavor of PDCurses.  In theory,  practice and theory are
 the same.  In practice,  they usually aren't.)        */
 
-#ifdef __PDCURSESMOD__
-PDCEX void PDC_set_default_colors( const int, const int);
-#endif
-
 int main( const int argc, const char *argv[])
 {
     int line = 1, i;
     int reset_defaults = 0;
     int show_text_without_start_color = 0;
+    SCREEN *screen_pointer;
 
     for( i = 1; i < argc; i++)
         if( argv[i][0] == '-')
@@ -73,7 +70,7 @@ int main( const int argc, const char *argv[])
                     fprintf( stderr, "Unrecognized option '%s'\n", argv[i]);
                     return( -1);
             }
-    initscr();
+    screen_pointer = newterm(NULL, stdout, stdin);
     if( show_text_without_start_color)
     {
         mvaddstr( 0, 12, longname( ));
@@ -150,8 +147,7 @@ int main( const int argc, const char *argv[])
 #endif
 
     endwin( );
-#ifdef __PDCURSESMOD__      /* Not really needed,  but ensures Valgrind  */
-    delscreen( SP);                      /* says all memory was freed */
-#endif
-    return( -1);
+                         /* Not really needed,  but ensures Valgrind  */
+    delscreen( screen_pointer);          /* says all memory was freed */
+    return( 0);
 }

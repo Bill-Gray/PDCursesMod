@@ -77,8 +77,8 @@ int main(void)
 #ifdef __PDCURSESMOD__
    int box_style = 0;
 #endif
+   SCREEN *screen_pointer = newterm(NULL, stdout, stdin);
 
-   initscr();
    cbreak();
    noecho();
    keypad( stdscr, 1);
@@ -201,6 +201,8 @@ int main(void)
          case KEY_RESIZE:
             resize_term( 0, 0);
             break;
+         case 'q':
+            break;
          default:
             flash( );
             break;
@@ -212,8 +214,7 @@ int main(void)
       del_panel( my_panels[i]);
       delwin( my_wins[i]);
       }
-#ifdef __PDCURSESMOD__      /* Not really needed,  but ensures Valgrind  */
-    delscreen( SP);                      /* says all memory was freed */
-#endif
+                            /* Not really needed,  but ensures Valgrind  */
+    delscreen( screen_pointer);          /* says all memory was freed */
     return( 0);
 }

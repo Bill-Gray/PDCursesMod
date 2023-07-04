@@ -224,14 +224,10 @@ int main(int argc, char **argv)
             " SDL 1/2, VT, Windows console & GUI, X11";
     const char *hit_any_key =
             "       Type a key to continue or ESC to quit     ";
+    SCREEN *screen_pointer = newterm(NULL, stdout, stdin);
 
-#ifdef XCURSES
-    Xinitscr(argc, argv);
-#else
     INTENTIONALLY_UNUSED_PARAMETER( argv);
     INTENTIONALLY_UNUSED_PARAMETER( argc);
-    initscr();
-#endif
     seed = time((time_t *)0);
     srand( (unsigned)seed);
 
@@ -439,9 +435,8 @@ int main(int argc, char **argv)
 
     delwin(win);
     endwin();
-#ifdef __PDCURSESMOD__      /* Not really needed,  but ensures Valgrind  */
-    delscreen( SP);                      /* says all memory was freed */
-#endif
+                            /* Not really needed,  but ensures Valgrind  */
+    delscreen( screen_pointer);          /* says all memory was freed */
 
     return 0;
 }

@@ -36,11 +36,12 @@ int main( const int argc, const char *argv[])
     wchar_t array[10];
     cchar_t wcval;
     attr_t attrs;
+    SCREEN *screen_pointer;
 
     INTENTIONALLY_UNUSED_PARAMETER( argc);
     INTENTIONALLY_UNUSED_PARAMETER( argv);
     setlocale(LC_ALL, "");
-    initscr();
+    screen_pointer = newterm(NULL, stdout, stdin);
     mvaddwstr( 1, 1, precomposed_string);
     mvaddwstr( 2, 1, combining_string);
     mvaddstr( 4, 2, "The top line was done using precomposed characters;  for example,");
@@ -118,9 +119,8 @@ int main( const int argc, const char *argv[])
     while( getch( ) == KEY_RESIZE)
         resize_term( 0, 0);
     endwin( );
-#ifdef __PDCURSESMOD__      /* Not really needed,  but ensures Valgrind  */
-    delscreen( SP);                      /* says all memory was freed */
-#endif
+                            /* Not really needed,  but ensures Valgrind  */
+    delscreen( screen_pointer);          /* says all memory was freed */
     return( -1);
 }
 #endif

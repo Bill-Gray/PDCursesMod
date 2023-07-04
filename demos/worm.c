@@ -141,15 +141,14 @@ lowright[8] =
     { 0, { 0, 0, 0 } }, { 0, { 0, 0, 0 } }
 };
 
-static void cleanup(void)
+static void cleanup( SCREEN *screen_pointer)
 {
     standend();
     refresh();
     curs_set(1);
     endwin();
-#ifdef __PDCURSESMOD__      /* Not really needed,  but ensures Valgrind  */
-    delscreen( SP);                      /* says all memory was freed */
-#endif
+                            /* Not really needed,  but ensures Valgrind  */
+    delscreen( screen_pointer);          /* says all memory was freed */
 }
 
 int main(int argc, char *argv[])
@@ -159,6 +158,7 @@ int main(int argc, char *argv[])
     short **ref, *ip;
     time_t seed;
     int x, y, n, h, last, bottom;
+    SCREEN *screen_pointer;
 
     for (x = 1; x < argc; x++)
     {
@@ -205,11 +205,7 @@ int main(int argc, char *argv[])
         }
     }
 
-#ifdef XCURSES
-    Xinitscr(argc, argv);
-#else
-    initscr();
-#endif
+    screen_pointer = newterm(NULL, stdout, stdin);
     seed = time((time_t *)0);
     srand( (unsigned)seed);
 
@@ -248,11 +244,11 @@ int main(int argc, char *argv[])
     }
 #endif
 
-    ref = malloc(sizeof(short *) * LINES);
+    ref = (short **)malloc(sizeof(short *) * LINES);
 
     for (y = 0; y < LINES; y++)
     {
-        ref[y] = malloc(sizeof(short) * COLS);
+        ref[y] = (short *)malloc(sizeof(short) * COLS);
 
         for (x = 0; x < COLS; x++)
             ref[y][x] = 0;
@@ -268,7 +264,7 @@ int main(int argc, char *argv[])
     {
         w->orientation = w->head = 0;
 
-        if ((ip = malloc(sizeof(short) * (length + 1))) == NULL)
+        if ((ip = (short *)malloc(sizeof(short) * (length + 1))) == NULL)
         {
             fprintf(stderr, "%s: out of memory\n", *argv);
             return EXIT_FAILURE;
@@ -279,7 +275,7 @@ int main(int argc, char *argv[])
         for (x = length; --x >= 0;)
             *ip++ = -1;
 
-        if ((ip = malloc(sizeof(short) * (length + 1))) == NULL)
+        if ((ip = (short *)malloc(sizeof(short) * (length + 1))) == NULL)
         {
             fprintf(stderr, "%s: out of memory\n", *argv);
             return EXIT_FAILURE;
@@ -325,7 +321,7 @@ int main(int argc, char *argv[])
                 {
                     for (y = 0; y <= bottom; y++)
                     {
-                        ref[y] = realloc(ref[y], sizeof(short) * COLS);
+                        ref[y] = (short *)realloc(ref[y], sizeof(short) * COLS);
 
                         for (x = last + 1; x < COLS; x++)
                             ref[y][x] = 0;
@@ -339,11 +335,11 @@ int main(int argc, char *argv[])
                     for (y = LINES; y <= bottom; y++)
                         free(ref[y]);
 
-                    ref = realloc(ref, sizeof(short *) * LINES);
+                    ref = (short **)realloc(ref, sizeof(short *) * LINES);
 
                     for (y = bottom + 1; y < LINES; y++)
                     {
-                        ref[y] = malloc(sizeof(short) * COLS);
+                        ref[y] = (short *)malloc(sizeof(short) * COLS);
 
                         for (x = 0; x < COLS; x++)
                             ref[y][x] = 0;
@@ -368,7 +364,7 @@ int main(int argc, char *argv[])
                     free( worm[n].xpos);
                     free( worm[n].ypos);
                 }
-                cleanup();
+                cleanup( screen_pointer);
                 return EXIT_SUCCESS;
             }
             else if (ch == 's')
@@ -423,7 +419,7 @@ int main(int argc, char *argv[])
                 for (y = 0; y < LINES; y++)
                     free( ref[y]);
                 free( ref);
-                cleanup();
+                cleanup( screen_pointer);
                 return EXIT_SUCCESS;
             case 1:
                 w->orientation = op->opts[0];

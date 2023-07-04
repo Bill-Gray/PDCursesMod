@@ -170,6 +170,7 @@ int main( int argc, char **argv)
     int show_slk_index_line = 0;
     int redraw = 1;
     const char *extra_characters_to_show = "";
+    SCREEN *screen_pointer;
 #ifdef HAVE_WIDE
     unsigned unicode_offset = 0x80;
 #endif
@@ -244,11 +245,7 @@ int main( int argc, char **argv)
             }
     if( use_slk)
        slk_init( show_slk_index_line ? -fmt : fmt);
-#ifdef XCURSES
-    Xinitscr(argc, argv);
-#else
-    initscr();
-#endif
+    screen_pointer = newterm(NULL, stdout, stdin);
     if( use_slk)
        slk_setup( show_slk_index_line ? -fmt : fmt);
 
@@ -602,9 +599,8 @@ int main( int argc, char **argv)
     }
 
     endwin();
-#ifdef __PDCURSESMOD__      /* Not really needed,  but ensures Valgrind  */
-    delscreen( SP);                      /* says all memory was freed */
-#endif
+                            /* Not really needed,  but ensures Valgrind  */
+    delscreen( screen_pointer);          /* says all memory was freed */
 
     return 0;
 }

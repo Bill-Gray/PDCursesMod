@@ -225,6 +225,7 @@ int main( const int argc, const char *argv[])
    int c = 0, i, bytes_per_pixel = 3;
    double scale = 0., xpix = 0., ypix = 0.;
    bool show_help = TRUE;
+   SCREEN *screen_pointer;
 
    setlocale(LC_ALL, "");
    for( i = 1; i < argc; i++)
@@ -292,7 +293,7 @@ int main( const int argc, const char *argv[])
    if( bytes_per_pixel == 1)     /* expand grayscale to RGB */
       for( i = xsize * ysize - 1; i >= 0; i--)
          pixels[i * 3] = pixels[i * 3 + 1] = pixels[i * 3 + 2] = pixels[i];
-   initscr( );
+   screen_pointer = newterm(NULL, stdout, stdin);
    start_color( );
    cbreak( );
    noecho();
@@ -500,8 +501,7 @@ int main( const int argc, const char *argv[])
       }
    free( pixels);
    endwin();
-#ifdef __PDCURSESMOD__      /* Not really needed,  but ensures Valgrind  */
-   delscreen( SP);                       /* says all memory was freed */
-#endif
+                            /* Not really needed,  but ensures Valgrind  */
+   delscreen( screen_pointer);          /* says all memory was freed */
    return( 0);
 }
