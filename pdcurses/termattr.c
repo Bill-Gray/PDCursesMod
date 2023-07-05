@@ -30,8 +30,8 @@ termattr
    baudrate() is supposed to return the output speed of the terminal. In
    PDCurses, it simply returns INT_MAX.
 
-   has_ic and has_il() return TRUE. These functions have meaning in some
-   other implementations of curses.
+   has_ic and has_il() return TRUE,  indicating that the terminal has the
+   capability to insert and delete characters and lines,  respectively.
 
    erasechar() and killchar() return ^H and ^U, respectively -- the
    ERASE and KILL characters. In other curses implementations, these may
