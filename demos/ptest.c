@@ -23,9 +23,9 @@ void sizecheck(void)
 {
     if (COLS < 70 || LINES < 23)
     {
-        printw("A window at least 70x23 is required for this demo");
+        mvprintw( 1, 1, "A window at least 70x23 is required for this demo.  Hit a key");
         refresh();
-        napms(5000);
+        getch( );
         endwin();
         delscreen( screen_pointer);
         exit(-1);
@@ -125,12 +125,7 @@ int main(int argc, char **argv)
     if (argc > 1 && atol(argv[1]))
         nap_msec = atol(argv[1]);
 
-#ifdef XCURSES
-    Xinitscr(argc, argv);
-    screen_pointer = SP;
-#else
     screen_pointer = newterm(NULL, stdout, stdin);
-#endif
 
     keypad(stdscr, TRUE);
     sizecheck();

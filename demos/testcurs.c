@@ -272,14 +272,9 @@ void Continue2(void)
 
 int initTest(WINDOW **win, int argc, char *argv[])
 {
-#ifdef XCURSES
-    Xinitscr(argc, argv);
-    screen_pointer = SP;
-#else
     INTENTIONALLY_UNUSED_PARAMETER( argv);
     INTENTIONALLY_UNUSED_PARAMETER( argc);
     screen_pointer = newterm(NULL, stdout, stdin);
-#endif
 #ifdef A_COLOR
     if (has_colors())
         start_color();

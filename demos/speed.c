@@ -75,14 +75,9 @@ int main( const int argc, char **argv)
     SCREEN *screen_pointer;
 
     resize_term( 30, 90);
-#ifdef XCURSES
-    Xinitscr(argc, argv);
-    screen_pointer = SP;
-#else
     INTENTIONALLY_UNUSED_PARAMETER( argv);
     INTENTIONALLY_UNUSED_PARAMETER( argc);
     screen_pointer = newterm(NULL, stdout, stdin);
-#endif
     cbreak( );
     noecho();
     start_color( );
