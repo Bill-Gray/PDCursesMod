@@ -540,28 +540,34 @@ int PDC_set_line_color(short color)
     return OK;
 }
 
+static void _init_color_table( SCREEN *sp)
+{
+    PDC_PAIR *p;
+
+    sp->opaque->pairs_allocated = 1;
+    sp->opaque->pairs = (PDC_PAIR *)calloc( 2, sizeof(PDC_PAIR));
+    assert( sp->opaque->pairs);
+    if( !sp->opaque->pairs)
+        return;
+    p = (PDC_PAIR *)sp->opaque->pairs;
+    p[0].f = p[1].f = UNSET_COLOR_PAIR;
+    p[0].prev = p[0].next = 0;
+    p[1].prev = p[1].next = 1;
+    sp->opaque->default_colors = FALSE;
+    PDC_set_default_colors( _default_foreground_idx, _default_background_idx);
+}
+
 int PDC_init_atrtab(void)
 {
     assert( SP);
     if( !SP->opaque)
     {
-       PDC_PAIR *p;
 
        SP->opaque = (struct _opaque_screen_t *)calloc( 1, sizeof( struct _opaque_screen_t));
        assert( SP->opaque);
        if( !SP->opaque)
            return -1;
-       SP->opaque->pairs_allocated = 1;
-       SP->opaque->pairs = (PDC_PAIR *)calloc( 2, sizeof(PDC_PAIR));
-       assert( SP->opaque->pairs);
-       if( !SP->opaque->pairs)
-           return -1;
-       p = (PDC_PAIR *)SP->opaque->pairs;
-       p[0].f = p[1].f = UNSET_COLOR_PAIR;
-       p[0].prev = p[0].next = 0;
-       p[1].prev = p[1].next = 1;
-       SP->opaque->default_colors = FALSE;
-       PDC_set_default_colors( _default_foreground_idx, _default_background_idx);
+       _init_color_table( SP);
     }
     _init_pair_core( 0,
             (SP->orig_attr ? SP->orig_fore : _default_foreground_idx),
@@ -695,8 +701,16 @@ int free_pair( int pair)
 void reset_color_pairs( void)
 {
     assert( SP && SP->opaque && SP->opaque->pairs);
-    PDC_free_atrtab( );
-    PDC_init_atrtab( );
+    if( SP->opaque->pair_hash_tbl)
+        free( SP->opaque->pair_hash_tbl);
+    if( SP->opaque->pairs)
+       free( SP->opaque->pairs);
+    SP->opaque->pair_hash_tbl = NULL;
+    SP->opaque->pair_hash_tbl_size = SP->opaque->pair_hash_tbl_used = 0;
+    _init_color_table( SP);
+    _init_pair_core( 0,
+            (SP->orig_attr ? SP->orig_fore : _default_foreground_idx),
+            (SP->orig_attr ? SP->orig_back : _default_background_idx));
     curscr->_clear = TRUE;
 }
 
