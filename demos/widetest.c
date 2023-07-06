@@ -90,9 +90,10 @@ int main( const int argc, const char *argv[])
         resize_term( 0, 0);
     move( 3, 1);
     clrtobot( );
-    mvaddstr( 5, 2, "Here, getcchar() is again used to 'fetch' the same characters,");
-    mvaddstr( 6, 2, "and setcchar() is used to copy them a line down.  The copying is");
-    mvaddstr( 7, 2, "mixed up a bit and slowed to take about two seconds.");
+    mvaddstr( 7, 2, "Here, getcchar() is again used to 'fetch' the same characters");
+    mvaddstr( 8, 2, "from both lines,  and setcchar() is used to copy them to two");
+    mvaddstr( 9, 2, "lower lines.  The copying is mixed up a bit and slowed down");
+    mvaddstr( 10, 2, "to take about two seconds.");
     for( i = 0; i < LINELEN; i++)
         shuffle[i] = i;
     for( i = LINELEN - 1; i; i--)
@@ -105,17 +106,21 @@ int main( const int argc, const char *argv[])
     for( i = 0; i < LINELEN; i++)
     {
         cchar_t wcval_out;
+        int j;
 
-        move( 2, shuffle[i] + 1);
-        in_wch( &wcval);
-        getcchar( &wcval, array, &attrs, &color_pair, NULL);
-        move( 3, shuffle[i] + 1);
-        setcchar( &wcval_out, array, attrs, color_pair, NULL);
-        add_wch( &wcval_out);
-        napms( 30);
-        refresh( );
+        for( j = 1; j < 3; j++)
+        {
+            move( j, shuffle[i] + 1);
+            in_wch( &wcval);
+            getcchar( &wcval, array, &attrs, &color_pair, NULL);
+            move( j + 3, shuffle[i] + 1);
+            setcchar( &wcval_out, array, attrs, color_pair, NULL);
+            add_wch( &wcval_out);
+            napms( 30);
+            refresh( );
+        }
     }
-    mvaddstr( 8, 2, "Done!  Hit any key");
+    mvaddstr( 11, 2, "Done!  Hit any key");
     while( getch( ) == KEY_RESIZE)
         resize_term( 0, 0);
     endwin( );
