@@ -170,7 +170,6 @@ int waddnwstr(WINDOW *win, const wchar_t *wstr, int n)
     if (!win || !wstr)
         return ERR;
 
-    while (wstr[i] && (i < n || n < 0))
     while( (i < n || n < 0) && wstr[i])
     {
         chtype wch = wstr[i++];
