@@ -1,3 +1,31 @@
+PDCursesMod -- 2023 July 10
+===========================
+
+Minor new features
+------------------
+
+- 'widetest' now tests copying of both precomposed and combining
+  characters with getcchar() and setcchar().  19169a1b18
+
+Bug fixes
+---------
+
+- Fixed a (very small) memory leak from reset_color_pairs.  9e236abb17
+
+- Fixed some ncurses demo failures,  due to incomplete HAVE_xxx
+  descriptions.  From William McBrine's PDCurses.  2d114bf406
+
+- Panels were only redrawn on window resizes if they overlapped other
+  panels,  and even then,  only the overlapping lines were redrawn.
+  e2b2205da6
+
+- If the screen was resized,  either programmatically or by the user,
+  the "pseudo-panel" for that screen was not resized.  6b571be281
+
+- waddnwstr() could read characters one element past the array bounds.
+  (Theoretically fixed in commit c03e650a70,  but I'd messed it up.)
+  5735a1cb31
+
 PDCursesMod 4.3.7 - 2023 June 17
 ================================
 
