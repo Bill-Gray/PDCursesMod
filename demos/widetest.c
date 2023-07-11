@@ -61,16 +61,16 @@ int main( const int argc, const char *argv[])
         resize_term( 0, 0);
     move( 4, 1);
     clrtobot( );
-    for( i = 1; i < LINES - 2; i++)
+    for( i = 0; i < LINELEN; i++)
     {
         char buff[80];
 
-        move( 2, i);
+        move( 2, i + 1);
         in_wch( &wcval);
         n = getcchar( &wcval, NULL, &attrs, &color_pair, NULL);
         getcchar( &wcval, array, &attrs, &color_pair, NULL);
         sprintf( buff, "%d: ", n);
-        mvaddstr( i + 2, 3, buff);
+        mvaddstr( 11 + i % (LINES - 11), 16 * (i / (LINES - 11)), buff);
         j = 0;
         while( array[j] > 0xff)
            j++;
@@ -110,10 +110,12 @@ int main( const int argc, const char *argv[])
 
         for( j = 1; j < 3; j++)
         {
-            move( j, shuffle[i] + 1);
+            const int x = (j == 1 ? shuffle[i] : shuffle[shuffle[i]]) + 1;
+
+            move( j, x);
             in_wch( &wcval);
             getcchar( &wcval, array, &attrs, &color_pair, NULL);
-            move( j + 3, shuffle[i] + 1);
+            move( j + 3, x);
             setcchar( &wcval_out, array, attrs, color_pair, NULL);
             add_wch( &wcval_out);
             napms( 30);
