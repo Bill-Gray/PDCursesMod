@@ -37,8 +37,6 @@ static int add_mouse( int button, const int action, const int x, const int y);
 static int keep_size_within_bounds( int *lines, int *cols);
 INLINE int set_default_sizes_from_registry( const int n_cols, const int n_rows,
                const int xloc, const int yloc);
-void PDC_transform_line_given_hdc( const HDC hdc, const int lineno,
-                             int x, int len, const chtype *srcp);
 int PDC_get_mouse_event_from_queue( void);     /* pdcscrn.c */
 
 /* We have a 'base' standard palette of 256 colors,  plus a true-color
@@ -1369,10 +1367,13 @@ static void HandlePaint( HWND hwnd )
     if (curscr && curscr->_y && PDC_n_cols > 0 && PDC_n_rows > 0)
     {
         int i;
+        extern HDC override_hdc;
 
+        override_hdc = memory_dc;
         for (i = 0; i < PDC_n_rows; i++)
             if (i < SP->lines && curscr->_y[i])
-                PDC_transform_line_given_hdc(memory_dc, i, 0, PDC_n_cols, curscr->_y[i]);
+                PDC_transform_line_sliced( i, 0, PDC_n_cols, curscr->_y[i]);
+        override_hdc = 0;
     }
     BlitBackBuffer();
     EndPaint(hwnd, &ps);
@@ -1512,7 +1513,7 @@ static void HandleTimer( const WPARAM wParam )
                     while( j < SP->cols && (line[j] & A_BLINK))
                         j++;
                     if( k != j)
-                        PDC_transform_line( i, k, j - k, line + k);
+                        PDC_transform_line_sliced( i, k, j - k, line + k);
                 }
             }
 /*          else
@@ -1525,7 +1526,7 @@ static void HandleTimer( const WPARAM wParam )
             debug_printf( "Cursor off-screen: %d %d, %d %d\n",
                           SP->cursrow, SP->curscol, SP->lines, SP->cols);
     else if( PDC_CURSOR_IS_BLINKING)
-             PDC_transform_line( SP->cursrow, SP->curscol, 1,
+             PDC_transform_line_sliced( SP->cursrow, SP->curscol, 1,
                                  curscr->_y[SP->cursrow] + SP->curscol);
 }
 

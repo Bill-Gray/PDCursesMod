@@ -91,6 +91,7 @@ void    PDC_scr_free(void);
 int     PDC_scr_open(void);
 void    PDC_set_keyboard_binary(bool);
 void    PDC_transform_line(int, int, int, const chtype *);
+void    PDC_transform_line_sliced(int, int, int, const chtype *);
 const char *PDC_sysname(void);
 
 /* Internal cross-module functions */
@@ -108,6 +109,7 @@ void    PDC_set_changed_cells_range( WINDOW *, const int y, const int start, con
 void    PDC_mark_line_as_changed( WINDOW *win, const int y);
 void    PDC_mark_cells_as_changed( WINDOW *, const int y, const int start, const int end);
 void    PDC_mark_cell_as_changed( WINDOW *, const int y, const int x);
+bool    PDC_touched_range( const WINDOW *win, const int y, int *firstch, int *lastch);
 
 #ifdef PDC_WIDE
 int     PDC_mbtowc(wchar_t *, const char *, size_t);
@@ -115,6 +117,8 @@ size_t  PDC_mbstowcs(wchar_t *, const char *, size_t);
 size_t  PDC_wcstombs(char *, const wchar_t *, size_t);
 PDCEX int PDC_wcwidth( const int32_t ucs);
 #endif
+
+#define MAX_UNICODE 0x110000
 
 #ifdef PDCDEBUG
 # define PDC_LOG(x) if (SP && SP->dbfp) PDC_debug x
@@ -139,6 +143,7 @@ PDCEX int PDC_wcwidth( const int32_t ucs);
 
 #define _INBUFSIZ        512  /* size of terminal input buffer */
 #define NUNGETCH         256  /* max # chars to ungetch() */
+#define MAX_PACKET_LEN    90  /* max # chars to send to PDC_transform_line */
 
 #define INTENTIONALLY_UNUSED_PARAMETER( param) (void)(param)
 

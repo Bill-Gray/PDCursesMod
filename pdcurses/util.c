@@ -151,7 +151,7 @@ int PDC_wc_to_utf8( char *dest, const int32_t code)
            }
            n_bytes_out = 3;
        }
-       else if( code < 0x110000)      /* Unicode past 64K,  i.e.,  SMP */
+       else if( code < MAX_UNICODE)      /* Unicode past 64K,  i.e.,  SMP */
        {
            if( dest)
            {
@@ -257,7 +257,7 @@ static int _int32_to_wchar_array( wchar_t *obuff, const int obuffsize, const int
    int PDC_expand_combined_characters( const cchar_t c, cchar_t *added);
    int PDC_find_combined_char_idx( const cchar_t root, const cchar_t added);
 
-   #define COMBINED_CHAR_START          0x110001
+   #define COMBINED_CHAR_START          (MAX_UNICODE + 1)
 #endif
 
 int getcchar(const cchar_t *wcval, wchar_t *wch, attr_t *attrs,
@@ -412,7 +412,7 @@ int PDC_mbtowc(wchar_t *pwc, const char *s, size_t n)
         {
             key = ((key & 0x07) << 18) | ((string[1] & 0x3f) << 12) |
                   ((string[2] & 0x3f) << 6) | (string[3] & 0x3f);
-            if( key <= 0x10ffff)
+            if( key < MAX_UNICODE)
                 i = 4;     /* four-byte sequence : U+10000 to U+10FFFF */
         }
     }

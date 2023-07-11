@@ -306,7 +306,7 @@ static void _set_cells_to_refresh_for_pair_change( const int pair)
 
                     while( x < SP->cols && USES_TARGET_PAIR( line[x]))
                         x++;
-                    PDC_transform_line( y, start_x, x - start_x, line + start_x);
+                    PDC_transform_line_sliced( y, start_x, x - start_x, line + start_x);
                 }
         }
 }
@@ -335,7 +335,7 @@ void PDC_set_cells_to_refresh_for_attr_change( const chtype attr)
 
                     while( x < SP->cols && !(*line & attr))
                         x++;
-                    PDC_transform_line( y, start_x, x - start_x, line + start_x);
+                    PDC_transform_line_sliced( y, start_x, x - start_x, line + start_x);
                 }
         }
 }

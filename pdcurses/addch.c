@@ -442,9 +442,8 @@ broken.  Quite aside from that,  this is a simpler solution,  and allows
 for any number of combining characters (though four ought to be enough
 for anybody).      */
 
-#define MAX_UNICODE                  0x10ffff
-#define DUMMY_CHAR_NEXT_TO_FULLWIDTH (MAX_UNICODE + 1)
-#define COMBINED_CHAR_START          (MAX_UNICODE + 2)
+#define DUMMY_CHAR_NEXT_TO_FULLWIDTH  MAX_UNICODE
+#define COMBINED_CHAR_START          (MAX_UNICODE + 1)
 
                                 /* "non-standard" 64-bit chtypes     */
 static int n_combos = 0, n_combos_allocated = 0;
@@ -465,7 +464,8 @@ int PDC_find_combined_char_idx( const cchar_t root, const cchar_t added)
     if( i == n_combos_allocated)
     {
         n_combos_allocated += 30 + n_combos_allocated / 2;
-        combos = realloc( combos, n_combos_allocated * sizeof( struct combined_char));
+        combos = (struct combined_char *)realloc( combos,
+                     n_combos_allocated * sizeof( struct combined_char));
     }
     combos[i].root = (int32_t)root;
     combos[i].added = (int32_t)added;

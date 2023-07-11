@@ -131,8 +131,6 @@ void PDC_gotoyx(int y, int x)
 #define REVERSE_ON    "\033[7m"
 #define STRIKEOUT_ON  "\033[9m"
 
-const chtype MAX_UNICODE = 0x110000;
-
 /* see 'addch.c' for an explanation of how combining chars are handled. */
 
 #ifdef USING_COMBINING_CHARACTER_SCHEME
@@ -249,6 +247,7 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
     assert( lineno >= 0);
     assert( lineno < SP->lines);
     assert( len > 0);
+    assert( len < MAX_PACKET_LEN);
     PDC_gotoyx( lineno, x);
     if( force_reset_all_attribs || (!x && !lineno))
     {
@@ -262,6 +261,8 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
        chtype changes = *srcp ^ prev_ch;
        size_t bytes_out = 0;
 
+       assert( ch != MAX_UNICODE);
+       assert( len == 1 || ch < MAX_UNICODE);
        if( _is_altcharset( *srcp))
           ch = (int)acs_map[ch & 0x7f];
        if( ch < (int)' ' || (ch >= 0x80 && ch <= 0x9f))

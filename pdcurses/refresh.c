@@ -146,6 +146,38 @@ int wnoutrefresh(WINDOW *win)
     return OK;
 }
 
+/* The following ensures that PDC_transform_line() is fed a maximum of
+MAX_PACKET_LEN at a time;  'dummy' characters in cells next to fullwidth
+characters are not sent;  and we break packets after combining characters
+and fullwidth characters,  avoiding some possible mis-alignment issues. */
+
+void PDC_transform_line_sliced( int lineno, int x, int len, const chtype *srcp)
+{
+    while( len)
+    {
+#ifdef PDC_WIDE
+        int i = 1;
+        chtype ch;
+
+        while( i < MAX_PACKET_LEN - 1
+                     && (ch = (srcp[i - 1] & A_CHARTEXT)) < MAX_UNICODE
+                     && i < len)
+           i++;
+        if( i == 1 && ch == MAX_UNICODE)
+            fprintf( stderr, "line %d, x=%d, len=%d\n", lineno, x, len);
+        assert( i > 1 || ch != MAX_UNICODE);
+        PDC_transform_line( lineno, x,
+                          i - ((ch == MAX_UNICODE) ? 1 : 0), srcp);
+#else
+        const int i = min( len, MAX_PACKET_LEN - 1);
+        PDC_transform_line( lineno, x, i, srcp);
+#endif
+        x += i;
+        len -= i;
+        srcp += i;
+    }
+}
+
 int doupdate(void)
 {
     int y;
@@ -214,7 +246,7 @@ int doupdate(void)
 
                 if (len)
                 {
-                    PDC_transform_line(y, first, len, src + first);
+                    PDC_transform_line_sliced(y, first, len, src + first);
                     memcpy(dest + first, src + first, len * sizeof(chtype));
                     first += len;
                 }

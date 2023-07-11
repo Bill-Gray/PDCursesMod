@@ -173,7 +173,7 @@ void PDC_gotoyx(int row, int col)
         const int temp_visibility = SP->visibility;
 
         SP->visibility = 0;
-        PDC_transform_line( SP->cursrow, SP->curscol, 1,
+        PDC_transform_line_sliced( SP->cursrow, SP->curscol, 1,
                            curscr->_y[SP->cursrow] + SP->curscol);
         SP->visibility = temp_visibility;
     }
@@ -204,19 +204,17 @@ function address at runtime. if the method isn't available, that means we're on
 and older operating system, so we just return the original value */
 static LONG scale_font_for_current_dpi( LONG size)
 {
-    typedef LONG(STDAPICALLTYPE *GetDpiForSystemProc)();
     HMODULE user32Dll = LoadLibrary( _T("User32.dll"));
 
     if ( user32Dll)
     {
         /* https://msdn.microsoft.com/en-us/library/windows/desktop/mt748623(v=vs.85).aspx */
 
-        GetDpiForSystemProc getDpiForSystem =
-            (GetDpiForSystemProc) GetProcAddress( user32Dll, "GetDpiForSystem");
+        FARPROC getDpiForSystem = GetProcAddress( user32Dll, "GetDpiForSystem");
 
         if ( getDpiForSystem)
         {
-            size = MulDiv( size, getDpiForSystem(), USER_DEFAULT_SCREEN_DPI);
+            size = MulDiv( size, (UINT)getDpiForSystem(), USER_DEFAULT_SCREEN_DPI);
         }
 
         FreeLibrary( user32Dll);
@@ -308,10 +306,6 @@ int PDC_choose_a_new_font( void)
    int PDC_expand_combined_characters( const cchar_t c, cchar_t *added);  /* addch.c */
 #endif
 
-#ifdef PDC_WIDE
-const chtype MAX_UNICODE = 0x110000;
-#endif
-
 #ifdef USE_FALLBACK_FONT
 GLYPHSET *PDC_unicode_range_data = NULL;
 
@@ -370,7 +364,7 @@ static HFONT hFonts[N_CACHED_FONTS];
 
 #define BUFFSIZE 50
 
-void PDC_transform_line_given_hdc( const HDC hdc, const int lineno,
+static void PDC_transform_line_given_hdc( const HDC hdc, const int lineno,
                              int x, int len, const chtype *srcp)
 {
     HFONT hOldFont = (HFONT)0;
@@ -405,21 +399,22 @@ void PDC_transform_line_given_hdc( const HDC hdc, const int lineno,
         srcp -= x;
         x = 0;
     }
-    len++;    /* draw an extra char to avoid leaving garbage on screen */
+    if( (srcp[len] & A_CHARTEXT) < MAX_UNICODE)
+       len++;    /* draw an extra char to avoid leaving garbage on screen */
     if( len > SP->cols - x)
         len = SP->cols - x;
     if( lineno >= SP->lines || len <= 0 || lineno < 0)
         return;
-    if( x)           /* back up by one character to avoid */
-    {                /* leaving garbage on the screen */
-        x--;
+    assert( (srcp[len - 1] & A_CHARTEXT) != MAX_UNICODE);
+    if( x && (srcp[-1] & A_CHARTEXT) < MAX_UNICODE)
+    {                /* back up by one character to avoid */
+        x--;         /* leaving garbage on the screen */
         len++;
         srcp--;
     }
     if( lineno == SP->cursrow && SP->curscol >= x && SP->curscol < x + len)
         if( PDC_current_cursor_state( ))
             cursor_overwritten = TRUE;
-
 
     while( len)
     {
@@ -428,7 +423,6 @@ void PDC_transform_line_given_hdc( const HDC hdc, const int lineno,
         attr_t new_font_attrib = (*srcp & (A_BOLD | A_ITALIC));
         RECT clip_rect;
         wchar_t buff[BUFFSIZE];
-        int lpDx[BUFFSIZE + 1];
         int olen = 0;
 #ifdef USE_FALLBACK_FONT
         const bool in_font = character_is_in_font( *srcp);
@@ -443,13 +437,13 @@ void PDC_transform_line_given_hdc( const HDC hdc, const int lineno,
         {
             chtype ch = srcp[i] & A_CHARTEXT;
 
+            assert( ch != MAX_UNICODE);
 #ifdef USING_COMBINING_CHARACTER_SCHEME
             if( ch > 0xffff && ch < MAX_UNICODE)  /* use Unicode surrogates to fit */
             {               /* >64K values into 16-bit wchar_t: */
                 ch -= 0x10000;
                 buff[olen] = (wchar_t)( 0xd800 | (ch >> 10));
-                lpDx[olen] = 0;                   /* ^ upper 10 bits */
-                olen++;
+                olen++;                           /* ^ upper 10 bits */
                 ch = (wchar_t)( 0xdc00 | (ch & 0x3ff));  /* lower 10 bits */
             }
             if( ch > MAX_UNICODE)      /* chars & fullwidth supported */
@@ -463,14 +457,12 @@ void PDC_transform_line_given_hdc( const HDC hdc, const int lineno,
                     n_combined++;
                 }
                 buff[olen] = (wchar_t)root;
-                lpDx[olen] = 0;
                 olen++;
                 ch = (wchar_t)added[n_combined];
                 while( n_combined)
                 {
                     n_combined--;
                     buff[olen] = (wchar_t)added[n_combined];
-                    lpDx[olen] = 0;
                     olen++;
                 }
             }
@@ -490,17 +482,8 @@ void PDC_transform_line_given_hdc( const HDC hdc, const int lineno,
             }
 #endif
             buff[olen] = (wchar_t)ch;
-            lpDx[olen] = PDC_cxChar;
-#ifdef PDC_WIDE
-            if( ch != MAX_UNICODE)
-               olen++;
-            else if( olen)          /* prev char is double-width */
-               lpDx[olen - 1] = 2 * PDC_cxChar;
-#else
             olen++;
-#endif
         }
-        lpDx[olen] = PDC_cxChar;
         if( color != curr_color || ((prev_ch ^ *srcp) & (A_REVERSE | A_BLINK | A_BOLD | A_DIM)))
         {
             PACKED_RGB background_rgb;
@@ -538,10 +521,14 @@ void PDC_transform_line_given_hdc( const HDC hdc, const int lineno,
         clip_rect.left = x * PDC_cxChar;
         clip_rect.top = lineno * PDC_cyChar;
         clip_rect.right = clip_rect.left + i * PDC_cxChar;
+#ifdef PDC_WIDE
+        if( 2 == PDC_wcwidth( (uint32_t)( *srcp & A_CHARTEXT)))  /* allow extra */
+            clip_rect.right += PDC_cxChar;        /* space for a fullwidth char */
+#endif
         clip_rect.bottom = clip_rect.top + PDC_cyChar;
         ExtTextOutW( hdc, clip_rect.left, clip_rect.top,
                            ETO_CLIPPED | ETO_OPAQUE, &clip_rect,
-                           buff, olen, (olen > 1 ? lpDx : NULL));
+                           buff, olen, NULL);
 #ifdef A_OVERLINE
         if( *srcp & (A_UNDERLINE | A_RIGHTLINE | A_LEFTLINE | A_OVERLINE | A_STRIKEOUT))
 #else
@@ -600,6 +587,8 @@ void PDC_transform_line_given_hdc( const HDC hdc, const int lineno,
         redraw_cursor( hdc);
 }
 
+HDC override_hdc;
+
 void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
 {
     if( !srcp)    /* just freeing up fonts */
@@ -607,8 +596,10 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
     else
     {
         extern HWND PDC_hWnd;
-        const HDC hdc = GetDC( PDC_hWnd) ;
+        const HDC hdc = (override_hdc ? override_hdc : GetDC( PDC_hWnd)) ;
 
+        assert( len);
+        assert( (srcp[len - 1] & A_CHARTEXT) != MAX_UNICODE);
         PDC_transform_line_given_hdc( hdc, lineno, x, len, srcp);
         ReleaseDC( PDC_hWnd, hdc);
     }
