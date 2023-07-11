@@ -210,8 +210,6 @@ void PDC_draw_rectangle( const int xpix, const int ypix,
     }
 }
 
-const chtype MAX_UNICODE = 0x110000;
-
 /* see 'addch.c' for an explanation of how combining chars are handled. */
 
 #ifdef USING_COMBINING_CHARACTER_SCHEME
