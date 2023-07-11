@@ -349,7 +349,7 @@ void delscreen(SCREEN *sp)
 
     PDC_LOG(("delscreen() - called\n"));
 
-    assert( SP);
+    assert( SP && sp == SP);
     if (!SP || sp != SP)
         return;
 
