@@ -140,8 +140,8 @@ int touchline(WINDOW *win, int start, int count)
     PDC_LOG(("touchline() - called: win=%p start %d count %d\n",
              win, start, count));
 
-    assert( win && count > 0 && start + count <= win->_maxy);
-    if (!win || count <= 0 || start + count > win->_maxy)
+    assert( win && count > 0 && start >= 0 && start + count <= win->_maxy);
+    if (!win || count <= 0 || start < 0 || start + count > win->_maxy)
         return ERR;
 
     for (i = start; i < start + count; i++)
@@ -173,8 +173,8 @@ int wtouchln(WINDOW *win, int y, int n, int changed)
     PDC_LOG(("wtouchln() - called: win=%p y=%d n=%d changed=%d\n",
              win, y, n, changed));
 
-    assert( win);
-    if (!win || y > win->_maxy || y + n > win->_maxy)
+    assert( win && n >= 0 && y + n <= win->_maxy);
+    if (!win || n < 0 || y + n > win->_maxy)
         return ERR;
 
     for (i = y; i < y + n; i++)
@@ -192,8 +192,8 @@ bool is_linetouched(WINDOW *win, int line)
 {
     PDC_LOG(("is_linetouched() - called: win=%p line=%d\n", win, line));
 
-    assert( win);
-    if (!win || line > win->_maxy || line < 0)
+    assert( win && line < win->_maxy && line >= 0);
+    if (!win || line >= win->_maxy || line < 0)
         return FALSE;
 
     return (win->_firstch[line] != _NO_CHANGE) ? TRUE : FALSE;
@@ -240,7 +240,7 @@ int touchoverlap(const WINDOW *win1, WINDOW *win2)
     endx -= 1;
 
     for (y = starty; y < endy; y++)
-        PDC_set_changed_cells_range( win2, y, startx, endx);
+        PDC_mark_cells_as_changed( win2, y, startx, endx);
 
     return OK;
 }
