@@ -104,13 +104,10 @@ int main( const int argc, const char *argv[])
         shuffle[i] = tval;
     }
     for( i = 0; i < LINELEN; i++)
-    {
-        cchar_t wcval_out;
-        int j;
-
         for( j = 1; j < 3; j++)
         {
             const int x = (j == 1 ? shuffle[i] : shuffle[shuffle[i]]) + 1;
+            cchar_t wcval_out;
 
             move( j, x);
             in_wch( &wcval);
@@ -121,7 +118,6 @@ int main( const int argc, const char *argv[])
             napms( 30);
             refresh( );
         }
-    }
     mvaddstr( 11, 2, "Done!  Hit any key");
     while( getch( ) == KEY_RESIZE)
         resize_term( 0, 0);
