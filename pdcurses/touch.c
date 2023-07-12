@@ -95,6 +95,23 @@ void PDC_mark_cells_as_changed( WINDOW *win, const int y, const int start, const
     }
 }
 
+bool PDC_touched_range( const WINDOW *win, const int y, int *firstch, int *lastch)
+{
+    assert( win);
+    assert( y >= 0 && y < win->_maxy);
+    if( win->_firstch[y] == _NO_CHANGE)
+    {
+        *firstch = *lastch = 0;
+        return( FALSE);
+    }
+    else
+    {
+        *firstch = win->_firstch[y];
+        *lastch = win->_lastch[y];
+        return( TRUE);
+    }
+}
+
 void PDC_mark_cell_as_changed( WINDOW *win, const int y, const int x)
 {
     PDC_mark_cells_as_changed( win, y, x, x);
@@ -123,8 +140,8 @@ int touchline(WINDOW *win, int start, int count)
     PDC_LOG(("touchline() - called: win=%p start %d count %d\n",
              win, start, count));
 
-    assert( win);
-    if (!win || start > win->_maxy || start + count > win->_maxy)
+    assert( win && count > 0 && start + count <= win->_maxy);
+    if (!win || count <= 0 || start + count > win->_maxy)
         return ERR;
 
     for (i = start; i < start + count; i++)
