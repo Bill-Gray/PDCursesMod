@@ -359,7 +359,7 @@ int main( const int argc, const char *argv[])
 #else
                   init_extended_pair( pair_num, low_idx, idxs[i]);
 #endif
-                  attr_set( A_NORMAL, pair_num, 0);
+                  attrset( COLOR_PAIR( pair_num));
                   pair_num++;
                   prev_low_idx = low_idx;
                   prev_idx = idxs[i];
