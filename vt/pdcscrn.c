@@ -33,6 +33,8 @@ int PDC_is_ansi = TRUE;
 int PDC_is_ansi = FALSE;
 #endif
 
+int PDC_rows = -1, PDC_cols = -1;
+
 #ifdef _WIN32
 
 #ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
@@ -56,6 +58,18 @@ accordingly.  (In DOS,  PDC_is_ansi is always true -- there's no xterm-like
 support there.  On non-MS platforms,  PDC_is_ansi is always false...
 though that should be revisited for the Linux console,  and probably
 elsewhere.)  */
+
+static int PDC_get_screen_size( int *n_cols, int *n_rows)
+{
+    const HANDLE hOut = GetStdHandle( STD_OUTPUT_HANDLE);
+    CONSOLE_SCREEN_BUFFER_INFO ScreenBufferInfo;
+
+    assert( INVALID_HANDLE_VALUE != hOut);
+    GetConsoleScreenBufferInfo( hOut, &ScreenBufferInfo);
+    *n_cols = ScreenBufferInfo.srWindow.Right - ScreenBufferInfo.srWindow.Left + 1;
+    *n_rows = ScreenBufferInfo.srWindow.Bottom - ScreenBufferInfo.srWindow.Top + 1;
+    return( 0);
+}
 
 static int set_win10_for_vt_codes( const bool setting_mode)
 {
@@ -94,11 +108,12 @@ static int set_win10_for_vt_codes( const bool setting_mode)
               /* If we've gotten this far,  the terminal has been  */
               /* set up to process xterm-like sequences : */
     PDC_is_ansi = FALSE;
+    if( setting_mode)
+        PDC_get_screen_size( &PDC_cols, &PDC_rows);
     return( 0);
 }
 #endif
 
-int PDC_rows = -1, PDC_cols = -1;
 bool PDC_resize_occurred = FALSE;
 const int STDIN = 0;
 chtype PDC_capabilities = 0;
@@ -194,6 +209,7 @@ void PDC_scr_close( void)
    #endif
 #endif
    PDC_doupdate( );
+   PDC_flushinp( );
    PDC_puts_to_stdout( NULL);      /* free internal cache */
    return;
 }
@@ -308,9 +324,15 @@ int PDC_scr_open(void)
     {
         const char *env = getenv("PDC_LINES");
 
-        PDC_rows = (env ? atoi( env) : 25);
+        if( env)
+           PDC_rows = atoi( env);
+        if( PDC_rows < 2)
+           PDC_rows = 24;
         env = getenv( "PDC_COLS");
-        PDC_cols = (env ? atoi( env) : 80);
+        if( env)
+           PDC_cols = atoi( env);
+        if( PDC_cols < 2)
+           PDC_cols = 80;
     }
 #endif
     SP->mouse_wait = PDC_CLICK_PERIOD;
