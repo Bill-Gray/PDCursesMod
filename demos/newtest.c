@@ -175,7 +175,7 @@ int main( int argc, char **argv)
     unsigned unicode_offset = 0x80;
 #endif
 
-    setlocale(LC_ALL, "");
+    setlocale(LC_ALL, ".utf8");
     ttytype[0] = 25;   ttytype[1] = 90;         /* Allow 25 to 90 lines... */
     ttytype[2] = 80;   ttytype[3] = (char)127;  /* ...and 80 to 127 columns */
          /* (This program gets weird artifacts when smaller than 25x80.) */

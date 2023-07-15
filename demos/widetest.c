@@ -40,7 +40,7 @@ int main( const int argc, const char *argv[])
 
     INTENTIONALLY_UNUSED_PARAMETER( argc);
     INTENTIONALLY_UNUSED_PARAMETER( argv);
-    setlocale(LC_ALL, "");
+    setlocale(LC_ALL, ".utf8");
     screen_pointer = newterm(NULL, stdout, stdin);
     mvaddwstr( 1, 1, precomposed_string);
     mvaddwstr( 2, 1, combining_string);

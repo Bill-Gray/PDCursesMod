@@ -117,7 +117,7 @@ int main(int argc, char *argv[])
     int key, old_option = -1, new_option = 0, i;
     bool quit = FALSE;
 
-    setlocale(LC_ALL, "");
+    setlocale(LC_ALL, ".utf8");
 
 #ifdef __PDCURSESMOD__
 #ifdef PDC_VER_MAJOR   /* so far only seen in 4.0+ */

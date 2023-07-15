@@ -227,7 +227,7 @@ int main( const int argc, const char *argv[])
    bool show_help = TRUE;
    SCREEN *screen_pointer;
 
-   setlocale(LC_ALL, "");
+   setlocale(LC_ALL, ".utf8");
    for( i = 1; i < argc; i++)
       if( argv[i][0] == '-')
          switch( argv[i][1])

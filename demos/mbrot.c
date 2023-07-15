@@ -203,7 +203,7 @@ int main( const int argc, const char **argv)
     int results[5], rval;
 #endif
 
-    setlocale(LC_ALL, "");
+    setlocale(LC_ALL, ".utf8");
     for( i = 1; i < argc; i++)
         if( argv[i][0] == '-')
             switch( argv[i][1])
