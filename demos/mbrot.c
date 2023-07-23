@@ -1,6 +1,5 @@
 /* Tests alloc_pair( ) family of ncurses extension functions.  */
 
-#define _XOPEN_SOURCE_EXTENDED 1
 #define PDC_NCMOUSE
 
 #include <curses.h>
@@ -187,7 +186,7 @@ static void show_key_help( void)
 {
    mvprintw( LINES - 3, 0, "Cursor keys to pan                * / to zoom in/out");
    mvprintw( LINES - 2, 0, "Home to return to initial view    + / - for more/fewer iterations");
-   mvprintw( LINES - 1, 0, "                                  r to reset color pair table");
+   mvprintw( LINES - 1, 0, "Mouse buttons to pan              Mouse wheel to zoom in/out");
 }
 
 #define INTENTIONALLY_UNUSED_PARAMETER( param) (void)(param)
