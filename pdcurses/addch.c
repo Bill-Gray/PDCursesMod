@@ -3,8 +3,9 @@
 /* On Linux,  and probably some other platforms,  we can just
 use the built-in wcwidth() function.  */
 #ifdef __linux
-   #define HAVE_WCWIDTH
-   #define _XOPEN_SOURCE
+   #ifdef _XOPEN_SOURCE
+      #define HAVE_WCWIDTH
+   #endif
    #include <wchar.h>
 #endif
 
@@ -133,6 +134,7 @@ addch
 
 PDCEX int PDC_wcwidth( const int32_t ucs)
 {
+   assert( ucs < MAX_UNICODE && ucs > 0);
    return( wcwidth( (wchar_t)ucs));
 }
 
