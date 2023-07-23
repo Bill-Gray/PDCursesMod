@@ -100,6 +100,7 @@ int     PDC_init_atrtab(void);
 void    PDC_free_atrtab(void);
 WINDOW *PDC_makelines(WINDOW *);
 WINDOW *PDC_makenew(int, int, int, int);
+long    PDC_millisecs( void);
 int     PDC_mouse_in_slk(int, int);
 void    PDC_slk_free(void);
 void    PDC_slk_initialize(void);

@@ -4,7 +4,6 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
-#include <sys/time.h>
 #include <unistd.h>
 
 #include "curspriv.h"
@@ -22,24 +21,9 @@
 
 extern int PDC_blink_state;
 
-static int64_t _nanoseconds_since_1970( void)
-{
-   struct timeval now;
-   const int rv = gettimeofday( &now, NULL);
-   int64_t rval;
-   const int64_t one_billion = (int64_t)1000000000;
-
-   if( !rv)
-      rval = (int64_t)now.tv_sec * one_billion
-           + (int64_t)now.tv_usec * (int64_t)1000;
-   else
-      rval = 0;
-   return( rval);
-}
-
 /* Blinking of text and the cursor in this port has to be handled a
 little strangely.  "When possible",  we check to see if blink_interval
-nanoseconds (currently set to 0.5 seconds) has elapsed since the
+milliseconds (currently set to 0.5 seconds) has elapsed since the
 blinking text was drawn.  If it has,  we flip the PDC_blink_state
 bit and redraw all blinking text and the cursor.
 
@@ -50,11 +34,11 @@ aren't checking for keyboard input,  the text will stop blinking. */
 
 void PDC_check_for_blinking( void)
 {
-   static int64_t prev_time = 0;
-   const int64_t t = _nanoseconds_since_1970( );
-   const int64_t blink_interval = (int64_t)500000000;
+   static long prev_time = 0;
+   const long t = PDC_millisecs( );
+   const long blink_interval = 500L;
 
-   if( t > prev_time + blink_interval)
+   if( !t || t > prev_time + blink_interval)
    {
       int x1, y, x2;
 
