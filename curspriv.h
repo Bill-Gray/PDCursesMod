@@ -150,6 +150,67 @@ PDCEX int PDC_wcwidth( const int32_t ucs);
 
 #define _is_altcharset( ch)  (((ch) & (A_ALTCHARSET | (A_CHARTEXT ^ 0x7f))) == A_ALTCHARSET)
 
+struct _screen
+{
+    bool  alive;          /* if initscr() called, and not endwin() */
+    bool  autocr;         /* if cr -> lf */
+    bool  cbreak;         /* if terminal unbuffered */
+    bool  echo;           /* if terminal echo */
+    bool  raw_inp;        /* raw input mode (v. cooked input) */
+    bool  raw_out;        /* raw output mode (7 v. 8 bits) */
+    bool  audible;        /* FALSE if the bell is visual */
+    bool  mono;           /* TRUE if current screen is mono */
+    bool  resized;        /* TRUE if TERM has been resized */
+    bool  orig_attr;      /* TRUE if we have the original colors */
+    short orig_fore;      /* original screen foreground color */
+    short orig_back;      /* original screen foreground color */
+    int   cursrow;        /* position of physical cursor */
+    int   curscol;        /* position of physical cursor */
+    int   visibility;     /* visibility of cursor */
+    int   orig_cursor;    /* original cursor size */
+    int   lines;          /* new value for LINES */
+    int   cols;           /* new value for COLS */
+    mmask_t _trap_mbe;             /* trap these mouse button events */
+    int   mouse_wait;              /* time to wait (in ms) for a
+                                      button release after a press, in
+                                      order to count it as a click */
+    int   slklines;                /* lines in use by slk_init() */
+    WINDOW *slk_winptr;            /* window for slk */
+    int   linesrippedoff;          /* lines ripped off via ripoffline() */
+    int   linesrippedoffontop;     /* lines ripped off on
+                                      top via ripoffline() */
+    int   delaytenths;             /* 1/10ths second to wait block
+                                      getch() for */
+    bool  _preserve;               /* TRUE if screen background
+                                      to be preserved */
+    int   _restore;                /* specifies if screen background
+                                      to be restored, and how */
+    unsigned long key_modifiers;   /* key modifiers (SHIFT, CONTROL, etc.)
+                                      on last key press */
+    bool  return_key_modifiers;    /* TRUE if modifier keys are
+                                      returned as "real" keys */
+    bool  in_endwin;               /* if we're in endwin(),  we should use
+                                      only signal-safe code */
+    MOUSE_STATUS mouse_status;     /* last returned mouse status */
+    short line_color;     /* color of line attributes - default -1 */
+    attr_t termattrs;     /* attribute capabilities */
+    WINDOW *lastscr;      /* the last screen image */
+    FILE *dbfp;           /* debug trace file pointer */
+    bool  color_started;  /* TRUE after start_color() */
+    bool  dirty;          /* redraw on napms() after init_color() */
+    int   sel_start;      /* start of selection (y * COLS + x) */
+    int   sel_end;        /* end of selection */
+    int  *c_buffer;       /* character buffer */
+    int   c_pindex;       /* putter index */
+    int   c_gindex;       /* getter index */
+    int  *c_ungch;        /* array of ungotten chars */
+    int   c_ungind;       /* ungetch() push index */
+    int   c_ungmax;       /* allocated size of ungetch() buffer */
+    struct _opaque_screen_t *opaque;    /* internal library variables */
+};
+
+PDCEX  SCREEN       *SP;          /* curses variables */
+
 #if PDC_COLOR_BITS < 15
     typedef int16_t hash_idx_t;
 #else
