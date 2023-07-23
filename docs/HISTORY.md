@@ -1,4 +1,4 @@
-PDCursesMod -- 2023 July 10
+PDCursesMod -- 2023 July 2310
 ===========================
 
 Minor new features
@@ -6,6 +6,19 @@ Minor new features
 
 - 'widetest' now tests copying of both precomposed and combining
   characters with getcchar() and setcchar().  19169a1b18
+
+- VT flavor gets the correct initial screen size in Windows.
+  d62083a096
+
+- 'panels' library almost completely rewritten.  The new version is
+  better at figuring out what parts need to be updated,  and is
+  generally easier to understand.  8830b71392.
+
+- PDC_transform_line_sliced() used to break up lines to ensure that
+  PDC_transform_line() will not be fed packets of excessive size,  nor
+  packets that continue after fullwidth or combining characters.
+  This avoids buffer overruns and problems with mishandled characters.
+  cb8c87b287
 
 Bug fixes
 ---------
@@ -25,6 +38,9 @@ Bug fixes
 - waddnwstr() could read characters one element past the array bounds.
   (Theoretically fixed in commit c03e650a70,  but I'd messed it up.)
   5735a1cb31
+
+- touchoverlap() un-touched some parts of the window that didn't
+  overlap.  5c0bc334f8
 
 PDCursesMod 4.3.7 - 2023 June 17
 ================================

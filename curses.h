@@ -42,7 +42,7 @@ Defined by this header:
 #define PDC_VER_CHANGE   7
 #define PDC_VER_YEAR   2023
 #define PDC_VER_MONTH    07
-#define PDC_VER_DAY      10
+#define PDC_VER_DAY      23
 
 #define PDC_STRINGIZE( x) #x
 #define PDC_stringize( x) PDC_STRINGIZE( x)
