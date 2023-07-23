@@ -353,42 +353,7 @@ typedef struct
  *
  */
 
-/* Avoid using the WINDOW or SCREEN structs directly -- doing so
-   makes your code PDCurses*-only and may result in future binary
-   incompatibility;  use the corresponding functions if possible.
-   These structs may eventually be made private. */
-
-typedef struct _win       /* definition of a window */
-{
-    int   _cury;          /* current pseudo-cursor */
-    int   _curx;
-    int   _maxy;          /* max window coordinates */
-    int   _maxx;
-    int   _begy;          /* origin on screen */
-    int   _begx;
-    int   _flags;         /* window properties */
-    chtype _attrs;        /* standard attributes and colors */
-    chtype _bkgd;         /* background, normally blank */
-    bool  _clear;         /* causes clear at next refresh */
-    bool  _leaveit;       /* leaves cursor where it is */
-    bool  _scroll;        /* allows window scrolling */
-    bool  _nodelay;       /* input character wait flag */
-    bool  _immed;         /* immediate update flag */
-    bool  _sync;          /* synchronise window ancestors */
-    bool  _use_keypad;    /* flags keypad key mode active */
-    chtype **_y;          /* pointer to line pointer array */
-    int   *_firstch;      /* first changed character in line */
-    int   *_lastch;       /* last changed character in line */
-    int   _tmarg;         /* top of scrolling region */
-    int   _bmarg;         /* bottom of scrolling region */
-    int   _delayms;       /* milliseconds of delay for getch() */
-    int   _parx, _pary;   /* coords relative to parent (0,0) */
-    struct _win *_parent; /* subwin's pointer to parent win */
-    int   _pminrow, _pmincol;    /* saved position used only for pads */
-    int   _sminrow, _smaxrow;    /* saved position used only for pads */
-    int   _smincol, _smaxcol;    /* saved position used only for pads */
-} WINDOW;
-
+typedef struct _win WINDOW;
 typedef struct _screen SCREEN;
 
 /*----------------------------------------------------------------------
