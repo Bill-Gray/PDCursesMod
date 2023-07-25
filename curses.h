@@ -394,14 +394,14 @@ There are three configurations supported :
 
 Default, 64-bit chtype,  both wide- and 8-bit character builds:
 -------------------------------------------------------------------------------
-|63|62|..|53|52|..|34|33|32|31|30|29|28|..|22|21|20|19|18|17|16|..| 3| 2| 1| 0|
+|63|62|..|45|44|43|..|38|37|36|35|34|33|..|22|21|20|19|18|17|16|..| 3| 2| 1| 0|
 -------------------------------------------------------------------------------
-  unused    |color pair |        modifiers      |         character eg 'a'
+|  color pair  | unused |        modifiers      |         character eg 'a'
 
    21 character bits (0-20),  enough for full Unicode coverage
-   12 attribute bits (21-32)
-   20 color pair bits (33-52),  enough for 1048576 color pairs
-   11 currently unused bits (53-63)
+   17 attribute bits (21-37)
+    6 currently unused bits (38-43)
+   20 color pair bits (44-63),  enough for 1048576 color pairs
 
 32-bit chtypes with wide characters (CHTYPE_32 and PDC_WIDE are #defined):
     +--------------------------------------------------------------------+
@@ -423,9 +423,9 @@ Default, 64-bit chtype,  both wide- and 8-bit character builds:
 
 All attribute modifier schemes include eight "basic" bits:  bold, underline,
 right-line, left-line, italic, reverse and blink attributes,  plus the
-alternate character set indicator. For default and 32-bit narrow builds,
-three more bits are used for overlined, dimmed, and strikeout attributes;
-a fourth bit is reserved.
+alternate character set indicator. For 32-bit narrow builds, three more
+bits are used for overlined, dimmed, and strikeout attributes; a fourth
+bit is reserved.
 
 Default chtypes have enough character bits to support the full range of
 Unicode,  all attributes,  and 2^20 = 1048576 color pairs.  Note,  though,
@@ -443,23 +443,26 @@ capability.
 #ifndef CHTYPE_32
             /* 64-bit chtypes,  both wide- and narrow */
     # define PDC_CHARTEXT_BITS   21
-    # define PDC_ATTRIBUTE_BITS  12
+    # define PDC_ATTRIBUTE_BITS  17
+    # define PDC_UNUSED_BITS      6
     # define PDC_COLOR_BITS      20
 # else
 #ifdef PDC_WIDE
             /* 32-bit chtypes,  wide character */
     # define PDC_CHARTEXT_BITS      16
     # define PDC_ATTRIBUTE_BITS      8
+    # define PDC_UNUSED_BITS         0
     # define PDC_COLOR_BITS          8
 #else
             /* 32-bit chtypes,  narrow (8-bit) characters */
     # define PDC_CHARTEXT_BITS      8
     # define PDC_ATTRIBUTE_BITS    12
+    # define PDC_UNUSED_BITS        0
     # define PDC_COLOR_BITS        12
 #endif
 #endif
 
-# define PDC_COLOR_SHIFT (PDC_CHARTEXT_BITS + PDC_ATTRIBUTE_BITS)
+# define PDC_COLOR_SHIFT (PDC_CHARTEXT_BITS + PDC_ATTRIBUTE_BITS + PDC_UNUSED_BITS)
 # define A_COLOR       ((((chtype)1 << PDC_COLOR_BITS) - 1) << PDC_COLOR_SHIFT)
 # define A_ATTRIBUTES (((((chtype)1 << PDC_ATTRIBUTE_BITS) - 1) << PDC_CHARTEXT_BITS) | A_COLOR)
 # define A_CHARTEXT     (((chtype)1 << PDC_CHARTEXT_BITS) - 1)
@@ -468,40 +471,47 @@ capability.
 # define A_ALTCHARSET   PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS)
 # define A_RIGHT        PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 1)
 # define A_LEFT         PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 2)
-# define A_INVIS        PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 3)
+# define A_ITALIC       PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 3)
 # define A_UNDERLINE    PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 4)
 # define A_REVERSE      PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 5)
 # define A_BLINK        PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 6)
 # define A_BOLD         PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 7)
 #if PDC_COLOR_BITS >= 11
-    # define A_OVERLINE   PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 8)
+    # define A_TOP        PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 8)
     # define A_STRIKEOUT  PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 9)
     # define A_DIM        PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 10)
 /*  Reserved bit :        PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 11) */
 #else
     # define A_DIM        A_NORMAL
-    # define A_OVERLINE   A_NORMAL
+    # define A_TOP        A_NORMAL
     # define A_STRIKEOUT  A_NORMAL
 #endif
-
-#define A_ITALIC      A_INVIS
-#define A_PROTECT    (A_UNDERLINE | A_LEFT | A_RIGHT | A_OVERLINE)
-#define A_STANDOUT    (A_REVERSE | A_BOLD) /* X/Open */
-
-#define A_HORIZONTAL  A_NORMAL
-#define A_LOW         A_NORMAL
-#define A_TOP         A_NORMAL
-#define A_VERTICAL    A_NORMAL
+#if PDC_COLOR_BITS >= 17
+    # define A_HORIZONTAL PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 11)
+    # define A_VERTICAL   PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 12)
+    # define A_INVIS      PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 13)
+    # define A_LOW        PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 14)
+    # define A_PROTECT    PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 15)
+    # define A_STANDOUT   PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 16)
+#else
+    # define A_HORIZONTAL 0
+    # define A_VERTICAL   0
+    # define A_INVIS      0
+    # define A_LOW        A_UNDERSCORE
+    # define A_PROTECT    (A_UNDERLINE | A_LEFT | A_RIGHT | A_OVERLINE)
+    # define A_STANDOUT   (A_REVERSE | A_BOLD) /* X/Open */
+#endif
 
 #define CHR_MSK       A_CHARTEXT           /* Obsolete */
 #define ATR_MSK       A_ATTRIBUTES         /* Obsolete */
 #define ATR_NRM       A_NORMAL             /* Obsolete */
 
-#define A_LEFTLINE    A_LEFT
-#define A_RIGHTLINE   A_RIGHT
+#define A_LEFTLINE    A_LEFT           /* Obsolete,  not portable */
+#define A_RIGHTLINE   A_RIGHT          /* Obsolete,  not portable */
+#define A_OVERLINE    A_TOP            /* Obsolete,  not portable */
 
-/* For use with attr_t -- X/Open says, "these shall be distinct", so
-   this is a non-conforming implementation. */
+/* For use with attr_t -- X/Open says, "these shall be distinct", so this
+   is a conforming implementation only with (default) 64-bit attr_ts. */
 
 #define WA_NORMAL     A_NORMAL
 
@@ -510,7 +520,6 @@ capability.
 #define WA_BOLD       A_BOLD
 #define WA_DIM        A_DIM
 #define WA_INVIS      A_INVIS
-#define WA_ITALIC     A_ITALIC
 #define WA_LEFT       A_LEFT
 #define WA_PROTECT    A_PROTECT
 #define WA_REVERSE    A_REVERSE
@@ -524,6 +533,12 @@ capability.
 #define WA_VERTICAL   A_VERTICAL
 
 #define WA_ATTRIBUTES A_ATTRIBUTES
+
+/* A_ITALIC and WA_ITALIC are PDCurses and ncurses extensions.
+   A_STRIKEOUT and WA_STRIKEOUT are PDCursesMod extensions.   */
+
+#define WA_ITALIC     A_ITALIC
+#define WA_STRIKEOUT  A_STRIKEOUT
 
 /*** Alternate character set macros ***/
 
@@ -1299,22 +1314,22 @@ PDCEX  int     echo(void);
 #ifdef PDC_WIDE
    #ifdef PDC_FORCE_UTF8
       #ifdef CHTYPE_32
-         #define endwin endwin_u32_4302
+         #define endwin endwin_u32_4400
       #else
-         #define endwin endwin_u64_4302
+         #define endwin endwin_u64_4400
       #endif
    #else
       #ifdef CHTYPE_32
-         #define endwin endwin_w32_4302
+         #define endwin endwin_w32_4400
       #else
-         #define endwin endwin_w64_4302
+         #define endwin endwin_w64_4400
       #endif
    #endif
 #else       /* 8-bit chtypes */
    #ifdef CHTYPE_32
-      #define endwin endwin_x32_4302
+      #define endwin endwin_x32_4400
    #else
-      #define endwin endwin_x64_4302
+      #define endwin endwin_x64_4400
    #endif
 #endif
 
