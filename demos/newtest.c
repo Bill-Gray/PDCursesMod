@@ -3,7 +3,7 @@
  *    mostly those in Win32a,  including some of the
  *    new attributes for 64-bit chtype.  I wanted to be
  *    sure the PDC_set_blink and PDC_set_line_color
- *    functions worked,  and that A_OVERLINE and A_STRIKEOUT
+ *    functions worked,  and that WA_TOP and WA_STRIKEOUT
  *    displayed properly.  Also tests "extended" SLK functions.
  *
  */
@@ -28,10 +28,6 @@
 #include <locale.h>
 
 int PDC_write_screen_to_file( const char *filename, WINDOW *win);
-
-#ifndef A_OVERLINE
-   #define A_OVERLINE   0
-#endif
 
 static const char *labels[] = {
                "Quit", "No labels", "431", "2134", "55", "323", "666",
@@ -67,27 +63,19 @@ void text_in_a_box( const char *istr)
 {
    const int len = (int)strlen( istr);
 
-#if defined( A_OVERLINE) && defined( A_UNDERLINE) && defined( A_LEFTLINE) && defined( A_RIGHTLINE)
-   attron( A_OVERLINE | A_UNDERLINE | A_LEFTLINE);
+   attr_on( WA_TOP | WA_UNDERLINE | WA_LEFT, NULL);
    if( len == 1)
-      attron( A_RIGHTLINE);
-#endif
+      attr_on( WA_RIGHT, NULL);
    addnstr( istr, 1);
+   attr_off( WA_LEFT, NULL);
    if( len > 1)
       {
-#ifdef A_LEFTLINE
-      attroff( A_LEFTLINE);
-#endif
       if( len > 2)
          addnstr( istr + 1, len - 2);
-#ifdef A_RIGHTLINE
-      attron( A_RIGHTLINE);
-#endif
+      attr_on( WA_RIGHT, NULL);
       addnstr( istr + len - 1, 1);
       }
-#if defined( A_OVERLINE) && defined( A_UNDERLINE) && defined( A_LEFTLINE) && defined( A_RIGHTLINE)
-   attroff( A_OVERLINE | A_UNDERLINE | A_LEFTLINE | A_RIGHTLINE);
-#endif
+   attr_off( WA_TOP | WA_UNDERLINE | WA_RIGHT, NULL);
 }
 
 #define COL1 2
@@ -298,27 +286,23 @@ int main( int argc, char **argv)
         {
             mvaddstr( 1, COL1, "'Normal' white-on-black");
             mvaddstr( 2, COL1, longname( ));
-#ifdef A_DIM
             attron( A_DIM);
             mvaddstr( 15, 41, "Dimmed text");
             attroff( A_DIM);
-#endif
-#ifdef A_STANDOUT
             attron( A_STANDOUT);
             mvaddstr( 16, 41, "Standout text");
             attroff( A_STANDOUT);
-#endif
 #ifdef HAVE_WIDE
             mvaddwstr( 3, COL1, L"'N\xf3rm\xe4\x142' text,  bu\x163 w\xee\x1e0b\xea");
 #endif
             attron( A_BLINK);
-            sprintf( buff, "Blink %s", on_off_text( termattrs( ) & A_BLINK));
+            sprintf( buff, "Blink %s", on_off_text( term_attrs( ) & WA_BLINK));
 
             mvaddstr( 6, 40, buff);
             attron( A_BOLD);
             mvaddstr( 8, 40, "BlinkBold");
             attrset( A_BOLD);
-            sprintf( buff, "Bold %s", on_off_text( termattrs( ) & A_BOLD));
+            sprintf( buff, "Bold %s", on_off_text( term_attrs( ) & WA_BOLD));
             mvaddstr( 7, 40, buff);
             attron( A_BLINK);
 #ifdef A_ITALIC
@@ -331,23 +315,22 @@ int main( int argc, char **argv)
             mvaddstr( 1, COL2, "Underlined");
             addwstr( L"WideUnder");
 #endif
-            attrset( COLOR_PAIR( 1));
 #ifdef A_ITALIC
-            attron( A_UNDERLINE | A_ITALIC);
+            attrset( COLOR_PAIR( 1) | A_UNDERLINE | A_ITALIC);
             mvaddstr( 2, COL2, "UnderlinedItalic");
 #endif
-            attrset( COLOR_PAIR( 2));
-            attron( A_BLINK);
+            attrset( COLOR_PAIR( 2) | A_BLINK);
             mvaddstr( 4, COL1, "Black-on-yellow blinking");
 
             attrset( COLOR_PAIR( 1));
             move( 4, COL2);
             text_in_a_box( "Text in a box");
 
-#if !defined( CHTYPE_32) && defined( A_STRIKEOUT)
+#if !defined( CHTYPE_32) && defined( WA_STRIKEOUT)
             attrset( COLOR_PAIR( 6));
-            attron( A_STRIKEOUT);
+            attr_on( WA_STRIKEOUT, NULL);
             mvaddstr( 10, 40, "Strikeout");
+            attr_off( WA_STRIKEOUT, NULL);
             attrset( COLOR_PAIR( 1));
 #endif
 
@@ -584,11 +567,11 @@ int main( int argc, char **argv)
 #endif
 #ifdef PDCURSES
                   case 6:
-                     PDC_set_blink( termattrs( ) & A_BLINK ? FALSE : TRUE);
+                     PDC_set_blink( term_attrs( ) & WA_BLINK ? FALSE : TRUE);
                      redraw = 1;
                      break;
                   case 7:
-                     PDC_set_bold( termattrs( ) & A_BOLD ? FALSE : TRUE);
+                     PDC_set_bold( term_attrs( ) & WA_BOLD ? FALSE : TRUE);
                      redraw = 1;
                      break;
 #endif

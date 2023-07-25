@@ -117,7 +117,9 @@ int main(int argc, char *argv[])
     int key, old_option = -1, new_option = 0, i;
     bool quit = FALSE;
 
+#ifdef _WIN32
     setlocale(LC_ALL, ".utf8");
+#endif
 
 #ifdef __PDCURSESMOD__
 #ifdef PDC_VER_MAJOR   /* so far only seen in 4.0+ */
@@ -1337,66 +1339,50 @@ void attrTest(WINDOW *win)
 #ifdef A_ITALIC
     attrset(A_ITALIC);
     mvaddstr(tmarg + 3, col1, "A_ITALIC");
-    attrset(A_NORMAL);
 #endif
 
     attrset(A_BOLD);
     mvaddstr(tmarg + 5, col1, "A_BOLD");
-    attrset(A_NORMAL);
 
     attrset(A_BLINK);
     mvaddstr(tmarg + 7, col1, "A_BLINK");
-    attrset(A_NORMAL);
 
     attrset(A_REVERSE);
     mvaddstr(tmarg + 9, col1, "A_REVERSE");
-    attrset(A_NORMAL);
 
     attrset(A_STANDOUT);
     mvaddstr(tmarg + 11, col1, "A_STANDOUT");
-    attrset(A_NORMAL);
 
     attrset(A_UNDERLINE);
     mvaddstr(tmarg + 13, col1, "A_UNDERLINE");
-    attrset(A_NORMAL);
 
 #if PDC_COLOR_BITS >= 11
     attrset(A_STRIKEOUT);
     mvaddstr(tmarg + 15, col1, "A_STRIKEOUT");
-    attrset(A_NORMAL);
+#endif
 
-    attrset(A_OVERLINE);
-    mvaddstr(tmarg + 15, col2, "A_OVERLINE");
-    attrset(A_NORMAL);
+    attr_set( WA_TOP, 0, NULL);
+    mvaddstr(tmarg + 15, col2, "A_TOP");
 
-    attrset(A_DIM);
+    attr_set( WA_DIM, 0, NULL);
     mvaddstr(tmarg + 17, col2, "A_DIM");
-    attrset(A_NORMAL);
-#endif
 
-    attrset(A_ITALIC|A_UNDERLINE);
+#ifdef WA_ITALIC
+    attr_set( WA_ITALIC | WA_UNDERLINE, 0, NULL);
     mvaddstr(tmarg + 3, col2, "Underlined Italic");
-    attrset(A_NORMAL);
+#endif
 
-    attrset(A_BOLD|A_UNDERLINE);
+    attrset( A_BOLD | A_UNDERLINE);
     mvaddstr(tmarg + 5, col2, "Underlined Bold");
-    attrset(A_NORMAL);
 
-    attrset(A_BLINK|A_UNDERLINE);
+    attrset( A_BLINK | A_UNDERLINE);
     mvaddstr(tmarg + 7, col2, "Underlined Blink");
-    attrset(A_NORMAL);
 
-#ifdef A_LEFT
-    attrset(A_LEFT);
+    attr_set( WA_LEFT, 0, NULL);
     mvaddstr(tmarg + 9, col2, "A_LEFT");
-    attrset(A_NORMAL);
-#endif
 
-#ifdef A_RIGHT
-    attrset(A_RIGHT);
+    attr_set( WA_RIGHT, 0, NULL);
     mvaddstr(tmarg + 11, col2, "A_RIGHT");
-    attrset(A_NORMAL);
-#endif
 
     attrset(A_BLINK|A_REVERSE);
     mvaddstr(tmarg + 13, col2, "Reverse Blink");
