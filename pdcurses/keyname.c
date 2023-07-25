@@ -114,12 +114,13 @@ char *keyname(int key)
               "LAUNCH_APP1", "LAUNCH_APP2", "LAUNCH_APP3", "LAUNCH_APP4",
               "LAUNCH_APP5", "LAUNCH_APP6", "LAUNCH_APP7", "LAUNCH_APP8",
               "LAUNCH_APP9", "LAUNCH_APP10" };
+    const size_t n_keys = sizeof( key_names) / sizeof( key_names[0]);
 
     PDC_LOG(("keyname() - called: key %d\n", key));
 
     if( key >= 0 && key < 0x80)
         strcpy( _keyname, unctrl( (chtype)key));
-    else if( has_key(key))
+    else if( has_key(key) && (size_t)( key - KEY_MIN) < n_keys)
     {
         assert( strlen( key_names[key - KEY_MIN]) < sizeof( _keyname));
         strcpy( _keyname, key_names[key - KEY_MIN]);

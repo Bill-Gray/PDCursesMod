@@ -1253,9 +1253,10 @@ characters are PDCursesMod extensions and totally non-portable. */
 #define KEY_LAUNCH_APP8       (KEY_OFFSET + 0x140)
 #define KEY_LAUNCH_APP9       (KEY_OFFSET + 0x141)
 #define KEY_LAUNCH_APP10      (KEY_OFFSET + 0x142)
+   /* 0x200 - 0x142 = 0xbe = 190(decimal) keys are currently reserved */
 
 #define KEY_MIN       KEY_BREAK         /* Minimum curses key value */
-#define KEY_MAX       KEY_LAUNCH_APP10  /* Maximum curses key */
+#define KEY_MAX       (KEY_OFFSET + 0x200)  /* Maximum curses key */
 
 #define KEY_F(n)      (KEY_F0 + (n))
 
