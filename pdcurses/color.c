@@ -102,9 +102,9 @@ color
    foreground is white.
 
    PDC_set_line_color() is used to set the color, globally, for the
-   color of the lines drawn for the attributes: A_UNDERLINE, A_LEFT and
-   A_RIGHT. A value of -1 (the default) indicates that the current
-   foreground color should be used.
+   color of the lines drawn for the attributes: A_UNDERLINE, A_LEFT,
+   A_RIGHT, A_STRIKEOUT, and A_TOP. A value of -1 (the default) indicates
+   that the current foreground color should be used.
 
    NOTE: COLOR_PAIR() and PAIR_NUMBER() are implemented as macros.
 
@@ -316,7 +316,7 @@ PDC_set_line_color() is called (and changes the way in which text
 with those attributes is drawn),  the corresponding text should be
 redrawn.    */
 
-void PDC_set_cells_to_refresh_for_attr_change( const chtype attr)
+void PDC_set_cells_to_refresh_for_attr_change( const attr_t attr)
 {
     int x, y;
 
@@ -325,15 +325,15 @@ void PDC_set_cells_to_refresh_for_attr_change( const chtype attr)
     if( !curscr->_clear)
         for( y = 0; y < SP->lines; y++)
         {
-            chtype *line = curscr->_y[y];
+            const chtype *line = curscr->_y[y];
 
             assert( line);
             for( x = 0; x < SP->cols; x++)
-                if( !(*line & attr))
+                if( line[x] & attr)
                 {
                     const int start_x = x++;
 
-                    while( x < SP->cols && !(*line & attr))
+                    while( x < SP->cols && (line[x] & attr))
                         x++;
                     PDC_transform_line_sliced( y, start_x, x - start_x, line + start_x);
                 }
@@ -534,9 +534,11 @@ int PDC_set_line_color(short color)
         return ERR;
 
     if( SP->line_color != color)
+    {
+        SP->line_color = color;
         PDC_set_cells_to_refresh_for_attr_change(
-               A_OVERLINE | A_UNDERLINE | A_LEFTLINE | A_RIGHTLINE | A_STRIKEOUT);
-    SP->line_color = color;
+               WA_TOP | WA_UNDERLINE | WA_LEFT | WA_RIGHT | WA_STRIKEOUT);
+    }
     return OK;
 }
 
