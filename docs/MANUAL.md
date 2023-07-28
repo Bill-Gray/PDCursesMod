@@ -38,14 +38,14 @@ There are three configurations supported :
 
 Default, 64-bit chtype,  both wide- and 8-bit character builds:
 -------------------------------------------------------------------------------
-|63|62|..|53|52|..|34|33|32|31|30|29|28|..|22|21|20|19|18|17|16|..| 3| 2| 1| 0|
+|63|62|..|45|44|43|..|38|37|36|35|34|33|..|22|21|20|19|18|17|16|..| 3| 2| 1| 0|
 -------------------------------------------------------------------------------
-  unused    |color pair |        modifiers      |         character eg 'a'
+|  color pair  | unused |        modifiers      |         character eg 'a'
 
    21 character bits (0-20),  enough for full Unicode coverage
-   12 attribute bits (21-32)
-   20 color pair bits (33-52),  enough for 1048576 color pairs
-   11 currently unused bits (53-63)
+   17 attribute bits (21-37)
+    6 currently unused bits (38-43)
+   20 color pair bits (44-63),  enough for 1048576 color pairs
 
 32-bit chtypes with wide characters (CHTYPE_32 and PDC_WIDE are #defined):
     +--------------------------------------------------------------------+
@@ -67,9 +67,9 @@ Default, 64-bit chtype,  both wide- and 8-bit character builds:
 
 All attribute modifier schemes include eight "basic" bits:  bold, underline,
 right-line, left-line, italic, reverse and blink attributes,  plus the
-alternate character set indicator. For default and 32-bit narrow builds,
-three more bits are used for overlined, dimmed, and strikeout attributes;
-a fourth bit is reserved.
+alternate character set indicator. For 32-bit narrow builds, three more
+bits are used for overlined, dimmed, and strikeout attributes; a fourth
+bit is reserved.
 
 Default chtypes have enough character bits to support the full range of
 Unicode,  all attributes,  and 2^20 = 1048576 color pairs.  Note,  though,
@@ -798,9 +798,9 @@ color
    foreground is white.
 
    PDC_set_line_color() is used to set the color, globally, for the
-   color of the lines drawn for the attributes: A_UNDERLINE, A_LEFT and
-   A_RIGHT. A value of -1 (the default) indicates that the current
-   foreground color should be used.
+   color of the lines drawn for the attributes: A_UNDERLINE, A_LEFT,
+   A_RIGHT, A_STRIKEOUT, and A_TOP. A value of -1 (the default) indicates
+   that the current foreground color should be used.
 
    NOTE: COLOR_PAIR() and PAIR_NUMBER() are implemented as macros.
 
@@ -2310,7 +2310,7 @@ panel
    bottom_panel() places pan at the bottom of the deck. The size,
    location and contents of the panel are unchanged.
 
-   del_panel() deletes pan, but not its associated winwow.
+   del_panel() deletes pan, but not its associated window.
 
    hide_panel() removes a panel from the deck and thus hides it from
    view.
@@ -2742,8 +2742,8 @@ termattr
    baudrate() is supposed to return the output speed of the terminal. In
    PDCurses, it simply returns INT_MAX.
 
-   has_ic and has_il() return TRUE. These functions have meaning in some
-   other implementations of curses.
+   has_ic and has_il() return TRUE,  indicating that the terminal has the
+   capability to insert and delete characters and lines,  respectively.
 
    erasechar() and killchar() return ^H and ^U, respectively -- the
    ERASE and KILL characters. In other curses implementations, these may

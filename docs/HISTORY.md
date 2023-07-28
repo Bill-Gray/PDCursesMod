@@ -1,5 +1,24 @@
-PDCursesMod -- 2023 July 2310
+PDCursesMod -- 2023 July 27
 ===========================
+
+   This is the (thus far experimental) 4.4 branch.
+
+Major new features
+------------------
+
+- The SCREEN and WINDOW structures are now opaque.  11671880e2
+  3259719b37
+
+- The WA_ flags are now distinct,  in builds with 64-bit chtypes and
+  attr_ts (the default).  This led to considerable documentation
+  changes and an attempt to make the distinction between WA_ macros
+  (for use with wattr_t) and A_ macros (for use with chtype) clearer.
+  Most implementations of curses have wattr_t == chtype,  including
+  PDCurses* and ncurses,  but you can't really rely on it.
+  78658c94cd
+
+- KEY_MAX was increased to reserve some key codes for future use.
+  16ac494c25
 
 Minor new features
 ------------------
@@ -19,6 +38,9 @@ Minor new features
   packets that continue after fullwidth or combining characters.
   This avoids buffer overruns and problems with mishandled characters.
   cb8c87b287
+
+- 'testcurs' attribute test now lists which flags in term_attrs() are
+  set.  4da423c59e
 
 Bug fixes
 ---------
@@ -41,6 +63,9 @@ Bug fixes
 
 - touchoverlap() un-touched some parts of the window that didn't
   overlap.  5c0bc334f8
+
+- Line attributes were not reliably updated after PDC_set_line_color().
+  3b54290f13
 
 PDCursesMod 4.3.7 - 2023 June 17
 ================================
