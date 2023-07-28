@@ -336,7 +336,8 @@ int PDC_scr_open(void)
     SP->mono = FALSE;
     SP->orig_attr = TRUE;
     SP->orig_fore = SP->orig_back = -1;
-    SP->termattrs = A_UNDERLINE | A_DIM | A_STANDOUT | A_STRIKEOUT | A_BLINK;
+    SP->termattrs = A_COLOR | WA_ITALIC | WA_UNDERLINE | WA_LEFT | WA_RIGHT |
+                    WA_REVERSE | WA_STRIKEOUT | WA_TOP | WA_BLINK | WA_DIM | WA_BOLD;
 
     SP->lines = PDC_get_rows();
     SP->cols = PDC_get_columns();

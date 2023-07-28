@@ -529,10 +529,10 @@ static void PDC_transform_line_given_hdc( const HDC hdc, const int lineno,
         ExtTextOutW( hdc, clip_rect.left, clip_rect.top,
                            ETO_CLIPPED | ETO_OPAQUE, &clip_rect,
                            buff, olen, NULL);
-#ifdef A_OVERLINE
-        if( *srcp & (A_UNDERLINE | A_RIGHTLINE | A_LEFTLINE | A_OVERLINE | A_STRIKEOUT))
+#ifdef WA_TOP
+        if( *srcp & (WA_UNDERLINE | WA_RIGHT | WA_LEFT | WA_TOP | WA_STRIKEOUT))
 #else
-        if( *srcp & (A_UNDERLINE | A_RIGHTLINE | A_LEFTLINE))
+        if( *srcp & (WA_UNDERLINE | WA_RIGHT | WA_LEFT))
 #endif
         {
             const int y1 = clip_rect.top;
@@ -545,30 +545,30 @@ static void PDC_transform_line_given_hdc( const HDC hdc, const int lineno,
             const HPEN pen = CreatePen( PS_SOLID, 1, (COLORREF)rgb);
             const HPEN old_pen = SelectObject( hdc, pen);
 
-            if( *srcp & A_UNDERLINE)
+            if( *srcp & WA_UNDERLINE)
             {
                 MoveToEx( hdc, x1, y2, NULL);
                 LineTo(   hdc, x2, y2);
             }
-#ifdef A_OVERLINE
-            if( *srcp & A_OVERLINE)
+#ifdef WA_TOP
+            if( *srcp & WA_TOP)
             {
                 MoveToEx( hdc, x1, y1, NULL);
                 LineTo(   hdc, x2, y1);
             }
-            if( *srcp & A_STRIKEOUT)
+            if( *srcp & WA_STRIKEOUT)
             {
                 MoveToEx( hdc, x1, (y1 + y2) / 2, NULL);
                 LineTo(   hdc, x2, (y1 + y2) / 2);
             }
 #endif
-            if( *srcp & A_RIGHTLINE)
+            if( *srcp & WA_RIGHT)
                 for( j = 0; j < i; j++)
                 {
                     MoveToEx( hdc, x2 - j * PDC_cxChar - 1, y1, NULL);
                     LineTo(   hdc, x2 - j * PDC_cxChar - 1, y2);
                 }
-            if( *srcp & A_LEFTLINE)
+            if( *srcp & WA_LEFT)
                 for( j = 0; j < i; j++)
                 {
                     MoveToEx( hdc, x1 + j * PDC_cxChar, y1, NULL);

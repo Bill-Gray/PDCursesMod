@@ -302,7 +302,7 @@ static int _new_packet(const chtype attr, const int len, const int col, const in
 
         /* Underline, etc. */
 
-        if (attr & (A_LEFT | A_RIGHT | A_UNDERLINE | A_OVERLINE | A_STRIKEOUT))
+        if (attr & (WA_LEFT | WA_RIGHT | WA_UNDERLINE | WA_TOP | WA_STRIKEOUT))
         {
             int k;
             const int xend = xpos + pdc_fwidth * len;
@@ -310,20 +310,20 @@ static int _new_packet(const chtype attr, const int len, const int col, const in
             if (SP->line_color != -1)
                 XSetForeground(XCURSESDISPLAY, gc, PDC_get_pixel( SP->line_color));
 
-            if (attr & A_UNDERLINE)
+            if (attr & WA_UNDERLINE)
                 XDrawLine(XCURSESDISPLAY, XCURSESWIN, gc,
                           xpos, ypos + 1, xend, ypos + 1);
 
-            if (attr & A_OVERLINE)
+            if (attr & WA_TOP)
                 XDrawLine(XCURSESDISPLAY, XCURSESWIN, gc,
                           xpos, ypos - pdc_fascent, xend,  ypos - pdc_fascent);
 
-            if (attr & A_STRIKEOUT)
+            if (attr & WA_STRIKEOUT)
                 XDrawLine(XCURSESDISPLAY, XCURSESWIN, gc,
                           xpos, ypos - pdc_fascent / 2, xend,
                                 ypos - pdc_fascent / 2);
 
-            if (attr & A_LEFT)
+            if (attr & WA_LEFT)
                 for (k = 0; k < len; k++)
                 {
                     int x = xpos + pdc_fwidth * k;
@@ -331,7 +331,7 @@ static int _new_packet(const chtype attr, const int len, const int col, const in
                               x, ypos - pdc_fascent, x, ypos + pdc_fdescent);
                 }
 
-            if (attr & A_RIGHT)
+            if (attr & WA_RIGHT)
                 for (k = 0; k < len; k++)
                 {
                     int x = xpos + pdc_fwidth * (k + 1) - 1;

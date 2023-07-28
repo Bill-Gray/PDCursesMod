@@ -438,7 +438,7 @@ capability.
 
 /*** Video attribute macros ***/
 
-#define A_NORMAL      (chtype)0
+#define WA_NORMAL      (chtype)0
 
 #ifndef CHTYPE_32
             /* 64-bit chtypes,  both wide- and narrow */
@@ -468,77 +468,71 @@ capability.
 # define A_CHARTEXT     (((chtype)1 << PDC_CHARTEXT_BITS) - 1)
 
 #define PDC_ATTRIBUTE_BIT( N)  ((chtype)1 << (N))
-# define A_ALTCHARSET   PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS)
-# define A_RIGHT        PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 1)
-# define A_LEFT         PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 2)
-# define A_ITALIC       PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 3)
-# define A_UNDERLINE    PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 4)
-# define A_REVERSE      PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 5)
-# define A_BLINK        PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 6)
-# define A_BOLD         PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 7)
+# define WA_ALTCHARSET   PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS)
+# define WA_RIGHT        PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 1)
+# define WA_LEFT         PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 2)
+# define WA_ITALIC       PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 3)
+# define WA_UNDERLINE    PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 4)
+# define WA_REVERSE      PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 5)
+# define WA_BLINK        PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 6)
+# define WA_BOLD         PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 7)
 #if PDC_COLOR_BITS >= 11
-    # define A_TOP        PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 8)
-    # define A_STRIKEOUT  PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 9)
-    # define A_DIM        PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 10)
-/*  Reserved bit :        PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 11) */
+    # define WA_TOP        PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 8)
+    # define WA_STRIKEOUT  PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 9)
+    # define WA_DIM        PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 10)
+/*  Reserved bit :         PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 11) */
 #else
-    # define A_DIM        A_NORMAL
-    # define A_TOP        A_NORMAL
-    # define A_STRIKEOUT  A_NORMAL
+    # define WA_DIM        WA_NORMAL
+    # define WA_TOP        WA_NORMAL
+    # define WA_STRIKEOUT  WA_NORMAL
 #endif
 #if PDC_COLOR_BITS >= 17
-    # define A_HORIZONTAL PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 11)
-    # define A_VERTICAL   PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 12)
-    # define A_INVIS      PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 13)
-    # define A_LOW        PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 14)
-    # define A_PROTECT    PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 15)
-    # define A_STANDOUT   PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 16)
+    # define WA_HORIZONTAL PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 11)
+    # define WA_VERTICAL   PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 12)
+    # define WA_INVIS      PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 13)
+    # define WA_LOW        PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 14)
+    # define WA_PROTECT    PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 15)
+    # define WA_STANDOUT   PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 16)
 #else
-    # define A_HORIZONTAL 0
-    # define A_VERTICAL   0
-    # define A_INVIS      0
-    # define A_LOW        A_UNDERSCORE
-    # define A_PROTECT    (A_UNDERLINE | A_LEFT | A_RIGHT | A_OVERLINE)
-    # define A_STANDOUT   (A_REVERSE | A_BOLD) /* X/Open */
+    # define WA_HORIZONTAL 0
+    # define WA_VERTICAL   0
+    # define WA_INVIS      0
+    # define WA_LOW        WA_UNDERSCORE
+    # define WA_PROTECT    (WA_UNDERLINE | WA_LEFT | WA_RIGHT | WA_TOP)
+    # define WA_STANDOUT   (WA_REVERSE | WA_BOLD) /* X/Open */
 #endif
 
 #define CHR_MSK       A_CHARTEXT           /* Obsolete */
 #define ATR_MSK       A_ATTRIBUTES         /* Obsolete */
 #define ATR_NRM       A_NORMAL             /* Obsolete */
 
-#define A_LEFTLINE    A_LEFT           /* Obsolete,  not portable */
-#define A_RIGHTLINE   A_RIGHT          /* Obsolete,  not portable */
-#define A_OVERLINE    A_TOP            /* Obsolete,  not portable */
+/* X/Open A_ defines. */
 
-/* For use with attr_t -- X/Open says, "these shall be distinct", so this
-   is a conforming implementation only with (default) 64-bit attr_ts. */
+#define A_ALTCHARSET WA_ALTCHARSET
+#define A_BLINK      WA_BLINK
+#define A_BOLD       WA_BOLD
+#define A_DIM        WA_DIM
+#define A_INVIS      WA_INVIS
+#define A_REVERSE    WA_REVERSE
+#define A_PROTECT    WA_PROTECT
+#define A_STANDOUT   WA_STANDOUT
+#define A_UNDERLINE  WA_UNDERLINE
 
-#define WA_NORMAL     A_NORMAL
+/* ncurses and PDCurses extension A_ defines. */
 
-#define WA_ALTCHARSET A_ALTCHARSET
-#define WA_BLINK      A_BLINK
-#define WA_BOLD       A_BOLD
-#define WA_DIM        A_DIM
-#define WA_INVIS      A_INVIS
-#define WA_LEFT       A_LEFT
-#define WA_PROTECT    A_PROTECT
-#define WA_REVERSE    A_REVERSE
-#define WA_RIGHT      A_RIGHT
-#define WA_STANDOUT   A_STANDOUT
-#define WA_UNDERLINE  A_UNDERLINE
-
-#define WA_HORIZONTAL A_HORIZONTAL
-#define WA_LOW        A_LOW
-#define WA_TOP        A_TOP
-#define WA_VERTICAL   A_VERTICAL
-
-#define WA_ATTRIBUTES A_ATTRIBUTES
+#define A_NORMAL     WA_NORMAL
+#define A_LEFT       WA_LEFT
+#define A_RIGHT      WA_RIGHT
+#define A_LOW        WA_LOW
+#define A_TOP        WA_TOP
+#define A_HORIZONTAL WA_HORIZONTAL
+#define A_VERTICAL   WA_VERTICAL
 
 /* A_ITALIC and WA_ITALIC are PDCurses and ncurses extensions.
    A_STRIKEOUT and WA_STRIKEOUT are PDCursesMod extensions.   */
 
-#define WA_ITALIC     A_ITALIC
-#define WA_STRIKEOUT  A_STRIKEOUT
+#define A_ITALIC     WA_ITALIC
+#define A_STRIKEOUT  WA_STRIKEOUT
 
 /*** Alternate character set macros ***/
 

@@ -279,15 +279,15 @@ int PDC_scr_open(void)
     PDC_mouse_set();
 
     if (pdc_own_screen)
-        PDC_set_title("PDCurses");
+        PDC_set_title("PDCursesMod");
 
     SP->mouse_wait = PDC_CLICK_PERIOD;
     SP->audible = FALSE;
 
-    SP->termattrs = A_COLOR | A_UNDERLINE | A_LEFT | A_RIGHT | A_REVERSE
-                            | A_OVERLINE | A_STRIKEOUT;
+    SP->termattrs = A_COLOR | WA_UNDERLINE | WA_LEFT | WA_RIGHT |
+                    WA_REVERSE | WA_STRIKEOUT | WA_TOP | WA_BLINK | WA_DIM | WA_BOLD;
 #ifdef PDC_WIDE
-    SP->termattrs |= A_ITALIC;
+    SP->termattrs |= WA_ITALIC;
 #endif
 
     PDC_reset_prog_mode();
