@@ -116,7 +116,6 @@ static int set_win10_for_vt_codes( const bool setting_mode)
 
 bool PDC_resize_occurred = FALSE;
 const int STDIN = 0;
-chtype PDC_capabilities = 0;
 static mmask_t _stored_trap_mbe;
 
 /* COLOR_PAIR to attribute encoding table. */
@@ -268,6 +267,7 @@ int PDC_scr_open(void)
     char *capabilities = getenv( "PDC_VT");
     char *term_env = getenv( "TERM");
     const char *colorterm = getenv( "COLORTERM");
+    chtype PDC_capabilities = 0;
 #ifdef USE_TERMIOS
     struct sigaction sa;
 #endif
