@@ -209,7 +209,7 @@ static void _add_combining_character_glyph( uint8_t *glyph, const int code_point
 }
 #endif
 
-#define LINE_ATTRIBS (WA_UNDERLINE | WA_OVERLINE | WA_LEFT | WA_RIGHT | WA_STRIKEOUT)
+#define LINE_ATTRIBS (WA_UNDERLINE | WA_TOP | WA_LEFT | WA_RIGHT | WA_STRIKEOUT)
 
 /* Usually,  we can just return a pointer to the glyph data from
 the PSF file (using _get_raw_glyph_bytes()).  If the glyph has to
