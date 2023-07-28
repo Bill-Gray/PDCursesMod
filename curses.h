@@ -497,7 +497,7 @@ capability.
     # define WA_HORIZONTAL 0
     # define WA_VERTICAL   0
     # define WA_INVIS      0
-    # define WA_LOW        WA_UNDERSCORE
+    # define WA_LOW        WA_UNDERLINE
     # define WA_PROTECT    (WA_UNDERLINE | WA_LEFT | WA_RIGHT | WA_TOP)
     # define WA_STANDOUT   (WA_REVERSE | WA_BOLD) /* X/Open */
 #endif
