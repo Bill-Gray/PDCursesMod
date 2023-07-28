@@ -1321,8 +1321,30 @@ void acsTest(WINDOW *win)
 
 void attrTest(WINDOW *win)
 {
-    int tmarg = (LINES - 16) / 2;
-    int col1 = (COLS - 36) / 2, col2 = col1 + 20;
+    const int tmarg = (LINES > 20 ? (LINES - 20) / 2 : 0);
+    const int col1 = (COLS - 36) / 2, col2 = col1 + 20;
+    const char *attr_names[] = {
+         "Right", "Left", "Underline", "Reverse", "Bold", "Blink", "Top",
+#ifdef WA_ITALIC
+         "Italic",
+#endif
+#ifdef WA_STRIKEOUT
+         "Strikeout",
+#endif
+         "Dim", "Horizontal", "Vertical", "Invis", "Low", "Protect",
+         "Standout" };
+    const attr_t attr_masks[] = {
+        WA_RIGHT, WA_LEFT, WA_UNDERLINE, WA_REVERSE, WA_BOLD, WA_BLINK, WA_TOP,
+#ifdef WA_ITALIC
+        WA_ITALIC,
+#endif
+#ifdef WA_STRIKEOUT
+         WA_STRIKEOUT,
+#endif
+        WA_DIM, WA_HORIZONTAL, WA_VERTICAL, WA_INVIS, WA_LOW, WA_PROTECT,
+        WA_STANDOUT };
+    const size_t n_attribs = sizeof( attr_names) / sizeof( attr_names[0]);
+    size_t i;
 
     INTENTIONALLY_UNUSED_PARAMETER( win);
     attrset(A_BOLD);
@@ -1387,6 +1409,16 @@ void attrTest(WINDOW *win)
     attrset(A_BLINK|A_REVERSE);
     mvaddstr(tmarg + 13, col2, "Reverse Blink");
     attrset(A_NORMAL);
+
+    mvaddstr(tmarg + 19, 5, "This platform claims to support:");
+    for( i = 0; i < n_attribs; i++)
+        if( term_attrs( ) & attr_masks[i])
+           {
+           if( getcurx( stdscr) + 10 > COLS)
+               move( getcury( stdscr) + 1, 10);
+           addstr( " ");
+           addstr( attr_names[i]);
+           }
 
     mvaddstr(tmarg + 17, 3, "Press any key to continue");
     curTest();
