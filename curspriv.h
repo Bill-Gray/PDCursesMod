@@ -181,6 +181,13 @@ struct _win               /* definition of a window */
     int   _smincol, _smaxcol;    /* saved position used only for pads */
 };
 
+#if PDC_COLOR_BITS < 15
+    typedef int16_t hash_idx_t;
+#else
+    typedef int32_t hash_idx_t;
+#endif
+
+
 struct _screen
 {
     bool  alive;          /* if initscr() called, and not endwin() */
@@ -237,31 +244,20 @@ struct _screen
     int  *c_ungch;        /* array of ungotten chars */
     int   c_ungind;       /* ungetch() push index */
     int   c_ungmax;       /* allocated size of ungetch() buffer */
-    struct _opaque_screen_t *opaque;    /* internal library variables */
+    struct _pdc_pair *pairs;
+    int pairs_allocated;
+    int first_col;
+    bool default_colors;
+    hash_idx_t *pair_hash_tbl;
+    int pair_hash_tbl_size, pair_hash_tbl_used;
+    int n_windows;
+    WINDOW **window_list;
+    unsigned trace_flags;
+    bool want_trace_fflush;
+    FILE *output_fd, *input_fd;
 };
 
 PDCEX  SCREEN       *SP;          /* curses variables */
-
-#if PDC_COLOR_BITS < 15
-    typedef int16_t hash_idx_t;
-#else
-    typedef int32_t hash_idx_t;
-#endif
-
-struct _opaque_screen_t
-{
-   struct _pdc_pair *pairs;
-   int pairs_allocated;
-   int first_col;
-   bool default_colors;
-   hash_idx_t *pair_hash_tbl;
-   int pair_hash_tbl_size, pair_hash_tbl_used;
-   int n_windows;
-   WINDOW **window_list;
-   unsigned trace_flags;
-   bool want_trace_fflush;
-   FILE *output_fd, *input_fd;
-};
 
 #ifdef __cplusplus
 }

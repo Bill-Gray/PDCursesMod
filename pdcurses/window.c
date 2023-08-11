@@ -254,18 +254,18 @@ static void *PDC_realloc_array( void *ptr, const size_t nmemb, const size_t size
 
 static void _resize_window_list( SCREEN *scr_ptr)
 {
-   if( is_power_of_two( scr_ptr->opaque->n_windows))
-      scr_ptr->opaque->window_list =
-                 (WINDOW **)PDC_realloc_array( scr_ptr->opaque->window_list,
-                     scr_ptr->opaque->n_windows * 2, sizeof( WINDOW *));
+   if( is_power_of_two( scr_ptr->n_windows))
+      scr_ptr->window_list =
+                 (WINDOW **)PDC_realloc_array( scr_ptr->window_list,
+                     scr_ptr->n_windows * 2, sizeof( WINDOW *));
 }
 
 void PDC_add_window_to_list( WINDOW *win)
 {
-   SP->opaque->n_windows++;
+   SP->n_windows++;
    _resize_window_list( SP);
-   assert( SP->opaque->window_list);
-   SP->opaque->window_list[SP->opaque->n_windows - 1] = win;
+   assert( SP->window_list);
+   SP->window_list[SP->n_windows - 1] = win;
 }
 
 WINDOW *newwin(int nlines, int ncols, int begy, int begx)
@@ -311,23 +311,23 @@ int delwin(WINDOW *win)
         return ERR;
 
             /* make sure win has no subwindows */
-    for( i = 0; i < SP->opaque->n_windows; i++)
+    for( i = 0; i < SP->n_windows; i++)
     {
-        assert( SP->opaque->window_list[i]->_parent != win);
-        if( SP->opaque->window_list[i]->_parent == win)
+        assert( SP->window_list[i]->_parent != win);
+        if( SP->window_list[i]->_parent == win)
             return( ERR);
     }
 
     if( win->_firstch && win->_y && win->_y[0])
     {
         i = 0;     /* make sure win is in the window list */
-        while( i < SP->opaque->n_windows && SP->opaque->window_list[i] != win)
+        while( i < SP->n_windows && SP->window_list[i] != win)
             i++;
-        assert( i < SP->opaque->n_windows);
-        if( i == SP->opaque->n_windows)
+        assert( i < SP->n_windows);
+        if( i == SP->n_windows)
             return( ERR);
-        SP->opaque->n_windows--;        /* remove win from window list */
-        SP->opaque->window_list[i] = SP->opaque->window_list[SP->opaque->n_windows];
+        SP->n_windows--;        /* remove win from window list */
+        SP->window_list[i] = SP->window_list[SP->n_windows];
         _resize_window_list( SP);
     }
 

@@ -45,12 +45,12 @@ static bool check_key( int *c)
 
     if( PDC_resize_occurred)
        return( TRUE);
-    if( SP->opaque && SP->opaque->input_fd && SP->opaque->input_fd != stdin)
+    if( SP->input_fd && SP->input_fd != stdin)
     {
-        rval = !feof( SP->opaque->input_fd);
+        rval = !feof( SP->input_fd);
         if( rval && c)
         {
-            *c = fgetc( SP->opaque->input_fd);
+            *c = fgetc( SP->input_fd);
             if( *c == EOF)
                 rval = FALSE;
         }

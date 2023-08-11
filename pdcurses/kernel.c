@@ -115,10 +115,7 @@ static int _restore_mode(int i)
 {
     if (ctty[i].been_set == TRUE)
     {
-        struct _opaque_screen_t *opaque = SP->opaque;
-
         memcpy(SP, &(ctty[i].saved), sizeof(SCREEN));
-        SP->opaque = opaque;
 
         if (ctty[i].saved.raw_out)
             raw();
