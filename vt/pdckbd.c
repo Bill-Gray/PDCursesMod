@@ -152,7 +152,15 @@ static int xlate_vt_codes_for_dos( const int key1, const int key2)
 
 #define MAX_COUNT 15
 
-/* Mouse events include six bytes.  First three are
+/* If possible,  we use the SGR mouse tracking modes.  These allow
+for wheel mice and more than 224 columns and rows.  See
+
+https://invisible-island.net/xterm/ctlseqs/ctlseqs.html
+
+   for details on this and more on how 'traditional' mouse events are
+encoded.
+
+   'Traditional' mouse events include six bytes.  First three are
 
 ESC [ M
 
