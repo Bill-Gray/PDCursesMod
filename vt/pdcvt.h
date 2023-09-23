@@ -19,4 +19,7 @@ extern int PDC_is_ansi;
 # define _CRT_SECURE_NO_DEPRECATE 1   /* kill nonsense warnings */
 #endif
 
+#define CSI "\x1b["
+#define OSC "\x1b]"
+
 void PDC_puts_to_stdout( const char *buff);        /* pdcdisp.c */
