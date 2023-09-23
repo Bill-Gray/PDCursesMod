@@ -37,16 +37,16 @@ pdcsetsc
 
 **man-end****************************************************************/
 
-    /* #define BLINKING_CURSOR   "\033[?12h"    */
-#define BLINKING_BLOCK      "\033[1 q"
-#define STEADY_BLOCK        "\033[2 q"
-#define BLINKING_UNDERLINE  "\033[3 q"
-#define STEADY_UNDERLINE    "\033[4 q"
+    /* #define BLINKING_CURSOR   CSI "?12h"    */
+#define BLINKING_BLOCK      CSI "1 q"
+#define STEADY_BLOCK        CSI "2 q"
+#define BLINKING_UNDERLINE  CSI "3 q"
+#define STEADY_UNDERLINE    CSI "4 q"
       /* "bar" = "vertical line".  xterm only. */
-#define BLINKING_BAR        "\033[5 q"
-#define STEADY_BAR          "\033[6 q"
-#define CURSOR_ON           "\033[?25h"
-#define CURSOR_OFF          "\033[?25l"
+#define BLINKING_BAR        CSI "5 q"
+#define STEADY_BAR          CSI "6 q"
+#define CURSOR_ON           CSI "?25h"
+#define CURSOR_OFF          CSI "?25l"
 
 int PDC_curs_set( int visibility)
 {
@@ -148,7 +148,7 @@ void PDC_set_title( const char *title)
 #if !defined( DOS) && !defined( LINUX_FRAMEBUFFER_PORT)
     if( !PDC_is_ansi)
     {
-        PDC_puts_to_stdout( "\033]2;");
+        PDC_puts_to_stdout( OSC "2;");
         PDC_puts_to_stdout( title);
         PDC_puts_to_stdout( "\a");
     }

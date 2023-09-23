@@ -109,27 +109,27 @@ void PDC_gotoyx(int y, int x)
    char tbuff[50];
 
 #ifdef HAVE_SNPRINTF
-   snprintf( tbuff, sizeof( tbuff), "\033[%d;%dH", y + 1, x + 1);
+   snprintf( tbuff, sizeof( tbuff), CSI "%d;%dH", y + 1, x + 1);
 #else
-   sprintf( tbuff, "\033[%d;%dH", y + 1, x + 1);
+   sprintf( tbuff, CSI "%d;%dH", y + 1, x + 1);
 #endif
    PDC_puts_to_stdout( tbuff);
    PDC_doupdate( );
 }
 
-#define RESET_ATTRS   "\033[0m"
-#define ITALIC_ON     "\033[3m"
-#define ITALIC_OFF    "\033[23m"
-#define UNDERLINE_ON  "\033[4m"
-#define UNDERLINE_OFF "\033[24m"
-#define BLINK_ON      "\033[5m"
-#define BLINK_OFF     "\033[25m"
-#define BOLD_ON       "\033[1m"
-#define BOLD_OFF      "\033[22m"
-#define DIM_ON        "\033[2m"
-#define DIM_OFF       "\033[22m"
-#define REVERSE_ON    "\033[7m"
-#define STRIKEOUT_ON  "\033[9m"
+#define RESET_ATTRS   CSI "0m"
+#define ITALIC_ON     CSI "3m"
+#define ITALIC_OFF    CSI "23m"
+#define UNDERLINE_ON  CSI "4m"
+#define UNDERLINE_OFF CSI "24m"
+#define BLINK_ON      CSI "5m"
+#define BLINK_OFF     CSI "25m"
+#define BOLD_ON       CSI "1m"
+#define BOLD_OFF      CSI "22m"
+#define DIM_ON        CSI "2m"
+#define DIM_OFF       CSI "22m"
+#define REVERSE_ON    CSI "7m"
+#define STRIKEOUT_ON  CSI "9m"
 
 /* see 'addch.c' for an explanation of how combining chars are handled. */
 
@@ -196,14 +196,14 @@ static void reset_color( char *obuff, const chtype ch)
     if( bg != prev_bg)
         {
         if( bg == (PACKED_RGB)-1)   /* default background */
-            strcpy( obuff, "\033[49m");
+            strcpy( obuff, CSI "49m");
         else if( !bg)
-            strcpy( obuff, "\033[40m");
+            strcpy( obuff, CSI "40m");
         else if( COLORS == 16)
-            sprintf( obuff, "\033[4%dm", get_sixteen_color_idx( bg));
+            sprintf( obuff, CSI "4%dm", get_sixteen_color_idx( bg));
         else
             {
-            strcpy( obuff, "\033[48;");
+            strcpy( obuff, CSI "48;");
             color_string( obuff + 5, bg);
             }
         prev_bg = bg;
@@ -213,12 +213,12 @@ static void reset_color( char *obuff, const chtype ch)
         {
         obuff += strlen( obuff);
         if( fg == (PACKED_RGB)-1)   /* default foreground */
-            strcpy( obuff, "\033[39m");
+            strcpy( obuff, CSI "39m");
         else if( COLORS == 16)
-            sprintf( obuff, "\033[3%dm", get_sixteen_color_idx( fg));
+            sprintf( obuff, CSI "3%dm", get_sixteen_color_idx( fg));
         else
             {
-            strcpy( obuff, "\033[38;");
+            strcpy( obuff, CSI "38;");
             color_string( obuff + 5, fg);
             }
         prev_fg = fg;
