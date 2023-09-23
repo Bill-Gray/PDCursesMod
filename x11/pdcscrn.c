@@ -619,8 +619,8 @@ int PDC_scr_open(void)
     SP->mouse_wait = pdc_app_data.clickPeriod;
     SP->audible = TRUE;
 
-    SP->termattrs = A_COLOR | A_ITALIC | A_UNDERLINE | A_LEFT | A_RIGHT |
-                    A_REVERSE | A_STRIKEOUT | A_OVERLINE;
+    SP->termattrs = A_COLOR | WA_ITALIC | WA_UNDERLINE | WA_LEFT | WA_RIGHT |
+                    WA_REVERSE | WA_STRIKEOUT | WA_TOP | WA_BLINK | WA_DIM | WA_BOLD;
 
     /* Add Event handlers to the drawing widget */
 

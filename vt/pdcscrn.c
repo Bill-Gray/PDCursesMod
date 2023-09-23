@@ -116,7 +116,6 @@ static int set_win10_for_vt_codes( const bool setting_mode)
 
 bool PDC_resize_occurred = FALSE;
 const int STDIN = 0;
-chtype PDC_capabilities = 0;
 static mmask_t _stored_trap_mbe;
 
 /* COLOR_PAIR to attribute encoding table. */
@@ -137,10 +136,10 @@ void PDC_reset_prog_mode( void)
 #endif
 #ifndef _WIN32
     if( !PDC_is_ansi)
-        PDC_puts_to_stdout( "\033[?1006h");    /* Set SGR mouse tracking,  if available */
+        PDC_puts_to_stdout( CSI "?1006h");    /* Set SGR mouse tracking,  if available */
 #endif
     if( !SP->_preserve)
-       PDC_puts_to_stdout( "\033[?47h");      /* Save screen */
+       PDC_puts_to_stdout( CSI "?47h");      /* Save screen */
     PDC_puts_to_stdout( "\033" "7");         /* save cursor & attribs (VT100) */
 
     SP->_trap_mbe = _stored_trap_mbe;
@@ -166,9 +165,9 @@ int PDC_resize_screen(int nlines, int ncols)
       char tbuff[50];
 
 #ifdef HAVE_SNPRINTF
-      snprintf( tbuff, sizeof( tbuff), "\033[8;%d;%dt", nlines, ncols);
+      snprintf( tbuff, sizeof( tbuff), CSI "8;%d;%dt", nlines, ncols);
 #else
-      sprintf( tbuff, "\033[8;%d;%dt", nlines, ncols);
+      sprintf( tbuff, CSI "8;%d;%dt", nlines, ncols);
 #endif
       PDC_puts_to_stdout( tbuff);
       PDC_rows = nlines;
@@ -191,11 +190,11 @@ void PDC_scr_close( void)
 {
 #ifndef _WIN32
    if( !PDC_is_ansi)
-       PDC_puts_to_stdout( "\033[?1006l");    /* Turn off SGR mouse tracking */
+       PDC_puts_to_stdout( CSI "?1006l");    /* Turn off SGR mouse tracking */
 #endif
    PDC_puts_to_stdout( "\033" "8");         /* restore cursor & attribs (VT100) */
-   PDC_puts_to_stdout( "\033[m");         /* set default screen attributes */
-   PDC_puts_to_stdout( "\033[?47l");      /* restore screen */
+   PDC_puts_to_stdout( CSI "m");         /* set default screen attributes */
+   PDC_puts_to_stdout( CSI "?47l");      /* restore screen */
    PDC_curs_set( 2);          /* blinking block cursor */
    PDC_gotoyx( PDC_cols - 1, 0);
    _stored_trap_mbe = SP->_trap_mbe;
@@ -268,6 +267,7 @@ int PDC_scr_open(void)
     char *capabilities = getenv( "PDC_VT");
     char *term_env = getenv( "TERM");
     const char *colorterm = getenv( "COLORTERM");
+    chtype PDC_capabilities = 0;
 #ifdef USE_TERMIOS
     struct sigaction sa;
 #endif

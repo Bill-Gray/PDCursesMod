@@ -45,12 +45,12 @@ static bool check_key( int *c)
 
     if( PDC_resize_occurred)
        return( TRUE);
-    if( SP->opaque && SP->opaque->input_fd && SP->opaque->input_fd != stdin)
+    if( SP->input_fd && SP->input_fd != stdin)
     {
-        rval = !feof( SP->opaque->input_fd);
+        rval = !feof( SP->input_fd);
         if( rval && c)
         {
-            *c = fgetc( SP->opaque->input_fd);
+            *c = fgetc( SP->input_fd);
             if( *c == EOF)
                 rval = FALSE;
         }
@@ -152,7 +152,15 @@ static int xlate_vt_codes_for_dos( const int key1, const int key2)
 
 #define MAX_COUNT 15
 
-/* Mouse events include six bytes.  First three are
+/* If possible,  we use the SGR mouse tracking modes.  These allow
+for wheel mice and more than 224 columns and rows.  See
+
+https://invisible-island.net/xterm/ctlseqs/ctlseqs.html
+
+   for details on this and more on how 'traditional' mouse events are
+encoded.
+
+   'Traditional' mouse events include six bytes.  First three are
 
 ESC [ M
 
@@ -654,18 +662,18 @@ int PDC_mouse_set( void)
          if( curr_tracking_state > 0)
             {
 #ifdef HAVE_SNPRINTF
-            snprintf( tbuff, sizeof( tbuff), "\033[?%dl", curr_tracking_state);
+            snprintf( tbuff, sizeof( tbuff), CSI "?%dl", curr_tracking_state);
 #else
-            sprintf( tbuff, "\033[?%dl", curr_tracking_state);
+            sprintf( tbuff, CSI "?%dl", curr_tracking_state);
 #endif
             PDC_puts_to_stdout( tbuff);
             }
          if( tracking_state)
             {
 #ifdef HAVE_SNPRINTF
-            snprintf( tbuff, sizeof( tbuff), "\033[?%dh", tracking_state);
+            snprintf( tbuff, sizeof( tbuff), CSI "?%dh", tracking_state);
 #else
-            sprintf( tbuff, "\033[?%dh", tracking_state);
+            sprintf( tbuff, CSI "?%dh", tracking_state);
 #endif
             PDC_puts_to_stdout( tbuff);
             }

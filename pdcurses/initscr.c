@@ -286,8 +286,8 @@ SCREEN *newterm(const char *type, FILE *outfd, FILE *infd)
         return NULL;
     SP->c_ungind = 0;
     SP->c_ungmax = NUNGETCH;
-    SP->opaque->output_fd = outfd;
-    SP->opaque->input_fd = infd;
+    SP->output_fd = outfd;
+    SP->input_fd = infd;
 
     return SP;
 }
@@ -345,7 +345,6 @@ SCREEN *set_term(SCREEN *new_scr)
 void delscreen(SCREEN *sp)
 {
     int i = 0;
-    struct _opaque_screen_t *optr;
 
     PDC_LOG(("delscreen() - called\n"));
 
@@ -361,14 +360,13 @@ void delscreen(SCREEN *sp)
 
          /* Mark all windows as 'parentless'.  That way,  we can */
          /* delete all windows associated with SP.               */
-    optr = SP->opaque;
-    for( i = 0; i < optr->n_windows; i++)
-        optr->window_list[i]->_parent = NULL;
-    while( optr->n_windows)
-        delwin( optr->window_list[0]);
+    for( i = 0; i < SP->n_windows; i++)
+        SP->window_list[i]->_parent = NULL;
+    while( SP->n_windows)
+        delwin( SP->window_list[0]);
                     /* With all windows deleted,  the window  */
                     /* list should be empty. */
-    assert( !optr->window_list);
+    assert( !SP->window_list);
 
     PDC_free_atrtab( );
     stdscr = (WINDOW *)NULL;

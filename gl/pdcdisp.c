@@ -488,11 +488,11 @@ static void draw_glyph(
 #endif
     int i = x + y * SP->cols;
     Uint32 gl_attrs =
-        ((attr & A_UNDERLINE) ? 1<<2 : 0) |
-        ((attr & A_OVERLINE) ? 1<<3 : 0) |
-        ((attr & A_STRIKEOUT) ? 1<<4 : 0) |
-        ((attr & A_LEFT) ? 1<<5 : 0) |
-        ((attr & A_RIGHT) ? 1<<6 : 0);
+        ((attr & WA_UNDERLINE) ? 1<<2 : 0) |
+        ((attr & WA_TOP) ? 1<<3 : 0) |
+        ((attr & WA_STRIKEOUT) ? 1<<4 : 0) |
+        ((attr & WA_LEFT) ? 1<<5 : 0) |
+        ((attr & WA_RIGHT) ? 1<<6 : 0);
     if(y < 0 || y >= SP->lines || x < 0 || x >= SP->cols)
         return;
 

@@ -44,10 +44,10 @@ cube of 16 million colors. */
 
 #define N_COLORS 256 + 256 * 256 * 256;
 
-#ifdef A_OVERLINE
-#define A_ALL_LINES (A_UNDERLINE | A_LEFTLINE | A_RIGHTLINE | A_OVERLINE | A_STRIKEOUT)
+#ifdef WA_TOP
+#define WA_ALL_LINES (WA_UNDERLINE | WA_LOW | WA_LEFT | WA_RIGHT | WA_TOP | WA_STRIKEOUT)
 #else
-#define A_ALL_LINES (A_UNDERLINE | A_LEFTLINE | A_RIGHTLINE)
+#define WA_ALL_LINES (WA_UNDERLINE | WA_LOW | WA_LEFT | WA_RIGHT)
 #endif
 
    /* If PDC_MAX_MOUSE_BUTTONS is undefined,  it means the user hasn't     */
@@ -1364,7 +1364,8 @@ static void HandlePaint( HWND hwnd )
     SelectObject(memory_dc, old_brush);
 
     /* paint all the rows */
-    if (curscr && curscr->_y && PDC_n_cols > 0 && PDC_n_rows > 0)
+    if (curscr && curscr->_y && PDC_n_cols > 0 && PDC_n_rows > 0
+               && PDC_n_cols == COLS && PDC_n_rows == LINES)
     {
         int i;
         extern HDC override_hdc;
@@ -1523,8 +1524,11 @@ static void HandleTimer( const WPARAM wParam )
     if( SP->cursrow >=SP->lines || SP->curscol >= SP->cols
         || SP->cursrow < 0 || SP->curscol < 0
         || !curscr->_y || !curscr->_y[SP->cursrow])
+        {
             debug_printf( "Cursor off-screen: %d %d, %d %d\n",
                           SP->cursrow, SP->curscol, SP->lines, SP->cols);
+            assert( 0);
+        }
     else if( PDC_CURSOR_IS_BLINKING)
              PDC_transform_line_sliced( SP->cursrow, SP->curscol, 1,
                                  curscr->_y[SP->cursrow] + SP->curscol);
@@ -2244,9 +2248,8 @@ int PDC_scr_open(void)
     SP->curscol = SP->cursrow = 0;
     SP->audible = TRUE;
     SP->mono = FALSE;
-    SP->termattrs = A_BOLD | A_COLOR | A_LEFTLINE | A_RIGHTLINE
-               | A_OVERLINE | A_UNDERLINE | A_STRIKEOUT | A_ITALIC
-               | A_DIM | A_REVERSE;
+    SP->termattrs = A_COLOR | WA_ITALIC | WA_UNDERLINE | WA_LEFT | WA_RIGHT |
+                    WA_REVERSE | WA_STRIKEOUT | WA_TOP | WA_BLINK | WA_DIM | WA_BOLD;
 
 #ifdef NO_LONGER_AVAILABLE
             /* (Jan 2020 : the wmcbrine flavor lacks Xinitscr) */

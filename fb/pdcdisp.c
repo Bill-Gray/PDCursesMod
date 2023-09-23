@@ -209,7 +209,7 @@ static void _add_combining_character_glyph( uint8_t *glyph, const int code_point
 }
 #endif
 
-#define LINE_ATTRIBS (A_UNDERLINE | A_OVERLINE | A_LEFTLINE | A_RIGHTLINE | A_STRIKEOUT)
+#define LINE_ATTRIBS (WA_UNDERLINE | WA_TOP | WA_LEFT | WA_RIGHT | WA_STRIKEOUT)
 
 /* Usually,  we can just return a pointer to the glyph data from
 the PSF file (using _get_raw_glyph_bytes()).  If the glyph has to
@@ -284,21 +284,21 @@ static const uint8_t *_get_glyph( const chtype ch, const int cursor_type,
                    *scratch++ ^= 0xff;
             scratch -= PDC_font_info.charsize;
         }
-        if( ch & (A_UNDERLINE | A_OVERLINE | A_STRIKEOUT))
+        if( ch & (WA_UNDERLINE | WA_TOP | WA_STRIKEOUT))
         {
-            if( ch & A_OVERLINE)
+            if( ch & WA_TOP)
                 memset( scratch, 0xff, font_char_size_in_bytes);
-            if( ch & A_STRIKEOUT)
+            if( ch & WA_STRIKEOUT)
                 memset( scratch + (PDC_font_info.height / 2) * font_char_size_in_bytes,
                             0xff, font_char_size_in_bytes);
-            if( ch & A_UNDERLINE)
+            if( ch & WA_UNDERLINE)
                 memset( scratch + (PDC_font_info.height - 1) * font_char_size_in_bytes,
                             0xff, font_char_size_in_bytes);
         }
-        if( ch & A_LEFTLINE)
+        if( ch & WA_LEFT)
             for( i = 0; i < (int)PDC_font_info.height; i++)
                scratch[i * font_char_size_in_bytes] |= 0x80;
-        if( ch & A_RIGHTLINE)
+        if( ch & WA_RIGHT)
         {
             scratch += font_char_size_in_bytes - 1;
             for( i = 0; i < (int)PDC_font_info.height; i++)

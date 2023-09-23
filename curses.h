@@ -38,11 +38,11 @@ Defined by this header:
          /* NOTE : For version changes that are not backward compatible, */
          /* the 'endwin_*' #defines below should be updated.             */
 #define PDC_VER_MAJOR    4
-#define PDC_VER_MINOR    3
-#define PDC_VER_CHANGE   7
+#define PDC_VER_MINOR    4
+#define PDC_VER_CHANGE   0
 #define PDC_VER_YEAR   2023
-#define PDC_VER_MONTH    07
-#define PDC_VER_DAY      23
+#define PDC_VER_MONTH     8
+#define PDC_VER_DAY      28
 
 #define PDC_STRINGIZE( x) #x
 #define PDC_stringize( x) PDC_STRINGIZE( x)
@@ -51,9 +51,15 @@ Defined by this header:
                    PDC_stringize( PDC_VER_MINOR) "." \
                    PDC_stringize( PDC_VER_CHANGE)
 
+#if PDC_VER_MONTH < 10
+#define PDC_VER_YMD PDC_stringize( PDC_VER_YEAR) "-" \
+                "0" PDC_stringize( PDC_VER_MONTH) "-" \
+                    PDC_stringize( PDC_VER_DAY)
+#else
 #define PDC_VER_YMD PDC_stringize( PDC_VER_YEAR) "-" \
                     PDC_stringize( PDC_VER_MONTH) "-" \
                     PDC_stringize( PDC_VER_DAY)
+#endif
 
 #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
 # define PDC_99         1
@@ -353,102 +359,8 @@ typedef struct
  *
  */
 
-/* Avoid using the WINDOW or SCREEN structs directly -- doing so
-   makes your code PDCurses*-only and may result in future binary
-   incompatibility;  use the corresponding functions if possible.
-   These structs may eventually be made private. */
-
-typedef struct _win       /* definition of a window */
-{
-    int   _cury;          /* current pseudo-cursor */
-    int   _curx;
-    int   _maxy;          /* max window coordinates */
-    int   _maxx;
-    int   _begy;          /* origin on screen */
-    int   _begx;
-    int   _flags;         /* window properties */
-    chtype _attrs;        /* standard attributes and colors */
-    chtype _bkgd;         /* background, normally blank */
-    bool  _clear;         /* causes clear at next refresh */
-    bool  _leaveit;       /* leaves cursor where it is */
-    bool  _scroll;        /* allows window scrolling */
-    bool  _nodelay;       /* input character wait flag */
-    bool  _immed;         /* immediate update flag */
-    bool  _sync;          /* synchronise window ancestors */
-    bool  _use_keypad;    /* flags keypad key mode active */
-    chtype **_y;          /* pointer to line pointer array */
-    int   *_firstch;      /* first changed character in line */
-    int   *_lastch;       /* last changed character in line */
-    int   _tmarg;         /* top of scrolling region */
-    int   _bmarg;         /* bottom of scrolling region */
-    int   _delayms;       /* milliseconds of delay for getch() */
-    int   _parx, _pary;   /* coords relative to parent (0,0) */
-    struct _win *_parent; /* subwin's pointer to parent win */
-    int   _pminrow, _pmincol;    /* saved position used only for pads */
-    int   _sminrow, _smaxrow;    /* saved position used only for pads */
-    int   _smincol, _smaxcol;    /* saved position used only for pads */
-} WINDOW;
-
-/* See above warning against directly accessing SCREEN elements. */
-
-typedef struct
-{
-    bool  alive;          /* if initscr() called, and not endwin() */
-    bool  autocr;         /* if cr -> lf */
-    bool  cbreak;         /* if terminal unbuffered */
-    bool  echo;           /* if terminal echo */
-    bool  raw_inp;        /* raw input mode (v. cooked input) */
-    bool  raw_out;        /* raw output mode (7 v. 8 bits) */
-    bool  audible;        /* FALSE if the bell is visual */
-    bool  mono;           /* TRUE if current screen is mono */
-    bool  resized;        /* TRUE if TERM has been resized */
-    bool  orig_attr;      /* TRUE if we have the original colors */
-    short orig_fore;      /* original screen foreground color */
-    short orig_back;      /* original screen foreground color */
-    int   cursrow;        /* position of physical cursor */
-    int   curscol;        /* position of physical cursor */
-    int   visibility;     /* visibility of cursor */
-    int   orig_cursor;    /* original cursor size */
-    int   lines;          /* new value for LINES */
-    int   cols;           /* new value for COLS */
-    mmask_t _trap_mbe;             /* trap these mouse button events */
-    int   mouse_wait;              /* time to wait (in ms) for a
-                                      button release after a press, in
-                                      order to count it as a click */
-    int   slklines;                /* lines in use by slk_init() */
-    WINDOW *slk_winptr;            /* window for slk */
-    int   linesrippedoff;          /* lines ripped off via ripoffline() */
-    int   linesrippedoffontop;     /* lines ripped off on
-                                      top via ripoffline() */
-    int   delaytenths;             /* 1/10ths second to wait block
-                                      getch() for */
-    bool  _preserve;               /* TRUE if screen background
-                                      to be preserved */
-    int   _restore;                /* specifies if screen background
-                                      to be restored, and how */
-    unsigned long key_modifiers;   /* key modifiers (SHIFT, CONTROL, etc.)
-                                      on last key press */
-    bool  return_key_modifiers;    /* TRUE if modifier keys are
-                                      returned as "real" keys */
-    bool  in_endwin;               /* if we're in endwin(),  we should use
-                                      only signal-safe code */
-    MOUSE_STATUS mouse_status;     /* last returned mouse status */
-    short line_color;     /* color of line attributes - default -1 */
-    attr_t termattrs;     /* attribute capabilities */
-    WINDOW *lastscr;      /* the last screen image */
-    FILE *dbfp;           /* debug trace file pointer */
-    bool  color_started;  /* TRUE after start_color() */
-    bool  dirty;          /* redraw on napms() after init_color() */
-    int   sel_start;      /* start of selection (y * COLS + x) */
-    int   sel_end;        /* end of selection */
-    int  *c_buffer;       /* character buffer */
-    int   c_pindex;       /* putter index */
-    int   c_gindex;       /* getter index */
-    int  *c_ungch;        /* array of ungotten chars */
-    int   c_ungind;       /* ungetch() push index */
-    int   c_ungmax;       /* allocated size of ungetch() buffer */
-    struct _opaque_screen_t *opaque;    /* internal library variables */
-} SCREEN;
+typedef struct _win WINDOW;
+typedef struct _screen SCREEN;
 
 /*----------------------------------------------------------------------
  *
@@ -470,7 +382,6 @@ PDCEX  int          LINES;        /* terminal height */
 PDCEX  int          COLS;         /* terminal width */
 PDCEX  WINDOW       *stdscr;      /* the default screen window */
 PDCEX  WINDOW       *curscr;      /* the current screen image */
-PDCEX  SCREEN       *SP;          /* curses variables */
 PDCEX  MOUSE_STATUS Mouse_status;
 PDCEX  int          COLORS;
 PDCEX  int          COLOR_PAIRS;
@@ -489,14 +400,14 @@ There are three configurations supported :
 
 Default, 64-bit chtype,  both wide- and 8-bit character builds:
 -------------------------------------------------------------------------------
-|63|62|..|53|52|..|34|33|32|31|30|29|28|..|22|21|20|19|18|17|16|..| 3| 2| 1| 0|
+|63|62|..|45|44|43|..|38|37|36|35|34|33|..|22|21|20|19|18|17|16|..| 3| 2| 1| 0|
 -------------------------------------------------------------------------------
-  unused    |color pair |        modifiers      |         character eg 'a'
+|  color pair  | unused |        modifiers      |         character eg 'a'
 
    21 character bits (0-20),  enough for full Unicode coverage
-   12 attribute bits (21-32)
-   20 color pair bits (33-52),  enough for 1048576 color pairs
-   11 currently unused bits (53-63)
+   17 attribute bits (21-37)
+    6 currently unused bits (38-43)
+   20 color pair bits (44-63),  enough for 1048576 color pairs
 
 32-bit chtypes with wide characters (CHTYPE_32 and PDC_WIDE are #defined):
     +--------------------------------------------------------------------+
@@ -518,9 +429,9 @@ Default, 64-bit chtype,  both wide- and 8-bit character builds:
 
 All attribute modifier schemes include eight "basic" bits:  bold, underline,
 right-line, left-line, italic, reverse and blink attributes,  plus the
-alternate character set indicator. For default and 32-bit narrow builds,
-three more bits are used for overlined, dimmed, and strikeout attributes;
-a fourth bit is reserved.
+alternate character set indicator. For 32-bit narrow builds, three more
+bits are used for overlined, dimmed, and strikeout attributes; a fourth
+bit is reserved.
 
 Default chtypes have enough character bits to support the full range of
 Unicode,  all attributes,  and 2^20 = 1048576 color pairs.  Note,  though,
@@ -533,92 +444,101 @@ capability.
 
 /*** Video attribute macros ***/
 
-#define A_NORMAL      (chtype)0
+#define WA_NORMAL      (chtype)0
 
 #ifndef CHTYPE_32
             /* 64-bit chtypes,  both wide- and narrow */
     # define PDC_CHARTEXT_BITS   21
-    # define PDC_ATTRIBUTE_BITS  12
+    # define PDC_ATTRIBUTE_BITS  17
+    # define PDC_UNUSED_BITS      6
     # define PDC_COLOR_BITS      20
 # else
 #ifdef PDC_WIDE
             /* 32-bit chtypes,  wide character */
     # define PDC_CHARTEXT_BITS      16
     # define PDC_ATTRIBUTE_BITS      8
+    # define PDC_UNUSED_BITS         0
     # define PDC_COLOR_BITS          8
 #else
             /* 32-bit chtypes,  narrow (8-bit) characters */
     # define PDC_CHARTEXT_BITS      8
     # define PDC_ATTRIBUTE_BITS    12
+    # define PDC_UNUSED_BITS        0
     # define PDC_COLOR_BITS        12
 #endif
 #endif
 
-# define PDC_COLOR_SHIFT (PDC_CHARTEXT_BITS + PDC_ATTRIBUTE_BITS)
+# define PDC_COLOR_SHIFT (PDC_CHARTEXT_BITS + PDC_ATTRIBUTE_BITS + PDC_UNUSED_BITS)
 # define A_COLOR       ((((chtype)1 << PDC_COLOR_BITS) - 1) << PDC_COLOR_SHIFT)
 # define A_ATTRIBUTES (((((chtype)1 << PDC_ATTRIBUTE_BITS) - 1) << PDC_CHARTEXT_BITS) | A_COLOR)
 # define A_CHARTEXT     (((chtype)1 << PDC_CHARTEXT_BITS) - 1)
 
 #define PDC_ATTRIBUTE_BIT( N)  ((chtype)1 << (N))
-# define A_ALTCHARSET   PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS)
-# define A_RIGHT        PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 1)
-# define A_LEFT         PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 2)
-# define A_INVIS        PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 3)
-# define A_UNDERLINE    PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 4)
-# define A_REVERSE      PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 5)
-# define A_BLINK        PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 6)
-# define A_BOLD         PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 7)
+# define WA_ALTCHARSET   PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS)
+# define WA_RIGHT        PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 1)
+# define WA_LEFT         PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 2)
+# define WA_ITALIC       PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 3)
+# define WA_UNDERLINE    PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 4)
+# define WA_REVERSE      PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 5)
+# define WA_BLINK        PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 6)
+# define WA_BOLD         PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 7)
 #if PDC_COLOR_BITS >= 11
-    # define A_OVERLINE   PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 8)
-    # define A_STRIKEOUT  PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 9)
-    # define A_DIM        PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 10)
-/*  Reserved bit :        PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 11) */
+    # define WA_TOP        PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 8)
+    # define WA_STRIKEOUT  PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 9)
+    # define WA_DIM        PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 10)
+/*  Reserved bit :         PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 11) */
 #else
-    # define A_DIM        A_NORMAL
-    # define A_OVERLINE   A_NORMAL
-    # define A_STRIKEOUT  A_NORMAL
+    # define WA_DIM        WA_NORMAL
+    # define WA_TOP        WA_NORMAL
+    # define WA_STRIKEOUT  WA_NORMAL
 #endif
-
-#define A_ITALIC      A_INVIS
-#define A_PROTECT    (A_UNDERLINE | A_LEFT | A_RIGHT | A_OVERLINE)
-#define A_STANDOUT    (A_REVERSE | A_BOLD) /* X/Open */
-
-#define A_HORIZONTAL  A_NORMAL
-#define A_LOW         A_NORMAL
-#define A_TOP         A_NORMAL
-#define A_VERTICAL    A_NORMAL
+#if PDC_COLOR_BITS >= 17
+    # define WA_HORIZONTAL PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 11)
+    # define WA_VERTICAL   PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 12)
+    # define WA_INVIS      PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 13)
+    # define WA_LOW        PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 14)
+    # define WA_PROTECT    PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 15)
+    # define WA_STANDOUT   PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 16)
+#else
+    # define WA_HORIZONTAL 0
+    # define WA_VERTICAL   0
+    # define WA_INVIS      0
+    # define WA_LOW        WA_UNDERLINE
+    # define WA_PROTECT    (WA_UNDERLINE | WA_LEFT | WA_RIGHT | WA_TOP)
+    # define WA_STANDOUT   (WA_REVERSE | WA_BOLD) /* X/Open */
+#endif
 
 #define CHR_MSK       A_CHARTEXT           /* Obsolete */
 #define ATR_MSK       A_ATTRIBUTES         /* Obsolete */
 #define ATR_NRM       A_NORMAL             /* Obsolete */
 
-#define A_LEFTLINE    A_LEFT
-#define A_RIGHTLINE   A_RIGHT
+/* X/Open A_ defines. */
 
-/* For use with attr_t -- X/Open says, "these shall be distinct", so
-   this is a non-conforming implementation. */
+#define A_ALTCHARSET WA_ALTCHARSET
+#define A_BLINK      WA_BLINK
+#define A_BOLD       WA_BOLD
+#define A_DIM        WA_DIM
+#define A_INVIS      WA_INVIS
+#define A_REVERSE    WA_REVERSE
+#define A_PROTECT    WA_PROTECT
+#define A_STANDOUT   WA_STANDOUT
+#define A_UNDERLINE  WA_UNDERLINE
 
-#define WA_NORMAL     A_NORMAL
+/* ncurses and PDCurses extension A_ defines. */
 
-#define WA_ALTCHARSET A_ALTCHARSET
-#define WA_BLINK      A_BLINK
-#define WA_BOLD       A_BOLD
-#define WA_DIM        A_DIM
-#define WA_INVIS      A_INVIS
-#define WA_ITALIC     A_ITALIC
-#define WA_LEFT       A_LEFT
-#define WA_PROTECT    A_PROTECT
-#define WA_REVERSE    A_REVERSE
-#define WA_RIGHT      A_RIGHT
-#define WA_STANDOUT   A_STANDOUT
-#define WA_UNDERLINE  A_UNDERLINE
+#define A_NORMAL     WA_NORMAL
+#define A_LEFT       WA_LEFT
+#define A_RIGHT      WA_RIGHT
+#define A_LOW        WA_LOW
+#define A_TOP        WA_TOP
+#define A_HORIZONTAL WA_HORIZONTAL
+#define A_VERTICAL   WA_VERTICAL
 
-#define WA_HORIZONTAL A_HORIZONTAL
-#define WA_LOW        A_LOW
-#define WA_TOP        A_TOP
-#define WA_VERTICAL   A_VERTICAL
+/* A_ITALIC and WA_ITALIC are PDCurses and ncurses extensions.
+   A_STRIKEOUT and WA_STRIKEOUT are PDCursesMod extensions.   */
 
-#define WA_ATTRIBUTES A_ATTRIBUTES
+#define A_ITALIC     WA_ITALIC
+#define A_STRIKEOUT  WA_STRIKEOUT
 
 /*** Alternate character set macros ***/
 
@@ -1333,9 +1253,10 @@ characters are PDCursesMod extensions and totally non-portable. */
 #define KEY_LAUNCH_APP8       (KEY_OFFSET + 0x140)
 #define KEY_LAUNCH_APP9       (KEY_OFFSET + 0x141)
 #define KEY_LAUNCH_APP10      (KEY_OFFSET + 0x142)
+   /* 0x200 - 0x142 = 0xbe = 190(decimal) keys are currently reserved */
 
 #define KEY_MIN       KEY_BREAK         /* Minimum curses key value */
-#define KEY_MAX       KEY_LAUNCH_APP10  /* Maximum curses key */
+#define KEY_MAX       (KEY_OFFSET + 0x200)  /* Maximum curses key */
 
 #define KEY_F(n)      (KEY_F0 + (n))
 
@@ -1394,22 +1315,22 @@ PDCEX  int     echo(void);
 #ifdef PDC_WIDE
    #ifdef PDC_FORCE_UTF8
       #ifdef CHTYPE_32
-         #define endwin endwin_u32_4302
+         #define endwin endwin_u32_4400
       #else
-         #define endwin endwin_u64_4302
+         #define endwin endwin_u64_4400
       #endif
    #else
       #ifdef CHTYPE_32
-         #define endwin endwin_w32_4302
+         #define endwin endwin_w32_4400
       #else
-         #define endwin endwin_w64_4302
+         #define endwin endwin_w64_4400
       #endif
    #endif
 #else       /* 8-bit chtypes */
    #ifdef CHTYPE_32
-      #define endwin endwin_x32_4302
+      #define endwin endwin_x32_4400
    #else
-      #define endwin endwin_x64_4302
+      #define endwin endwin_x64_4400
    #endif
 #endif
 
