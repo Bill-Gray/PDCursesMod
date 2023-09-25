@@ -372,7 +372,7 @@ typedef struct _screen SCREEN;
 # ifdef CURSES_LIBRARY
 #  define PDCEX __declspec(dllexport) extern
 # else
-#  define PDCEX __declspec(dllimport)
+#  define PDCEX __declspec(dllimport) extern
 # endif
 #else
 # define PDCEX extern
