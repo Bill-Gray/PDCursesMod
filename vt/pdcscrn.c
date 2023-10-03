@@ -115,7 +115,6 @@ static int set_win10_for_vt_codes( const bool setting_mode)
 #endif
 
 bool PDC_resize_occurred = FALSE;
-const int STDIN = 0;
 static mmask_t _stored_trap_mbe;
 
 /* COLOR_PAIR to attribute encoding table. */
@@ -125,14 +124,14 @@ void PDC_reset_prog_mode( void)
 #ifdef USE_TERMIOS
     struct termios term;
 
-    tcgetattr( STDIN, &orig_term);
+    tcgetattr( fileno( SP->input_fd), &orig_term);
     memcpy( &term, &orig_term, sizeof( term));
     term.c_lflag &= ~(ICANON | ECHO);
     term.c_iflag &= ~ICRNL;
     term.c_cc[VSUSP] = _POSIX_VDISABLE;   /* disable Ctrl-Z */
     term.c_cc[VSTOP] = _POSIX_VDISABLE;   /* disable Ctrl-S */
     term.c_cc[VSTART] = _POSIX_VDISABLE;   /* disable Ctrl-Q */
-    tcsetattr( STDIN, TCSANOW, &term);
+    tcsetattr( fileno( SP->input_fd), TCSANOW, &term);
 #endif
 #ifndef _WIN32
     if( !PDC_is_ansi)
@@ -204,7 +203,7 @@ void PDC_scr_close( void)
    set_win10_for_vt_codes( FALSE);
 #else
    #if !defined( DOS)
-      tcsetattr( STDIN, TCSANOW, &orig_term);
+      tcsetattr( fileno( SP->input_fd), TCSANOW, &orig_term);
    #endif
 #endif
    PDC_doupdate( );
@@ -302,7 +301,7 @@ int PDC_scr_open(void)
     if (!SP || PDC_init_palette( ))
         return ERR;
 
-    setbuf( stdin, NULL);
+    setbuf( SP->input_fd, NULL);
 #ifdef USE_TERMIOS
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = 0;

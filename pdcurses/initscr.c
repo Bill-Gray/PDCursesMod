@@ -162,6 +162,10 @@ SCREEN *newterm(const char *type, FILE *outfd, FILE *infd)
     if (!SP)
         return NULL;
 
+    /* output_fd, input_fd should be initialized before PDC_src_open */
+    SP->output_fd = outfd ? outfd : stdout;
+    SP->input_fd = infd ? infd : stdin;
+
     if (PDC_scr_open() == ERR)
     {
         fprintf(stderr, "initscr(): Unable to create SP\n");
@@ -286,8 +290,6 @@ SCREEN *newterm(const char *type, FILE *outfd, FILE *infd)
         return NULL;
     SP->c_ungind = 0;
     SP->c_ungmax = NUNGETCH;
-    SP->output_fd = outfd;
-    SP->input_fd = infd;
 
     return SP;
 }
