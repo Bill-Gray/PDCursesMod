@@ -115,7 +115,22 @@ static int _restore_mode(int i)
 {
     if (ctty[i].been_set == TRUE)
     {
+        WINDOW **window_list = SP->window_list;
+        const int n_windows = SP->n_windows;
+        struct _pdc_pair *pairs = SP->pairs;
+        const int pairs_allocated = SP->pairs_allocated;
+        hash_idx_t *pair_hash_tbl = SP->pair_hash_tbl;
+        const int pair_hash_tbl_size = SP->pair_hash_tbl_size;
+        const int pair_hash_tbl_used = SP->pair_hash_tbl_used;
+
         memcpy(SP, &(ctty[i].saved), sizeof(SCREEN));
+        SP->window_list = window_list;
+        SP->n_windows = n_windows;
+        SP->pairs = pairs;
+        SP->pairs_allocated = pairs_allocated;
+        SP->pair_hash_tbl = pair_hash_tbl;
+        SP->pair_hash_tbl_size = pair_hash_tbl_size;
+        SP->pair_hash_tbl_used = pair_hash_tbl_used;
 
         if (ctty[i].saved.raw_out)
             raw();
