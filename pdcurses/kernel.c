@@ -91,8 +91,6 @@ kernel
 
 #include <string.h>
 
-RIPPEDOFFLINE linesripped[MAX_RIPPEDOFFLINES];
-char linesrippedoff = 0;
 
 static struct cttyset
 {
@@ -283,9 +281,19 @@ int napms(int ms)
 
 int ripoffline(int line, int (*init)(WINDOW *, int))
 {
+    static RIPPEDOFFLINE linesripped[MAX_RIPPEDOFFLINES];
+    static int linesrippedoff = 0;
+
     PDC_LOG(("ripoffline() - called: line=%d\n", line));
 
-    assert( init);
+    if( !init && SP)
+    {                 /* copy ripped-off line data into the SCREEN struct */
+        memcpy( SP->linesripped, linesripped,
+                        linesrippedoff * sizeof( RIPPEDOFFLINE));
+        SP->linesrippedoff = linesrippedoff;
+        return OK;
+    }
+    assert( line && init);
     if (linesrippedoff < MAX_RIPPEDOFFLINES && line && init)
     {
         linesripped[(int)linesrippedoff].line = line;

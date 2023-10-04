@@ -145,12 +145,44 @@ int TABSIZE = 8;
 
 MOUSE_STATUS Mouse_status;
 
-extern RIPPEDOFFLINE linesripped[MAX_RIPPEDOFFLINES];
-extern char linesrippedoff;
+/* When the screen is initialized or resized,  we need to figure out
+on which lines the ripped-off lines will go.  If initializing,  we
+have to create the window for each ripped-off line and call its
+corresponding callback function.  If we're just resizing,  we still
+may have to expand the window(s) to include new columns.  */
+
+static int _update_ripped_off_lines( SCREEN *sp)
+{
+    int i, lines_ripped_off_on_top = 0;
+
+    for( i = 0; i < sp->linesrippedoff; i++)
+    {
+        const int line = (sp->linesripped[i].line < 0 ?
+               LINES - 1 + lines_ripped_off_on_top : lines_ripped_off_on_top++);
+
+        if( sp->linesripped[i].win)
+        {
+            sp->linesripped[i].win->_begy = line;
+            if( COLS > sp->linesripped[i].win->_maxx)    /* expand window */
+                if( ERR == wresize( sp->linesripped[i].win, 1, COLS))
+                    return( -1);
+        }
+        else
+        {             /* initializing ripped-off lines */
+            sp->linesripped[i].win = newwin(1, COLS, line, 0);
+            wmove( sp->linesripped[i].win, 0, 0);
+            (sp->linesripped[i].init)( sp->linesripped[i].win, COLS);
+        }
+        touchwin( SP->linesripped[i].win);
+        wnoutrefresh( SP->linesripped[i].win);
+        LINES--;
+    }
+    return( lines_ripped_off_on_top);
+}
 
 SCREEN *newterm(const char *type, FILE *outfd, FILE *infd)
 {
-    int i;
+    int lines_ripped_off_on_top;
 
     PDC_LOG(("newterm() - called\n"));
     INTENTIONALLY_UNUSED_PARAMETER( type);
@@ -183,7 +215,6 @@ SCREEN *newterm(const char *type, FILE *outfd, FILE *infd)
     SP->resized = FALSE;
     SP->_trap_mbe = 0L;
     SP->linesrippedoff = 0;
-    SP->linesrippedoffontop = 0;
     SP->delaytenths = 0;
     SP->line_color = -1;
     SP->lastscr = (WINDOW *)NULL;
@@ -231,21 +262,10 @@ SCREEN *newterm(const char *type, FILE *outfd, FILE *infd)
     /* We have to sort out ripped off lines here, and reduce the height
        of stdscr by the number of lines ripped off */
 
-    for (i = 0; i < linesrippedoff; i++)
-    {
-        if (linesripped[i].line < 0)
-            (*linesripped[i].init)(newwin(1, COLS, LINES - 1, 0), COLS);
-        else
-            (*linesripped[i].init)(newwin(1, COLS,
-                                   SP->linesrippedoffontop++, 0), COLS);
+    ripoffline( 0, NULL);   /* copy stored ripped-line data into SP */
+    lines_ripped_off_on_top = _update_ripped_off_lines( SP);
 
-        SP->linesrippedoff++;
-        LINES--;
-    }
-
-    linesrippedoff = 0;
-
-    stdscr = newwin(LINES, COLS, SP->linesrippedoffontop, 0);
+    stdscr = newwin(LINES, COLS, lines_ripped_off_on_top, 0);
     if (!stdscr)
     {
         fprintf(stderr, "initscr(): Unable to create stdscr.\n");
@@ -424,6 +444,10 @@ int resize_term(int nlines, int ncols)
         PDC_slk_initialize();
         slk_noutrefresh();
     }
+
+    LINES += SP->linesrippedoff;
+    if( 0 > _update_ripped_off_lines( SP))
+        return( ERR);
 
     touchwin(stdscr);
     wnoutrefresh(stdscr);

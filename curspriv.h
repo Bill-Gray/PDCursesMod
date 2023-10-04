@@ -41,6 +41,7 @@ typedef struct           /* structure for ripped off lines */
 {
     int line;
     int (*init)(WINDOW *, int);
+    WINDOW *win;
 } RIPPEDOFFLINE;
 
 /* Window properties */
@@ -216,8 +217,7 @@ struct _screen
     int   slklines;                /* lines in use by slk_init() */
     WINDOW *slk_winptr;            /* window for slk */
     int   linesrippedoff;          /* lines ripped off via ripoffline() */
-    int   linesrippedoffontop;     /* lines ripped off on
-                                      top via ripoffline() */
+    RIPPEDOFFLINE linesripped[MAX_RIPPEDOFFLINES];
     int   delaytenths;             /* 1/10ths second to wait block
                                       getch() for */
     bool  _preserve;               /* TRUE if screen background
