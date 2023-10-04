@@ -145,7 +145,7 @@ int TABSIZE = 8;
 
 MOUSE_STATUS Mouse_status;
 
-extern RIPPEDOFFLINE linesripped[5];
+extern RIPPEDOFFLINE linesripped[MAX_RIPPEDOFFLINES];
 extern char linesrippedoff;
 
 SCREEN *newterm(const char *type, FILE *outfd, FILE *infd)

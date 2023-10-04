@@ -91,7 +91,7 @@ kernel
 
 #include <string.h>
 
-RIPPEDOFFLINE linesripped[5];
+RIPPEDOFFLINE linesripped[MAX_RIPPEDOFFLINES];
 char linesrippedoff = 0;
 
 static struct cttyset
@@ -271,7 +271,7 @@ int ripoffline(int line, int (*init)(WINDOW *, int))
     PDC_LOG(("ripoffline() - called: line=%d\n", line));
 
     assert( init);
-    if (linesrippedoff < 5 && line && init)
+    if (linesrippedoff < MAX_RIPPEDOFFLINES && line && init)
     {
         linesripped[(int)linesrippedoff].line = line;
         linesripped[(int)linesrippedoff++].init = init;

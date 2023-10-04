@@ -187,6 +187,7 @@ struct _win               /* definition of a window */
     typedef int32_t hash_idx_t;
 #endif
 
+#define MAX_RIPPEDOFFLINES 5
 
 struct _screen
 {
