@@ -1,7 +1,11 @@
-PDCursesMod -- 2023 July 27
-===========================
+PDCursesMod 4.4.0 - 2023 October 04
+===================================
 
-   This is the (thus far experimental) 4.4 branch.
+   Note that because of SCREEN and WINDOW now being opaque,  the WA_
+flags and some A_ flags changing,  and KEY_MAX being redefined, this
+is _not_ binary compatible with 4.3.x.  However,  you'll get a link
+error if you get versions mixed up,  so this shouldn't cause any
+real trouble.
 
 Major new features
 ------------------
@@ -19,6 +23,9 @@ Major new features
 
 - KEY_MAX was increased to reserve some key codes for future use.
   16ac494c25
+
+- The FILE arguments passed to newterm() are now actually used on the
+  VT platform.  Changes by Pavel Stehule.  9c16db9589
 
 Minor new features
 ------------------
@@ -66,6 +73,9 @@ Bug fixes
 
 - Line attributes were not reliably updated after PDC_set_line_color().
   3b54290f13
+
+- Ripped-off lines did not necessarily work initially and always got
+  mangled when the screen was resized.  05e09e5368
 
 PDCursesMod 4.3.7 - 2023 June 17
 ================================

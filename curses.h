@@ -41,8 +41,8 @@ Defined by this header:
 #define PDC_VER_MINOR    4
 #define PDC_VER_CHANGE   0
 #define PDC_VER_YEAR   2023
-#define PDC_VER_MONTH     8
-#define PDC_VER_DAY      28
+#define PDC_VER_MONTH    10
+#define PDC_VER_DAY      04
 
 #define PDC_STRINGIZE( x) #x
 #define PDC_stringize( x) PDC_STRINGIZE( x)
