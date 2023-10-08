@@ -292,10 +292,8 @@ static int _process_key_event(void)
                 (key_table[i].numkeypad && (event.key.keysym.mod & KMOD_NUM)))
             {
                 key = key_table[i].shifted;
-#ifdef __linux
                 if( (key >= '0' && key <= '9') || strchr( ".+-*/", key))
                     key = -1;
-#endif
             }
             else if (event.key.keysym.mod & KMOD_CTRL)
             {
