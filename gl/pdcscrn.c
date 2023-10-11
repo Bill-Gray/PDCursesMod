@@ -29,6 +29,7 @@ int pdc_font_size =
 #endif
 int pdc_resize_mode = PDC_GL_RESIZE_NORMAL;
 int pdc_interpolation_mode = PDC_GL_INTERPOLATE_BILINEAR;
+const char *pdc_window_title = NULL;
 
 Uint32 *pdc_glyph_cache[4] = {NULL, NULL, NULL, NULL};
 int pdc_glyph_cache_size[4] = {0, 0, 0, 0};
@@ -405,7 +406,7 @@ int PDC_scr_open(void)
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 0);
 
-    pdc_window = SDL_CreateWindow("PDCurses",
+    pdc_window = SDL_CreateWindow(pdc_window_title ? pdc_window_title : "PDCurses",
         SDL_WINDOWPOS_CENTERED_DISPLAY(displaynum),
         SDL_WINDOWPOS_CENTERED_DISPLAY(displaynum),
         pdc_swidth, pdc_sheight,

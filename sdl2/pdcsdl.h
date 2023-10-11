@@ -28,6 +28,7 @@ PDCEX int pdc_sdl_render_mode;
 PDCEX  SDL_Window *pdc_window;
 PDCEX  SDL_Surface *pdc_screen, *pdc_font, *pdc_icon, *pdc_back;
 PDCEX  int pdc_sheight, pdc_swidth, pdc_yoffset, pdc_xoffset;
+PDCEX  const char *pdc_window_title;
 
 extern SDL_Surface *pdc_tileback;    /* used to regenerate the background
                                         of "transparent" cells */

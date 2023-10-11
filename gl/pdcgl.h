@@ -32,6 +32,7 @@ PDCEX  int pdc_interpolation_mode; /* PDC_GL_INTERPOLATE_BILINEAR by default */
 PDCEX  SDL_Window *pdc_window;
 PDCEX  SDL_Surface *pdc_icon;
 PDCEX  int pdc_sheight, pdc_swidth;
+PDCEX  const char *pdc_window_title;
 
 extern Uint32 *pdc_glyph_cache[4];
 extern int pdc_glyph_cache_size[4];

@@ -36,6 +36,7 @@ SDL_Window *pdc_window = NULL;
 SDL_Surface *pdc_screen = NULL, *pdc_font = NULL, *pdc_icon = NULL,
             *pdc_back = NULL, *pdc_tileback = NULL;
 int pdc_sheight = 0, pdc_swidth = 0, pdc_yoffset = 0, pdc_xoffset = 0;
+const char *pdc_window_title = NULL;
 
 int pdc_fheight, pdc_fwidth, pdc_fthick, pdc_flastc;
 bool pdc_own_window;
@@ -357,7 +358,7 @@ int PDC_scr_open(void)
         }
         pdc_swidth *= pdc_fwidth;
 
-        pdc_window = SDL_CreateWindow("PDCurses",
+        pdc_window = SDL_CreateWindow(pdc_window_title ? pdc_window_title : "PDCurses",
             SDL_WINDOWPOS_CENTERED_DISPLAY(displaynum),
             SDL_WINDOWPOS_CENTERED_DISPLAY(displaynum),
             pdc_swidth, pdc_sheight, SDL_WINDOW_RESIZABLE);
