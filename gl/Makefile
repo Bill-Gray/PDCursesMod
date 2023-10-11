@@ -17,12 +17,18 @@ common		= $(PDCURSES_SRCDIR)/common
 
 include $(common)/libobjs.mif
 
+ifdef _w32
+	PREFIX=i686-w64-mingw32-
+	E = .exe
+endif
+
 ifdef _w64
 	PREFIX=x86_64-w64-mingw32-
 	E = .exe
 endif
-ifdef _w32
-	PREFIX=i686-w64-mingw32-
+
+ifdef _a64
+	PREFIX = aarch64-w64-mingw32-
 	E = .exe
 endif
 
@@ -107,7 +113,7 @@ ifeq ($(DLL),Y)
 		CLEAN = *$(DLL_SUFFIX)
 	endif
 else
-	LIBEXE = $(AR)
+	LIBEXE = $(PREFIX)$(AR)
 	LIBFLAGS = rcv
 	LIBCURSES = lib$(LIBNAME).a
 	LDFLAGS = $(LIBCURSES) $(SLIBS)

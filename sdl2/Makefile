@@ -17,16 +17,16 @@ common		= $(PDCURSES_SRCDIR)/common
 
 include $(common)/libobjs.mif
 
-PREFIX = $(shell $(CC) -dumpmachine)
-
 ifdef _w32
 	PREFIX = i686-w64-mingw32
 	E = .exe
 endif
+
 ifdef _w64
 	PREFIX = x86_64-w64-mingw32
 	E = .exe
 endif
+
 ifdef _a64
 	PREFIX = aarch64-w64-mingw32
 	E = .exe
