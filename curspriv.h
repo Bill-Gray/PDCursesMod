@@ -217,7 +217,7 @@ struct _screen
     int   slklines;                /* lines in use by slk_init() */
     WINDOW *slk_winptr;            /* window for slk */
     int   linesrippedoff;          /* lines ripped off via ripoffline() */
-    RIPPEDOFFLINE linesripped[MAX_RIPPEDOFFLINES];
+    RIPPEDOFFLINE *linesripped;
     int   delaytenths;             /* 1/10ths second to wait block
                                       getch() for */
     bool  _preserve;               /* TRUE if screen background

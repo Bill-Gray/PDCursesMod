@@ -1,6 +1,7 @@
 /* PDCurses */
 
 #include <curspriv.h>
+#include <stdlib.h>
 #include <assert.h>
 
 /*man-start**************************************************************
@@ -281,21 +282,23 @@ int napms(int ms)
 
 int ripoffline(int line, int (*init)(WINDOW *, int))
 {
-    static RIPPEDOFFLINE linesripped[MAX_RIPPEDOFFLINES];
+    static RIPPEDOFFLINE *linesripped = NULL;
     static int linesrippedoff = 0;
 
     PDC_LOG(("ripoffline() - called: line=%d\n", line));
 
     if( !init && SP)
     {                 /* copy ripped-off line data into the SCREEN struct */
-        memcpy( SP->linesripped, linesripped,
-                        linesrippedoff * sizeof( RIPPEDOFFLINE));
+        SP->linesripped = linesripped;
         SP->linesrippedoff = linesrippedoff;
+        linesripped = NULL;
         return OK;
     }
     assert( line && init);
     if (linesrippedoff < MAX_RIPPEDOFFLINES && line && init)
     {
+        if( !linesripped)
+            linesripped = calloc( MAX_RIPPEDOFFLINES, sizeof( RIPPEDOFFLINE));
         linesripped[(int)linesrippedoff].line = line;
         linesripped[(int)linesrippedoff++].init = init;
 

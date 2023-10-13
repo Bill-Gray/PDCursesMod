@@ -1,4 +1,4 @@
-PDCursesMod 4.4.0 - 2023 October 04
+PDCursesMod 4.4.0 - 2023 October 13
 ===================================
 
    Note that because of SCREEN and WINDOW now being opaque,  the WA_
@@ -49,6 +49,9 @@ Minor new features
 - 'testcurs' attribute test now lists which flags in term_attrs() are
   set.  4da423c59e
 
+- Added some small test programs for very specific feature/bug tests.
+  e6a5edee79
+
 Bug fixes
 ---------
 
@@ -60,6 +63,12 @@ Bug fixes
 - Panels were only redrawn on window resizes if they overlapped other
   panels,  and even then,  only the overlapping lines were redrawn.
   e2b2205da6
+
+- Numeric keypad presses were duplicated on SDL2 and GL for Windows.
+  7c26ec92ed
+
+- The SDL2 makefile had a recursive definition of CC and PREFIX.
+  ac96c5511e
 
 - If the screen was resized,  either programmatically or by the user,
   the "pseudo-panel" for that screen was not resized.  6b571be281

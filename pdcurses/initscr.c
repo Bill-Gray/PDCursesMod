@@ -389,6 +389,8 @@ void delscreen(SCREEN *sp)
                     /* With all windows deleted,  the window  */
                     /* list should be empty. */
     assert( !SP->window_list);
+    if( SP->linesripped)
+        free( SP->linesripped);
 
     PDC_free_atrtab( );
     stdscr = (WINDOW *)NULL;
