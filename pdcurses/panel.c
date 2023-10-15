@@ -157,23 +157,28 @@ though. */
 #define _bottom_panel  _stdscr_pseudo_panel.above
 #define _top_panel     _stdscr_pseudo_panel.below
 
-static bool _panels_overlapped( const PANEL *pan1, const PANEL *pan2)
+static bool _windows_overlapped( WINDOW *win1, WINDOW *win2)
 {
-    assert( pan1);
-    assert( pan2);
-    assert( pan1 != pan2);
-    if (!pan1 || !pan2)
+    assert( win1);
+    assert( win2);
+    assert( win1 != win2);
+    if (!win1 || !win2)
         return FALSE;
+    else
+    {
+        const int maxx1 = getbegx( win1) + getmaxx( win1);
+        const int maxy1 = getbegy( win1) + getmaxy( win1);
+        const int maxx2 = getbegx( win2) + getmaxx( win2);
+        const int maxy2 = getbegy( win2) + getmaxy( win2);
 
-    return ((_starty( pan1) >= _starty( pan2) && _starty( pan1) < _endy( pan2))
-         || (_starty( pan2) >= _starty( pan1) && _starty( pan2) < _endy( pan1)))
-        && ((_startx( pan1) >= _startx( pan2) && _startx( pan1) < _endx( pan2))
-         || (_startx( pan2) >= _startx( pan1) && _startx( pan2) < _endx( pan1)));
+        return( getbegx( win1) < maxx2 && getbegx( win2) < maxx1
+             && getbegy( win1) < maxy2 && getbegy( win2) < maxy1);
+    }
 }
 
 static void _pairwise_override( const PANEL *pan, PANEL *pan2)
 {
-    if( _panels_overlapped( pan, pan2))
+    if( _windows_overlapped( pan->win, pan2->win))
     {
         const int start_y = max( _starty( pan), _starty( pan2));
         const int end_y   = min( _endy( pan),   _endy( pan2));
