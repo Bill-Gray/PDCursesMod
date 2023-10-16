@@ -18,14 +18,14 @@ getyx
     void getsyx(int y, int x);
     void setsyx(int y, int x);
 
-    int getbegy(WINDOW *win);
-    int getbegx(WINDOW *win);
-    int getcury(WINDOW *win);
-    int getcurx(WINDOW *win);
-    int getpary(WINDOW *win);
-    int getparx(WINDOW *win);
-    int getmaxy(WINDOW *win);
-    int getmaxx(WINDOW *win);
+    int getbegy(const WINDOW *win);
+    int getbegx(const WINDOW *win);
+    int getcury(const WINDOW *win);
+    int getcurx(const WINDOW *win);
+    int getpary(const WINDOW *win);
+    int getparx(const WINDOW *win);
+    int getmaxy(const WINDOW *win);
+    int getmaxx(const WINDOW *win);
 
 ### Description
 
@@ -73,7 +73,7 @@ getyx
 
 **man-end****************************************************************/
 
-int getbegy(WINDOW *win)
+int getbegy(const WINDOW *win)
 {
     PDC_LOG(("getbegy() - called\n"));
 
@@ -81,7 +81,7 @@ int getbegy(WINDOW *win)
     return win ? win->_begy : ERR;
 }
 
-int getbegx(WINDOW *win)
+int getbegx(const WINDOW *win)
 {
     PDC_LOG(("getbegx() - called\n"));
 
@@ -89,7 +89,7 @@ int getbegx(WINDOW *win)
     return win ? win->_begx : ERR;
 }
 
-int getcury(WINDOW *win)
+int getcury(const WINDOW *win)
 {
     PDC_LOG(("getcury() - called\n"));
 
@@ -97,7 +97,7 @@ int getcury(WINDOW *win)
     return win ? win->_cury : ERR;
 }
 
-int getcurx(WINDOW *win)
+int getcurx(const WINDOW *win)
 {
     PDC_LOG(("getcurx() - called\n"));
 
@@ -105,7 +105,7 @@ int getcurx(WINDOW *win)
     return win ? win->_curx : ERR;
 }
 
-int getpary(WINDOW *win)
+int getpary(const WINDOW *win)
 {
     PDC_LOG(("getpary() - called\n"));
 
@@ -113,7 +113,7 @@ int getpary(WINDOW *win)
     return win ? win->_pary : ERR;
 }
 
-int getparx(WINDOW *win)
+int getparx(const WINDOW *win)
 {
     PDC_LOG(("getparx() - called\n"));
 
@@ -121,7 +121,7 @@ int getparx(WINDOW *win)
     return win ? win->_parx : ERR;
 }
 
-int getmaxy(WINDOW *win)
+int getmaxy(const WINDOW *win)
 {
     PDC_LOG(("getmaxy() - called\n"));
 
@@ -129,7 +129,7 @@ int getmaxy(WINDOW *win)
     return win ? win->_maxy : ERR;
 }
 
-int getmaxx(WINDOW *win)
+int getmaxx(const WINDOW *win)
 {
     PDC_LOG(("getmaxx() - called\n"));
 

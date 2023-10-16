@@ -43,7 +43,7 @@ attr
     int wchgat(WINDOW *win, int n, attr_t attr, short color,
                const void *opts);
 
-    chtype getattrs(WINDOW *win);
+    chtype getattrs(const WINDOW *win);
 
     int underend(void);
     int wunderend(WINDOW *win);
@@ -235,7 +235,7 @@ int wstandout(WINDOW *win)
     return wattrset(win, A_STANDOUT);
 }
 
-chtype getattrs(WINDOW *win)
+chtype getattrs(const WINDOW *win)
 {
     assert( win);
     return win ? win->_attrs : 0;

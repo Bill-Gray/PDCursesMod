@@ -42,7 +42,7 @@ Defined by this header:
 #define PDC_VER_CHANGE   0
 #define PDC_VER_YEAR   2023
 #define PDC_VER_MONTH    10
-#define PDC_VER_DAY      13
+#define PDC_VER_DAY      15
 
 #define PDC_STRINGIZE( x) #x
 #define PDC_stringize( x) PDC_STRINGIZE( x)
@@ -1667,15 +1667,15 @@ PDCEX  int     wvline_set(WINDOW *, const cchar_t *, int);
 
 /* Quasi-standard */
 
-PDCEX  chtype  getattrs(WINDOW *);
-PDCEX  int     getbegx(WINDOW *);
-PDCEX  int     getbegy(WINDOW *);
-PDCEX  int     getmaxx(WINDOW *);
-PDCEX  int     getmaxy(WINDOW *);
-PDCEX  int     getparx(WINDOW *);
-PDCEX  int     getpary(WINDOW *);
-PDCEX  int     getcurx(WINDOW *);
-PDCEX  int     getcury(WINDOW *);
+PDCEX  chtype  getattrs( const WINDOW *);
+PDCEX  int     getbegx( const WINDOW *);
+PDCEX  int     getbegy( const WINDOW *);
+PDCEX  int     getmaxx( const WINDOW *);
+PDCEX  int     getmaxy( const WINDOW *);
+PDCEX  int     getparx( const WINDOW *);
+PDCEX  int     getpary( const WINDOW *);
+PDCEX  int     getcurx( const WINDOW *);
+PDCEX  int     getcury( const WINDOW *);
 PDCEX  void    traceoff(void);
 PDCEX  void    traceon(void);
 PDCEX  void    trace( const unsigned);
