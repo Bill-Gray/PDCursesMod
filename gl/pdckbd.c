@@ -415,12 +415,22 @@ static int _process_mouse_event(void)
         {
             SDL_Event rel;
 
-            if (SDL_WaitEventTimeout(&rel, SP->mouse_wait))
+            while (action != BUTTON_TRIPLE_CLICKED && SDL_WaitEventTimeout(&rel, SP->mouse_wait))
             {
                 if (rel.type == SDL_MOUSEBUTTONUP && rel.button.button == btn)
-                    action = BUTTON_CLICKED;
-                else
+                {
+                    if (action == BUTTON_PRESSED)
+                        action = BUTTON_CLICKED;
+                    else if (action == BUTTON_CLICKED)
+                        action = BUTTON_DOUBLE_CLICKED;
+                    else if (action == BUTTON_DOUBLE_CLICKED)
+                        action = BUTTON_TRIPLE_CLICKED;
+                }
+                else if(rel.type != SDL_MOUSEBUTTONDOWN || rel.button.button != btn)
+                {
                     SDL_PushEvent(&rel);
+                    break;
+                }
             }
         }
 
