@@ -408,9 +408,7 @@ static int _process_mouse_event(void)
         {
             SDL_Event rel;
 
-            napms(SP->mouse_wait);
-
-            if (SDL_PollEvent(&rel))
+            if (SDL_WaitEventTimeout(&rel, SP->mouse_wait))
             {
                 if (rel.type == SDL_MOUSEBUTTONUP && rel.button.button == btn)
                     action = BUTTON_CLICKED;
