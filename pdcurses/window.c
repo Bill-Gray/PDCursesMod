@@ -155,16 +155,19 @@ WINDOW *PDC_makenew(int nlines, int ncols, int begy, int begx)
     /* allocate the window structure itself */
 
     win = (WINDOW *)calloc(1, sizeof(WINDOW));
+    assert( win);
     if (!win)
         return win;
 
     /* allocate the line pointer array */
 
     win->_y = (chtype **)malloc(nlines * sizeof(chtype *));
+    assert( win->_y);
 
     /* allocate the minchng and maxchng arrays */
 
     win->_firstch = (int *)malloc(nlines * sizeof(int) * 2);
+    assert( win->_firstch);
     if (!win->_firstch || !win->_y)
     {
         delwin( win);
@@ -205,6 +208,7 @@ WINDOW *PDC_makelines(WINDOW *win)
     ncols = win->_maxx;
 
     win->_y[0] = (chtype *)malloc(ncols * nlines * sizeof(chtype));
+    assert( win->_y[0]);
     if (!win->_y[0])
     {
         /* if error, free all the data */
@@ -285,6 +289,7 @@ WINDOW *newwin(int nlines, int ncols, int begy, int begx)
         return (WINDOW *)NULL;
 
     assert( SP);
+    assert( begy + nlines <= SP->lines && begx + ncols <= SP->cols);
     if (!SP || begy + nlines > SP->lines || begx + ncols > SP->cols)
         return (WINDOW *)NULL;
 
@@ -350,6 +355,8 @@ int mvwin(WINDOW *win, int y, int x)
     PDC_LOG(("mvwin() - called\n"));
 
     assert( win);
+    assert( y + win->_maxy <= LINES && y >= 0
+         && x + win->_maxx <= COLS && x >=0);
     if (!win || (y + win->_maxy > LINES || y < 0)
              || (x + win->_maxx > COLS || x < 0))
         return ERR;
@@ -426,7 +433,7 @@ int mvderwin(WINDOW *win, int pary, int parx)
     int i, j;
     WINDOW *mypar;
 
-    assert( win);
+    assert( win && win->_parent);
     if (!win || !(win->_parent))
         return ERR;
 

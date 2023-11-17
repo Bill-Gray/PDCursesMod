@@ -120,7 +120,7 @@ WINDOW *subpad(WINDOW *orig, int nlines, int ncols, int begy, int begx)
     PDC_LOG(("subpad() - called: lines=%d cols=%d begy=%d begx=%d\n",
              nlines, ncols, begy, begx));
 
-    assert( orig);
+    assert( orig && (orig->_flags & _PAD));
     if (!orig || !(orig->_flags & _PAD))
         return (WINDOW *)NULL;
 

@@ -153,6 +153,11 @@ and fullwidth characters,  avoiding some possible mis-alignment issues. */
 
 void PDC_transform_line_sliced( int lineno, int x, int len, const chtype *srcp)
 {
+    assert( x >= 0);
+    assert( len > 0);
+    assert( x + len <= COLS);
+    assert( lineno >= 0);
+    assert( lineno < SP->lines);
     while( len)
     {
 #ifdef PDC_WIDE
@@ -280,7 +285,7 @@ int wrefresh(WINDOW *win)
 
     PDC_LOG(("wrefresh() - called\n"));
 
-    assert( win);
+    assert( win && !(win->_flags & (_PAD|_SUBPAD)) );
     if ( !win || (win->_flags & (_PAD|_SUBPAD)) )
         return ERR;
 
