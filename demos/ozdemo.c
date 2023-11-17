@@ -219,9 +219,9 @@ int main(int argc, char **argv)
     const int width = 52, height = 22;
     int w, x, y, i, j;
     const char *versions_1 =
-            " DOS, DOSVGA, Linux framebuffer, OS/2, Plan 9,";
+            " DOS, DOSVGA, GL, Linux framebuffer/DRM, OS/2,";
     const char *versions_2 =
-            " SDL 1/2, VT, Windows console & GUI, X11";
+            " Plan 9, SDL 1/2, VT, Windows console & GUI, X11";
     const char *hit_any_key =
             "       Type a key to continue or ESC to quit     ";
     SCREEN *screen_pointer = newterm(NULL, stdout, stdin);
