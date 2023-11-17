@@ -138,11 +138,6 @@ struct panel
     const void *user;
 };
 
-#define _startx( pan)  (getbegx( (pan)->win))
-#define _starty( pan)  (getbegy( (pan)->win))
-#define _endx( pan)    (_startx( pan) + getmaxx( (pan)->win))
-#define _endy( pan)    (_starty( pan) + getmaxy( (pan)->win))
-
 static PANEL _stdscr_pseudo_panel;
 
 /* The 'deck' of panels is maintained as a circularly linked list,
@@ -157,7 +152,7 @@ though. */
 #define _bottom_panel  _stdscr_pseudo_panel.above
 #define _top_panel     _stdscr_pseudo_panel.below
 
-static bool _windows_overlapped( WINDOW *win1, WINDOW *win2)
+static bool _windows_overlapped( const WINDOW *win1, const WINDOW *win2)
 {
     assert( win1);
     assert( win2);
@@ -176,31 +171,38 @@ static bool _windows_overlapped( WINDOW *win1, WINDOW *win2)
     }
 }
 
-static void _pairwise_override( const PANEL *pan, PANEL *pan2)
+/* If parts of win that overlap win2 have been touched,
+'handle_overlap()' will touch the corresponding parts of win2.  This
+closely resembles the touchoverlap() function,  except that only the
+touched parts of 'win' will result in touching of 'win2'. */
+
+static void _handle_overlap( const WINDOW *win, WINDOW *win2)
 {
-    if( _windows_overlapped( pan->win, pan2->win))
+    if( _windows_overlapped( win, win2))
     {
-        const int start_y = max( _starty( pan), _starty( pan2));
-        const int end_y   = min( _endy( pan),   _endy( pan2));
-        const int start_x = max( _startx( pan), _startx( pan2));
-        const int end_x =   min( _endx( pan),   _endx( pan2));
+        const int start_x = max( getbegx( win), getbegx( win2));
+        const int end_x   = min( getbegx( win) + getmaxx( win) ,
+                                 getbegx( win2) + getmaxx( win2));
+        const int start_y = max( getbegy( win), getbegy( win2));
+        const int end_y   = min( getbegy( win) + getmaxy( win) ,
+                                 getbegy( win2) + getmaxy( win2));
         int firstch, lastch, y;
 
         for( y = start_y; y < end_y; y++)
-            if( PDC_touched_range( pan->win, y - _starty( pan),
+            if( PDC_touched_range( win, y - getbegy( win),
                            &firstch, &lastch))
             {
-                firstch += _startx( pan);
-                lastch += _startx( pan);
+                firstch += getbegx( win);
+                lastch += getbegx( win);
                 if( firstch < end_x && lastch > start_x)
                 {
-                    firstch -= _startx( pan2);
+                    firstch -= getbegx( win2);
                     if( firstch < 0)
                         firstch = 0;
-                    lastch -= _startx( pan2);
-                    if( lastch > getmaxx( pan2->win) - 1)
-                        lastch = getmaxx( pan2->win) - 1;
-                    PDC_mark_cells_as_changed( pan2->win, y - _starty( pan2),
+                    lastch -= getbegx( win2);
+                    if( lastch > getmaxx( win2) - 1)
+                        lastch = getmaxx( win2) - 1;
+                    PDC_mark_cells_as_changed( win2, y - getbegy( win2),
                         firstch, lastch);
                 }
             }
@@ -234,12 +236,12 @@ static void _override( const PANEL *pan, const int flags)
     if( flags & PANELS_BELOW)       /* go from stdscr and work up */
     {
         for( tpan = &_stdscr_pseudo_panel; tpan != pan; tpan = tpan->above)
-           _pairwise_override( pan, tpan);
+           _handle_overlap( pan->win, tpan->win);
     }
     if( flags & PANELS_ABOVE)
     {
         for( tpan = pan->above; tpan != &_stdscr_pseudo_panel; tpan = tpan->above)
-           _pairwise_override( pan, tpan);
+           _handle_overlap( pan->win, tpan->win);
     }
 }
 
@@ -523,7 +525,7 @@ void update_panels(void)
     assert( pan);
     while( pan != &_stdscr_pseudo_panel)     /* look at each panel;  update */
     {                                        /* any panels that overlap it */
-        _pairwise_override( &_stdscr_pseudo_panel, pan);
+        _handle_overlap( stdscr, pan->win);
         _override( pan, PANELS_ABOVE);
         pan = pan->above;
     }
