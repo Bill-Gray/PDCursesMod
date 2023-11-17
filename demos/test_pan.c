@@ -149,6 +149,12 @@ int main(void)
 #ifdef __PDCURSESMOD__
          case 'v':
          case 'h':
+#ifdef PDC_WIDE
+         case 't':
+            if( c == 't')
+               box_style = (box_style == PDC_BOX_THICK ? 0 : PDC_BOX_THICK);
+            else
+#endif
             if( c == 'v')
                box_style ^= PDC_BOX_DOUBLED_V;
             else

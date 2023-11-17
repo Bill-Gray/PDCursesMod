@@ -107,6 +107,8 @@ border
 
 **man-end****************************************************************/
 
+static int _box_type = 0;
+
 /* _attr_passthru() -- Takes a single chtype 'ch' and checks if the
    current attribute of window 'win', as set by wattrset(), and/or the
    current background of win, as set by wbkgd(), should by combined with
@@ -137,12 +139,12 @@ static chtype _attr_passthru(WINDOW *win, chtype ch)
         attr |= win->_bkgd & (A_ATTRIBUTES ^ A_COLOR);
 
     ch = (ch & A_CHARTEXT) | attr;
-
+#ifdef PDC_WIDE
+    if( _box_type & PDC_BOX_THICK)
+       ch += WACS_T_HLINE - WACS_HLINE;
+#endif
     return ch;
 }
-
-static int _box_type = 0;
-
 
 int PDC_set_box_type( const int box_type)
 {

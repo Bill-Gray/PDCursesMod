@@ -41,8 +41,8 @@ Defined by this header:
 #define PDC_VER_MINOR    4
 #define PDC_VER_CHANGE   0
 #define PDC_VER_YEAR   2023
-#define PDC_VER_MONTH    10
-#define PDC_VER_DAY      15
+#define PDC_VER_MONTH    11
+#define PDC_VER_DAY      11
 
 #define PDC_STRINGIZE( x) #x
 #define PDC_stringize( x) PDC_STRINGIZE( x)
@@ -1849,6 +1849,9 @@ PDCEX  int     wunderscore(WINDOW *);
 
 #define PDC_BOX_DOUBLED_V        1
 #define PDC_BOX_DOUBLED_H        2
+#ifdef PDC_WIDE
+   #define PDC_BOX_THICK            4
+#endif
 
 /* return codes from PDC_getclipboard() and PDC_setclipboard() calls */
 
