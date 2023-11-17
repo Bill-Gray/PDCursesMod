@@ -133,6 +133,7 @@ For chtype:
     A_REVERSE     reverse video
     A_RIGHT       line along the right edge
     A_STANDOUT    terminal's best highlighting mode
+    A_TOP         line above the character
     A_UNDERLINE   underline
 
     A_ATTRIBUTES  bit-mask to extract attributes
@@ -155,11 +156,18 @@ For attr_t:
     WA_REVERSE    same as A_REVERSE
     WA_RIGHT      same as A_RIGHT
     WA_STANDOUT   same as A_STANDOUT
+    WA_TOP        same as A_TOP
     WA_UNDERLINE  same as A_UNDERLINE
 
-The following are also defined, for compatibility, but currently have no
-effect in PDCurses: A_HORIZONTAL, A_LOW, A_TOP, A_VERTICAL and their
-WA_* equivalents.
+Note that on PDCurses*,  ncurses,  and most other implementations,  the
+WA_* macros are identical to the A_* macros.  This is not guaranteed,  and
+some implementations (Solaris xpg4 curses,  for example) do use different
+values for WA_* and A_*.  So care is advised.
+
+The following are also defined, for compatibility, but currently have
+no effect in PDCursesMod (or any known implementation of Curses):
+A_HORIZONTAL, A_VERTICAL, A_LOW and their WA_* equivalents.  Their intended
+meaning is unclear.
 
 ### The Alternate Character Set
 
