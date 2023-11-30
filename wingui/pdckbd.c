@@ -19,16 +19,15 @@ extern int PDC_key_queue[KEY_QUEUE_SIZE];
 
 bool PDC_check_key(void)
 {
-    static int count;
+    MSG msg;
 
-    if( PDC_key_queue_low != PDC_key_queue_high)
-        return TRUE;
-    if( count++ == 100)
+    while( PDC_key_queue_low == PDC_key_queue_high
+                       && PeekMessage( &msg, NULL, 0, 0, PM_REMOVE) )
     {
-        count = 0;
-        PDC_napms( 1);
+       TranslateMessage(&msg);
+       DispatchMessage(&msg);
     }
-    return FALSE;
+    return( PDC_key_queue_low != PDC_key_queue_high);
 }
 
 int PDC_get_mouse_event_from_queue( void);     /* pdcscrn.c */
