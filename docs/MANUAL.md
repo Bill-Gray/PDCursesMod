@@ -358,7 +358,7 @@ attr
     int wchgat(WINDOW *win, int n, attr_t attr, short color,
                const void *opts);
 
-    chtype getattrs(WINDOW *win);
+    chtype getattrs(const WINDOW *win);
 
     int underend(void);
     int wunderend(WINDOW *win);
@@ -1182,14 +1182,14 @@ getyx
     void getsyx(int y, int x);
     void setsyx(int y, int x);
 
-    int getbegy(WINDOW *win);
-    int getbegx(WINDOW *win);
-    int getcury(WINDOW *win);
-    int getcurx(WINDOW *win);
-    int getpary(WINDOW *win);
-    int getparx(WINDOW *win);
-    int getmaxy(WINDOW *win);
-    int getmaxx(WINDOW *win);
+    int getbegy(const WINDOW *win);
+    int getbegx(const WINDOW *win);
+    int getcury(const WINDOW *win);
+    int getcurx(const WINDOW *win);
+    int getpary(const WINDOW *win);
+    int getparx(const WINDOW *win);
+    int getmaxy(const WINDOW *win);
+    int getmaxx(const WINDOW *win);
 
 ### Description
 
@@ -2656,7 +2656,9 @@ slk
    the useable screen, depending on the format selected.
 
    The line(s) removed from the screen are used as a separate window, in
-   which SLKs are displayed.
+   which SLKs are displayed.  Mouse clicks on the SLKs are returned as
+   KEY_F() (function key) presses;  for example,  clicking on the leftmost
+   SLK will cause KEY_F(1) to be added to the key queue.
 
    slk_init() requires a single parameter which describes the format of
    the SLKs as follows:

@@ -1,4 +1,4 @@
-PDCursesMod 4.4.0 - 2023 October 13
+PDCursesMod 4.4.0 - 2023 November 30
 ===================================
 
    Note that because of SCREEN and WINDOW now being opaque,  the WA_
@@ -30,6 +30,9 @@ Major new features
 Minor new features
 ------------------
 
+- SDL1,  SDL2,  and GL support double and triple mouse clicks.
+  a4e563d763
+
 - 'widetest' now tests copying of both precomposed and combining
   characters with getcchar() and setcchar().  19169a1b18
 
@@ -52,8 +55,14 @@ Minor new features
 - Added some small test programs for very specific feature/bug tests.
   e6a5edee79
 
+- You can set a 'thick' style for boxes/borders (wide-character builds
+  only).  5fd12f8ec9
+
 Bug fixes
 ---------
+
+- WinGUI keyboard responsiveness could be poor if it wasn't getting
+  enough CPU share.  087c20cc87
 
 - Fixed a (very small) memory leak from reset_color_pairs.  9e236abb17
 
