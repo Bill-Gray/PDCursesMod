@@ -399,7 +399,7 @@ static void PDC_transform_line_given_hdc( const HDC hdc, const int lineno,
         srcp -= x;
         x = 0;
     }
-    if( (srcp[len] & A_CHARTEXT) < MAX_UNICODE)
+    if( len < SP->cols - x && (srcp[len] & A_CHARTEXT) < MAX_UNICODE)
        len++;    /* draw an extra char to avoid leaving garbage on screen */
     if( len > SP->cols - x)
         len = SP->cols - x;
