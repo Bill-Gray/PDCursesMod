@@ -38,7 +38,7 @@ void PDC_check_for_blinking( void)
    const long t = PDC_millisecs( );
    const long blink_interval = 500L;
 
-   if( !t || t > prev_time + blink_interval)
+   if( !t || t - prev_time > blink_interval)
    {
       int x1, y, x2;
 
