@@ -1,4 +1,4 @@
-/* PDCurses */
+/* PDCursesMod */
 
 #include <assert.h>
 #include <curspriv.h>

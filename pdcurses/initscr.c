@@ -1,4 +1,4 @@
-/* PDCurses */
+/* PDCursesMod */
 
 #include <curspriv.h>
 #include <panel.h>
@@ -71,7 +71,7 @@ initscr
    KEY_RESIZE is generally preferable, unless you're not handling the
    keyboard.
 
-   curses_version() returns a string describing the version of PDCurses.
+   curses_version() returns a string describing the version of PDCursesMod.
 
    PDC_get_version() fills a PDC_VERSION structure provided by the user
    with more detailed version info (see curses.h).

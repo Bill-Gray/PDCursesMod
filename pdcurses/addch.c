@@ -1,4 +1,4 @@
-/* PDCurses */
+/* PDCursesMod */
 
 /* On Linux,  and probably some other platforms,  we can just
 use the built-in wcwidth() function.  */
@@ -142,7 +142,7 @@ PDCEX int PDC_wcwidth( const int32_t ucs)
 /*  A greatly modified version of Markus Kuhn's excellent
 wcwidth implementation.  For his latest version and many
 comments,  see http://www.cl.cam.ac.uk/~mgk25/ucs/wcwidth.c
-For PDCurses,  only PDC_wcwidth is used,  modified to take an
+For PDCursesMod,  only PDC_wcwidth is used,  modified to take an
 int argument instead of wchar_t,  because in MS-land, wchar_t
 is 16 bits;  getting the full Unicode range requires 21 bits.
 Also modified format/indenting to conform to PDCurses norms,
@@ -405,7 +405,7 @@ const uint16_t tbl_for_fullwidth_chars[][2] = {
 
 /* The handling of "fullwidth" characters (those consuming two "normal"
 columns) and combining characters (characters that can add accents to a
-preceding character) in PDCurses is,  of necessity,  complex.
+preceding character) in PDCursesMod is,  of necessity,  complex.
 
 Unicode is defined to have 17 planes of 2^16 characters each,  so that
 the maximum Unicode code point is U+10FFFF.  When addch() is given a
@@ -414,7 +414,7 @@ stores the non-Unicode character DUMMY_CHAR_NEXT_TO_FULLWIDTH
 (U+110000) next to it,  just as a placeholder.  (That part is actually
 rather simple.)
 
-PDCurses handles combining characters by creating entirely new "Unicode"
+PDCursesMod handles combining characters by creating entirely new "Unicode"
 (let's call them "post-Unicode") characters,  at code point U+110001
 (COMBINED_CHAR_START) and beyond. The 'combos' table keeps track of
 these newly-created characters,  essentially saying:  "This post-Unicode
@@ -439,7 +439,7 @@ actual series of characters.
 'ncurses' handles combined characters in a very different manner:  a
 'cchar' is defined as an array of five characters,  so that you can
 add up to four combining characters in any given cell.  I had to reject
-that solution because backward compatibility within PDCurses would be
+that solution because backward compatibility within PDCurseMod would be
 broken.  Quite aside from that,  this is a simpler solution,  and allows
 for any number of combining characters (though four ought to be enough
 for anybody).      */
