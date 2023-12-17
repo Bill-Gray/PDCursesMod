@@ -408,20 +408,16 @@ static int _mouse_key(void)
 
 /* ftime() is consided obsolete.  But it's all we have for
 millisecond precision on older compilers/systems.  We'll
-use gettimeofday() when available.        */
+use clock_gettime() or gettimeofday() when available. */
 
-#if defined(__TURBOC__) || defined(__EMX__) || defined(__DJGPP__) || \
-    defined( __DMC__) || defined(__WATCOMC__) || defined(_WIN32)
-#include <sys/timeb.h>
+#if defined( _POSIX_C_SOURCE) && (_POSIX_C_SOURCE >= 199309L)
+   #define CLOCK_GETTIME_AVAILABLE    1
+#endif
+#if defined( _DEFAULT_SOURCE) || defined( _BSD_SOURCE)
+   #define GETTIMEOFDAY_AVAILABLE    1
+#endif
 
-long PDC_millisecs( void)
-{
-    struct timeb t;
-
-    ftime( &t);
-    return( (long)t.time * 1000L + (long)t.millitm);
-}
-#else
+#if defined( GETTIMEOFDAY_AVAILABLE)
 #include <sys/time.h>
 
 long PDC_millisecs( void)
@@ -430,6 +426,26 @@ long PDC_millisecs( void)
 
     gettimeofday( &t, NULL);
     return( t.tv_sec * 1000 + t.tv_usec / 1000);
+}
+#elif defined( CLOCK_GETTIME_AVAILABLE)
+#include <time.h>
+
+long PDC_millisecs( void)
+{
+    struct timespec t;
+
+    clock_gettime( CLOCK_REALTIME, &t);
+    return( t.tv_sec * 1000 + t.tv_nsec / 1000000);
+}
+#else    /* neither gettimeofday() or clock_gettime() available */
+#include <sys/timeb.h>
+
+long PDC_millisecs( void)
+{
+    struct timeb t;
+
+    ftime( &t);
+    return( (long)t.time * 1000L + (long)t.millitm);
 }
 #endif
 
