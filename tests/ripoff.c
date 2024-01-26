@@ -93,7 +93,6 @@ int main( const int argc, const char **argv)
         for( i = 0; i < LINES; i++)
            mvprintw( i, 0, "Line %d", i + 1);
         printw( "   (Bottom line)");
-        refresh( );
         ch = getch( );
         }
     endwin( );
