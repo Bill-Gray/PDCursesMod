@@ -70,7 +70,7 @@ LDFLAGS		= $(LIBCURSES)
 RANLIB		= ranlib
 
 ifeq ($(DRM),Y)
-	CFLAGS += -DUSE_DRM -I /usr/include/drm
+	CFLAGS += -DUSE_DRM -I /usr/include/drm -I /usr/include/libdrm
 	LDFLAGS += -ldrm
 endif
 

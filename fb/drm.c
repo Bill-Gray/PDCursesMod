@@ -14,14 +14,6 @@ https://github.com/embear-engineering/drm-framebuffer   */
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 
-#ifdef __linux__
-#include <drm/drm.h>
-#include <drm/drm_mode.h>
-#else
-#include <libdrm/drm.h>
-#include <libdrm/drm_mode.h>
-#endif
-
 #include <xf86drm.h>
 #include <xf86drmMode.h>
 
