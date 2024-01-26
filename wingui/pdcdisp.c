@@ -392,19 +392,11 @@ static void PDC_transform_line_given_hdc( const HDC hdc, const int lineno,
 #endif
         return;
     }
-                     /* Seems to me as if the input text to this function */
-    if( x < 0)       /* should _never_ be off-screen.  But it sometimes is. */
-    {                /* Clipping is therefore necessary. */
-        len += x;
-        srcp -= x;
-        x = 0;
-    }
+    assert( x >= 0);
     if( len < SP->cols - x && (srcp[len] & A_CHARTEXT) < MAX_UNICODE)
        len++;    /* draw an extra char to avoid leaving garbage on screen */
-    if( len > SP->cols - x)
-        len = SP->cols - x;
-    if( lineno >= SP->lines || len <= 0 || lineno < 0)
-        return;
+    assert( len <= SP->cols - x);
+    assert( lineno < SP->lines && len > 0 && lineno >= 0);
     assert( (srcp[len - 1] & A_CHARTEXT) != MAX_UNICODE);
     if( x && (srcp[-1] & A_CHARTEXT) < MAX_UNICODE)
     {                /* back up by one character to avoid */
