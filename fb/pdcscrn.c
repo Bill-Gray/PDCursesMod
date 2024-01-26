@@ -233,18 +233,15 @@ static int _load_psf_font( const int font_num)
         const int new_rows = PDC_fb.yres / PDC_font_info.height;
         static bool first_load = TRUE;
 
-        if( PDC_rows != new_rows || PDC_cols != new_cols)
+        PDC_rows = new_rows;
+        PDC_cols = new_cols;
+        if( !first_load)
         {
-            PDC_rows = new_rows;
-            PDC_cols = new_cols;
-            if( !first_load)
-            {
-                PDC_resize_occurred = TRUE;
-                if (SP)
-                    SP->resized = TRUE;
-            }
-            first_load = FALSE;
+            PDC_resize_occurred = TRUE;
+            if (SP)
+                SP->resized = TRUE;
         }
+        first_load = FALSE;
         rval = 0;
         curr_font = font_num;
                /* Clear area below last row : */
