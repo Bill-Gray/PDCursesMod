@@ -40,9 +40,9 @@ Defined by this header:
 #define PDC_VER_MAJOR    4
 #define PDC_VER_MINOR    4
 #define PDC_VER_CHANGE   0
-#define PDC_VER_YEAR   2023
-#define PDC_VER_MONTH    11
-#define PDC_VER_DAY      30
+#define PDC_VER_YEAR   2024
+#define PDC_VER_MONTH    01
+#define PDC_VER_DAY      26
 
 #define PDC_STRINGIZE( x) #x
 #define PDC_stringize( x) PDC_STRINGIZE( x)

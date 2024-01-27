@@ -1,3 +1,17 @@
+Generally speaking,  this history mentions only the more significant
+changes.  See the git log for full details.
+
+Current PDCursesMod - 2024 January 26
+=====================================
+
+Bug fixes
+---------
+
+- In rare cases,  blinking on the framebuffer port could be disabled
+  due to an integer rollover.  eaee2a61f2
+
+- In WinGUI,  we could potentially read memory out of bounds.  70d27245d1
+
 PDCursesMod 4.4.0 - 2023 November 30
 ===================================
 

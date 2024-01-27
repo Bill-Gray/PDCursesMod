@@ -396,7 +396,7 @@ attr
    attributes. In PDCurses, these are the same as A_*, and there is no
    difference in behavior from the chtype-based functions.  If opts is
    non-NULL,  it is used as a pointer to an integer and the color pair
-   is stored in it (this is an ncurses extension).
+   is stored in it (this is an ncurses and PDCursesMod extension).
 
    wattr_get() retrieves the attributes and color pair for the specified
    window.
@@ -1404,7 +1404,7 @@ initscr
    KEY_RESIZE is generally preferable, unless you're not handling the
    keyboard.
 
-   curses_version() returns a string describing the version of PDCurses.
+   curses_version() returns a string describing the version of PDCursesMod.
 
    PDC_get_version() fills a PDC_VERSION structure provided by the user
    with more detailed version info (see curses.h).
