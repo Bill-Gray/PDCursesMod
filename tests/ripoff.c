@@ -88,8 +88,24 @@ int main( const int argc, const char **argv)
         mvprintw( y++, x, "stdscr has %d lines, %d columns", LINES, COLS);
         mvaddstr( y++, x, "Hit Escape or q to quit");
         mvaddstr( y++, x, "Resizing should redraw SLK and ripped-off lines");
-//      if( ch >= KEY_F( 1) && ch <= KEY_F( 12))
-           mvprintw( y++, x, "Key %d hit", ch);
+        if( ch)
+            mvprintw( y++, x, "Key %s hit", keyname( ch));
+        if( KEY_MOUSE == ch)
+            {
+            MEVENT m;
+
+#ifdef __PDCURSES__
+            nc_getmouse( &m);
+#else
+            getmouse( &m);
+#endif
+            mvprintw( y++, x, "   Mouse at line %d, col %d",
+                           m.y, m.x);
+            }
+#if defined( KEY_RESIZE) && defined (__PDCURSES__)
+        if( KEY_RESIZE == ch)
+            resize_term(0, 0);
+#endif
         for( i = 0; i < LINES; i++)
            mvprintw( i, 0, "Line %d", i + 1);
         printw( "   (Bottom line)");
