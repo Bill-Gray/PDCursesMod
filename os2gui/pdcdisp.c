@@ -1426,7 +1426,6 @@ static const struct CharRec alt_chars[] = {
     { 0x03C6, { { cp_437, 0xED } } },
     { 0x2260, { { cp_437, '=' }, { cp_437, '/' } } },
 };
-#endif
 
 /* Compare function for the above tables */
 static int
@@ -1443,6 +1442,7 @@ char_compare(const void *p1, const void *p2)
         return 0;
     }
 }
+#endif
 
 /* Render a single character */
 static void
