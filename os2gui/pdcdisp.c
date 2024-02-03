@@ -1450,11 +1450,11 @@ render_char(HPS hps, PPOINTL point, PRECTL rect, ULONG options, ULONG ch, int ch
 {
 #ifdef PDC_WIDE
     /* ch is a Unicode character */
-    CHAR bytes[2];
+    unsigned char bytes[2];
 
     if (0x20 <= ch && ch <= 0x7E) {
         /* Render ASCII in the default code page; it's faster */
-        bytes[0] = (CHAR)ch;
+        bytes[0] = (unsigned char)ch;
         GpiSetCharSet(hps, (charset & 3) + 1);
         GpiCharStringPosAt(hps, point, rect, options, 1, bytes, NULL);
     } else if (have_cp[cp_1200]) {
@@ -1465,7 +1465,7 @@ render_char(HPS hps, PPOINTL point, PRECTL rect, ULONG options, ULONG ch, int ch
         GpiCharStringPosAt(hps, point, rect, options, 2, bytes, NULL);
     } else {
         /* Select a matching character set */
-        static const struct CharRec bad_char = { 0x003F, { cp_850, '?' } };
+        static const struct CharRec bad_char = { 0x003F, { { cp_850, '?' } } };
         const struct CharRec *rec;
         unsigned i;
 
