@@ -462,6 +462,8 @@ static void PDC_transform_line_given_hps( HPS hps, const int lineno,
         }
         clip_rect.xRight += PDC_cxChar;
     }
+    if (x + i < SP->cols && (srcp[i] & A_CHARTEXT) == MAX_UNICODE)
+        clip_rect.xRight += PDC_cxChar;
     WinFillRect(hps, &clip_rect, switch_colors(hps, background_rgb));
 
     /* Expand by one more column */
