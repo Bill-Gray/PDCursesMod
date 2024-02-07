@@ -1533,6 +1533,9 @@ HandlePaint(const HWND hwnd)
     int i;
     int num_cols = PDC_n_cols;
     int num_rows = PDC_n_rows;
+    int row_min, row_max;
+    int col_min, col_max;
+
     if (num_cols > COLS)
         num_cols = COLS;
     if (num_rows > SP->lines)
@@ -1543,10 +1546,21 @@ HandlePaint(const HWND hwnd)
 
     PDC_setup_font(hps);
 
-    for (i = 0; i < num_rows; i++)
+    PDC_pixel_to_screen(update_rect.xLeft, update_rect.yTop, &col_min, &row_min);
+    PDC_pixel_to_screen(update_rect.xRight, update_rect.yBottom, &col_max, &row_max);
+    if (col_min < 0)
+        col_min = 0;
+    if (row_min < 0)
+        row_min = 0;
+    if (col_max > num_cols - 1)
+        col_max = num_cols - 1;
+    if (row_max > num_rows - 1)
+        row_max = num_rows - 1;
+
+    for (i = row_min; i <= row_max; i++)
     {
         if (i < SP->lines && curscr->_y[i])
-            PDC_transform_line_sliced( i, 0, num_cols, curscr->_y[i]);
+            PDC_transform_line_sliced( i, col_min, col_max - col_min + 1, curscr->_y[i] + col_min);
     }
 
     WinEndPaint(hps);
