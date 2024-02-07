@@ -314,7 +314,7 @@ static bool cp_inited = FALSE;
 static uint32_t *PDC_normalize(uint32_t ch, bool compose);
 #endif
 
-static void render_char(HPS hps, PPOINTL point, PRECTL rect, ULONG options, ULONG ch, int charset);
+static void render_char(HPS hps, PPOINTL point, PRECTL rect, ULONG ch, int charset);
 
 /* update the given physical line to look like the corresponding line in
 curscr.
@@ -483,7 +483,6 @@ static void PDC_transform_line_given_hps( HPS hps, const int lineno,
         const attr_t attrib = (attr_t)( srcp[i] & ~A_CHARTEXT);
         uint32_t cp_ch = (uint32_t)( srcp[i] & A_CHARTEXT);
         int charset;
-        ULONG options = 0;
 #if defined(PDC_WIDE) && defined(USING_COMBINING_CHARACTER_SCHEME)
         uint32_t *seq = NULL;
 #endif
@@ -525,12 +524,12 @@ static void PDC_transform_line_given_hps( HPS hps, const int lineno,
 
             pt.x = clip_rect.xLeft;
             pt.y = clip_rect.yBottom + fm.lMaxDescender;
-            render_char(hps, &pt, &clip_rect, options, cp_ch, charset);
+            render_char(hps, &pt, &clip_rect, cp_ch, charset);
             if ((attrib & A_BOLD) && !have_bold)
             {
                 /* Overstrike to make a bold font */
                 ++pt.x;
-                render_char(hps, &pt, &clip_rect, options, cp_ch, charset);
+                render_char(hps, &pt, &clip_rect, cp_ch, charset);
                 --pt.x;
             }
 #if defined(PDC_WIDE) && defined(USING_COMBINING_CHARACTER_SCHEME)
@@ -543,12 +542,12 @@ static void PDC_transform_line_given_hps( HPS hps, const int lineno,
                     if (0x0300 <= cch && cch < 0x0300 + sizeof(cchars)/sizeof(cchars[0]))
                     {
                         cch = cchars[cch - 0x0300];
-                        render_char(hps, &pt, &clip_rect, options, cch, charset);
+                        render_char(hps, &pt, &clip_rect, cch, charset);
                         if ((attrib & A_BOLD) && !have_bold)
                         {
                             /* Overstrike to make a bold font */
                             ++pt.x;
-                            render_char(hps, &pt, &clip_rect, options, cch, charset);
+                            render_char(hps, &pt, &clip_rect, cch, charset);
                             --pt.x;
                         }
                     }
@@ -1457,7 +1456,7 @@ char_compare(const void *p1, const void *p2)
 
 /* Render a single character */
 static void
-render_char(HPS hps, PPOINTL point, PRECTL rect, ULONG options, ULONG ch, int charset)
+render_char(HPS hps, PPOINTL point, PRECTL rect, ULONG ch, int charset)
 {
 #ifdef PDC_WIDE
     /* ch is a Unicode character */
@@ -1467,13 +1466,13 @@ render_char(HPS hps, PPOINTL point, PRECTL rect, ULONG options, ULONG ch, int ch
         /* Render ASCII in the default code page; it's faster */
         bytes[0] = (unsigned char)ch;
         GpiSetCharSet(hps, (charset & 3) + 1);
-        GpiCharStringPosAt(hps, point, rect, options, 1, bytes, NULL);
+        GpiCharStringPosAt(hps, point, rect, 0, 1, bytes, NULL);
     } else if (have_cp[cp_1200]) {
         /* We have Unicode support */
         bytes[0] = (ch & 0x00FF) >> 0;
         bytes[1] = (ch & 0xFF00) >> 8;
         GpiSetCharSet(hps, (charset & 3) + (cp_1200 << 2) + 1);
-        GpiCharStringPosAt(hps, point, rect, options, 2, bytes, NULL);
+        GpiCharStringPosAt(hps, point, rect, 0, 2, bytes, NULL);
     } else {
         /* Select a matching character set */
         static const struct CharRec bad_char = { 0x003F, { { cp_850, '?' } } };
@@ -1506,7 +1505,7 @@ render_char(HPS hps, PPOINTL point, PRECTL rect, ULONG options, ULONG ch, int ch
             }
             GpiSetCharSet(hps,
                     (rec->glyphs[i].code_page << 2) + (charset & 3) + 1);
-            GpiCharStringPosAt(hps, point, rect, options, 1, bytes, NULL);
+            GpiCharStringPosAt(hps, point, rect, 0, 1, bytes, NULL);
         }
     }
 #else
@@ -1520,25 +1519,25 @@ render_char(HPS hps, PPOINTL point, PRECTL rect, ULONG options, ULONG ch, int ch
             /* We have code page 1275 */
             byte = 0xAD;
             GpiSetCharSet(hps, (cp_1275 << 2) | (charset & 3) + 1);
-            GpiCharStringPosAt(hps, point, rect, options, 1, &byte, NULL);
+            GpiCharStringPosAt(hps, point, rect, 0, 1, &byte, NULL);
         } else {
             /* Overstrike = and / */
             GpiSetCharSet(hps, (charset & 3) + 1);
             byte = '=';
-            GpiCharStringPosAt(hps, point, rect, options, 1, &byte, NULL);
+            GpiCharStringPosAt(hps, point, rect, 0, 1, &byte, NULL);
             byte = '/';
-            GpiCharStringPosAt(hps, point, rect, options, 1, &byte, NULL);
+            GpiCharStringPosAt(hps, point, rect, 0, 1, &byte, NULL);
         }
     } else if (_is_altcharset(ch)) {
         /* Other alternate characters come from code page 437 */
         byte = acs_map[ch & 0xFF];
         GpiSetCharSet(hps, (cp_437 << 2) | (charset & 3) + 1);
-        GpiCharStringPosAt(hps, point, rect, options, 1, &byte, NULL);
+        GpiCharStringPosAt(hps, point, rect, 0, 1, &byte, NULL);
     } else {
         /* Normal character from the configured default code page */
         byte = ch & 0xFF;
         GpiSetCharSet(hps, (charset & 3) + 1);
-        GpiCharStringPosAt(hps, point, rect, options, 1, &byte, NULL);
+        GpiCharStringPosAt(hps, point, rect, 0, 1, &byte, NULL);
     }
 #endif
 }
