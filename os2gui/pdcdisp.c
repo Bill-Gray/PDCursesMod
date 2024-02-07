@@ -146,7 +146,6 @@ void PDC_gotoyx(int row, int col)
     {
         HPS hps = WinGetPS( PDC_hWnd) ;
         GpiCreateLogColorTable(hps, 0, LCOLF_RGB, 0, 0, NULL);
-        PDC_setup_font(hps);
 
         SP->curscol = col;
         SP->cursrow = row;
