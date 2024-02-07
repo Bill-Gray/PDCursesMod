@@ -1515,10 +1515,11 @@ render_char(HPS hps, PPOINTL point, PRECTL rect, ULONG ch, int charset)
     /* ch is a Unicode character */
     unsigned char bytes[2];
 
-    if (0x20 <= ch && ch <= 0x7E) {
-        /* Render ASCII in the default code page; it's faster */
+    if (ch <= 0xFF) {
+        /* Render lower characters in code page 1004; it's faster */
+        /* All known versions of OS/2 have code page 1004 */
         bytes[0] = (unsigned char)ch;
-        set_charset(hps, cp_native, (charset & 3));
+        set_charset(hps, cp_1004, (charset & 3));
         GpiCharStringPosAt(hps, point, rect, 0, 1, bytes, NULL);
     } else if (have_cp[cp_1200]) {
         /* We have Unicode support */
