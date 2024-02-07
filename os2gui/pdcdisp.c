@@ -315,6 +315,7 @@ static uint32_t *PDC_normalize(uint32_t ch, bool compose);
 #endif
 
 static void render_char(HPS hps, PPOINTL point, PRECTL rect, ULONG ch, int charset);
+static void set_charset(HPS hps, enum CodePage code_page, int charset);
 
 /* update the given physical line to look like the corresponding line in
 curscr.
@@ -443,6 +444,7 @@ static void PDC_transform_line_given_hps( HPS hps, const int lineno,
             cursor_overwritten = TRUE;
 
     /* Do we have a real bold font? */
+    set_charset(hps, cp_native, 2);
     GpiQueryLogicalFont(hps, 2 + 1, (PSTR8)synth, &fattrs, sizeof(fattrs));
     have_bold = synth[0] == '\0';
 
@@ -613,6 +615,58 @@ static void PDC_transform_line_given_hps( HPS hps, const int lineno,
                /* ...did we step on the cursor?  If so,  redraw it: */
     if( cursor_overwritten)
         redraw_cursor( hps);
+}
+
+static void set_charset(HPS hps, enum CodePage code_page, int charset)
+{
+    struct font_type {
+        const char *suffix;
+        unsigned flags;
+    };
+    static struct font_type const font_types[] = {
+        { "", 0 },
+        { " Italic", FATTR_SEL_ITALIC },
+        { " Bold", FATTR_SEL_BOLD },
+        { " Bold Italic",  FATTR_SEL_BOLD | FATTR_SEL_ITALIC },
+    };
+
+    int cs = code_page*4 + charset + 1;
+    BOOL rc = GpiSetCharSet(hps, cs);
+    if (!rc)
+    {
+        FATTRS fattrs;
+        LONG lmatch;
+        const char *facename = "";
+        /* GCC makes the facename parameter to GpiCreateLogFont a const
+           pointer to STR8. Watcom uses a non-const pointer.  This causes
+           warnings in one compiler or the other unless it is resolved here. */
+#ifdef __GNUC__
+        typedef const STR8 *p_facename;
+#else
+        typedef STR8 *p_facename;
+#endif
+
+        memset(&fattrs, 0, sizeof(fattrs));
+        fattrs.usRecordLength = sizeof(fattrs);
+        fattrs.fsType = FATTR_TYPE_ANTIALIASED;
+        fattrs.fsFontUse = FATTR_FONTUSE_OUTLINE | FATTR_FONTUSE_TRANSFORMABLE;
+
+        fattrs.usCodePage = (code_page == cp_native) ? 0 : code_pages[code_page-1];
+        fattrs.fsSelection = 0;
+        snprintf(fattrs.szFacename, sizeof(fattrs.szFacename), "%s%s",
+                 PDC_font_name, font_types[charset].suffix);
+        /* Null already written to last element fo fattrs.szFacename */
+        lmatch = GpiCreateLogFont(hps, (p_facename)facename, cs, &fattrs);
+        if (lmatch != FONT_MATCH || strcmp(fattrs.szFacename, PDC_font_name) == 0)
+        {
+            snprintf(fattrs.szFacename, sizeof(fattrs.szFacename), "%s",
+                     PDC_font_name);
+            fattrs.fsSelection = font_types[charset].flags;
+            facename = "synth";
+            GpiCreateLogFont(hps, (p_facename)facename, cs, &fattrs);
+        }
+    }
+    GpiSetCharSet(hps, cs);
 }
 
 struct CharRec {
@@ -1462,16 +1516,11 @@ render_char(HPS hps, PPOINTL point, PRECTL rect, ULONG ch, int charset)
     /* ch is a Unicode character */
     unsigned char bytes[2];
 
-    if (0x20 <= ch && ch <= 0x7E) {
-        /* Render ASCII in the default code page; it's faster */
-        bytes[0] = (unsigned char)ch;
-        GpiSetCharSet(hps, (charset & 3) + 1);
-        GpiCharStringPosAt(hps, point, rect, 0, 1, bytes, NULL);
-    } else if (have_cp[cp_1200]) {
+    if (have_cp[cp_1200]) {
         /* We have Unicode support */
         bytes[0] = (ch & 0x00FF) >> 0;
         bytes[1] = (ch & 0xFF00) >> 8;
-        GpiSetCharSet(hps, (charset & 3) + (cp_1200 << 2) + 1);
+        set_charset(hps, cp_1200, (charset & 3));
         GpiCharStringPosAt(hps, point, rect, 0, 2, bytes, NULL);
     } else {
         /* Select a matching character set */
@@ -1503,8 +1552,7 @@ render_char(HPS hps, PPOINTL point, PRECTL rect, ULONG ch, int charset)
             if (bytes[0] == 0) {
                 break;
             }
-            GpiSetCharSet(hps,
-                    (rec->glyphs[i].code_page << 2) + (charset & 3) + 1);
+            set_charset(hps, rec->glyphs[i].code_page, + (charset & 3));
             GpiCharStringPosAt(hps, point, rect, 0, 1, bytes, NULL);
         }
     }
@@ -1518,11 +1566,11 @@ render_char(HPS hps, PPOINTL point, PRECTL rect, ULONG ch, int charset)
         if (have_cp[cp_1275]) {
             /* We have code page 1275 */
             byte = 0xAD;
-            GpiSetCharSet(hps, (cp_1275 << 2) | (charset & 3) + 1);
+            set_charset(hps, cp_1275, (charset & 3));
             GpiCharStringPosAt(hps, point, rect, 0, 1, &byte, NULL);
         } else {
             /* Overstrike = and / */
-            GpiSetCharSet(hps, (charset & 3) + 1);
+            set_charset(hps, cp_native, (charset & 3));
             byte = '=';
             GpiCharStringPosAt(hps, point, rect, 0, 1, &byte, NULL);
             byte = '/';
@@ -1531,12 +1579,12 @@ render_char(HPS hps, PPOINTL point, PRECTL rect, ULONG ch, int charset)
     } else if (_is_altcharset(ch)) {
         /* Other alternate characters come from code page 437 */
         byte = acs_map[ch & 0xFF];
-        GpiSetCharSet(hps, (cp_437 << 2) | (charset & 3) + 1);
+        set_charset(hps, cp_437, (charset & 3));
         GpiCharStringPosAt(hps, point, rect, 0, 1, &byte, NULL);
     } else {
         /* Normal character from the configured default code page */
         byte = ch & 0xFF;
-        GpiSetCharSet(hps, (charset & 3) + 1);
+        set_charset(hps, cp_native, (charset & 3));
         GpiCharStringPosAt(hps, point, rect, 0, 1, &byte, NULL);
     }
 #endif
@@ -1589,19 +1637,7 @@ void PDC_set_font_box(HWND hwnd)
 
 void PDC_setup_font(HPS hps)
 {
-    struct font_type {
-        const char *suffix;
-        unsigned flags;
-    };
-    static struct font_type const font_types[] = {
-        { "", 0 },
-        { " Italic", FATTR_SEL_ITALIC },
-        { " Bold", FATTR_SEL_BOLD },
-        { " Bold Italic",  FATTR_SEL_BOLD | FATTR_SEL_ITALIC },
-    };
-    FATTRS fattrs;
     SIZEF box;
-    unsigned i;
 
     /* Determine the name of the font */
     if (PDC_font_name[0] == '\0')
@@ -1655,45 +1691,7 @@ void PDC_setup_font(HPS hps)
         }
     }
 
-    memset(&fattrs, 0, sizeof(fattrs));
-    fattrs.usRecordLength = sizeof(fattrs);
-    fattrs.fsType = FATTR_TYPE_ANTIALIASED;
-    fattrs.fsFontUse = FATTR_FONTUSE_OUTLINE | FATTR_FONTUSE_TRANSFORMABLE;
-
-    for (i = 0; i < 4; ++i)
-    {
-        LONG lmatch;
-        unsigned j;
-        const char *facename = "";
-        /* GCC makes the facename parameter to GpiCreateLogFont a const
-           pointer to STR8. Watcom uses a non-const pointer.  This causes
-           warnings in one compiler or the other unless it is resolved here. */
-#ifdef __GNUC__
-        typedef const STR8 *p_facename;
-#else
-        typedef STR8 *p_facename;
-#endif
-
-        fattrs.usCodePage = 0;
-        fattrs.fsSelection = 0;
-        snprintf(fattrs.szFacename, sizeof(fattrs.szFacename), "%s%s",
-                 PDC_font_name, font_types[i].suffix);
-        /* Null already written to last element fo fattrs.szFacename */
-        lmatch = GpiCreateLogFont(hps, (p_facename)facename, i + 1, &fattrs);
-        if (lmatch != FONT_MATCH || strcmp(fattrs.szFacename, PDC_font_name) == 0)
-        {
-            snprintf(fattrs.szFacename, sizeof(fattrs.szFacename), "%s",
-                     PDC_font_name);
-            facename = "synth";
-            GpiCreateLogFont(hps, (p_facename)facename, i + 1, &fattrs);
-        }
-        for (j = 0; j < sizeof(code_pages)/sizeof(code_pages[0]); ++j) {
-            fattrs.usCodePage = code_pages[j];
-            GpiCreateLogFont(hps, (p_facename)facename, i + 5 + j*4, &fattrs);
-        }
-    }
-
-    GpiSetCharSet(hps, 1L);
+    set_charset(hps, cp_native, 0);
     GpiQueryCharBox(hps, &box);
     box.cx = (FIXED)(((long long)box.cx * PDC_font_size) / 12);
     box.cy = (FIXED)(((long long)box.cy * PDC_font_size) / 12);
