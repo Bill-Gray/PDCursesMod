@@ -1515,7 +1515,12 @@ render_char(HPS hps, PPOINTL point, PRECTL rect, ULONG ch, int charset)
     /* ch is a Unicode character */
     unsigned char bytes[2];
 
-    if (have_cp[cp_1200]) {
+    if (0x20 <= ch && ch <= 0x7E) {
+        /* Render ASCII in the default code page; it's faster */
+        bytes[0] = (unsigned char)ch;
+        set_charset(hps, cp_native, (charset & 3));
+        GpiCharStringPosAt(hps, point, rect, 0, 1, bytes, NULL);
+    } else if (have_cp[cp_1200]) {
         /* We have Unicode support */
         bytes[0] = (ch & 0x00FF) >> 0;
         bytes[1] = (ch & 0xFF00) >> 8;
