@@ -1564,7 +1564,7 @@ render_char(HPS hps, PPOINTL point, PRECTL rect, ULONG ch, int charset)
 #else
     /* For non-PDC_WIDE build, ch is either an 8 bit character or it has
        A_ALTCHARSET set */
-    CHAR byte;
+    unsigned char byte;
 
     if (ch == ACS_NEQUAL) {
         /* Not-equal sign from code page 1275 (which might not be available) */
@@ -1572,25 +1572,25 @@ render_char(HPS hps, PPOINTL point, PRECTL rect, ULONG ch, int charset)
             /* We have code page 1275 */
             byte = 0xAD;
             set_charset(hps, cp_1275, (charset & 3));
-            GpiCharStringPosAt(hps, point, rect, 0, 1, &byte, NULL);
+            GpiCharStringPosAt(hps, point, rect, 0, 1, (PCH)&byte, NULL);
         } else {
             /* Overstrike = and / */
             set_charset(hps, cp_native, (charset & 3));
             byte = '=';
-            GpiCharStringPosAt(hps, point, rect, 0, 1, &byte, NULL);
+            GpiCharStringPosAt(hps, point, rect, 0, 1, (PCH)&byte, NULL);
             byte = '/';
-            GpiCharStringPosAt(hps, point, rect, 0, 1, &byte, NULL);
+            GpiCharStringPosAt(hps, point, rect, 0, 1, (PCH)&byte, NULL);
         }
     } else if (_is_altcharset(ch)) {
         /* Other alternate characters come from code page 437 */
         byte = acs_map[ch & 0xFF];
         set_charset(hps, cp_437, (charset & 3));
-        GpiCharStringPosAt(hps, point, rect, 0, 1, &byte, NULL);
+        GpiCharStringPosAt(hps, point, rect, 0, 1, (PCH)&byte, NULL);
     } else {
         /* Normal character from the configured default code page */
         byte = ch & 0xFF;
         set_charset(hps, cp_native, (charset & 3));
-        GpiCharStringPosAt(hps, point, rect, 0, 1, &byte, NULL);
+        GpiCharStringPosAt(hps, point, rect, 0, 1, (PCH)&byte, NULL);
     }
 #endif
 }
