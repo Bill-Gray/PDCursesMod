@@ -39,4 +39,4 @@ const char *PDC_sysname(void)
    return "OS2GUI";
 }
 
-enum PDC_port PDC_port_val = PDC_PORT_WINGUI;
+enum PDC_port PDC_port_val = PDC_PORT_OS2GUI;
