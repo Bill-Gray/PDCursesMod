@@ -1381,19 +1381,43 @@ static void get_app_name(char *name, size_t name_len)
         name[i] = tolower(name[i]);
 }
 
+/* Font name and size as read from the registry */
+static char prf_font_name[FACESIZE] = "";
+static int prf_font_size = 0;
+
 static int set_default_sizes_from_registry( const int n_cols, const int n_rows,
                const int xloc, const int yloc)
 {
     char buff[1024];
     char app_name[FILENAME_MAX];
     BOOL rc;
+    const char *pdc_font = getenv("PDC_FONT");
+    const char *pdc_font_size = getenv("PDC_FONT_SIZE");
+    const char *save_font_name;
+    int save_font_size;
+
+    /* If the font has been set through PDC_FONT, keep the setting, if any,
+       in the registry */
+    if (pdc_font == NULL)
+        save_font_name = PDC_font_name;
+    else
+        save_font_name = prf_font_name;
+    if (save_font_name[0] == '\0')
+        save_font_name = "Courier";
+
+    if (pdc_font_size == NULL && (pdc_font == NULL || strchr(pdc_font, ':') == NULL))
+        save_font_size = PDC_font_size;
+    else
+        save_font_size = prf_font_size;
+    if (save_font_size < 2)
+        save_font_size = 12;
 
     snprintf( buff, sizeof(buff), "%dx%d,%d,%d,%d,%d;%d,%d,%d,%d:%s",
-              n_cols, n_rows, PDC_font_size,
+              n_cols, n_rows, save_font_size,
               xloc, yloc, /*menu_shown*/ 0,
               min_lines, max_lines,
               min_cols, max_cols,
-              PDC_font_name);
+              save_font_name);
 
     get_app_name( app_name, sizeof(app_name));
     rc = PrfWriteProfileString(HINI_PROFILE, (PSZ)"PDCurses", (PSZ)app_name, (PSZ)buff);
@@ -1417,20 +1441,28 @@ static int get_default_sizes_from_registry( int *n_cols, int *n_rows,
     {
         int x = n_cols ? *n_cols : -1, y = n_rows ? *n_rows : -1;
         int bytes_read = 0;
+        const char *pdc_font = getenv("PDC_FONT");
+        const char *pdc_font_size = getenv("PDC_FONT_SIZE");
 
         sscanf( buff, "%dx%d,%d,%d,%d,%*d;%d,%d,%d,%d:%n",
-                         &x, &y, &PDC_font_size,
+                         &x, &y, &prf_font_size,
                          xloc, yloc, /*&menu_shown,*/
                          &min_lines, &max_lines,
                          &min_cols, &max_cols,
                          &bytes_read);
+        /* Set the font name if it is present and if PDC_FONT not set */
         if( bytes_read > 0 && buff[bytes_read - 1] == ':')
-            snprintf(PDC_font_name, sizeof(PDC_font_name), "%s",
+            snprintf(prf_font_name, sizeof(prf_font_name), "%s",
                     buff + bytes_read);
         if( n_cols != NULL)
             *n_cols = x;
         if( n_rows != NULL)
             *n_rows = y;
+
+        if (pdc_font == NULL)
+            strcpy(PDC_font_name, prf_font_name);
+        if (pdc_font_size == NULL && (pdc_font == NULL || strchr(pdc_font, ':') == NULL))
+            PDC_font_size = prf_font_size;
     }
     if( rc == 0)
         debug_printf( "get_default_sizes_from_registry error: %d\n",

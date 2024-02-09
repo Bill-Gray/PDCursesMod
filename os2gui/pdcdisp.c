@@ -1620,7 +1620,7 @@ void PDC_doupdate(void)
 }
 
 char PDC_font_name[FACESIZE];
-int PDC_font_size = 12;
+int PDC_font_size = 0;
 
 void PDC_set_font_box(HWND hwnd)
 {
@@ -1645,6 +1645,12 @@ void PDC_setup_font(HPS hps)
     SIZEF box;
 
     /* Determine the name of the font */
+    if (PDC_font_size == 0)
+    {
+        const char *env_size = getenv("PDC_FONT_SIZE");
+        if (env_size != NULL)
+            PDC_font_size = strtol(env_size, NULL, 10);
+    }
     if (PDC_font_name[0] == '\0')
     {
         const char *env_font = getenv("PDC_FONT");
@@ -1654,9 +1660,8 @@ void PDC_setup_font(HPS hps)
             size_t len;
             if (colon != NULL)
             {
-                PDC_font_size = strtol(colon + 1, NULL, 10);
                 if (PDC_font_size < 2)
-                    PDC_font_size = 12;
+                    PDC_font_size = strtol(colon + 1, NULL, 10);
                 len = colon - env_font;
             }
             else
@@ -1672,6 +1677,8 @@ void PDC_setup_font(HPS hps)
             strcpy(PDC_font_name, "Courier");
         }
     }
+    if (PDC_font_size < 2)
+        PDC_font_size = 12;
 
     /* Query available code pages */
     if (!cp_inited) {
