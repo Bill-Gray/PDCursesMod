@@ -1851,6 +1851,7 @@ static MRESULT EXPENTRY WndProc (const HWND hwnd,
         return 0;
 
     case WM_BUTTON1DOWN:
+        WinSetActiveWindow(HWND_DESKTOP, hwnd);
         button = 1;
         action = BUTTON_PRESSED;
         break;
@@ -1861,6 +1862,7 @@ static MRESULT EXPENTRY WndProc (const HWND hwnd,
         break;
 
     case WM_BUTTON3DOWN:
+        WinSetActiveWindow(HWND_DESKTOP, hwnd);
         button = 3;
         action = BUTTON_PRESSED;
         break;
@@ -1871,6 +1873,7 @@ static MRESULT EXPENTRY WndProc (const HWND hwnd,
         break;
 
     case WM_BUTTON2DOWN:
+        WinSetActiveWindow(HWND_DESKTOP, hwnd);
         button = 2;
         action = BUTTON_PRESSED;
         break;
