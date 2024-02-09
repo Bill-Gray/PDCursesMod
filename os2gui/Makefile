@@ -71,7 +71,7 @@ CC	= $(PREFIX)gcc
 
 AR	= $(PREFIX)ar
 
-CFLAGS  += -Wall -Wextra -pedantic
+CFLAGS  += -Wall -pedantic
 ifeq ($(DEBUG),Y)
 	CFLAGS  += -g -DPDCDEBUG
 	LDFLAGS = -g
@@ -154,18 +154,18 @@ calendar.exe firework.exe init_col.exe mbrot.exe \
 newtest.exe ozdemo.exe picsview.exe \
 ptest.exe rain.exe speed.exe testcurs.exe test_pan.exe \
 version.exe widetest.exe worm.exe xmas.exe: %.exe: $(demodir)/%.c
-	$(CC) $(CFLAGS) -o$@ $< $(LIBCURSES) $(EXELIBS)
+	$(CC) $(CFLAGS) -o $@ $< $(LIBCURSES) $(EXELIBS)
 	emxbind -ep $@
 
 tuidemo.exe: tuidemo.o tui.o
-	$(LINK) $(LDFLAGS) -o$@ tuidemo.o tui.o $(LIBCURSES) $(EXELIBS)
+	$(LINK) $(LDFLAGS) -o $@ tuidemo.o tui.o $(LIBCURSES) $(EXELIBS)
 	emxbind -ep $@
 
 tui.o: $(demodir)/tui.c $(demodir)/tui.h $(PDCURSES_CURSES_H)
-	$(CC) -c $(CFLAGS) -I$(demodir) -o$@ $<
+	$(CC) -c $(CFLAGS) -I$(demodir) -o $@ $<
 
 tuidemo.o: $(demodir)/tuidemo.c $(PDCURSES_CURSES_H)
-	$(CC) -c $(CFLAGS) -I$(demodir) -o$@ $<
+	$(CC) -c $(CFLAGS) -I$(demodir) -o $@ $<
 
 configure :
 	$(CC) $(CFLAGS) -o config_curses$(E) $(common)/config_curses.c
