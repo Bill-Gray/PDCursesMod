@@ -1858,6 +1858,17 @@ static MRESULT EXPENTRY WndProc (const HWND hwnd,
         }
         break;
 
+    case WM_CLOSE:
+        if( !PDC_get_function_key( FUNCTION_KEY_SHUT_DOWN))
+        {
+            final_cleanup( );
+            /*PDC_bDone = TRUE;*/
+            exit( 0);
+        }
+        else
+            add_key_to_queue( PDC_get_function_key( FUNCTION_KEY_SHUT_DOWN));
+        return 0;
+
     case WM_COMMAND:
     case WM_SYSCOMMAND:
         switch (SHORT1FROMMP(wParam))
