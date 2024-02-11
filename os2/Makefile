@@ -109,8 +109,7 @@ $(LIBOBJS) : %.o: $(srcdir)/%.c
 $(PDCOBJS) : %.o: $(osdir)/%.c
 	$(CC) -c $(CFLAGS) -o$@ $<
 
-calendar.exe firework.exe mbrot.exe ozdemo.exe ptest.exe rain.exe \
-testcurs.exe worm.exe xmas.exe: %.exe: %.o
+$(DEMOS_EXCEPT_TUIDEMO): %.exe: %.o
 	$(LINK) $(LDFLAGS) -o $* $< $(LIBCURSES) $(CCLIBS)
 	$(EXEPOST)
 

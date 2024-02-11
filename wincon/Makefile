@@ -158,9 +158,7 @@ $(LIBOBJS) : %.o: $(srcdir)/%.c
 $(PDCOBJS) : %.o: $(osdir)/%.c
 	$(CC) -c $(CFLAGS) $(PDCCFLAGS) $<
 
-firework.exe init_col.exe mbrot.exe newtest.exe ozdemo.exe picsview.exe \
-ptest.exe rain.exe speed.exe testcurs.exe test_pan.exe \
-version.exe widetest.exe worm.exe xmas.exe: %.exe: $(demodir)/%.c
+$(DEMOS_EXCEPT_TUIDEMO): %.exe: $(demodir)/%.c
 	$(CC) $(CFLAGS) -o$@ $< $(LIBCURSES) $(EXELIBS)
 
 tuidemo.exe: tuidemo.o tui.o
