@@ -45,9 +45,9 @@ cube of 16 million colors. */
 #define N_COLORS 256 + 256 * 256 * 256;
 
 #ifdef WA_TOP
-#define WA_ALL_LINES (WA_UNDERLINE | WA_LOW | WA_LEFT | WA_RIGHT | WA_TOP | WA_STRIKEOUT)
+#define WA_ALL_LINES (WA_UNDERLINE | WA_LEFT | WA_RIGHT | WA_TOP | WA_STRIKEOUT)
 #else
-#define WA_ALL_LINES (WA_UNDERLINE | WA_LOW | WA_LEFT | WA_RIGHT)
+#define WA_ALL_LINES (WA_UNDERLINE | WA_LEFT | WA_RIGHT)
 #endif
 
    /* If PDC_MAX_MOUSE_BUTTONS is undefined,  it means the user hasn't     */
