@@ -19,10 +19,7 @@ int main( void)
                (i ? "re" : ""), longname( ));
         mvprintw( 2, 1, "Hit a key...");
         while( getch( ) == KEY_RESIZE)
-        {
            addch( '.');
- //        refresh( );
-        }
         endwin( );
         delscreen( sp);
         if( !i)

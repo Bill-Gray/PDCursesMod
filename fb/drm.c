@@ -84,9 +84,9 @@ void release_framebuffer(struct framebuffer *fb)
             drmModeFreeConnector(fb->connector);
             fb->resolution = 0;
         }
-//      if (fb->dumb_framebuffer.handle)
-//          ioctl(fb->fd, DRM_IOCTL_MODE_DESTROY_DUMB, fb->dumb_framebuffer);
-        close(fb->fd);
+/*      if (fb->dumb_framebuffer.handle)
+            ioctl(fb->fd, DRM_IOCTL_MODE_DESTROY_DUMB, fb->dumb_framebuffer);
+*/      close(fb->fd);
     }
 }
 
