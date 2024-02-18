@@ -415,6 +415,7 @@ static void PDC_transform_line_given_hdc( const HDC hdc, const int lineno,
         attr_t new_font_attrib = (*srcp & (A_BOLD | A_ITALIC));
         RECT clip_rect;
         wchar_t buff[BUFFSIZE];
+        int lpDx[BUFFSIZE + 1];
         int olen = 0;
 #ifdef USE_FALLBACK_FONT
         const bool in_font = character_is_in_font( *srcp);
@@ -435,6 +436,7 @@ static void PDC_transform_line_given_hdc( const HDC hdc, const int lineno,
             {               /* >64K values into 16-bit wchar_t: */
                 ch -= 0x10000;
                 buff[olen] = (wchar_t)( 0xd800 | (ch >> 10));
+                lpDx[olen] = 0;
                 olen++;                           /* ^ upper 10 bits */
                 ch = (wchar_t)( 0xdc00 | (ch & 0x3ff));  /* lower 10 bits */
             }
@@ -449,12 +451,14 @@ static void PDC_transform_line_given_hdc( const HDC hdc, const int lineno,
                     n_combined++;
                 }
                 buff[olen] = (wchar_t)root;
+                lpDx[olen] = 0;
                 olen++;
                 ch = (wchar_t)added[n_combined];
                 while( n_combined)
                 {
                     n_combined--;
                     buff[olen] = (wchar_t)added[n_combined];
+                    lpDx[olen] = 0;
                     olen++;
                 }
             }
@@ -474,8 +478,17 @@ static void PDC_transform_line_given_hdc( const HDC hdc, const int lineno,
             }
 #endif
             buff[olen] = (wchar_t)ch;
+            lpDx[olen] = PDC_cxChar;
+#ifdef PDC_WIDE
+            if( ch != MAX_UNICODE)
+                olen++;
+            else if( olen)          /* prev char is double-width */
+                lpDx[olen - 1] = 2 * PDC_cxChar;
+#else
             olen++;
+#endif
         }
+        lpDx[olen] = PDC_cxChar;
         if( color != curr_color || ((prev_ch ^ *srcp) & (A_REVERSE | A_BLINK | A_BOLD | A_DIM)))
         {
             PACKED_RGB background_rgb;
@@ -520,7 +533,7 @@ static void PDC_transform_line_given_hdc( const HDC hdc, const int lineno,
         clip_rect.bottom = clip_rect.top + PDC_cyChar;
         ExtTextOutW( hdc, clip_rect.left, clip_rect.top,
                            ETO_CLIPPED | ETO_OPAQUE, &clip_rect,
-                           buff, olen, NULL);
+                           buff, olen, (olen > 1 ? lpDx : NULL));
 #ifdef WA_TOP
         if( *srcp & (WA_UNDERLINE | WA_RIGHT | WA_LEFT | WA_TOP | WA_STRIKEOUT))
 #else
