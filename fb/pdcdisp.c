@@ -421,6 +421,8 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
                 integer_fg_idx = integer_bg_idx;
                 integer_bg_idx = swapval;
             }
+            if( integer_bg_idx == -1)
+               integer_bg_idx = 0;
             fg_idx = (uint8_t)integer_fg_idx;
             bg_idx = (uint8_t)integer_bg_idx;
             for( i = 0; i < run_len; i++)
