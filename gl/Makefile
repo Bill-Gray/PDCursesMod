@@ -169,58 +169,16 @@ $(LIBOBJS) : %.o: $(srcdir)/%.c
 $(PDCOBJS) : %.o: $(osdir)/%.c
 	$(BUILD) $(SFLAGS) -c $<
 
-calendar$(E): $(demodir)/calendar.c
-	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
-
-firework$(E): $(demodir)/firework.c
-	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
-
-init_col$(E): $(demodir)/init_col.c
-	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
-
-mbrot$(E): $(demodir)/mbrot.c
-	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
-
-ozdemo$(E): $(demodir)/ozdemo.c
-	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
-
-picsview$(E): $(demodir)/picsview.c
-	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
-
-ptest$(E): $(demodir)/ptest.c
-	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
-
-newtest$(E): $(demodir)/newtest.c
-	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
-
-rain$(E): $(demodir)/rain.c
-	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
-
-speed$(E): $(demodir)/speed.c
-	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
-
-testcurs$(E): $(demodir)/testcurs.c
-	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
-
-test_pan$(E): $(demodir)/test_pan.c
-	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
+$(DEMOS_EXCEPT_TUIDEMO): %: $(demodir)/%.c
+	$(BUILD) $(DEMOFLAGS) -o$@ $< $(LDFLAGS)
 
 tuidemo$(E): tuidemo.o tui.o
 	$(LINK) tui.o tuidemo.o -o $@ $(LDFLAGS)
-
-worm$(E): $(demodir)/worm.c
-	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
-
-xmas$(E): $(demodir)/xmas.c
-	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
 
 tui.o: $(demodir)/tui.c $(demodir)/tui.h
 	$(BUILD) -c $(DEMOFLAGS) $(demodir)/tui.c
 
 tuidemo.o: $(demodir)/tuidemo.c
 	$(BUILD) -c $(DEMOFLAGS) $(demodir)/tuidemo.c
-
-widetest$(E): $(demodir)/widetest.c
-	$(BUILD) $(DEMOFLAGS) -o $@ $< $(LDFLAGS)
 
 include $(demodir)/nctests.mif
