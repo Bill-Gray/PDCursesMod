@@ -77,7 +77,7 @@ int main( const int argc, const char *argv[])
         printw( "%c ", (char)array[j]);
         for( j = 0; array[j]; j++)
         {
-            sprintf( buff, "%x ", array[j]);
+            sprintf( buff, "%x ", (unsigned)array[j]);
             addstr( buff);
         }
     }
