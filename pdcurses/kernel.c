@@ -274,7 +274,7 @@ int napms(int ms)
         curs_set(curs_state);
     }
 
-    if (ms)
+    if( ms > 0)
         PDC_napms(ms);
 
     return OK;
