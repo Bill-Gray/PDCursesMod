@@ -1,7 +1,7 @@
 Generally speaking,  this history mentions only the more significant
 changes.  See the git log for full details.
 
-Current PDCursesMod - 2024 January 26
+Current PDCursesMod - 2024 March 11
 =====================================
 
 Bug fixes
@@ -10,7 +10,26 @@ Bug fixes
 - In rare cases,  blinking on the framebuffer port could be disabled
   due to an integer rollover.  eaee2a61f2
 
-- In WinGUI,  we could potentially read memory out of bounds.  70d27245d1
+- In WinGUI,  we could potentially read memory out of bounds.  From
+  slipher.  70d27245d1
+
+- In WinGUI,  theoretically 'monospaced' fonts were not necessarily
+  monospaced.  Reverted to drawing each character separately.  b99fed1acb
+
+- In WinGUI and WinCon,  PDC_clearclipboard() would fail if the clipboard
+  was not open.  From Mark Hessling.  a071130c95
+
+- If napms() was called with a negative value,  it would lock. 65dfa7e61a
+
+- Framebuffer/DRM port didn't redraw upon changing fonts if the new font
+  was the same size as the old one.  c714cd9bcc
+
+Minor new features
+------------------
+
+- Added is_cbreak(), is_echo(), is_nl(), is_raw() functions to access
+  members of the non-opaque SCREEN struct.  The first two replace
+  PDC_getcbreak() and PDC_getecho().  98b6969a7e
 
 PDCursesMod 4.4.0 - 2023 November 30
 ===================================
@@ -45,7 +64,7 @@ Minor new features
 ------------------
 
 - SDL1,  SDL2,  and GL support double and triple mouse clicks.
-  a4e563d763
+  From Lyle Tafoya.  a4e563d763
 
 - 'widetest' now tests copying of both precomposed and combining
   characters with getcchar() and setcchar().  19169a1b18
