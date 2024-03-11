@@ -41,8 +41,8 @@ Defined by this header:
 #define PDC_VER_MINOR    4
 #define PDC_VER_CHANGE   0
 #define PDC_VER_YEAR   2024
-#define PDC_VER_MONTH    01
-#define PDC_VER_DAY      26
+#define PDC_VER_MONTH    03
+#define PDC_VER_DAY      11
 
 #define PDC_STRINGIZE( x) #x
 #define PDC_stringize( x) PDC_STRINGIZE( x)
@@ -60,6 +60,8 @@ Defined by this header:
                     PDC_stringize( PDC_VER_MONTH) "-" \
                     PDC_stringize( PDC_VER_DAY)
 #endif
+
+#define PDC_VERSION_PATCH (PDC_VER_YEAR * 10000 + PDC_VER_MONTH * 100 + PDC_VER_DAY)
 
 #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
 # define PDC_99         1
@@ -1758,8 +1760,12 @@ PDCEX  char    wordchar(void);
 PDCEX  wchar_t *slk_wlabel(int);
 #endif
 
-PDCEX  bool    PDC_getcbreak(void);
-PDCEX  bool    PDC_getecho(void);
+PDCEX  int     is_cbreak( void);
+PDCEX  int     is_echo( void);
+PDCEX  int     is_nl( void);
+PDCEX  int     is_raw( void);
+PDCEX  bool    PDC_getcbreak(void);    /* deprecated;  use is_cbreak() */
+PDCEX  bool    PDC_getecho(void);      /* deprecated;  use is_echo()   */
 PDCEX  void    PDC_debug(const char *, ...);
 PDCEX  void    _tracef(const char *, ...);
 PDCEX  void    PDC_get_version(PDC_VERSION *);

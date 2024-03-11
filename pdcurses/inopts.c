@@ -30,8 +30,12 @@ inopts
     void wtimeout(WINDOW *win, int delay);
     int wgetdelay(const WINDOW *win);
     int typeahead(int fildes);
-    bool PDC_getcbreak(void);
-    bool PDC_getecho(void);
+    int is_cbreak( void);
+    int is_echo( void);
+    int is_nl( void);
+    int is_raw( void);
+    bool PDC_getcbreak(void);       deprecated;  use is_cbreak()
+    bool PDC_getecho(void);         deprecated;  use is_echo()
 
     int crmode(void);
     int nocrmode(void);
@@ -53,8 +57,14 @@ inopts
    the input routine. Initially, input characters are echoed. Subsequent
    calls to echo() and noecho() do not flush type-ahead.
 
-   PDC_getcbreak() and PDC_getecho() return the current cbreak and echo
-   states.
+   is_cbreak(), is_echo(), is_nl(), and is_raw() are ncurses extensions.
+   They return the current state of the corresponding flags,  or -1 if
+   the library is uninitialized.
+
+   PDC_getcbreak() and PDC_getecho() are older versions of is_cbreak()
+   and is_echo(),  but return TRUE if the flag is set and FALSE if it is
+   not set or the library is uninitialized.  Use of these two functions
+   is deprecated.
 
    halfdelay() is similar to cbreak(), but allows for a time limit to be
    specified, in tenths of a second. This causes getch() to block for
@@ -120,6 +130,10 @@ inopts
     nocbreak                    Y       Y       Y
     echo                        Y       Y       Y
     noecho                      Y       Y       Y
+    is_cbreak                   -       Y       -
+    is_echo                     -       Y       -
+    is_nl                       -       Y       -
+    is_raw                      -       Y       -
     PDC_getcbreak               -       -       -
     PDC_getecho                 -       -       -
     halfdelay                   Y       Y       Y
@@ -180,6 +194,21 @@ bool PDC_getcbreak(void)
     assert( SP);
     return( SP->cbreak);
 }
+
+int is_cbreak(void)
+{
+    PDC_LOG(("is_cbreak() - called\n"));
+
+    return( SP ? SP->cbreak : -1);
+}
+
+int is_echo(void)
+{
+    PDC_LOG(("is_echo() - called\n"));
+
+    return( SP ? SP->echo : -1);
+}
+
 
 int echo(void)
 {
@@ -290,6 +319,13 @@ int nonl(void)
     return OK;
 }
 
+int is_nl(void)
+{
+    PDC_LOG(("is_nl() - called\n"));
+
+    return( SP ? SP->autocr : -1);
+}
+
 int nodelay(WINDOW *win, bool flag)
 {
     PDC_LOG(("nodelay() - called\n"));
@@ -349,6 +385,13 @@ int noraw(void)
     SP->raw_inp = FALSE;
 
     return OK;
+}
+
+int is_raw(void)
+{
+    PDC_LOG(("is_raw() - called\n"));
+
+    return( SP ? SP->raw_inp : -1);
 }
 
 void noqiflush(void)
