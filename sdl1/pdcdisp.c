@@ -221,9 +221,6 @@ void PDC_gotoyx(int row, int col)
     SDL_Rect src, dest;
     chtype ch;
     int oldrow, oldcol;
-#ifdef PDC_WIDE
-    Uint16 chstr[2] = {0, 0};
-#endif
 
     PDC_LOG(("PDC_gotoyx() - called: row %d col %d from row %d col %d\n",
              row, col, SP->cursrow, SP->curscol));
@@ -260,6 +257,8 @@ void PDC_gotoyx(int row, int col)
     if (!(SP->visibility == 2 && _is_altcharset( ch) &&
         _grprint(ch & (0x7f | A_ALTCHARSET), dest)))
     {
+        Uint16 chstr[2] = {0, 0};
+
         if( _is_altcharset( ch))
             ch = acs_map[ch & 0x7f];
 
@@ -352,9 +351,6 @@ void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
 {
     SDL_Rect src, dest;
     int j;
-#ifdef PDC_WIDE
-    Uint16 chstr[2] = {0, 0};
-#endif
     attr_t sysattrs = SP->termattrs;
     int hcol = SP->line_color;
     bool blink = blinked_off && (attr & A_BLINK) && (sysattrs & A_BLINK);
@@ -421,6 +417,8 @@ void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
 
         if (ch != ' ')
         {
+            Uint16 chstr[2] = {0, 0};
+
             if (chstr[0] != ch)
             {
                 chstr[0] = (Uint16)ch;

@@ -2,7 +2,17 @@
 shut down Curses completely,  do "traditional" stdio input/output,
 and then restart Curses again and repeat the process.  This is
 possible with ncurses and most (not all) PDCursesMod platforms,  and
-on a few (not many) PDCurses platforms.  */
+on a few (not many) PDCurses platforms.  Specifically,  it works on
+the DOS, DOSVGA,  framebuffer/DRM,  VT,  X11,  and SDL1/2 platforms
+in PDCursesMod, and not with Windows console or WinGUI.  (Should be
+possible to make those happen,  though,  I'd think.)  I haven't
+tried OS/2 or Plan9.
+
+  Compile with either
+
+gcc -Wall -Wextra -pedantic -o restart restart.c -lncurses
+gcc -Wall -Wextra -pedantic -o restart restart.c -DPDC_FORCE_UTF8 -I.. libpdcurses.a
+*/
 
 #include <curses.h>
 #include <stdlib.h>

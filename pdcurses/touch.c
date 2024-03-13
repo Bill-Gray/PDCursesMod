@@ -231,7 +231,7 @@ int touchoverlap(const WINDOW *win1, WINDOW *win2)
     endx = min(win1->_maxx + win1->_begx, win2->_maxx + win2->_begx);
 
     if (starty >= endy || startx >= endx)
-        return OK;
+        return OK;       /* there is no overlap */
 
     starty -= win2->_begy;
     startx -= win2->_begx;

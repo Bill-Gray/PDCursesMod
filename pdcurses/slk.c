@@ -40,7 +40,9 @@ slk
    the useable screen, depending on the format selected.
 
    The line(s) removed from the screen are used as a separate window, in
-   which SLKs are displayed.
+   which SLKs are displayed.  Mouse clicks on the SLKs are returned as
+   KEY_F() (function key) presses;  for example,  clicking on the leftmost
+   SLK will cause KEY_F(1) to be added to the key queue.
 
    slk_init() requires a single parameter which describes the format of
    the SLKs as follows:
