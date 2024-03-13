@@ -516,8 +516,8 @@ if eval "test \"`echo '$ac_cv_prog_cc_'${ac_cc}_c_o`\" = yes"; then
 	CC2O="-o $"'@'
 	AC_MSG_RESULT(yes)
 else
-	O2SAVE="-mv \`basename "$'@'" .sho\`.o \`basename "$'@'" .sho\`.o.save;"
-	SAVE2O="-mv \`basename "$'@'" .sho\`.o "$'@'"; mv \`basename "$'@'" .sho\`.o.save \`basename "$'@'" .sho\`.o"
+	O2SAVE="-mv \`basename "\$'@'" .sho\`.o \`basename "\$'@'" .sho\`.o.save;"
+	SAVE2O="-mv \`basename "\$'@'" .sho\`.o "\$'@'"; mv \`basename "\$'@'" .sho\`.o.save \`basename "\$'@'" .sho\`.o"
 	CC2O=""
 	AC_MSG_RESULT(no)
 fi
