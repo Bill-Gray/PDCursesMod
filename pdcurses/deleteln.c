@@ -56,37 +56,13 @@ deleteln
 
 int wdeleteln(WINDOW *win)
 {
-    chtype blank, *temp, *ptr;
-    int y;
-
     PDC_LOG(("wdeleteln() - called\n"));
 
     assert( win);
     if (!win)
         return ERR;
 
-    /* wrs (4/10/93) account for window background */
-
-    blank = win->_bkgd;
-
-    temp = win->_y[win->_cury];
-
-    for (y = win->_cury; y < win->_bmarg; y++)
-    {
-        win->_y[y] = win->_y[y + 1];
-        PDC_mark_line_as_changed( win, y);
-    }
-
-    for (ptr = temp; (ptr - temp < win->_maxx); ptr++)
-        *ptr = blank;           /* make a blank line */
-
-    if (win->_cury <= win->_bmarg)
-    {
-        PDC_mark_line_as_changed( win, win->_bmarg);
-        win->_y[win->_bmarg] = temp;
-    }
-
-    return OK;
+    return( PDC_wscrl( win, win->_cury, win->_maxy - 1, 1));
 }
 
 int deleteln(void)
@@ -118,29 +94,12 @@ int mvwdeleteln(WINDOW *win, int y, int x)
 
 int winsdelln(WINDOW *win, int n)
 {
-    int i;
-
     PDC_LOG(("winsdelln() - called\n"));
 
     assert( win);
     if (!win)
         return ERR;
-
-    if (n > 0)
-    {
-        for (i = 0; i < n; i++)
-            if (winsertln(win) == ERR)
-                return ERR;
-    }
-    else if (n < 0)
-    {
-        n = -n;
-        for (i = 0; i < n; i++)
-            if (wdeleteln(win) == ERR)
-                return ERR;
-    }
-
-    return OK;
+    return( PDC_wscrl( win, win->_cury, win->_maxy - 1, -n));
 }
 
 int insdelln(int n)
@@ -152,35 +111,13 @@ int insdelln(int n)
 
 int winsertln(WINDOW *win)
 {
-    chtype blank, *temp, *end;
-    int y;
-
     PDC_LOG(("winsertln() - called\n"));
 
     assert( win);
     if (!win)
         return ERR;
 
-    /* wrs (4/10/93) account for window background */
-
-    blank = win->_bkgd;
-
-    temp = win->_y[win->_maxy - 1];
-
-    for (y = win->_maxy - 1; y > win->_cury; y--)
-    {
-        win->_y[y] = win->_y[y - 1];
-        PDC_mark_line_as_changed( win, y);
-    }
-
-    win->_y[win->_cury] = temp;
-
-    for (end = &temp[win->_maxx - 1]; temp <= end; temp++)
-        *temp = blank;
-
-    PDC_mark_line_as_changed( win, win->_cury);
-
-    return OK;
+    return( PDC_wscrl( win, win->_cury, win->_maxy - 1, -1));
 }
 
 int insertln(void)

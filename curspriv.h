@@ -112,6 +112,7 @@ void    PDC_mark_line_as_changed( WINDOW *win, const int y);
 void    PDC_mark_cells_as_changed( WINDOW *, const int y, const int start, const int end);
 void    PDC_mark_cell_as_changed( WINDOW *, const int y, const int x);
 bool    PDC_touched_range( const WINDOW *win, const int y, int *firstch, int *lastch);
+int     PDC_wscrl(WINDOW *win, const int top, const int bottom, int n);
 
 #ifdef PDC_WIDE
 int     PDC_mbtowc(wchar_t *, const char *, size_t);
