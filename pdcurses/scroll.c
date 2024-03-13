@@ -40,7 +40,7 @@ scroll
 
 **man-end****************************************************************/
 
-int wscrl(WINDOW *win, int n)
+int PDC_wscrl(WINDOW *win, const int top, const int bottom, int n)
 {
     int start, end, n_lines;
     chtype blank, *tptr, *endptr;
@@ -48,12 +48,12 @@ int wscrl(WINDOW *win, int n)
     /* Check if window scrolls. Valid for window AND pad */
 
     assert( win);
-    if (!win || !win->_scroll || !n)
+    if (!win || !n)
         return ERR;
 
     blank = win->_bkgd;
-    start = win->_tmarg;
-    end = win->_bmarg + 1;
+    start = top;
+    end = bottom + 1;
     n_lines = end - start;
 
     if (n > 0)             /* scroll up */
@@ -71,7 +71,7 @@ int wscrl(WINDOW *win, int n)
             n = n_lines;
         memmove( win->_y[start + n], win->_y[start],
                      (n_lines - n) * win->_maxx * sizeof( chtype));
-        tptr = win->_y[win->_tmarg];
+        tptr = win->_y[top];
     }
 
         /* make blank lines */
@@ -81,9 +81,21 @@ int wscrl(WINDOW *win, int n)
         *tptr++ = blank;
 
     touchline(win, start, n_lines);
-
-    PDC_sync(win);
     return OK;
+}
+
+int wscrl(WINDOW *win, int n)
+{
+    int rval;
+
+    assert( win);
+    if (!win || !win->_scroll || !n)
+        rval = ERR;
+    else
+        rval = PDC_wscrl( win, win->_tmarg, win->_bmarg, n);
+    if( OK == rval)
+        PDC_sync( win);
+    return( rval);
 }
 
 int scrl(int n)
