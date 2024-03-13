@@ -35,7 +35,7 @@ should be set to UTF-8;  otherwise,  you'll see some garbage) :
 
 #include "../demos/snprintf.c"
 
-#if !defined( __PDCURSES__) && !NCURSES_SP_FUNCS
+#if !defined( __PDCURSESMOD__) && !NCURSES_SP_FUNCS
       /* Older ncurses may lack ceiling_panel() and ground_panel() */
 
 PANEL *ceiling_panel( SCREEN *sp)
