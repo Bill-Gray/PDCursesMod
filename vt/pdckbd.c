@@ -207,21 +207,27 @@ static int xlate_vt_codes( const int *c, const int count, int *modifiers)
              { KEY_F(3),   0,        "[13~"    },
              { KEY_F(4),   0,        "[14~"    },
              { KEY_F(17),  SHF,      "[15;2~"  },   /* shift-f5 */
+             { KEY_F(29),  CTL,      "[15;5~"  },   /* ctrl-f5 */
              { KEY_F(5),   0,        "[15~"    },
-             { KEY_F(18),  SHF,      "[17;2~"  },
+             { KEY_F(18),  SHF,      "[17;2~"  },   /* shift-f6 */
+             { KEY_F(30),  CTL,      "[17;5~"  },   /* ctrl-f6 */
              { KEY_F(6),   0,        "[17~"    },
-             { KEY_F(19),  SHF,      "[18;2~"  },
+             { KEY_F(19),  SHF,      "[18;2~"  },   /* shift-f7 */
+             { KEY_F(31),  CTL,      "[18;5~"  },   /* ctrl-f7 */
              { KEY_F(7),   0,        "[18~"    },
-             { KEY_F(20),  SHF,      "[19;2~"  },
+             { KEY_F(20),  SHF,      "[19;2~"  },   /* shift-f8 */
+             { KEY_F(32),  CTL,      "[19;5~"  },   /* ctrl-f8 */
              { KEY_F(8),   0,        "[19~"    },
              { KEY_SUP,    SHF,      "[1;2A"   },
              { KEY_SDOWN,  SHF,      "[1;2B"   },
              { KEY_SRIGHT, SHF,      "[1;2C"   },
              { KEY_SLEFT,  SHF,      "[1;2D"   },
+             { KEY_SEND,   SHF,      "[1;2F"   },   /* shift-end */
+             { KEY_SHOME,  SHF,      "[1;2H"   },   /* shift-home */
              { KEY_F(13),  SHF,      "[1;2P"   },   /* shift-f1 */
-             { KEY_F(14),  SHF,      "[1;2Q"   },
-             { KEY_F(15),  SHF,      "[1;2R"   },
-             { KEY_F(16),  SHF,      "[1;2S"   },
+             { KEY_F(14),  SHF,      "[1;2Q"   },   /* shift-f2 */
+             { KEY_F(15),  SHF,      "[1;2R"   },   /* shift-f3 */
+             { KEY_F(16),  SHF,      "[1;2S"   },   /* shift-f4 */
              { ALT_UP,     ALT,      "[1;3A"   },
              { ALT_DOWN,   ALT,      "[1;3B"   },
              { ALT_RIGHT,  ALT,      "[1;3C"   },
@@ -235,34 +241,48 @@ static int xlate_vt_codes( const int *c, const int count, int *modifiers)
              { CTL_LEFT,   CTL,      "[1;5D"   },
              { CTL_END,    CTL,      "[1;5F"   },
              { CTL_HOME,   CTL,      "[1;5H"   },
+             { KEY_F(25),  CTL,      "[1;5P"   },   /* ctrl-f1 */
+             { KEY_F(26),  CTL,      "[1;5Q"   },   /* ctrl-f2 */
+             { KEY_F(27),  CTL,      "[1;5R"   },   /* ctrl-f3 */
+             { KEY_F(28),  CTL,      "[1;5S"   },   /* ctrl-f4 */
              { KEY_HOME,   0,        "[1~"     },
-             { KEY_F(21),  SHF,      "[20;2~"  },
+             { KEY_F(21),  SHF,      "[20;2~"  },   /* shift-f9 */
+             { KEY_F(33),  CTL,      "[20;5~"  },   /* ctrl-f9 */
              { KEY_F(9),   0,        "[20~"    },
-             { KEY_F(22),  SHF,      "[21;2~"  },
+             { KEY_F(22),  SHF,      "[21;2~"  },   /* shift-f10 */
+             { KEY_F(34),  CTL,      "[21;5~"  },   /* ctrl-f10 */
              { KEY_F(10),  0,        "[21~"    },
              { KEY_F(23),  SHF,      "[23$"    },   /* shift-f11 on rxvt */
              { KEY_F(23),  SHF,      "[23;2~"  },   /* shift-f11 */
+             { KEY_F(35),  CTL,      "[23;5~"  },   /* ctrl-f11 */
              { KEY_F(11),  0,        "[23~"    },
              { KEY_F(24),  SHF,      "[24$"    },   /* shift-f12 on rxvt */
-             { KEY_F(24),  SHF,      "[24;2~"  },
+             { KEY_F(24),  SHF,      "[24;2~"  },   /* shift-f12 */
+             { KEY_F(36),  CTL,      "[24;5~"  },   /* ctrl-f12 */
              { KEY_F(12),  0,        "[24~"    },
              { KEY_F(15),  SHF,      "[25~"    },   /* shift-f3 on rxvt */
              { KEY_F(16),  SHF,      "[26~"    },   /* shift-f4 on rxvt */
              { KEY_F(17),  SHF,      "[28~"    },   /* shift-f5 on rxvt */
              { KEY_F(18),  SHF,      "[29~"    },   /* shift-f6 on rxvt */
+             { KEY_SIC,    SHF,      "[2;2~"   },   /* shift-ins */
              { ALT_INS,    ALT,      "[2;3~"   },
+             { CTL_INS,    CTL,      "[2;5~"   },   /* ctrl-ins */
              { KEY_IC,     0,        "[2~"     },
              { KEY_F(19),  SHF,      "[31~"    },   /* shift-f7 on rxvt */
              { KEY_F(20),  SHF,      "[32~"    },   /* shift-f8 on rxvt */
              { KEY_F(21),  SHF,      "[33~"    },   /* shift-f9 on rxvt */
              { KEY_F(22),  SHF,      "[34~"    },   /* shift-f10 on rxvt */
+             { KEY_SDC,    SHF,      "[3;2~"   },   /* shift-del */
              { ALT_DEL,    ALT,      "[3;3~"   },
              { CTL_DEL,    CTL,      "[3;5~"   },
+             { CTL_DEL,    CTL,      "[3;5~"   },   /* ctrl-del */
              { KEY_DC,     0,        "[3~"     },
              { KEY_END,    0,        "[4~"     },
+             { KEY_SPREVIOUS, SHF,   "[5;2~"   },   /* shift-pgup */
              { ALT_PGUP,   ALT,      "[5;3~"   },
              { CTL_PGUP,   CTL,      "[5;5~"   },
              { KEY_PPAGE,  0,        "[5~"     },
+             { KEY_SNEXT,  SHF,      "[6;2~"   },   /* shift-pgdn */
              { ALT_PGDN,   ALT,      "[6;3~"   },
              { CTL_PGDN,   CTL,      "[6;5~"   },
              { KEY_NPAGE,  0,        "[6~"     },
@@ -281,26 +301,6 @@ static int xlate_vt_codes( const int *c, const int count, int *modifiers)
              { KEY_F(3),   0,        "[[C"     },
              { KEY_F(4),   0,        "[[D"     },
              { KEY_F(5),   0,        "[[E"     },
-             { KEY_F(25),  CTL,      "[1;5P"   },   /* ctrl-f1 */
-             { KEY_F(26),  CTL,      "[1;5Q"   },   /* ctrl-f2 */
-             { KEY_F(27),  CTL,      "[1;5R"   },   /* ctrl-f3 */
-             { KEY_F(28),  CTL,      "[1;5S"   },   /* ctrl-f4 */
-             { KEY_F(29),  CTL,      "[15;5~"  },   /* ctrl-f5 */
-             { KEY_F(30),  CTL,      "[17;5~"  },   /* ctrl-f6 */
-             { KEY_F(31),  CTL,      "[18;5~"  },   /* ctrl-f7 */
-             { KEY_F(32),  CTL,      "[19;5~"  },   /* ctrl-f8 */
-             { KEY_F(33),  CTL,      "[20;5~"  },   /* ctrl-f9 */
-             { KEY_F(34),  CTL,      "[21;5~"  },   /* ctrl-f10 */
-             { KEY_F(35),  CTL,      "[23;5~"  },   /* ctrl-f11 */
-             { KEY_F(36),  CTL,      "[24;5~"  },   /* ctrl-f12 */
-             { KEY_SEND,   SHF,      "[1;2F"   },   /* shift-end */
-             { KEY_SHOME,  SHF,      "[1;2H"   },   /* shift-home */
-             { KEY_SPREVIOUS, SHF,   "[5;2~"   },   /* shift-pgup */
-             { KEY_SNEXT,  SHF,      "[6;2~"   },   /* shift-pgdn */
-             { KEY_SIC,    SHF,      "[2;2~"   },   /* shift-ins */
-             { KEY_SDC,    SHF,      "[3;2~"   },   /* shift-del */
-             { CTL_INS,    CTL,      "[2;5~"   },   /* ctrl-ins */
-             { CTL_DEL,    CTL,      "[3;5~"   },   /* ctrl-del */
              };
    const size_t n_keycodes = sizeof( xlates) / sizeof( xlates[0]);
    size_t i;
