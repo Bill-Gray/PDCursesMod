@@ -41,7 +41,19 @@ to about 6.7 million/s.  DOS and DOSVGA are the odd systems out;  their
 time checks are about as fast as key checks.  (Exact results may vary
 with compilers and,  of course,  machines.)  */
 
-PDCEX long PDC_millisecs( void);       /* undocumented function;  see getch.c */
+#ifdef __PDCURSESMOD__
+PDCEX long PDC_millisecs( void);    /* undocumented function;  see getch.c */
+#else    /* if we're not in PDCursesMod,  we have to supply the function */
+#include <sys/time.h>
+
+long PDC_millisecs( void)
+{
+    struct timeval t;
+
+    gettimeofday( &t, NULL);
+    return( t.tv_sec * 1000 + t.tv_usec / 1000);
+}
+#endif
 
 int main( const int argc, const char **argv)
 {
