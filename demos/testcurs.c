@@ -491,11 +491,7 @@ void inputTest(WINDOW *win)
                 wprintw(win, "Button %d: ", button);
 
             if (MOUSE_MOVED)
-            {
                 waddstr(win, "moved: ");
-                if( !button)
-                    button = 1;     /* to allow button modifiers to be read */
-            }
             else if (MOUSE_WHEEL_UP)
                 waddstr(win, "wheel up: ");
             else if (MOUSE_WHEEL_DOWN)
@@ -519,6 +515,8 @@ void inputTest(WINDOW *win)
             else
                 waddstr(win, "released: ");
 
+            if( !button)
+                button = 1;     /* to allow button modifiers to be read */
             if( BUTTON_STATUS(button) & BUTTON_MODIFIER_MASK)
             {
                 if (BUTTON_STATUS(button) & BUTTON_SHIFT)
