@@ -276,7 +276,8 @@ int main( const int argc, const char *argv[])
       }
    if( !fgets( buff, sizeof( buff), ifile))
       return( -4);
-   pixels = (char *)calloc( xsize * ysize, 3);
+   assert( xsize < 300000 && ysize < 300000);
+   pixels = (char *)calloc( xsize, ysize * 3);
    assert( pixels);
    if( !fread( pixels, xsize * ysize, bytes_per_pixel, ifile))
       {
