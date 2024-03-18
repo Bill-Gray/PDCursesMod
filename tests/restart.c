@@ -19,27 +19,35 @@ gcc -Wall -Wextra -pedantic -o restart restart.c -DPDC_FORCE_UTF8 -I.. libpdcurs
 
 int main( void)
 {
-    int i;
+    int c = 0;
+    SCREEN *sp = newterm( NULL, stdout, stdin);
 
-    for( i = 0; i < 2; i++)
+    cbreak( );
+    keypad( stdscr, 1);
+    while( c != 'q')
     {
-        SCREEN *sp = newterm( NULL, stdout, stdin);
-
-        mvprintw( 1, 1, "Curses has been %sstarted.  %s",
-               (i ? "re" : ""), longname( ));
-        mvprintw( 2, 1, "Hit a key...");
-        while( getch( ) == KEY_RESIZE)
-           addch( '.');
-        endwin( );
-        delscreen( sp);
-        if( !i)
+        mvaddstr( 1, 1, "Restart test on ");
+        addstr( longname( ));
+        mvaddstr( 2, 1, "Hit 'q' to quit,  'r' to shut down Curses/restart.");
+        mvaddstr( 3, 1, "See PDCursesMod/tests/restart.c for explanations.");
+        c = getch( );
+        mvaddstr( 4, 1, "Key hit : ");
+        addstr( keyname( c));
+        clrtoeol( );
+        if( c == 'r')
         {
+            endwin( );
+            delscreen( sp);
             printf( "Curses has been temporarily closed.  Hit Enter,\n"
                     "and it should restart.\n");
             getchar( );
+            sp = newterm( NULL, stdout, stdin);
+            cbreak( );
+            keypad( stdscr, 1);
         }
-        else
-            printf( "And we're done.\n");
     }
+    endwin( );
+    delscreen( sp);
+    printf( "Exited 'restart' test\n");
     return(0);
 }
