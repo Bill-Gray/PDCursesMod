@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include <assert.h>
 #if defined( _WIN32) || defined( DOS)
    #include <conio.h>
@@ -193,9 +194,7 @@ below reasonably short. */
 #define CTL             PDC_KEY_MODIFIER_CONTROL
 #define ALT             PDC_KEY_MODIFIER_ALT
 
-static int xlate_vt_codes( const int *c, const int count, int *modifiers)
-{
-   static const xlate_t xlates[] =  {
+static const xlate_t xlates[] =  {
              { KEY_END,    0,        "OF"      },
              { KEY_HOME,   0,        "OH"      },
              { KEY_F(1),   0,        "OP"      },
@@ -302,65 +301,103 @@ static int xlate_vt_codes( const int *c, const int count, int *modifiers)
              { KEY_F(4),   0,        "[[D"     },
              { KEY_F(5),   0,        "[[E"     },
              };
-   const size_t n_keycodes = sizeof( xlates) / sizeof( xlates[0]);
-   size_t i;
-   int rval = -1;
+const size_t n_keycodes = sizeof( xlates) / sizeof( xlates[0]);
 
-   *modifiers = 0;
-   if( count == 1)
+static int _single_char_cases( const char c, int *modifiers)
+{
+   int rval = -1, dummy;
+
+   if( !modifiers)
+      modifiers = &dummy;
+   if( c >= 'a' && c <= 'z')
+      rval = ALT_A + c - 'a';
+   else if( c >= 'A' && c <= 'Z')
       {
-      if( c[0] >= 'a' && c[0] <= 'z')
-         rval = ALT_A + c[0] - 'a';
-      else if( c[0] >= 'A' && c[0] <= 'Z')
-         {
-         rval = ALT_A + c[0] - 'A';
-         *modifiers = SHF;
-         }
-      else if( c[0] >= 1 && c[0] <= 26)
-         {
-         rval = ALT_A + c[0] - 1;
-         *modifiers = CTL;
-         }
-      else if( c[0] >= '0' && c[0] <= '9')
-         rval = ALT_0 + c[0] - '0';
+      rval = ALT_A + c - 'A';
+      *modifiers = SHF;
+      }
+   else if( c >= 1 && c <= 26)
+      {
+      rval = ALT_A + c - 1;
+      *modifiers = CTL;
+      }
+   else if( c >= '0' && c <= '9')
+      rval = ALT_0 + c - '0';
+   else
+      {
+      const char *text = "',./[];`\x1b\\=-\x0a\x7f";
+      const char *tptr = strchr( text, c);
+      const int codes[] = { ALT_FQUOTE, ALT_COMMA, ALT_STOP, ALT_FSLASH,
+                  ALT_LBRACKET, ALT_RBRACKET,
+                  ALT_SEMICOLON, ALT_BQUOTE, ALT_ESC,
+                  ALT_BSLASH, ALT_EQUAL, ALT_MINUS, ALT_ENTER, ALT_BKSP };
+
+      if( tptr)
+          rval = codes[tptr - text];
       else
          {
-         const char *text = "',./[];`\x1b\\=-\x0a\x7f";
-         const char *tptr = strchr( text, c[0]);
-         const int codes[] = { ALT_FQUOTE, ALT_COMMA, ALT_STOP, ALT_FSLASH,
-                     ALT_LBRACKET, ALT_RBRACKET,
-                     ALT_SEMICOLON, ALT_BQUOTE, ALT_ESC,
-                     ALT_BSLASH, ALT_EQUAL, ALT_MINUS, ALT_ENTER, ALT_BKSP };
-
-         if( tptr)
-             rval = codes[tptr - text];
-         else
-            {
-            rval = c[0];
-            *modifiers = SHF;
-            }
+         rval = c;
+         *modifiers = SHF;
          }
-      *modifiers |= ALT;
       }
-   else if( count == 5 && c[0] == '[' && c[1] == 'M')
+   *modifiers |= ALT;
+   return( rval);
+}
+
+static int _key_defined_ext( const char *definition, int *modifiers)
+{
+   if( *definition == 0x1b)
+      {
+      const size_t ilen = strlen( definition) - 1;
+      size_t i;
+
+      definition++;
+      if( ilen == 1)
+         return( _single_char_cases( definition[0], modifiers));
+      for( i = 0; i < n_keycodes; i++)
+         if( !strcmp( xlates[i].xlation, definition))
+            {
+            if( modifiers)
+               *modifiers = xlates[i].modifiers;
+            return( xlates[i].key_code);
+            }
+         else if( strlen( xlates[i].xlation) > ilen &&
+                        !memcmp( xlates[i].xlation, definition, ilen))
+            return( -1);  /* conflict w/a longer string */
+      }
+   return( 0);    /* no keycode bound to that definition */
+}
+
+static int _look_up_key( const int *c, const int count, int *modifiers)
+{
+   char definition[MAX_COUNT];
+   int i;
+
+   assert( count < (int)sizeof( definition) - 2);
+   *definition = 0x1b;
+   for( i = 0; i < count; i++)
+      definition[i + 1] = (char)c[i];
+   definition[count + 1] = '\0';
+   return( _key_defined_ext( definition, modifiers));
+}
+
+static int xlate_vt_codes( const int *c, const int count, int *modifiers)
+{
+   int rval = -1;
+
+   assert( count);
+   *modifiers = 0;
+   if( count == 5 && c[0] == '[' && c[1] == 'M')
       rval = KEY_MOUSE;
    else if( count > 6 && c[0] == '[' && c[1] == '<'
                              && (c[count - 1] == 'M' || c[count - 1] == 'm'))
       rval = KEY_MOUSE;    /* SGR mouse mode */
-   if( count >= 2)
-      for( i = 0; rval == -1 && i < n_keycodes; i++)
-         {
-         int j = 0;
-
-         while( j < count && xlates[i].xlation[j]
-                               && xlates[i].xlation[j] == c[j])
-            j++;
-         if( j == count && !xlates[i].xlation[j])
-            {
-            rval = xlates[i].key_code;
-            *modifiers = xlates[i].modifiers;
-            }
-         }
+   else
+      {
+      rval = _look_up_key( c, count, modifiers);
+      if( !rval)
+         rval = -1;
+      }
    return( rval);
 }
 
