@@ -57,6 +57,7 @@ OFILES=\
 HFILES=\
 	/sys/include/ape/curses.h\
 	/sys/include/ape/panel.h\
+	/sys/include/ape/term.h
 
 UPDATE=\
 	mkfile\
@@ -69,7 +70,7 @@ UPDATE=\
 CC=pcc
 LD=pcc
 CFLAGS= -c -I. -I.. -D_POSIX_SOURCE -D_BSD_EXTENSION -D_C99_SNPRINTF_EXTENSION \
--DHAVE_VSNPRINTF
+-DHAVE_VSNPRINTF -DHAVE_GETTIMEOFDAY
 
 %.$O: ../pdcurses/%.c
 	$CC $CFLAGS ../pdcurses/$stem.c
@@ -79,10 +80,11 @@ CFLAGS= -c -I. -I.. -D_POSIX_SOURCE -D_BSD_EXTENSION -D_C99_SNPRINTF_EXTENSION \
 
 
 install:V:
-    cp libcurses.a /$objtype/lib/ape/libcurses.a
 	cp ../curses.h /sys/include/ape/curses.h
 	ape/patch /sys/include/ape/curses.h <header.patch
 	cp ../panel.h /sys/include/ape/panel.h
+	cp ../term.h /sys/include/ape/term.h
+    cp libcurses.a /$objtype/lib/ape/libcurses.a
 
 demos:V:
 	@{
