@@ -2,17 +2,23 @@ APE=/sys/src/ape
 <$APE/config
 
 TARG=\
+    calendar\
 	firework\
+    init_col\
+    mbrot\
 	newtest\
 	ozdemo\
 	picsview\
 	ptest\
 	rain\
 	speed\
+    test_pan\
 	testcurs\
 	tuidemo\
+    version\
+    widetest\
 	worm\
-	xmas\
+	xmas
 
 HFILES=\
 	/sys/include/ape/curses.h\

@@ -413,7 +413,7 @@ use clock_gettime() or gettimeofday() when available. */
 #if defined( _POSIX_C_SOURCE) && (_POSIX_C_SOURCE >= 199309L)
    #define CLOCK_GETTIME_AVAILABLE    1
 #endif
-#if defined( _DEFAULT_SOURCE) || defined( _BSD_SOURCE)
+#if defined( _DEFAULT_SOURCE) || defined( _BSD_SOURCE) || defined(HAVE_GETTIMEOFDAY)
    #define GETTIMEOFDAY_AVAILABLE    1
 #endif
 
