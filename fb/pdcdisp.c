@@ -326,14 +326,6 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
     assert( lineno >= 0);
     assert( lineno < SP->lines);
     assert( len > 0);
-    if( lineno > (int)( PDC_fb.yres / PDC_font_info.height))
-        return;
-    if( x + len > (int)( PDC_fb.xres / PDC_font_info.width))
-    {
-        len = (int)( PDC_fb.xres / PDC_font_info.width) - x;
-        if( len <= 0)
-            return;
-    }
     if( lineno == SP->cursrow && x <= SP->curscol && x + len > SP->curscol)
     {
         cursor_to_draw = (PDC_blink_state ? SP->visibility & 0xff : (SP->visibility >> 8));
@@ -351,10 +343,36 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
     }
     while( len)
     {
-        int run_len = 0;
+        int run_len = 0, x1, y1;
         PACKED_RGB fg, bg;
-        const long video_offset = x * PDC_font_info.width
-                     + lineno * PDC_font_info.height * line_len;
+        long video_offset, next_glyph;
+        extern int PDC_orientation;
+
+        switch( PDC_orientation & 3)
+            {
+            case 0:   /* 'normal' */
+               x1 = x;
+               y1 = lineno;
+               next_glyph = PDC_font_info.width;
+               break;
+            case 1:   /* rotated 90 degrees clockwise */
+               x1 = SP->lines - lineno - 1;
+               y1 = x;
+               next_glyph = PDC_font_info.height * line_len;
+               break;
+            case 2:   /* 180-degree rotation */
+               x1 = (SP->cols - x) - 1;
+               y1 = (SP->lines - lineno) - 1;
+               next_glyph = -(long)PDC_font_info.width;
+               break;
+            case 3:   /* rotated 90 degrees CCW */
+               x1 = lineno;
+               y1 = SP->cols - x - 1;
+               next_glyph = -(long)PDC_font_info.height * line_len;
+               break;
+            }
+        video_offset = x1 * PDC_font_info.width
+                     + y1 * PDC_font_info.height * line_len;
 
         PDC_get_rgb_values( *srcp & ~A_REVERSE, &fg, &bg);
         if( fg == (PACKED_RGB)-1)   /* default foreground */
@@ -392,7 +410,7 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
                 }
                 srcp++;
                 len--;
-                tptr += PDC_font_info.width;
+                tptr += next_glyph;
                 x++;
             }
         }
@@ -440,7 +458,7 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
                 }
                 srcp++;
                 len--;
-                tptr += PDC_font_info.width;
+                tptr += next_glyph;
                 x++;
             }
         }

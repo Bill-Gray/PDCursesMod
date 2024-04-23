@@ -451,6 +451,11 @@ int PDC_get_key( void)
             PDC_cycle_font( );
             rval = -1;
             }
+         if( rval == ALT_FSLASH)
+            {
+            PDC_rotate_font( );
+            rval = -1;
+            }
 #endif
          if( !count)             /* Escape hit */
             rval = 27;
