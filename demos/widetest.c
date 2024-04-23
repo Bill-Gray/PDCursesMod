@@ -51,12 +51,13 @@ int main( const int argc, const char *argv[])
     mvaddstr( 8, 2, "here is that both lines should look the same.  (On some systems,");
     mvaddstr( 9, 2, "font rendering will make them not _exactly_ the same.  But they");
     mvaddstr( 10, 2, "should be recognizably similar.)");
-    mvaddwstr( 12, 2, L"One character _should_ differ.  The 'm' in '\xc5ngstrom' has a");
-    mvaddstr( 13, 2, "cedilla and circumflex,  to test display of more than one added");
-    mvaddstr( 14, 2, "combining character.  Hit a key to continue.");
+    mvaddwstr( 12, 2, L"One character _should_ differ.  The 'm' in '\xc5ngstrom' on the");
+    mvaddstr( 13, 2, "second line should have a cedilla _and_ a circumflex.  This");
+    mvaddstr( 14, 2, "tests display of more than one added combining character.");
     mvaddstr( 16, 2, "Also,  the 'treble clef' symbol (Unicode U+1D11E) is added to the");
     mvaddstr( 17, 2, "second line,  to test SMP display.  This will probably not show");
     mvaddstr( 18, 2, "up correctly.  Few fonts support SMP characters.");
+    mvaddstr( 20, 2, "Hit a key to continue.");
     while( getch( ) == KEY_RESIZE)
         resize_term( 0, 0);
     move( 4, 1);

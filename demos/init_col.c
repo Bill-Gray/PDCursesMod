@@ -2,21 +2,20 @@
 #include <string.h>
 #include <curses.h>
 
-/* Code to test and compare behavior of ncurses and PDCurses
-color routines.  (Specifically the VT flavor of PDCurses;  I
+/* Code to test and compare behavior of ncurses and PDCurses*
+color routines.  (Specifically the VT flavor of PDCursesMod;  I
 did try others,  but the main thing I was interested in was the
 handling of 'default' colors.)  Some findings :
 
-   -- I _think_ text displayed with a non-zero color pair,  with
-that color pair uninitialized,  results in undefined behavior.
-I've certainly found no definition,  and in ncurses,  the text is
-invisible (until you select it).  In PDCurses,  it's black on
-white.  I'm almost inclined to make that, say,  blinking underlined
-bold red on blue... something that will enable you to see it,  but
-will also make it clear to the programmer that something's wrong
-and you shouldn't rely on that text being visible.
+   -- I _think_ text displayed with an uninitialized non-zero
+color pair results in undefined behavior.  I've certainly found
+no definition.  In ncurses,  the text is invisible (until you
+select it).  In PDCurses,  it's black on white.  In PDCursesMod,
+ it'll be red on blue;  the hope is that you'll see it,  but it
+will be clear to you that something is wrong,  ideally causing
+you to fix it.
 
-   -- For both ncurses and (VT) PDCurses,  if start_color() is
+   -- For both ncurses and (VT) PDCursesMod,  if start_color() is
 not called,  text is displayed in the default colors.  (Which
 you'd expect.)  If start_color( ) is called after text has been
 displayed,  ncurses will ignore start_color( ).  (In the following,
@@ -34,11 +33,11 @@ after initscr()."
 before text is displayed.
 
    -- The Windows console and SDL1 and SDL2 flavors of PDCurses
-claim to support the concept of an 'original' background and foreground.
-I've not checked yet to see how that works out in practice.  (In
-theory,  they use the same underlying code for the purpose as
-the VT flavor of PDCurses.  In theory,  practice and theory are
-the same.  In practice,  they usually aren't.)        */
+claim to support the concept of an 'original' background and
+foreground. I've not checked yet to see how that works out in
+practice.  (In theory,  they use the same underlying code for the
+purpose as the VT flavor of PDCursesMod.  In theory,  practice and
+theory are the same.  In practice,  they usually aren't.)   */
 
 int main( const int argc, const char *argv[])
 {
