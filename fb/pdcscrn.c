@@ -230,6 +230,8 @@ void PDC_rotate_font( void)
       PDC_rows = PDC_fb.yres / PDC_font_info.height;
       }
    PDC_resize_occurred = TRUE;
+   SP->cols = PDC_cols;
+   SP->lines = PDC_rows;
    if (SP)
        SP->resized = TRUE;
    if( _loaded_font_bytes)
@@ -343,7 +345,7 @@ int PDC_scr_open(void)
 
 #ifdef USE_DRM
     PDC_LOG(("PDC_scr_open called\n"));
-    error = init_drm( "/dev/dri/card0", "def");
+    error = init_drm( "/dev/dri/card0", getenv( "PDC_SCREEN"));
     if( error)
     {
         fprintf( stderr, "Error %d on DRM opening\n", error);

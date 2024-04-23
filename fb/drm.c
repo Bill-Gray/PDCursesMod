@@ -107,6 +107,9 @@ int get_framebuffer(const char *dri_device, const char *connector_name, struct f
     drmModeResPtr res;
     drmModeEncoderPtr encoder = 0;
 
+    if( !connector_name || !*connector_name)
+        connector_name = "def";
+
     /* Open the dri device /dev/dri/cardX */
     fd = open(dri_device, O_RDWR);
     if (fd < 0)
@@ -131,7 +134,7 @@ int get_framebuffer(const char *dri_device, const char *connector_name, struct f
         snprintf(name, sizeof(name), "%s-%u", connector_type_name(connector->connector_type),
                 connector->connector_type_id);
 
-        if (strncmp(name, connector_name, sizeof(name)) == 0)
+        if( !strncmp(name, connector_name, strlen( connector_name)))
                 break;
 
         if (strcmp( "def", connector_name) == 0 && connector->count_modes)
