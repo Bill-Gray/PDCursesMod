@@ -211,6 +211,11 @@ static void _add_combining_character_glyph( uint8_t *glyph, const int code_point
 
 #define LINE_ATTRIBS (WA_UNDERLINE | WA_TOP | WA_LEFT | WA_RIGHT | WA_STRIKEOUT)
 
+#define LOC_UNDERLINE      1
+#define LOC_RIGHT          2
+#define LOC_TOP            4
+#define LOC_LEFT           8
+
 /* Usually,  we can just return a pointer to the glyph data from
 the PSF file (using _get_raw_glyph_bytes()).  If the glyph has to
 be modified for line drawings or a cursor,  or it's a combined
@@ -248,7 +253,8 @@ static const uint8_t *_get_glyph( const chtype ch, const int cursor_type,
 #endif
     {
         const int font_char_size_in_bytes = (PDC_font_info.width + 7) >> 3;
-        int i, j;
+        int i, j, line_mask;
+        extern int PDC_orientation;
 
         memcpy( scratch, rval, PDC_font_info.charsize);
         rval = (const uint8_t *)scratch;
@@ -284,21 +290,34 @@ static const uint8_t *_get_glyph( const chtype ch, const int cursor_type,
                    *scratch++ ^= 0xff;
             scratch -= PDC_font_info.charsize;
         }
-        if( ch & (WA_UNDERLINE | WA_TOP | WA_STRIKEOUT))
+        line_mask = (ch & WA_UNDERLINE ? LOC_UNDERLINE : 0)
+                           | (ch & WA_LEFT ? LOC_LEFT : 0)
+                           | (ch & WA_TOP ? LOC_TOP : 0)
+                           | (ch & WA_RIGHT ? LOC_RIGHT : 0);
+        line_mask = (line_mask >> PDC_orientation) | (line_mask << (4 - PDC_orientation));
+        if( ch & WA_STRIKEOUT)
         {
-            if( ch & WA_TOP)
-                memset( scratch, 0xff, font_char_size_in_bytes);
-            if( ch & WA_STRIKEOUT)
+            if( PDC_orientation & 1)   /* rotated left or right */
+            {
+               const int half_width = (int)PDC_font_info.width / 2;
+
+               for( i = 0; i < (int)PDC_font_info.height; i++)
+                  scratch[i * font_char_size_in_bytes + (half_width >> 3)]
+                             |= (0x80 >> (half_width & 7));
+            }
+            else        /* unrotated or upside down */
                 memset( scratch + (PDC_font_info.height / 2) * font_char_size_in_bytes,
-                            0xff, font_char_size_in_bytes);
-            if( ch & WA_UNDERLINE)
-                memset( scratch + (PDC_font_info.height - 1) * font_char_size_in_bytes,
-                            0xff, font_char_size_in_bytes);
+                        0xff, font_char_size_in_bytes);
         }
-        if( ch & WA_LEFT)
+        if( line_mask & LOC_TOP)
+            memset( scratch, 0xff, font_char_size_in_bytes);
+        if( line_mask & LOC_UNDERLINE)
+            memset( scratch + (PDC_font_info.height - 1) * font_char_size_in_bytes,
+                        0xff, font_char_size_in_bytes);
+        if( line_mask & LOC_LEFT)
             for( i = 0; i < (int)PDC_font_info.height; i++)
                scratch[i * font_char_size_in_bytes] |= 0x80;
-        if( ch & WA_RIGHT)
+        if( line_mask & LOC_RIGHT)
         {
             scratch += font_char_size_in_bytes - 1;
             for( i = 0; i < (int)PDC_font_info.height; i++)
