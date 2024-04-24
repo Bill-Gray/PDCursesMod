@@ -1,8 +1,8 @@
 Generally speaking,  this history mentions only the more significant
 changes.  See the git log for full details.
 
-Current PDCursesMod - 2024 March 11
-=====================================
+Current PDCursesMod - 2024 April 23
+===================================
 
 Bug fixes
 ---------
@@ -24,12 +24,37 @@ Bug fixes
 - Framebuffer/DRM port didn't redraw upon changing fonts if the new font
   was the same size as the old one.  c714cd9bcc
 
+- wsetscrreg() required the cursor for the window to be positioned
+  between the 'top' and 'bottom' of the new scroll region.  5a0d5becee
+
+- wdeleteln() would delete the line currently under the cursor,  then
+  bring up lines down to the end of the current scroll region,  inserting
+  a blank line there.  It really should delete all the way to the bottom
+  of the window.  See also wmcbrine/PDCurses/issues/165.  b02f94fd3d
+
+- The 'picsview' demo had a possible buffer overrun error.  Reported and
+  fix proposed by Michael Knap.  fcd2dd0cb8
+
+- Plan9 port ran into a compile error due to different timekeeping
+  functions.  Also was missing a few demos and term.h.  1e8472cdbf
+
 Minor new features
 ------------------
+
+- The DRM and Linux framebuffer port now allows for screen rotation.
+  Hit Alt-/ for a 90-degree rotation.  This should pave the way for
+  support on phones and other rotatable displays (and already helps if
+  you have a monitor in portrait mode).  0e41ba5e68  1b7b432f9c
 
 - Added is_cbreak(), is_echo(), is_nl(), is_raw() functions to access
   members of the non-opaque SCREEN struct.  The first two replace
   PDC_getcbreak() and PDC_getecho().  98b6969a7e
+
+- Added a new 'test' program for the issues mentioned above with
+  scrolling and winsertln(), wdeleteln(), winsdelln().  98c7405a3f
+
+- Three new small test programs to investigate various aspects of
+  how curses works (or doesn't work).  5cef1e3d00
 
 PDCursesMod 4.4.0 - 2023 November 30
 ===================================
