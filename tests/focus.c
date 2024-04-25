@@ -1,11 +1,12 @@
 #include <curses.h>
 
 /* Test code for define_key().  At present,  this function
-does nothing in PDCurses*.  It could be added to the VT platform,
-if that proves desirable.  More generally,  though,  I'm thinking
-that the ability to get KEY_FOCUS_IN and KEY_FOCUS_OUT via getch(),
-on all platforms,  might be useful.  At present,  our programs
-have no way of knowing if they've lost/regained focus.
+does nothing in PDCurses*.  It could be added to the VT and
+Linux framebuffer/DRM platforms,  if that proves desirable.
+More generally,  though,  I'm thinking that the ability to get
+KEY_FOCUS_IN and KEY_FOCUS_OUT via getch(), on all platforms,
+might be useful.  At present,  our programs have no way of
+knowing if they've lost/regained focus.
 
    If we did such a thing,  the following bits would still be
 needed for portable programs.  That is to say,  if you weren't
@@ -21,8 +22,8 @@ so that those events would be sent to the program.   */
 int main( void)
 {
    int input;
+   SCREEN *screen_pointer = newterm(NULL, stdout, stdin);
 
-   initscr();
    noecho();
    cbreak();
    keypad( stdscr, 1);
@@ -45,6 +46,8 @@ int main( void)
          addstr( keyname( input));
          addch( ' ');
       }
-   endwin();
+   endwin( );
+                            /* Not really needed,  but ensures Valgrind  */
+   delscreen( screen_pointer);          /* says all memory was freed */
    return( 0);
 }
