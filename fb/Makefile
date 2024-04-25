@@ -80,18 +80,23 @@ ifeq ($(shell uname -s),FreeBSD)
 	LDFLAGS += -L /usr/local/lib -ldrm
 endif
 
-.PHONY: all libs clean demos
+.PHONY: all libs clean demos tests
 
 all:	libs
 
 libs:	$(LIBCURSES)
 
 clean:
-	-$(RM) *.o trace $(LIBCURSES) $(DEMOS)
+	-$(RM) *.o trace $(LIBCURSES) $(DEMOS) $(TESTS)
 
 demos:	libs $(DEMOS)
 ifneq ($(DEBUG),Y)
 	$(STRIP) $(DEMOS)
+endif
+
+tests:	libs $(TESTS)
+ifneq ($(DEBUG),Y)
+	$(STRIP) $(TESTS)
 endif
 
 $(LIBCURSES) : $(LIBOBJS) $(PDCOBJS)
@@ -102,6 +107,7 @@ endif
 
 $(LIBOBJS) $(PDCOBJS) : $(PDCURSES_HEADERS)
 $(DEMOS) : $(PDCURSES_CURSES_H) $(LIBCURSES)
+$(TESTS) : $(PDCURSES_CURSES_H) $(LIBCURSES)
 tui.o tuidemo.o : $(PDCURSES_CURSES_H)
 terminfo.o : $(TERM_HEADER)
 panel.o ptest: $(PANEL_HEADER)
@@ -113,6 +119,9 @@ $(PDCOBJS) : %.o: $(osdir)/%.c
 	$(BUILD) $(SFLAGS) -c $<
 
 $(DEMOS_EXCEPT_TUIDEMO): %: $(demodir)/%.c
+	$(BUILD) $(DEMOFLAGS) -o$@ $< $(LDFLAGS)
+
+$(TESTS): %: $(testdir)/%.c
 	$(BUILD) $(DEMOFLAGS) -o$@ $< $(LDFLAGS)
 
 tuidemo$(E) : tuidemo.o tui.o

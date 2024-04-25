@@ -9,6 +9,7 @@ TERM_HEADER		= $(PDCURSES_SRCDIR)/term.h
 
 srcdir	= $(PDCURSES_SRCDIR)/pdcurses
 demodir	= $(PDCURSES_SRCDIR)/demos
+testdir	= $(PDCURSES_SRCDIR)/tests
 
 LIBOBJS = addch.$(O) addchstr.$(O) addstr.$(O) attr.$(O) beep.$(O) \
 bkgd.$(O) border.$(O) clear.$(O) color.$(O) debug.$(O) delch.$(O) deleteln.$(O) \
@@ -26,3 +27,6 @@ mbrot$(E) newtest$(E) ozdemo$(E) picsview$(E) ptest$(E) rain$(E)  \
 speed$(E) test_pan$(E) testcurs$(E) widetest$(E) worm$(E) xmas$(E)
 
 DEMOS = $(DEMOS_EXCEPT_TUIDEMO) tuidemo$(E)
+
+TESTS = brk_test$(E) del_test$(E) focus$(E) ins_del$(E) keytest$(E) \
+	opaque$(E) restart$(E) ripoff$(E)

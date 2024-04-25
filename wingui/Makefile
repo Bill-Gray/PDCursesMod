@@ -122,7 +122,7 @@ endif
 	CLEAN = *.a
 endif
 
-.PHONY: all libs clean demos dist
+.PHONY: all libs clean demos dist tests
 
 all:	libs
 
@@ -137,6 +137,11 @@ clean:
 demos:	$(DEMOS)
 ifneq ($(DEBUG),Y)
 	$(STRIP) *.exe
+endif
+
+tests:	libs $(TESTS)
+ifneq ($(DEBUG),Y)
+	$(STRIP) $(TESTS)
 endif
 
 $(LIBCURSES) : $(LIBDEPS)
@@ -155,6 +160,9 @@ $(PDCOBJS) : %.o: $(osdir)/%.c
 	$(CC) -c $(CFLAGS) $<
 
 $(DEMOS_EXCEPT_TUIDEMO): %.exe: $(demodir)/%.c
+	$(CC) $(CFLAGS) -mwindows -o$@ $< $(LIBCURSES) $(EXELIBS)
+
+$(TESTS): %.exe: $(testdir)/%.c
 	$(CC) $(CFLAGS) -mwindows -o$@ $< $(LIBCURSES) $(EXELIBS)
 
 tuidemo.exe: tuidemo.o tui.o

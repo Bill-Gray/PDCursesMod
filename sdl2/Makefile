@@ -127,18 +127,23 @@ LINK		= $(CC)
 
 DEMOS		+= sdltest$(E)
 
-.PHONY: all libs clean demos
+.PHONY: all libs clean demos tests
 
 all:	libs
 
 libs:	$(LIBCURSES)
 
 clean:
-	-$(RM) *.o trace $(CLEAN) $(DEMOS)
+	-$(RM) *.o trace $(CLEAN) $(DEMOS) $(TESTS)
 
 demos:	$(DEMOS)
 ifneq ($(DEBUG),Y)
 	$(PREFIX)-strip $(DEMOS)
+endif
+
+tests:	$(TESTS)
+ifneq ($(DEBUG),Y)
+	$(PREFIX)-strip $(TESTS)
 endif
 
 install:
@@ -162,6 +167,7 @@ pdcurses.o: $(common)/pdcurses.rc
 $(LIBOBJS) $(PDCOBJS) : $(PDCURSES_HEADERS)
 $(PDCOBJS) : $(PDCURSES_SDL_H)
 $(DEMOS) : $(PDCURSES_CURSES_H) $(LIBCURSES)
+$(TESTS) : $(PDCURSES_CURSES_H) $(LIBCURSES)
 tui.o tuidemo.o : $(PDCURSES_CURSES_H)
 terminfo.o : $(TERM_HEADER)
 panel.o ptest$(E) test_pan$(E): $(PANEL_HEADER)
@@ -171,6 +177,9 @@ $(LIBOBJS) : %.o: $(srcdir)/%.c
 
 $(PDCOBJS) : %.o: $(osdir)/%.c
 	$(BUILD) $(SFLAGS) -c $<
+
+$(TESTS): %: $(testdir)/%.c
+	$(BUILD) $(DEMOFLAGS) -o$@ $< $(LDFLAGS)
 
 $(DEMOS_EXCEPT_TUIDEMO): %: $(demodir)/%.c
 	$(BUILD) $(DEMOFLAGS) -o$@ $< $(LDFLAGS)
