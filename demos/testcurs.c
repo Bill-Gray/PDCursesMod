@@ -1469,6 +1469,8 @@ void extended(int tmarg)
     short i, x, y, z, lmarg = (short)(COLS - 77) / 2;
 
     erase();
+    if( lmarg < 0)
+      lmarg = 0;
 
     curs_set(0);
 
@@ -1479,9 +1481,17 @@ void extended(int tmarg)
     mvaddstr(tmarg + 2, lmarg, "6x6x6 Color Cube (16-231):");
 
     mvaddstr(tmarg + 4,  lmarg, "Blk      Red");
-    mvaddstr(tmarg + 4,  lmarg + 65, "Grn      Yel");
     mvaddstr(tmarg + 11, lmarg, "Blue    Mgta");
-    mvaddstr(tmarg + 11, lmarg + 65, "Cyan   White");
+    if( COLS >= 77)
+    {
+        mvaddstr(tmarg + 4,  lmarg + 65, "Grn      Yel");
+        mvaddstr(tmarg + 11, lmarg + 65, "Cyan   White");
+    }
+    else
+    {
+        mvaddstr(tmarg + 11, COLS - 12, "Grn      Yel");
+        mvaddstr(tmarg + 18, COLS - 12, "Cyan   White");
+    }
 
     for (i = 16; i < 256; i++)
         init_pair(i, COLOR_BLACK, i);
@@ -1491,8 +1501,14 @@ void extended(int tmarg)
             for (y = 0; y < 6; y++)
             {
                 chtype ch = ' ' | COLOR_PAIR(i++);
+                int line = tmarg + 5 + y, col = z * 13 + x * 2 + lmarg;
 
-                mvaddch(tmarg + 5 + y, z * 13 + x * 2 + lmarg, ch);
+                if( z == 5 && COLS < 77)
+                {
+                    line += 7;
+                    col += COLS - 77;
+                }
+                mvaddch( line, col, ch);
                 addch(ch);
             }
 
