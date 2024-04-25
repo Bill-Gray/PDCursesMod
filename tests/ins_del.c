@@ -16,6 +16,7 @@ int main( )
     int top_scroll = 3, bottom_scroll = 10;
     int scroll_rate = 1;
     int rval;
+    int reset_screen = 1;
 
     screen_pointer = newterm(NULL, stdout, stdin);
     noecho( );
@@ -25,7 +26,7 @@ int main( )
     mvprintw( 1, 0, "Up/down to move cursor up/down; 'i'/'d' to insert/delete line");
     mvprintw( 2, 0, "'u' to scroll up, 's' to scroll down _within marked region_");
     mvprintw( 3, 0, "Any number 0...9 to set number of lines to scroll");
-    mvprintw( 4, 0, "'q' to quit");
+    mvprintw( 4, 0, "'q' to quit         Space to reset");
     mvaddstr( 6 + top_scroll, 0, "Top scroll->");
     mvaddstr( 6 + bottom_scroll, 0, "Bottom scroll->");
     refresh( );
@@ -41,11 +42,13 @@ int main( )
     rval = wsetscrreg( win, top_scroll, bottom_scroll);
     assert( rval == OK);
     wclear( win);
-    for( i = 0; i < 14; i++)
-       mvwprintw( win, i, 0, "This is line %d", i);
     keypad( win, TRUE);
     while( c != 'q')
       {
+      if( reset_screen)
+         for( i = 0; i < 14; i++)
+            mvwprintw( win, i, 0, "This is line %d", i);
+      reset_screen = 0;
       wmove( win, cursor_y, 1);
       wsyncup( win);
       wrefresh( win);
@@ -77,6 +80,15 @@ int main( )
             break;
          case 'I':
             winsdelln( win, scroll_rate);
+            break;
+         case ' ':
+            reset_screen = 1;
+            break;
+         case 'q':
+            break;
+         default:
+            flash( );
+            beep( );
             break;
          }
       }
