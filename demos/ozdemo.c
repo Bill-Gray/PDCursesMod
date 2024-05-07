@@ -118,7 +118,7 @@ int BouncingBalls(WINDOW *win)
 
     curs_set(0);
 
-    wbkgd(win, COLOR_PAIR(1));
+    wbkgd(win, ' ' | COLOR_PAIR(1));
     wrefresh(win);
     wattrset(win, 0);
 
@@ -328,7 +328,7 @@ int main(int argc, char **argv)
         }
 
         init_pair(5, COLOR_BLUE, COLOR_WHITE);
-        wattrset(win, COLOR_PAIR(5) | A_BLINK);
+        wattrset(win, COLOR_PAIR(5) | A_BOLD);
         mvwaddstr( win, height - 5, 2, longname( ));
         mvwaddstr( win, height - 4, 2, curses_version( ));
         mvwaddstr( win, height - 3, 2, versions_1);
