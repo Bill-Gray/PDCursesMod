@@ -355,8 +355,6 @@ int mvwin(WINDOW *win, int y, int x)
     PDC_LOG(("mvwin() - called\n"));
 
     assert( win);
-    assert( y + win->_maxy <= LINES && y >= 0
-         && x + win->_maxx <= COLS && x >=0);
     if (!win || (y + win->_maxy > LINES || y < 0)
              || (x + win->_maxx > COLS || x < 0))
         return ERR;
