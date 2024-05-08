@@ -1,8 +1,8 @@
 Generally speaking,  this history mentions only the more significant
 changes.  See the git log for full details.
 
-Current PDCursesMod - 2024 April 23
-===================================
+Current PDCursesMod - 2024 May 07
+=================================
 
 Bug fixes
 ---------
@@ -38,6 +38,17 @@ Bug fixes
 - Plan9 port ran into a compile error due to different timekeeping
   functions.  Also was missing a few demos and term.h.  1e8472cdbf
 
+- Removed an assert() in mvwin() when the window was moved outside the
+  screen area.  Some programs (including 'test_pan') assume they can try
+  moving a window,  then check the return value to see if it was actually
+  on screen.  c801354044
+
+- PDC_set_box_type() has been removed,  because it's an unneeded redundancy.
+  You can get double-lined or thick-lined boxes,  and/or rounded corners,
+  via the standard Curses wborder_set() function,  and it'll work with
+  ncurses and other libraries.  f8d87ed549  099fa2876c
+
+
 Minor new features
 ------------------
 
@@ -55,6 +66,13 @@ Minor new features
 
 - Three new small test programs to investigate various aspects of
   how curses works (or doesn't work).  5cef1e3d00
+
+- The 'tests' programs can now be built,  on some platforms,  with
+  'make -f Makefile tests'.  200b548516
+
+- 'test_pan' now demonstates double-lined,  thick-lined,  and rounded
+  box corners using wborder_set() instead of with the PDCursesMod-only
+  PDC_set_box_type() function.  f8d87ed549  099fa2876c
 
 PDCursesMod 4.4.0 - 2023 November 30
 ===================================

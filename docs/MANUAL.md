@@ -582,7 +582,6 @@ border
     int mvvline_set(int y, int x, const cchar_t *wch, int n);
     int mvwhline_set(WINDOW *win, int y, int x, const cchar_t *wch, int n);
     int mvwvline_set(WINDOW *win, int y, int x, const cchar_t *wch, int n);
-    int PDC_set_box_type( const int box_type);
 
 ### Description
 
@@ -597,11 +596,6 @@ border
     tr    top right corner of border      ACS_URCORNER
     bl    bottom left corner of border    ACS_LLCORNER
     br    bottom right corner of border   ACS_LRCORNER
-
-   PDC_set_box_type() can reset these defaults to use the double-line
-   characters.  'box_type' can include the bitflag constants.
-   PDC_BOX_DOUBLED_V and/or PDC_BOX_DOUBLED_H.  The previously set
-   default box type is returned.
 
    hline() and whline() draw a horizontal line, using ch, starting from
    the current cursor position. The cursor position does not change. The

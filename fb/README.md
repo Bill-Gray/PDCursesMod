@@ -22,10 +22,10 @@ In no order :
 
 - Fix the above shortcomings.
 - Fallback fonts.
-- Fullwidth characters.  For these,  we may need one font that is,  say,  8 pixels wide (for most characters) and one that is 16 pixels wide for the fullwidth characters.  That may be an extension of the above task of having fallback fonts : "Didn't find the desired glyph in the 'normal' font?  Maybe it's in a fallback font."
+- Fullwidth characters.  For these,  we may need one font that is,  say,  8 pixels wide (for most characters) and one that is 16 pixels wide for the fullwidth characters.  That may be an extension of the above task of having fallback fonts : "Didn't find the desired glyph in the 'normal' font?  Maybe it's in a fallback font."  Alternatively,  we can make use of the fact that the Unicode-to-glyph table can have the same Unicode value twice.  The first one would point to a 'left' glyph;  the second to a 'right' glyph.  Probably the way I'll go...
 - Programmatic resizing through `resize_term()`,  both before and after calling `initscr()`.
 - User-resizing and moving of windows,  if we can get the mouse to work.
-- Reserve a line at the top wherein the application title and close/full-screen/minimize buttons can go.
+- Reserve a line at the top wherein the application title and close/full-screen/minimize buttons can go.  The `ripoffline()` function may be useful here.
 
 Building
 --------
