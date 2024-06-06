@@ -612,4 +612,11 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
 
 void PDC_doupdate(void)
 {
+    MSG msg;
+
+    while( PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) )
+    {
+       TranslateMessage(&msg);
+       DispatchMessage(&msg);
+    }
 }
