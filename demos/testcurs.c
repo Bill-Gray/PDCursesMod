@@ -1751,7 +1751,7 @@ void wideTest(WINDOW *win)
     {
         printw("%04x ", tmp[i]);
         addnwstr(tmp + i, 1);
-        addstr("  ");
+        addstr( getcurx( stdscr) > COLS - 8 ? "\n " : "  ");
     }
 
     noecho();
