@@ -1,6 +1,8 @@
 /* PDCurses */
 
 #include <curspriv.h>
+#include <assert.h>
+#include <stdlib.h>
 
 /*man-start**************************************************************
 
@@ -44,19 +46,63 @@ printw
 
 #include <string.h>
 
+/* All Windows compilers (MSVC,  OpenWATCOM,  Borland,  Digital Mars)
+appear to have a _vsnprint() function.  Some others have vsnprintf().
+A few have neither.   */
+
+#ifdef _WIN32
+   #define vsnprint_func _vsnprintf
+#endif
+#if defined( HAVE_VSNPRINTF) && !defined( _WIN32)
+   #define vsnprint_func vsnprintf
+#endif
+
+/* _vsnprintf() and earlier vsnprintf() return -1 if the output doesn't
+fit in the buffer.  When that happens,  we try again with a
+larger buffer, doubling its size until it fits.  C99-compliant
+vsnprintf() returns the number of bytes actually needed (minus the
+trailing zero). */
+
+#ifndef va_copy
+   #define va_copy( dest, src) dest = src
+#endif
+
 int vwprintw(WINDOW *win, const char *fmt, va_list varglist)
 {
     char printbuf[513];
-    int len;
+    int len, rval;
+#ifdef vsnprint_func
+    char *buf = printbuf;
+    va_list varglist_copy;
+    size_t buffsize = sizeof( printbuf) - 1;
 
     PDC_LOG(("vwprintw() - called\n"));
+    va_copy( varglist_copy, varglist);
+    len = vsnprint_func( buf, buffsize, fmt, varglist_copy);
+    while( len < 0 || len > (int)buffsize)
+    {
+        if( -1 == len)       /* Microsoft,  glibc 2.0 & earlier */
+            buffsize <<= 1;
+        else                 /* glibc 2.0.6 & later (C99 behavior) */
+            buffsize = len + 1;
+        if( buf != printbuf)
+            free( buf);
+        buf = (char *)malloc( buffsize + 1);
+        va_copy( varglist_copy, varglist);
+        len = vsnprint_func( buf, buffsize, fmt, varglist_copy);
+    }
+    buf[len] = '\0';
+    rval = (waddstr(win, buf) == ERR) ? ERR : len;
+    if( buf != printbuf)
+        free( buf);
+#else       /* no _vsnprintf() or vsnprintf() : buffer may overflow */
+    PDC_LOG(("vwprintw() - called\n"));
 
-#ifdef HAVE_VSNPRINTF
-    len = vsnprintf(printbuf, 512, fmt, varglist);
-#else
     len = vsprintf(printbuf, fmt, varglist);
+    assert( len < (int)sizeof( printbuf) - 1);
+    rval = (waddstr(win, printbuf) == ERR) ? ERR : len;
 #endif
-    return (waddstr(win, printbuf) == ERR) ? ERR : len;
+    return rval;
 }
 
 int printw(const char *fmt, ...)
