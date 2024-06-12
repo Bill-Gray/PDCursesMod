@@ -1,7 +1,7 @@
 Generally speaking,  this history mentions only the more significant
 changes.  See the git log for full details.
 
-Current PDCursesMod - 2024 May 07
+Current PDCursesMod - 2024 Jun 12
 =================================
 
 Bug fixes
@@ -48,6 +48,12 @@ Bug fixes
   via the standard Curses wborder_set() function,  and it'll work with
   ncurses and other libraries.  f8d87ed549  099fa2876c
 
+- printw() overflowed a buffer when asked to output more than 512 bytes.
+  ddf80d010f
+
+- napms() rounded _up_ to the nearest clock tick on DOS and DOSVGA;  it now
+  rounds _to_ the nearest clock tick (with at least one tick being used).
+  Modified the documentation to reflect this.  785113f0b9
 
 Minor new features
 ------------------
@@ -68,11 +74,14 @@ Minor new features
   how curses works (or doesn't work).  5cef1e3d00
 
 - The 'tests' programs can now be built,  on some platforms,  with
-  'make -f Makefile tests'.  200b548516
+  'make -f Makefile tests'.  200b548516  e611673b49  63138eaf34
 
 - 'test_pan' now demonstates double-lined,  thick-lined,  and rounded
   box corners using wborder_set() instead of with the PDCursesMod-only
   PDC_set_box_type() function.  f8d87ed549  099fa2876c
+
+- WinGUI now defaults to resizable windows,  similar to SDLn,  WinCon,
+  and X11.  58807ea498
 
 PDCursesMod 4.4.0 - 2023 November 30
 ===================================
