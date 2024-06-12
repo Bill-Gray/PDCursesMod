@@ -4,7 +4,7 @@
 #        [CHTYPE_32=] [INFOEX=N] [target]
 #
 # where target can be any of:
-# [all|demos|pdcurses.lib|testcurs.exe...]
+# [all|demos|tests|pdcurses.lib|testcurs.exe...]
 
 O = obj
 E = .exe
@@ -81,13 +81,17 @@ clean:
 	-$(RM) *.res
 
 demos:	$(PDCLIBS) $(DEMOS)
+tests:	$(PDCLIBS) $(TESTS)
 
 DEMOOBJS = $(DEMOS:.exe=.obj) tui.obj
+TESTOBJS = $(TESTS:.exe=.obj)
 
 $(LIBOBJS) $(PDCOBJS) : $(PDCURSES_HEADERS)
 $(PDCOBJS) : $(PDCURSES_WIN_H)
 $(DEMOOBJS) : $(PDCURSES_CURSES_H)
 $(DEMOS) : $(LIBCURSES)
+$(TESTOBJS) : $(PDCURSES_CURSES_H)
+$(TESTS) : $(LIBCURSES)
 panel.obj : $(PANEL_HEADER)
 terminfo.obj : $(TERM_HEADER)
 
@@ -110,6 +114,9 @@ pdcurses.res pdcurses.obj: $(common)\pdcurses.rc
 	$(BUILD) $<
 
 {$(demodir)\}.c{}.obj::
+	$(BUILD) $<
+
+{$(testdir)\}.c{}.obj::
 	$(BUILD) $<
 
 .obj.exe:
