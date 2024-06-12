@@ -14,8 +14,8 @@
 /* COLOR_PAIR to attribute encoding table. */
 
 static int menu_shown = 1;
-static int min_lines = 25, max_lines = 25;
-static int min_cols = 80, max_cols = 80;
+static int min_lines = 20, max_lines = 200;
+static int min_cols = 60, max_cols = 800;
 
 #if !defined( CHTYPE_32) && defined( PDC_WIDE)
     #define USING_COMBINING_CHARACTER_SCHEME
