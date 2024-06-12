@@ -59,9 +59,9 @@ kernel
    milliseconds. draino() is an archaic equivalent. Note that since
    napms() attempts to give up a time slice and yield control back to
    the OS, all times are approximate. (In DOS, the delay is actually
-   rounded down to 50ms (1/20th sec) intervals, with a minimum of one
-   interval; i.e., 1-99 will wait 50ms, 100-149 will wait 100ms, etc.)
-   0 returns immediately.
+   rounded to the nearest 'tick' (~55 milliseconds),  with a minimum of
+   one interval; i.e., 1-82 will wait ~55ms, 83-137 will wait ~110ms,
+   etc.)  0 returns immediately.
 
    resetterm(), fixterm() and saveterm() are archaic equivalents for
    reset_shell_mode(), reset_prog_mode() and def_prog_mode(),

@@ -43,7 +43,9 @@ void PDC_napmsl( long ms)
            that would overflow,  and we'd need floating point math.
            The following is good to four parts per billion and
            doesn't overflow (because 0 <= ms <= MAX_NAP_SPAN). */
-    ticks_to_wait = (ms * 859L) / 47181L + 1L;
+    ticks_to_wait = (ms * 859L + 2359L) / 47181L;
+    if( ms && !ticks_to_wait)
+        ticks_to_wait = 1;
     tick0 = getdosmemdword(0x46c);
     for( ;;)
     {
@@ -52,7 +54,7 @@ void PDC_napmsl( long ms)
 
         if( ticks_elapsed < 0L)     /*  midnight rollover */
             ticks_elapsed += MAX_TICK;
-        if (ticks_elapsed > ticks_to_wait)
+        if (ticks_elapsed >= ticks_to_wait)
             return;
 
         regs.W.ax = 0x1680;
