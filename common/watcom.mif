@@ -89,6 +89,7 @@ LDFLAGS += debug dwarf all
 
 srcdir = $(PDCURSES_SRCDIR)/pdcurses
 demodir = $(PDCURSES_SRCDIR)/demos
+testdir = $(PDCURSES_SRCDIR)/tests
 
 LIBOBJS = addch.obj addchstr.obj addstr.obj attr.obj beep.obj bkgd.obj &
     border.obj clear.obj color.obj delch.obj deleteln.obj &
@@ -105,6 +106,10 @@ DEMOS = calendar$(E) firework$(E) init_col$(E) mbrot$(E) newtest$(E) &
     ozdemo$(E) picsview$(E) ptest$(E) rain$(E) speed$(E) test_pan$(E) &
     testcurs$(E) tuidemo$(E) widetest$(E) worm$(E) xmas$(E)
 
+TESTS = brk_test$(E) del_test$(E) focus$(E) ins_del$(E) keytest$(E) &
+   opaque$(E) restart$(E) ripoff$(E) show_col$(E)
+
+
 PDCNAME = pdcurses
 
 !ifdef __LOADDLL__
@@ -116,7 +121,7 @@ PDCNAME = pdcurses
 
 all:	$(PDCNAME).lib
 
-.c: $(srcdir);$(PDCURSES_SRCDIR)/$(osdir);$(demodir)
+.c: $(srcdir);$(PDCURSES_SRCDIR)/$(osdir);$(demodir);$(testdir)
 .c.obj: .autodepend
 !ifeq TARGET dos
     @set INCLUDE=$(%WATCOM)/h
@@ -199,6 +204,8 @@ $(PDCNAME).lib : $(PDCNAME).lbc
 !endif
 
 demos: $(DEMOS)
+
+tests: $(TESTS)
 
 dist: .symbolic
 
