@@ -68,11 +68,13 @@ insstr
 
 #include <string.h>
 
+#define MAX_WSTR 80
+
 int winsnstr(WINDOW *win, const char *str, int n)
 {
 #ifdef PDC_WIDE
-    wchar_t wstr[513], *p;
-    int i;
+    wchar_t wstr[MAX_WSTR], *p = wstr;
+    int i = 0;
 #endif
     int len;
 
@@ -89,13 +91,7 @@ int winsnstr(WINDOW *win, const char *str, int n)
         n = len;
 
 #ifdef PDC_WIDE
-    if (n > 512)
-        n = 512;
-
-    p = wstr;
-    i = 0;
-
-    while( i < n && str[i])
+    while( p < wstr + MAX_WSTR && str[i])
     {
         int retval = PDC_mbtowc(p, str + i, n - i);
 
@@ -104,6 +100,9 @@ int winsnstr(WINDOW *win, const char *str, int n)
         p++;
         i += retval;
     }
+    if( p == wstr + MAX_WSTR)        /* not enough room in wstr;  break */
+        if( ERR == winsnstr( win, str + i, n - i))    /* str into parts */
+            return ERR;
 
     while (p > wstr)
         if (winsch(win, *--p) == ERR)
