@@ -8,7 +8,9 @@ Prompted by https://github.com/wmcbrine/PDCurses/issues/165 .
 
 gcc -Wall -Wextra -pedantic -o ins_del ins_del.c -lncursesw    */
 
-int main( )
+#define INTENTIONALLY_UNUSED_PARAMETER( param) (void)(param)
+
+int main( const int argc, const char **argv)
 {
     SCREEN *screen_pointer;
     WINDOW *win;
@@ -18,6 +20,8 @@ int main( )
     int rval;
     int reset_screen = 1;
 
+    INTENTIONALLY_UNUSED_PARAMETER( argc);
+    INTENTIONALLY_UNUSED_PARAMETER( argv);
     screen_pointer = newterm(NULL, stdout, stdin);
     noecho( );
     raw( );
