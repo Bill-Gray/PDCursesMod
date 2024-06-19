@@ -468,8 +468,19 @@ size_t PDC_wcstombs(char *dest, const wchar_t *src, size_t n)
     if (!src || !dest)
         return 0;
 
-    while (*src && i < n)
+    while (*src && i < n - 4)
        i += PDC_wc_to_utf8( dest + i, *src++);
+    while (*src && i < n)
+    {
+       char tbuff[4];
+       size_t count = (size_t)PDC_wc_to_utf8( tbuff, *src++);
+
+       assert( count <= n - i);  /* partial UTF-8 decoding indicates error */
+       if( count > n - i)
+           count = n - i;
+       memcpy( dest + i, tbuff, count);
+       i += count;
+    }
 # else
     size_t i = wcstombs(dest, src, n);
 # endif
