@@ -117,9 +117,8 @@ int main(int argc, char *argv[])
     int key, old_option = -1, new_option = 0, i;
     bool quit = FALSE;
 
-#ifdef _WIN32
-    setlocale(LC_ALL, ".utf8");
-#endif
+    if( !setlocale( LC_CTYPE, "C.UTF-8"))
+        setlocale( LC_CTYPE, "en_US.utf8");
 
 #ifdef __PDCURSESMOD__
 #ifdef PDC_VER_MAJOR   /* so far only seen in 4.0+ */
@@ -135,7 +134,7 @@ int main(int argc, char *argv[])
             switch( argv[i][1])
             {
                 case 'l': case 'L':
-                    setlocale( LC_ALL, argv[i] + 2);
+                    setlocale( LC_CTYPE, argv[i] + 2);
                     break;
 #ifdef __PDCURSESMOD__
                 case 'b': case 'B':
