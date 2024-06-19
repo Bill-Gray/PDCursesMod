@@ -19,7 +19,7 @@ testdir = ../tests
 DEMOS    = calendar firework init_col mbrot newtest ozdemo picsview ptest  \
     rain speed testcurs test_pan widetest worm xmas
 
-TESTS = brk_test del_test focus ins_del keytest opaque restart ripoff
+TESTS = brk_test del_test focus ins_del keytest opaque restart ripoff show_col
 
 all: $(DEMOS) tuidemo
 
