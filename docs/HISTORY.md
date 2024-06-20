@@ -1,7 +1,7 @@
 Generally speaking,  this history mentions only the more significant
 changes.  See the git log for full details.
 
-Current PDCursesMod - 2024 Jun 12
+Current PDCursesMod - 2024 Jun 19
 =================================
 
 Bug fixes
@@ -55,6 +55,8 @@ Bug fixes
   rounds _to_ the nearest clock tick (with at least one tick being used).
   Modified the documentation to reflect this.  785113f0b9
 
+- PDC_wcstombs() could overflow a buffer in the UTF8 decoding.  7d704dd618
+
 Minor new features
 ------------------
 
@@ -82,6 +84,11 @@ Minor new features
 
 - WinGUI now defaults to resizable windows,  similar to SDLn,  WinCon,
   and X11.  58807ea498
+
+- winsnstr() handled 513 _bytes_ from the input,  instead of the clearly
+  intended 513 wchar_ts.  This worked,  but was an unnecessarily low
+  limitation.  It is now fixed,  and the function can now handle
+  arbitrarily long strings via recursion.  3f8dfa9e06   18ef78de69
 
 PDCursesMod 4.4.0 - 2023 November 30
 ===================================
