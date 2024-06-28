@@ -4,7 +4,7 @@
 #           [ICC=] [CHTYPE_32=] [IX86=] [target]
 #
 # where target can be any of:
-# [all|demos|pdcurses.lib|testcurs.exe...]
+# [all|demos|tests|pdcurses.lib|testcurs.exe...]
 #  CHTYPE_## is used to override the default 64-bit chtypes in favor
 #  of "traditional" 32- or 16-bit chtypes.  (Untested for VT)
 #  IX86 is used to build 32-bit code instead of 64-bit
@@ -93,13 +93,17 @@ clean:
 	-$(RM) *.res
 
 demos:	$(PDCLIBS) $(DEMOS)
+tests:	$(PDCLIBS) $(TESTS)
 
 DEMOOBJS = $(DEMOS:.exe=.obj) tui.obj
+TESTOBJS = $(TESTS:.exe=.obj)
 
 $(LIBOBJS) $(PDCOBJS) : $(PDCURSES_HEADERS)
 $(PDCOBJS) : $(PDCURSES_WIN_H)
 $(DEMOOBJS) : $(PDCURSES_CURSES_H)
 $(DEMOS) : $(LIBCURSES)
+$(TESTOBJS) : $(PDCURSES_CURSES_H)
+$(TESTS) : $(LIBCURSES)
 panel.obj : $(PANEL_HEADER)
 terminfo.obj : $(TERM_HEADER)
 
@@ -122,6 +126,9 @@ pdcurses.res pdcurses.obj: $(common)\pdcurses.rc
 	$(BUILD) $<
 
 {$(demodir)\}.c{}.obj::
+	$(BUILD) $<
+
+{$(testdir)\}.c{}.obj::
 	$(BUILD) $<
 
 .obj.exe:
