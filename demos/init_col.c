@@ -55,7 +55,7 @@ int main( const int argc, const char *argv[])
                     break;
 #ifdef __PDCURSES__
                 case 'p':
-#ifdef _WIN32
+#if defined( _WIN32) && !defined( __TURBOC__)
                     _putenv( (char *)"PDC_PRESERVE_SCREEN=1");
 #else
                     putenv( (char *)"PDC_PRESERVE_SCREEN=1");
