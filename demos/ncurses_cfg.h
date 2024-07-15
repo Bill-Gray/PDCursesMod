@@ -50,7 +50,7 @@
 #define HAVE_NEWPAD 1
 #define HAVE_PANEL_H 1
 #define HAVE_PUTWIN 1
-/* #define HAVE_SCR_DUMP 1 */
+#define HAVE_SCR_DUMP 1
 #define HAVE_SLK_COLOR 1
 #define HAVE_SLK_INIT 1
 #define HAVE_STRSTR 1
