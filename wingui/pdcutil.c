@@ -22,9 +22,13 @@ static void beep_thread(LPVOID lpParameter)
 void PDC_beep(void)
 {
     PDC_LOG(("PDC_beep() - called\n"));
+#if defined(__TURBOC__)
+    beep_thread( 0);
+#else
     _beep_count++;
     if( _beep_count == 1)
         _beginthread( beep_thread, 0, NULL);
+#endif
 }
 
 void PDC_napms(int ms)     /* 'ms' = milli,  _not_ microseconds! */
