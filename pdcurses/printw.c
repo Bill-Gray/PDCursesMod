@@ -55,7 +55,10 @@ A few have neither.   */
 #endif
 #if defined( HAVE_VSNPRINTF) && !defined( _WIN32)
    #define vsnprint_func vsnprintf
+#elif defined( __DMC__) && !defined( _WIN32)
+   #define vsnprint_func _vsnprintf
 #endif
+
 
 /* _vsnprintf() and earlier vsnprintf() return -1 if the output doesn't
 fit in the buffer.  When that happens,  we try again with a
