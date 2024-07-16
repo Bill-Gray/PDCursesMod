@@ -3,7 +3,7 @@
 # Usage: make -f Makefile.dmc [target]
 #
 # where target can be any of:
-# [all|demos|pdcurses.lib|testcurs.exe...]
+# [all|demos|tests|pdcurses.lib|testcurs.exe...]
 
 PDCURSES_SRCDIR   = ..
 
@@ -12,10 +12,12 @@ PDCURSES_CURSPRIV_H   = $(PDCURSES_SRCDIR)\curspriv.h
 PDCURSES_HEADERS   = $(PDCURSES_CURSES_H) $(PDCURSES_CURSPRIV_H)
 
 PANEL_HEADER   = $(PDCURSES_SRCDIR)\panel.h
+TERM_HEADER   = $(PDCURSES_SRCDIR)\term.h
 
 srcdir      = $(PDCURSES_SRCDIR)\pdcurses
 osdir      = $(PDCURSES_SRCDIR)\dosvga
 demodir      = $(PDCURSES_SRCDIR)\demos
+testdir      = $(PDCURSES_SRCDIR)\tests
 
 PDCURSES_DOS_H   = $(osdir)\pdcdos.h
 
@@ -23,9 +25,12 @@ CC      = dmc
 
 CHTYPE = -DCHTYPE_32
 
-CFLAGS      = -c -o+space -Nc -msd
+# MEMMODEL = -mx
+MEMMODEL = -mld
 
-CPPFLAGS   = -I$(PDCURSES_SRCDIR) -msd $(CHTYPE)
+CFLAGS      = -c -o+space -Nc $(MEMMODEL)
+
+CPPFLAGS   = -I$(PDCURSES_SRCDIR) $(MEMMODEL) $(CHTYPE)
 
 LINK      = dmc
 LIBEXE      = lib
@@ -38,14 +43,18 @@ DEMOS      =  calendar.exe firework.exe init_col.exe mbrot.exe \
 newtest.exe ozdemo.exe picsview.exe ptest.exe rain.exe speed.exe \
 testcurs.exe test_pan.exe tuidemo.exe widetest.exe worm.exe xmas.exe
 
+TESTS      = brk_test.exe del_test.exe focus.exe ins_del.exe \
+	keytest.exe opaque.exe restart.exe ripoff.exe show_col.exe
+
 all:    $(LIBCURSES) $(DEMOS)
+
+tests: $(TESTS)
 
 clean:
    -del *.obj 2>NUL
    -del *.lib 2>NUL
    -del *.exe 2>NUL
    -del *.map 2>NUL
-   -del advapi32.def 2>NUL
 
 LIBOBJS = addch.obj addchstr.obj addstr.obj attr.obj beep.obj bkgd.obj \
 border.obj clear.obj color.obj delch.obj deleteln.obj getch.obj \
@@ -62,12 +71,18 @@ DEMOOBS    =  calendar.obj firework.obj init_col.obj mbrot.obj \
 newtest.obj ozdemo.obj picsview.obj ptest.obj rain.obj speed.obj \
 testcurs.obj test_pan.obj tuidemo.obj widetest.obj worm.obj xmas.obj tui.obj
 
+TESTOBS    = brk_test.obj del_test.obj focus.obj ins_del.obj \
+	keytest.obj opaque.obj restart.obj ripoff.obj show_col.obj
+
 $(LIBOBJS) $(PDCOBJS) : $(PDCURSES_HEADERS)
 $(PDCOBJS) : $(PDCURSES_DOS_H)
 panel.obj ptest.obj: $(PANEL_HEADER)
+terminfo.obj: $(TERM_HEADER)
 
 $(DEMOOBJS) : $(PDCURSES_CURSES_H)
 $(DEMOS) : $(LIBCURSES)
+$(TESTOBJS) : $(PDCURSES_CURSES_H)
+$(TESTS) : $(LIBCURSES)
 
 $(LIBCURSES) : $(LIBOBJS) $(PDCOBJS)
    $(LIBEXE) -c $@ $(LIBOBJS) $(PDCOBJS)
@@ -75,6 +90,7 @@ $(LIBCURSES) : $(LIBOBJS) $(PDCOBJS)
 SRCBUILD = $(BUILD) $(srcdir)\$*.c
 OSBUILD = $(BUILD) $(osdir)\$*.c
 DEMOBUILD = $(LINK) $(CPPFLAGS) -o+space $@ $**
+TESTBUILD = $(LINK) $(CPPFLAGS) -o+space $@ $**
 
 addch.obj: $(srcdir)\addch.c
    $(SRCBUILD)
@@ -251,7 +267,7 @@ speed.exe:      $(demodir)\speed.c
    $(DEMOBUILD)
 
 testcurs.exe:   $(demodir)\testcurs.c
-   $(DEMOBUILD) advapi32.lib
+   $(DEMOBUILD)
 
 test_pan.exe:   $(demodir)\test_pan.c
    $(DEMOBUILD)
@@ -271,5 +287,32 @@ tui.obj: $(demodir)\tui.c $(demodir)\tui.h
 tuidemo.obj: $(demodir)\tuidemo.c
    $(BUILD) -I$(demodir) $(demodir)\$*.c
 
+brk_test.exe:   $(testdir)\brk_test.c
+   $(TESTBUILD)
+
+del_test.exe:   $(testdir)\del_test.c
+   $(TESTBUILD)
+
+focus.exe:      $(testdir)\focus.c
+   $(TESTBUILD)
+
+ins_del.exe:    $(testdir)\ins_del.c
+   $(TESTBUILD)
+
+key_test.exe:   $(testdir)\key_test.c
+   $(TESTBUILD)
+
+opaque.exe:     $(testdir)\opaque.c
+   $(TESTBUILD)
+
+restart.exe:    $(testdir)\restart.c
+   $(TESTBUILD)
+
+ripoff.exe:     $(testdir)\ripoff.c
+   $(TESTBUILD)
+
+show_col.exe:   $(testdir)\show_col.c
+   $(TESTBUILD)
+
 naptest.exe:    naptest.c
-   $(DEMOBUILD)
+   $(TESTBUILD) $(LIBCURSES)
