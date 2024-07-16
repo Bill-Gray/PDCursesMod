@@ -20,6 +20,10 @@ of this works very well in PDCurses.)         */
 
 #include <curses.h>
 
+#ifdef __DMC__
+   #define snprintf _snprintf
+#endif
+
 int ripoff_callback( WINDOW *win, int width)
 {
    char buff[100];

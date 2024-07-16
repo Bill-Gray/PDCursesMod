@@ -107,7 +107,9 @@ extern void PDC_private_cursor_on(int row, int col);
 # else
 #  define _FAR_POINTER(s,o) (0xe0000000 + (((int)(s)) << 4) + ((int)(o)))
 # endif
-# define _FP_SEG(p)     (unsigned short)((((long)p) >> 4) & 0xffff)
+# ifndef __WATCOMC__
+#  define _FP_SEG(p)     (unsigned short)((((long)p) >> 4) & 0xffff)
+# endif
 #else
 # ifdef __TURBOC__
 #  define _FAR_POINTER(s,o) MK_FP(s,o)
@@ -119,9 +121,14 @@ extern void PDC_private_cursor_on(int row, int col);
 #   define _FAR_POINTER(s,o) (((long)s << 16) | (long)o)
 #  endif
 # endif
-# define _FP_SEG(p)     (unsigned short)(((long)p) >> 4)
+# ifndef __WATCOMC__
+#  define _FP_SEG(p)     (unsigned short)(((long)p) >> 4)
+# endif
 #endif
-#define _FP_OFF(p)       ((unsigned short)p & 0x000f)
+
+#ifndef __WATCOMC__
+# define _FP_OFF(p)       ((unsigned short)p & 0x000f)
+#endif
 
 #ifdef __DJGPP__
 # include <sys/movedata.h>
