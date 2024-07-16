@@ -22,6 +22,10 @@
 #define outportb(a, b) outp((a), (b))
 #endif
 
+#ifdef __DMC__
+#define outportb(a, b) outp((a), (b))
+#endif
+
 /* Maximum run of characters per call to _transform_line_[48] */
 #ifdef PDC_FLAT
 #   define MAX_PACKET 512 /* optimize for speed */
