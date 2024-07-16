@@ -35,6 +35,10 @@ More generally,  it maintains a list of "current" windows and will
 assert() if you pass a pointer to delwin() that isn't actually a
 valid window.   */
 
+#ifdef __DMC__
+   #define snprintf _snprintf
+#endif
+
 int main( void)
 {
     WINDOW *win, *sub;
