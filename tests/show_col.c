@@ -13,7 +13,10 @@ int main( const int argc, const char **argv)
     int i;
     SCREEN *screen_pointer;
     char *buff = (char *)malloc( 1001);
-#ifdef WACS_S1
+#ifndef WACS_S1
+    const char *russian = "Here's some text that would be in Russian if you'd built";
+    const char *caption = "in wide mode.  This text ought to be inserted up to here";
+#else
     const char *russian = "январь февраль  март апрель май  июнь июль  август сентябрь";
     const char *caption = "^ Names of some months in Russian should be inserted here ^";
 
@@ -41,12 +44,10 @@ int main( const int argc, const char **argv)
     free( buff);
     printw( "\n Return value : %d (should be 1000) ", i);
     getch( );
-#ifdef WACS_S1
     color_set( 1, NULL);
     mvinsstr( 0, 10, russian);
     mvinsstr( 1, 10, caption);
     getch( );
-#endif
     endwin( );
                             /* Not really needed,  but ensures Valgrind  */
     delscreen( screen_pointer);          /* says all memory was freed */
