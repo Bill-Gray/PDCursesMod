@@ -21,6 +21,10 @@ util
                  short color_pair, const void *opts);
     wchar_t *wunctrl(cchar_t *wc);
 
+    int PDC_mbtowc(wchar_t *pwc, const char *s, size_t n);
+    size_t PDC_mbstowcs(wchar_t *dest, const char *src, size_t n);
+    size_t PDC_wcstombs(char *dest, const wchar_t *src, size_t n);
+
 ### Description
 
    unctrl() expands the text portion of the chtype c into a printable
@@ -45,6 +49,13 @@ util
    the opts argument is non-NULL,  it is treated as a pointer to an
    integer containing the desired color pair and color_pair is ignored.
 
+   PDC_mbtowc(),  PDC_mbstowcs(), and PDC_wcstombs() correspond to the
+   POSIX and C99 standard functions mbtowc(),  mbstowcs(),  and
+   wcstombs().  If the library is built for "forced" UTF8 encoding,
+   the PDC_* functions do UTF8 encoding and decoding.  If it is built
+   without forced encoding,  then the standard library functions are
+   used instead.
+
 ### Return Value
 
    wunctrl() returns NULL on failure. delay_output() always returns OK.
@@ -63,6 +74,9 @@ util
     getcchar                    Y       Y       Y
     setcchar                    Y       Y       Y
     wunctrl                     Y       Y       Y
+    PDC_mbtowc                  -       -       -
+    PDC_mbstowcs                -       -       -
+    PDC_wcstombs                -       -       -
 
 **man-end****************************************************************/
 
@@ -468,7 +482,7 @@ size_t PDC_wcstombs(char *dest, const wchar_t *src, size_t n)
     if (!src || !dest)
         return 0;
 
-    while (*src && i < n - 4)
+    while (*src && i + 4 < n)
        i += PDC_wc_to_utf8( dest + i, *src++);
     while (*src && i < n)
     {
