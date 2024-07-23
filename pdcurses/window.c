@@ -289,9 +289,19 @@ WINDOW *newwin(int nlines, int ncols, int begy, int begx)
         return (WINDOW *)NULL;
 
     assert( SP);
-    assert( begy + nlines <= SP->lines && begx + ncols <= SP->cols);
-    if (!SP || begy + nlines > SP->lines || begx + ncols > SP->cols)
+    if( !SP)
         return (WINDOW *)NULL;
+    if( !(SP->off_screen_windows & OFF_SCREEN_WINDOWS_TO_RIGHT_AND_BOTTOM))
+    {
+        if( begy + nlines > SP->lines || begx + ncols > SP->cols)
+            return (WINDOW *)NULL;
+    }
+
+    if( !(SP->off_screen_windows & OFF_SCREEN_WINDOWS_TO_LEFT_AND_TOP))
+    {
+    if( begy < 0 || begx < 0)
+        return (WINDOW *)NULL;
+    }
 
     win = PDC_makenew(nlines, ncols, begy, begx);
     if (win)
@@ -355,9 +365,19 @@ int mvwin(WINDOW *win, int y, int x)
     PDC_LOG(("mvwin() - called\n"));
 
     assert( win);
-    if (!win || (y + win->_maxy > LINES || y < 0)
-             || (x + win->_maxx > COLS || x < 0))
+    if( !win)
         return ERR;
+    if( !(SP->off_screen_windows & OFF_SCREEN_WINDOWS_TO_LEFT_AND_TOP))
+    {
+        if( y < 0 || x < 0)
+            return ERR;
+    }
+
+    if( !(SP->off_screen_windows & OFF_SCREEN_WINDOWS_TO_RIGHT_AND_BOTTOM))
+    {
+        if( y + win->_maxy > LINES || x + win->_maxx > COLS)
+            return ERR;
+    }
 
     win->_begy = y;
     win->_begx = x;

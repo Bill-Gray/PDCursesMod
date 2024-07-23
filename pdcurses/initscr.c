@@ -223,6 +223,7 @@ SCREEN *newterm(const char *type, FILE *outfd, FILE *infd)
     SP->dirty = FALSE;
     SP->sel_start = -1;
     SP->sel_end = -1;
+    SP->off_screen_windows = OFF_SCREEN_WINDOWS_TO_RIGHT_AND_BOTTOM;
 
     SP->orig_cursor = PDC_get_cursor_mode();
 

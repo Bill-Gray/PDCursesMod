@@ -148,6 +148,9 @@ PDCEX int PDC_wcwidth( const int32_t ucs);
 #define NUNGETCH         256  /* max # chars to ungetch() */
 #define MAX_PACKET_LEN    90  /* max # chars to send to PDC_transform_line */
 
+#define OFF_SCREEN_WINDOWS_TO_RIGHT_AND_BOTTOM        1
+#define OFF_SCREEN_WINDOWS_TO_LEFT_AND_TOP            2
+
 #define INTENTIONALLY_UNUSED_PARAMETER( param) (void)(param)
 
 #define _is_altcharset( ch)  (((ch) & (A_ALTCHARSET | (A_CHARTEXT ^ 0x7f))) == A_ALTCHARSET)
@@ -252,7 +255,7 @@ struct _screen
     bool default_colors;
     hash_idx_t *pair_hash_tbl;
     int pair_hash_tbl_size, pair_hash_tbl_used;
-    int n_windows;
+    int n_windows, off_screen_windows;
     WINDOW **window_list;
     unsigned trace_flags;
     bool want_trace_fflush;
