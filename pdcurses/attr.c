@@ -340,7 +340,7 @@ int wattr_set(WINDOW *win, attr_t attrs, short color_pair, void *opts)
 
 int attr_set(attr_t attrs, short color_pair, void *opts)
 {
-    PDC_LOG(("attr_get() - called\n"));
+    PDC_LOG(("attr_set() - called\n"));
 
     return wattr_set(stdscr, attrs, color_pair, opts);
 }
