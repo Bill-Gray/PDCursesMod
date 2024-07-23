@@ -25,7 +25,7 @@ int PDC_get_terminal_fd( void)
 
     if( stdout_fd == -1)
       {
-#ifdef _WIN32
+#if defined( _WIN32) || defined( __DMC__)
 /*    if( FILE_TYPE_CHAR == GetFileType( GetStdHandle( STD_OUTPUT_HANDLE)))  */
       stdout_fd = 2;
 #else
