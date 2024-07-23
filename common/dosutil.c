@@ -41,8 +41,8 @@ void PDC_napmsl( long ms)
         /* We should convert from milliseconds to BIOS ticks by
            multiplying by MAX_TICK and dividing by MS_PER_DAY.  But
            that would overflow,  and we'd need floating point math.
-           The following is good to four parts per billion and
-           doesn't overflow (because 0 <= ms <= MAX_NAP_SPAN). */
+           47181/859 = MS_PER_DAY / MAX_TICK to within four parts per
+           billion and won't overflow (because 0 <= ms <= MAX_NAP_SPAN). */
     ticks_to_wait = (ms * 859L + 2359L) / 47181L;
     if( ms && !ticks_to_wait)
         ticks_to_wait = 1;
