@@ -1,6 +1,8 @@
 # This provides for compiling and linking the ncurses test programs.
 
 ncurses_testdir = $(HOME)/ncurses-6.5/test
+menudir = $(HOME)/ncurses-6.5/menu
+formdir = $(HOME)/ncurses-6.5/form
 
 NCURSES_TESTS	= back_ground$(E) background$(E) blue$(E) \
 bs$(E) cardfile$(E) chgat$(E) clip_printw$(E) color_content$(E) \
@@ -13,13 +15,48 @@ filter$(E) firstlast$(E) foldkeys$(E) form_driver_w$(E) gdc$(E) \
 hanoi$(E) hashtest$(E) inchs$(E) inch_wide$(E) insdelln$(E) \
 inserts$(E) ins_wide$(E) key_names$(E) keynames$(E) knight$(E) \
 list_keys$(E) lrtest$(E) move_field$(E) \
-movewindow$(E) ncurses$(E) newdemo$(E) padview$(E) pair_content$(E) \
+movewindow$(E) newdemo$(E) padview$(E) pair_content$(E) \
 picsmap$(E) railroad$(E) redraw$(E) savescreen$(E) sp_tinfo$(E) \
 tclock$(E) testaddch$(E) test_addchstr$(E) test_addstr$(E) \
 test_add_wchstr$(E) test_addwstr$(E) test_arrays$(E) \
 test_delwin$(E) test_getstr$(E) test_get_wstr$(E) test_instr$(E) \
 test_opaque$(E) testscanw$(E) test_setupterm$(E) test_sgr$(E) test_termattrs$(E) \
 test_tparm$(E) test_vid_puts$(E) test_vidputs$(E) view$(E)
+
+MENUOBJS = m_attribs.$(O) m_cursor.$(O) m_driver.$(O) m_format.$(O)  \
+	m_global.$(O) m_hook.$(O) m_item_cur.$(O) m_item_nam.$(O) m_item_new.$(O) \
+	m_item_opt.$(O) m_items.$(O) m_item_top.$(O) m_item_use.$(O) m_item_val.$(O) \
+	m_item_vis.$(O) m_new.$(O) m_opts.$(O) m_pad.$(O) m_pattern.$(O) m_post.$(O) \
+	m_req_name.$(O) m_scale.$(O) m_spacing.$(O) m_sub.$(O) m_trace.$(O) \
+	m_userptr.$(O) m_win.$(O)
+
+FORMOBJS = fld_arg.$(O)	fld_link.$(O) fld_user.$(O) frm_req_name.$(O) \
+	fty_generic.$(O) fld_attr.$(O)	fld_max.$(O) frm_cursor.$(O) frm_scale.$(O) \
+	fty_int.$(O) fld_current.$(O)	fld_move.$(O) frm_data.$(O) frm_sub.$(O)	\
+	fty_ipv4.$(O) fld_def.$(O)	fld_newftyp.$(O) frm_def.$(O) frm_user.$(O) \
+	fty_num.$(O) fld_dup.$(O)	fld_opts.$(O) frm_driver.$(O) frm_win.$(O) \
+	fty_regex.$(O) fld_ftchoice.$(O)	fld_pad.$(O) frm_hook.$(O) f_trace.$(O) \
+	fld_ftlink.$(O)	fld_page.$(O) frm_opts.$(O) fty_alnum.$(O) \
+	fld_info.$(O)	fld_stat.$(O) frm_page.$(O) fty_alpha.$(O) \
+	fld_just.$(O)	fld_type.$(O) frm_post.$(O) fty_enum.$(O) \
+
+LIBMENUNAME=libmenu
+LIBMENU	= $(LIBMENUNAME).a
+
+$(LIBMENU) : $(MENUOBJS)
+	$(LIBEXE) $(LIBFLAGS) $@ $?
+
+$(MENUOBJS) : %.o: $(menudir)/%.c
+	$(BUILD) $(SFLAGS) -DBUILDING_MENU -I $(demodir) -c $<
+
+LIBFORMNAME=libform
+LIBFORM	= $(LIBFORMNAME).a
+
+$(LIBFORM) : $(FORMOBJS)
+	$(LIBEXE) $(LIBFLAGS) $@ $?
+
+$(FORMOBJS) : %.o: $(formdir)/%.c
+	$(BUILD) $(SFLAGS) -DBUILDING_FORM -I $(demodir) -I $(menudir) -c $<
 
 ncurses_tests: $(NCURSES_TESTS)
 
@@ -67,8 +104,8 @@ demo_forms$(E): $(ncurses_testdir)/demo_forms.c
 demo_keyok$(E): $(ncurses_testdir)/demo_keyok.c
 	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
 
-demo_menus$(E): $(ncurses_testdir)/demo_menus.c
-	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+demo_menus$(E): $(ncurses_testdir)/demo_menus.c libmenu.a
+	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS) libmenu.a
 
 demo_new_pair$(E): $(ncurses_testdir)/demo_new_pair.c $(ncurses_testdir)/popup_msg.c $(srcdir)/terminfo.c
 	$(BUILD) $(NCFLAGS) -o $@ $^ $(LDFLAGS)
@@ -139,8 +176,8 @@ inchs$(E): $(ncurses_testdir)/inchs.c $(ncurses_testdir)/popup_msg.c
 inch_wide$(E): $(ncurses_testdir)/inch_wide.c $(ncurses_testdir)/popup_msg.c
 	$(BUILD) $(NCFLAGS) -o $@ $^ $(LDFLAGS)
 
-insdelln$(E): $(ncurses_testdir)/insdelln.c
-	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+insdelln$(E): $(ncurses_testdir)/insdelln.c $(ncurses_testdir)/popup_msg.c
+	$(BUILD) $(NCFLAGS) -o $@ $^ $(LDFLAGS)
 
 inserts$(E): $(ncurses_testdir)/inserts.c
 	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
@@ -169,8 +206,8 @@ move_field$(E): $(ncurses_testdir)/move_field.c
 movewindow$(E): $(ncurses_testdir)/movewindow.c
 	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
 
-ncurses$(E): $(ncurses_testdir)/ncurses.c
-	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+ncurses$(E): $(ncurses_testdir)/ncurses.c $(ncurses_testdir)/popup_msg.c $(LIBFORM) $(LIBMENU)
+	$(BUILD) $(NCFLAGS) -o $@ $^ $(LDFLAGS) $(LIBFORM) $(LIBMENU)
 
 newdemo$(E): $(ncurses_testdir)/newdemo.c
 	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
@@ -191,7 +228,7 @@ redraw$(E): $(ncurses_testdir)/redraw.c $(ncurses_testdir)/popup_msg.c
 	$(BUILD) $(NCFLAGS) -o $@ $^ $(LDFLAGS)
 
 savescreen$(E): $(ncurses_testdir)/savescreen.c $(ncurses_testdir)/popup_msg.c
-	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+	$(BUILD) $(NCFLAGS) -o $@ $^ $(LDFLAGS)
 
 sp_tinfo$(E): $(ncurses_testdir)/sp_tinfo.c
 	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
