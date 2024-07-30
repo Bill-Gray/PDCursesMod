@@ -77,8 +77,8 @@ blue$(E): $(ncurses_testdir)/blue.c
 bs$(E): $(ncurses_testdir)/bs.c
 	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
 
-cardfile$(E): $(ncurses_testdir)/cardfile.c
-	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+cardfile$(E): $(ncurses_testdir)/cardfile.c $(LIBFORM)
+	$(BUILD) $(NCFLAGS) -o $@ $^ $(LDFLAGS)
 
 chgat$(E): $(ncurses_testdir)/chgat.c $(ncurses_testdir)/popup_msg.c
 	$(BUILD) $(NCFLAGS) -o $@ $^ $(LDFLAGS)
@@ -98,8 +98,8 @@ demo_altkeys$(E): $(ncurses_testdir)/demo_altkeys.c
 demo_defkey$(E): $(ncurses_testdir)/demo_defkey.c $(ncurses_testdir)/popup_msg.c
 	$(BUILD) $(NCFLAGS) -o $@ $^ $(LDFLAGS)
 
-demo_forms$(E): $(ncurses_testdir)/demo_forms.c
-	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+demo_forms$(E): $(ncurses_testdir)/demo_forms.c $(ncurses_testdir)/popup_msg.c $(ncurses_testdir)/edit_field.c $(LIBFORM)
+	$(BUILD) $(NCFLAGS) -o $@ $^ $(LDFLAGS)
 
 demo_keyok$(E): $(ncurses_testdir)/demo_keyok.c
 	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
@@ -140,8 +140,8 @@ dots_termcap$(E): $(ncurses_testdir)/dots_termcap.c
 dots_xcurses$(E): $(ncurses_testdir)/dots_xcurses.c
 	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
 
-dup_field$(E): $(ncurses_testdir)/dup_field.c
-	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+dup_field$(E): $(ncurses_testdir)/dup_field.c $(ncurses_testdir)/edit_field.c $(ncurses_testdir)/popup_msg.c $(LIBFORM)
+	$(BUILD) $(NCFLAGS) -o $@ $^ $(LDFLAGS)
 
 echochar$(E): $(ncurses_testdir)/echochar.c
 	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
@@ -200,8 +200,8 @@ list_keys$(E): $(ncurses_testdir)/list_keys.c
 lrtest$(E): $(ncurses_testdir)/lrtest.c
 	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
 
-move_field$(E): $(ncurses_testdir)/move_field.c
-	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+move_field$(E): $(ncurses_testdir)/move_field.c $(ncurses_testdir)/edit_field.c $(ncurses_testdir)/popup_msg.c $(LIBFORM)
+	$(BUILD) $(NCFLAGS) -o $@ $^ $(LDFLAGS)
 
 movewindow$(E): $(ncurses_testdir)/movewindow.c
 	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)

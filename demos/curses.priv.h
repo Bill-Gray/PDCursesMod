@@ -14,6 +14,7 @@
 #define NCURSES_INLINE inline
 #define Min(a,b)  ((a) > (b)  ?  (b)  :  (a))
 #define TR_FUNC_BFR(max)
+#define TR(n, a)
 #define NCURSES_SP_DCLx
 
 #define StdScreen(sp)  stdscr
@@ -22,4 +23,15 @@
 #define CharOf(c) ChCharOf(c)
 #define BLANK     ' '
 #define ZEROS     '\0'
+#define _nc_SPRINTF              snprintf
+#define _nc_SLIMIT(n)          ((size_t)(n)),
+#define FreeIfNeeded(p)  if ((p) != 0) free(p)
 
+#ifdef PDC_WIDE
+   #define ISBLANK(ch)  ((ch).chars[0] == L' ' && (ch).chars[1] == L'\0')
+#else
+   #define ISBLANK(ch)  (CharOf(ch) == ' ')
+#endif
+
+#define IsValidScreen(sp)           true
+unsigned addch_used;       /* number of 'pending' bytes for a multi-byte character */

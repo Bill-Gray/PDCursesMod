@@ -31,6 +31,7 @@
 #define HAVE_COPYWIN 1
 #define HAVE_CURSES_VERSION 1
 #define HAVE_DELSCREEN 1
+#define HAVE_FORM_H 1
 #define HAVE_GETBEGX 1
 #define HAVE_GETCURX 1
 #define HAVE_GETMAXX 1
@@ -60,6 +61,7 @@
 #define HAVE_WRESIZE 1
 #define USE_STRING_HACKS 1
 #define USE_LIBMENU      1
+#define USE_LIBFORM      1
 
 #ifdef PDC_WIDE
    # define USE_WIDEC_SUPPORT 1
