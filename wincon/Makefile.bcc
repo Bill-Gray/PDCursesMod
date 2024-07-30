@@ -21,17 +21,17 @@ osdir		= $(PDCURSES_SRCDIR)\wincon
 CC		= bcc32c -q
 
 !ifdef DEBUG
-CFLAGS		= -N -v -y -DPDCDEBUG
+CFLAGS		= -N -v -y -DPDCDEBUG -DNO_STDINT_H
 !else
-CFLAGS		= -O
-!endif
-
-!ifdef WIDE
-WIDEOPT		= -DPDC_WIDE
+CFLAGS		= -O -DNO_STDINT_H
 !endif
 
 !ifdef UTF8
-UTF8OPT		= -DPDC_FORCE_UTF8
+WIDEOPT		= -DPDC_WIDE -DPDC_FORCE_UTF8
+!else
+!ifdef WIDE
+WIDEOPT		= -DPDC_WIDE
+!endif
 !endif
 
 !ifdef INFOEX
@@ -39,7 +39,7 @@ INFOPT          = -DHAVE_NO_INFOEX
 !endif
 
 BUILD		= $(CC) -I$(PDCURSES_SRCDIR) -c -Tpe $(CFLAGS) \
-$(WIDEOPT) $(UTF8OPT) $(INFOPT)
+$(WIDEOPT) $(INFOPT)
 BUILD_OS	= $(BUILD) -Xdriver -Wno-deprecated-declarations
 
 LIBEXE		= tlib /C /E /0 /a

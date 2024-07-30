@@ -20,21 +20,21 @@ common		= $(PDCURSES_SRCDIR)\common
 CC		= bcc32 -q
 
 !ifdef DEBUG
-CFLAGS		= -N -v -y -DPDCDEBUG
+CFLAGS		= -N -v -y -DPDCDEBUG -DNO_STDINT_H
 !else
-CFLAGS		= -O
-!endif
-
-!ifdef WIDE
-WIDEOPT		= -DPDC_WIDE
+CFLAGS		= -O -DNO_STDINT_H
 !endif
 
 !ifdef UTF8
-UTF8OPT		= -DPDC_FORCE_UTF8
+WIDEOPT		= -DPDC_WIDE -DPDC_FORCE_UTF8
+!else
+!ifdef WIDE
+WIDEOPT		= -DPDC_WIDE
+!endif
 !endif
 
 BUILD		= $(CC) -I$(PDCURSES_SRCDIR) -c -Tpe -w32 $(CFLAGS) -w-par \
-$(WIDEOPT) $(UTF8OPT)
+$(WIDEOPT)
 
 LIBEXE		= tlib /C /E /0 /a
 
