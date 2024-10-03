@@ -393,17 +393,9 @@ static void PDC_transform_line_given_hdc( const HDC hdc, const int lineno,
         return;
     }
     assert( x >= 0);
-    if( len < SP->cols - x && (srcp[len] & A_CHARTEXT) < MAX_UNICODE)
-       len++;    /* draw an extra char to avoid leaving garbage on screen */
     assert( len <= SP->cols - x);
     assert( lineno < SP->lines && len > 0 && lineno >= 0);
     assert( (srcp[len - 1] & A_CHARTEXT) != MAX_UNICODE);
-    if( x && (srcp[-1] & A_CHARTEXT) < MAX_UNICODE)
-    {                /* back up by one character to avoid */
-        x--;         /* leaving garbage on the screen */
-        len++;
-        srcp--;
-    }
     if( lineno == SP->cursrow && SP->curscol >= x && SP->curscol < x + len)
         if( PDC_current_cursor_state( ))
             cursor_overwritten = TRUE;
