@@ -15,8 +15,12 @@ ripped off from the bottom,  then one from the top,  then one
 from the bottom.  Resizing the window should cause the SLK and
 ripped-off lines to be refreshed correctly. (It now does so in
 PDCursesMod.  In ncurses,  SLK is refreshed correctly and
-ripped-off lines are moved,  but not resized/refreshed.  None
-of this works very well in PDCurses.)         */
+ripped-off lines are moved,  but not resized/refreshed.  Resizing
+windows with ripped-off lines is mostly broken in PDCurses.)
+
+   In PDCursesMod,  hitting the '7' key will also abort the program.
+This is a test of the (unused elsewhere) PDC_set_function_key( )
+capability.       */
 
 #include <curses.h>
 
@@ -72,6 +76,9 @@ int main( const int argc, const char **argv)
     cbreak( );
     keypad( stdscr, 1);
     mousemask( ALL_MOUSE_EVENTS, NULL);
+#ifdef __PDCURSESMOD__
+    PDC_set_function_key( FUNCTION_KEY_ABORT, '7');
+#endif
     if( slk_format)
         {
         int label_no, err_code = OK;      /* set labels until we run out */
@@ -90,7 +97,11 @@ int main( const int argc, const char **argv)
 
         clear( );
         mvprintw( y++, x, "stdscr has %d lines, %d columns", LINES, COLS);
+#ifdef __PDCURSESMOD__
+        mvaddstr( y++, x, "Hit Escape or q or 7 to quit");
+#else
         mvaddstr( y++, x, "Hit Escape or q to quit");
+#endif
         mvaddstr( y++, x, "Resizing should redraw SLK and ripped-off lines");
         if( ch)
             mvprintw( y++, x, "Key %s hit", keyname( ch));
