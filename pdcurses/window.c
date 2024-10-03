@@ -203,6 +203,8 @@ WINDOW *PDC_makelines(WINDOW *win)
     assert( win);
     if (!win)
         return (WINDOW *)NULL;
+    assert( win->_maxy > 0);
+    assert( win->_maxx > 0);
 
     nlines = win->_maxy;
     ncols = win->_maxx;

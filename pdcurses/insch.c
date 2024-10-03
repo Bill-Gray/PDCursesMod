@@ -79,6 +79,7 @@ int winsch(WINDOW *win, chtype ch)
     x = win->_curx;
     y = win->_cury;
 
+    assert( y <= win->_maxy && x <= win->_maxx && y >= 0 && x >= 0);
     if (y > win->_maxy || x > win->_maxx || y < 0 || x < 0)
         return ERR;
 
