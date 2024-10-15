@@ -169,7 +169,8 @@ enum PDC_port
     PDC_PORT_DOSVGA = 8,
     PDC_PORT_PLAN9 = 9,
     PDC_PORT_LINUX_FB = 10,
-    PDC_PORT_OPENGL = 11
+    PDC_PORT_OPENGL = 11,
+    PDC_PORT_OS2GUI = 12
 };
 
 /* Use this structure with PDC_get_version() for run-time info about the

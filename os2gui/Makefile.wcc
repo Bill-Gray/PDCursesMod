@@ -1,0 +1,32 @@
+# Watcom WMAKE Makefile for PDCurses library - OS/2 Watcom C/C++
+#
+# Usage: wmake -f [wingui/]Makefile.wcc [DEBUG=Y] [WIDE=Y] [UTF8=Y] [target]
+#
+# where target can be any of:
+# [all|demos|pdcurses.lib|testcurs.exe...]
+
+!ifdef %PDCURSES_SRCDIR
+PDCURSES_SRCDIR = $(%PDCURSES_SRCDIR)
+!else
+PDCURSES_SRCDIR = ..
+!endif
+
+common     = $(PDCURSES_SRCDIR)/common
+
+osdir = os2gui
+
+TARGET = os2
+
+LTARGET = os2v2_pm
+
+CFLAGS = -ei
+
+!ifeq DLL Y
+ADDED_LIBS_FOR_DLL =
+!else
+ADDED_LIBS =
+!endif
+
+EXTRA_LIB_CMD = -$(COPY) $(PDCNAME).lib panel.lib
+
+!include $(common)/watcom.mif
