@@ -1,14 +1,18 @@
-# GNU MAKE Makefile for PDCurses library - WIN32/64/ARM MinGW GCC/LLVM
+# GNU MAKE Makefile for PDCurses library - OS/2 emx 0.9c+
 #
-# Usage: [g]make [-f path\Makefile] [DEBUG=Y] [DLL=Y] [WIDE=Y] [UTF8=Y]
-#        [LIBNAME=(name)] [DLLNAME=(name)] [target]
-#        [_w32=Y | _w64=Y | _a64=Y ]
+# Usage: [g]make [-f path\Makefile] [DEBUG=Y] [DLL=Y] [target]
 #
 # where target can be any of:
-# [all|demos|pdcurses.a|testcurs.exe...]
+# [all|libs|demos|pdcurses.a|pdcurses.dll|testcurs.exe...]
+#
 
-O = o
 E = .exe
+
+RM = del
+CP = copy
+# use following for running under 4OS/2
+#RM = rm
+#CP = cp
 
 ifndef PDCURSES_SRCDIR
 	PDCURSES_SRCDIR = ..
@@ -19,161 +23,117 @@ common		= $(PDCURSES_SRCDIR)/common
 
 include $(common)/libobjs.mif
 
-uname_S := $(shell uname -s 2>/dev/null)
+#PDCURSES_OS2_H	= $(osdir)/pdcos2.h
 
-CAT		= cat
-PREFIX		=
-PATH_SEP		= /
-CP		= cp
-RM		= rm -f
+CC		= gcc
 
-# It appears we have three cases:  we're running in Cygwin/MSYS;  or we're
-# running in command.com on Windows with MinGW;  or we're on Linux or BSD
-# or similar system,  cross-compiling with MinGW.
+CFLAGS = -I$(PDCURSES_SRCDIR) -c -Wall
 
-ifneq (,$(findstring CYGWIN,$(uname_S)))
-	#  Insert Cygwin-specific changes here
-	ON_WINDOWS = 1
-endif
-ifneq (,$(findstring MINGW32_NT,$(uname_S)))
-	#  Insert MINGW32-specific changes here
-	ON_WINDOWS = 1
-endif
-ifneq (,$(findstring MINGW64_NT,$(uname_S)))
-	#  Insert MINGW64-specific changes here
-	ON_WINDOWS = 1
-endif
-
-ifeq ($(uname_S),)
-	CAT = type
-	PATH_SEP = \\
-	CP = copy
-	RM = cmd /c del
-	ON_WINDOWS = 1
-endif
-
-# If we aren't on Windows,  assume MinGW on a Linux-like host
-# Only decision is:  are we doing a 64-bit compile (_w64 defined)?
-
-ifndef ON_WINDOWS
-	PREFIX  = i686-w64-mingw32-
-	ifdef _w64
-		PREFIX  = x86_64-w64-mingw32-
-	endif
-	ifdef _a64
-		PREFIX  = aarch64-w64-mingw32-
-	endif
-endif
-
-PDCURSES_WIN_H	= $(osdir)/pdcwin.h
-
-CC	= $(PREFIX)gcc
-
-AR	= $(PREFIX)ar
-
-CFLAGS  += -Wall -pedantic
 ifeq ($(DEBUG),Y)
 	CFLAGS  += -g -DPDCDEBUG
 	LDFLAGS = -g
 else
-	CFLAGS  += -O3
+	CFLAGS  += -O2
 	LDFLAGS =
 endif
 
-CFLAGS += -I$(PDCURSES_SRCDIR)
+DLLTARGET	= pdcurses.dll
+DLLFLAGS 	= -Zdll -Zcrtdll -Zomf
 
-ifdef CHTYPE_32
-	CFLAGS += -DCHTYPE_32
-endif
+LINK		= gcc
+#EMXBIND		= emxbind
+#EMXOMF		= emxomf
 
-ifeq ($(UTF8),Y)
-	CFLAGS	+= -DPDC_FORCE_UTF8
-else
-	ifeq ($(WIDE),Y)
-		CFLAGS	+= -DPDC_WIDE
-	endif
-endif
-
-LINK	   = $(CC)
-LIBNAME = pdcurses
-DLLNAME = pdcurses
+LIBEXE		= ar
+LIBFLAGS	= rcv
 
 ifeq ($(DLL),Y)
-	CFLAGS += -DPDC_DLL_BUILD
-	LIBEXE = $(CC)
-	LIBFLAGS = -Wl,--out-implib,$(LIBNAME).a -static-libgcc -shared -o
-	LIBCURSES = $(DLLNAME).dll
+	O = obj
+	CFLAGS += -Zdll -Zcrtdll -Zomf
+	LDFLAGS += -Zomf -Zcrtdll
+	LIBCURSES = pdcurses.lib
 	LIBDEPS = $(LIBOBJS) $(PDCOBJS)
-	LIBSADDED = -lgdi32 -lcomdlg32 -lwinmm
-	EXELIBS =
-	CLEAN = $(LIBCURSES) *.a
+	PDCLIBS = $(DLLTARGET)
+	EXEPOST =
+	TUIPOST =
+	CLEAN = *.dll *.lib
 else
-	LIBEXE = $(AR)
-ifeq ($(PREFIX),)
-	LIBFLAGS = rcv
-else
-	LIBFLAGS = rv
-endif
-	LIBCURSES = $(LIBNAME).a
+	O = o
+#	CFLAGS += -Zomf
+	LDFLAGS += -Zomf
+	LIBCURSES = pdcurses.a
 	LIBDEPS = $(LIBOBJS) $(PDCOBJS)
-	LIBSADDED =
-	EXELIBS =
+	PDCLIBS = $(LIBCURSES)
+#	EXEPOST = $(EMXBIND) $* $(BINDFLAGS)
+#	TUIPOST = $(EMXBIND) tuidemo $(BINDFLAGS)
 	CLEAN = *.a
 endif
 
 .PHONY: all libs clean demos dist
 
-all:	libs
+all:	libs demos
 
-libs:	$(LIBCURSES)
+libs:	$(PDCLIBS)
 
 clean:
-	-$(RM) *.o
+	-$(RM) *.$(O)
+	-$(RM) *.def
 	-$(RM) *.exe
-	-$(RM) *.dll
 	-$(RM) $(CLEAN)
 
 demos:	$(DEMOS)
 
-$(LIBCURSES) : $(LIBDEPS)
-	$(LIBEXE) $(LIBFLAGS) $@ $? $(LIBSADDED)
-	$(CP) $(LIBNAME).a panel.a
+DEMOOBJS = calendar.$(O) firework.$(O) init_col.$(O) mbrot.$(O) newtest.$(O) \
+ ozdemo.$(O) picsview.$(O) ptest.$(O) rain.$(O) speed.$(O) test_pan.$(O) testcurs.$(O) \
+ tui.$(O) tuidemo.$(O) widetest.$(O) worm.$(O) xmas.$(O)
 
-$(LIBOBJS) $(PDCOBJS) : $(PDCURSES_HEADERS)
-$(PDCOBJS) : $(PDCURSES_WIN_H)
-$(DEMOS) : $(PDCURSES_CURSES_H) $(LIBCURSES)
-panel.o : $(PANEL_HEADER)
+pdcurses.a : $(LIBDEPS)
+	$(LIBEXE) $(LIBFLAGS) $@ $?
+	-$(CP) $@ panel.a
 
-$(LIBOBJS) : %.o: $(srcdir)/%.c
-	$(CC) -c $(CFLAGS) $<
+pdcurses.lib : $(DLLTARGET)
+	emximp -o $@ $*.def
+	-$(CP) $@ panel.lib
 
-$(PDCOBJS) : %.o: $(osdir)/%.c
-	$(CC) -c $(CFLAGS) $<
+$(DLLTARGET) : $(LIBDEPS)
+	echo "LIBRARY PDCURSES INITINSTANCE" > $*.def
+	echo "DATA MULTIPLE NONSHARED" >> $*.def
+	echo "DESCRIPTION \"PDCURSES DLL for OS/2\"" >> $*.def
+	echo "STACKSIZE 81920" >> $*.def
+	echo "EXPORTS" >> $*.def
+	emxexp $(LIBDEPS) >> $*.def
+	$(LINK) $(DLLFLAGS) -o $@ $(LIBDEPS) $*.def
+#	lxlite $@
 
-calendar.exe firework.exe init_col.exe mbrot.exe \
-newtest.exe ozdemo.exe picsview.exe \
-ptest.exe rain.exe speed.exe testcurs.exe test_pan.exe \
-version.exe widetest.exe worm.exe xmas.exe: %.exe: $(demodir)/%.c
-	$(CC) $(CFLAGS) -o $@ $< $(LIBCURSES) $(EXELIBS)
-	emxbind -ep $@
+$(LIBOBJS) $(PDCOBJS) $(DEMOOBJS) : $(PDCURSES_HEADERS)
+$(PDCOBJS) : $(PDCURSES_OS2_H)
+$(DEMOS) : $(LIBCURSES)
+panel.$(O) ptest.$(O): $(PANEL_HEADER)
+terminfo.$(O): $(TERM_HEADER)
 
-tuidemo.exe: tuidemo.o tui.o
-	$(LINK) $(LDFLAGS) -o $@ tuidemo.o tui.o $(LIBCURSES) $(EXELIBS)
-	emxbind -ep $@
+$(LIBOBJS) : %.$(O): $(srcdir)/%.c
+	$(CC) -c $(CFLAGS) -o$@ $<
 
-tui.o: $(demodir)/tui.c $(demodir)/tui.h $(PDCURSES_CURSES_H)
-	$(CC) -c $(CFLAGS) -I$(demodir) -o $@ $<
+$(PDCOBJS) : %.$(O): $(osdir)/%.c
+	$(CC) -c $(CFLAGS) -o$@ $<
 
-tuidemo.o: $(demodir)/tuidemo.c $(PDCURSES_CURSES_H)
-	$(CC) -c $(CFLAGS) -I$(demodir) -o $@ $<
+$(DEMOS_EXCEPT_TUIDEMO): %.exe: %.$(O)
+	echo "NAME $* WINDOWAPI" > $*.def
+	$(LINK) $(LDFLAGS) -o $*$(E) $< $(LIBCURSES) $(CCLIBS) $*.def
+	$(EXEPOST)
 
-configure :
-	$(CC) $(CFLAGS) -o config_curses$(E) $(common)/config_curses.c
-ifdef ON_WINDOWS
-	config_curses$(E) -v -d.. $(CFLAGS)
-else
-	wine config_curses$(E) -v -d.. $(CFLAGS)
-endif
-	rm config_curses$(E)
+tuidemo.exe:	tuidemo.$(O) tui.$(O)
+	echo "NAME tuidemo WINDOWAPI" > tuidemo.def
+	$(LINK) $(LDFLAGS) -o tuidemo tuidemo.$(O) tui.$(O) $(LIBCURSES) $(CCLIBS) tuidemo.def
+	$(TUIPOST)
 
-include $(PDCURSES_SRCDIR)/demos/nctests.mif
+calendar.$(O) firework.$(O) init_col.$(O) mbrot.$(O) newtest.$(O) ozdemo.$(O) picsview.$(O) \
+ ptest.$(O) rain.$(O) speed.$(O) test_pan.$(O) testcurs.$(O) widetest.$(O) worm.$(O) xmas.$(O): %.$(O): \
+$(demodir)/%.c
+	$(CC) $(CFLAGS) -o$@ $<
+
+tui.$(O): $(demodir)\tui.c $(demodir)\tui.h
+	$(CC) $(CFLAGS) -I$(demodir) -o $@ $<
+
+tuidemo.$(O): $(demodir)\tuidemo.c
+	$(CC) $(CFLAGS) -I$(demodir) -o $@ $<
