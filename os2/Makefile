@@ -3,14 +3,19 @@
 # Usage: [g]make [-f path\Makefile] [DEBUG=Y] [EMXVIDEO=Y] [DLL=Y] [target]
 #
 # where target can be any of:
-# [all|demos|pdcurses.a|testcurs.exe...]
+# [all|libs|demos|pdcurses.a|pdcurses.dll|testcurs.exe...]
 #
 # The EMXVIDEO option compiles with the emx video library, which
 # enables a PDCurses program to run under OS/2 and DOS.
+# Appears this is no longer supported as at 15/10/2024
 
-O = o
 E = .exe
+
 RM = del
+CP = copy
+# use following for running under 4OS/2
+#RM = rm
+#CP = cp
 
 ifndef PDCURSES_SRCDIR
 	PDCURSES_SRCDIR = ..
@@ -55,8 +60,10 @@ LIBEXE		= ar
 LIBFLAGS	= rcv
 
 ifeq ($(DLL),Y)
+	O = obj
 	CFLAGS += -Zdll -Zcrtdll -Zomf
-	LDFLAGS += -Zlinker /PM:VIO -Zomf -Zcrtdll
+#	LDFLAGS += -Zomf -Zcrtdll -Zlinker /PM:VIO
+	LDFLAGS += -Zomf -Zcrtdll
 	LIBCURSES = pdcurses.lib
 	LIBDEPS = $(LIBOBJS) $(PDCOBJS)
 	PDCLIBS = $(DLLTARGET)
@@ -64,6 +71,7 @@ ifeq ($(DLL),Y)
 	TUIPOST =
 	CLEAN = *.dll *.lib
 else
+	O = o
 	LIBCURSES = pdcurses.a
 	LIBDEPS = $(LIBOBJS) $(PDCOBJS)
 	PDCLIBS = $(LIBCURSES)
@@ -79,50 +87,64 @@ all:	libs demos
 libs:	$(PDCLIBS)
 
 clean:
-	-$(RM) *.o
+	-$(RM) *.$(O)
 	-$(RM) *.a
 	-$(RM) *.exe
 	-$(RM) $(CLEAN)
 
 demos:	$(DEMOS)
 
-DEMOOBJS = calendar.o firework.o mbrot.o ozdemo.o ptest.o rain.o \
-testcurs.o tui.o tuidemo.o worm.o xmas.o
+DEMOOBJS = calendar.$(O) firework.$(O) init_col.$(O) mbrot.$(O) newtest.$(O) \
+ ozdemo.$(O) picsview.$(O) ptest.$(O) rain.$(O) speed.$(O) test_pan.$(O) testcurs.$(O) \
+ tui.$(O) tuidemo.$(O) widetest.$(O) worm.$(O) xmas.$(O)
 
-$(LIBCURSES) : $(LIBDEPS)
+pdcurses.a : $(LIBDEPS)
 	$(LIBEXE) $(LIBFLAGS) $@ $?
-	-copy $(LIBCURSES) panel.a
+	-$(CP) $@ panel.a
+
+pdcurses.lib : $(DLLTARGET)
+	emximp -o $@ $*.def
+	-$(CP) $@ panel.lib
 
 $(DLLTARGET) : $(LIBDEPS)
-	$(LINK) $(DLLFLAGS) -o $(DLLTARGET) $?
-#	lxlite $(DLLTARGET)
+	echo "LIBRARY PDCURSES INITINSTANCE" > $*.def
+	echo "DATA MULTIPLE NONSHARED" >> $*.def
+	echo "DESCRIPTION \"PDCURSES DLL for OS/2\"" >> $*.def
+	echo "STACKSIZE 81920" >> $*.def
+	echo "EXPORTS" >> $*.def
+	emxexp $(LIBDEPS) >> $*.def
+	$(LINK) $(DLLFLAGS) -o $@ $(LIBDEPS) $*.def
+#	lxlite $@
 
 $(LIBOBJS) $(PDCOBJS) $(DEMOOBJS) : $(PDCURSES_HEADERS)
 $(PDCOBJS) : $(PDCURSES_OS2_H)
 $(DEMOS) : $(LIBCURSES)
-panel.o ptest.o: $(PANEL_HEADER)
-terminfo.o: $(TERM_HEADER)
+panel.$(O) ptest.$(O): $(PANEL_HEADER)
+terminfo.$(O): $(TERM_HEADER)
 
-$(LIBOBJS) : %.o: $(srcdir)/%.c
+$(LIBOBJS) : %.$(O): $(srcdir)/%.c
 	$(CC) -c $(CFLAGS) -o$@ $<
 
-$(PDCOBJS) : %.o: $(osdir)/%.c
+$(PDCOBJS) : %.$(O): $(osdir)/%.c
 	$(CC) -c $(CFLAGS) -o$@ $<
 
-$(DEMOS_EXCEPT_TUIDEMO): %.exe: %.o
-	$(LINK) $(LDFLAGS) -o $* $< $(LIBCURSES) $(CCLIBS)
+$(DEMOS_EXCEPT_TUIDEMO): %.exe: %.$(O)
+	echo "NAME $* WINDOWCOMPAT" > $*.def
+	$(LINK) $(LDFLAGS) -o $* $< $(LIBCURSES) $(CCLIBS) $*.def
 	$(EXEPOST)
 
-tuidemo.exe:	tuidemo.o tui.o
-	$(LINK) $(LDFLAGS) -o tuidemo tuidemo.o tui.o $(LIBCURSES) $(CCLIBS)
+tuidemo.exe:	tuidemo.$(O) tui.$(O)
+	echo "NAME tuidemo WINDOWCOMPAT" > tuidemo.def
+	$(LINK) $(LDFLAGS) -o tuidemo tuidemo.$(O) tui.$(O) $(LIBCURSES) $(CCLIBS) $*.def
 	$(TUIPOST)
 
-calendar.o firework.o mbrot.o ozdemo.o ptest.o rain.o testcurs.o worm.o xmas.o: %.o: \
+calendar.$(O) firework.$(O) init_col.$(O) mbrot.$(O) newtest.$(O) ozdemo.$(O) picsview.$(O) \
+ ptest.$(O) rain.$(O) speed.$(O) test_pan.$(O) testcurs.$(O) widetest.$(O) worm.$(O) xmas.$(O): %.$(O): \
 $(demodir)/%.c
 	$(CC) $(CFLAGS) -o$@ $<
 
-tui.o: $(demodir)\tui.c $(demodir)\tui.h
+tui.$(O): $(demodir)\tui.c $(demodir)\tui.h
 	$(CC) $(CFLAGS) -I$(demodir) -o $@ $<
 
-tuidemo.o: $(demodir)\tuidemo.c
+tuidemo.$(O): $(demodir)\tuidemo.c
 	$(CC) $(CFLAGS) -I$(demodir) -o $@ $<
