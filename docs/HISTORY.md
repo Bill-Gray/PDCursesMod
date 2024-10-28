@@ -1,11 +1,13 @@
 Generally speaking,  this history mentions only the more significant
 changes.  See the git log for full details.
 
-Current PDCursesMod - 2024 Jun 19
+Current PDCursesMod - 2024 Oct 28
 =================================
 
 Major new features
 ------------------
+
+- Added an OS/2 GUI port,  provided by chasonr.  23b1fbed61  267f92a2c0
 
 - The ncurses 'menu' library can be compiled and used with PDCursesMod,
   and the ncurses program 'demo_menus' built to test it out.  (The
@@ -24,6 +26,11 @@ Bug fixes
 
 - In WinGUI,  theoretically 'monospaced' fonts were not necessarily
   monospaced.  Reverted to drawing each character separately.  b99fed1acb
+
+- In WinGUI,  when redrawing a string of characters,  the preceding and
+  subsequent glyphs were also redrawn.  This was apparently needed at
+  one time to avoid stray pixels,  but appears to be unnecessary now.
+  8466f73e21
 
 - In WinGUI and WinCon,  PDC_clearclipboard() would fail if the clipboard
   was not open.  From Mark Hessling.  a071130c95
