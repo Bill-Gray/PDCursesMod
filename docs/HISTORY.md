@@ -15,6 +15,45 @@ Major new features
   uses ncurses internals for wide mode -- but doesn't appear to
   actually work yet.)  07bc4ac785  1ad9562b9a
 
+Minor new features
+------------------
+
+- The DRM and Linux framebuffer port now allows for screen rotation.
+  Hit Alt-/ for a 90-degree rotation.  This should pave the way for
+  support on phones and other rotatable displays (and already helps if
+  you have a monitor in portrait mode).  0e41ba5e68  1b7b432f9c
+
+- Added is_cbreak(), is_echo(), is_nl(), is_raw() functions to access
+  members of the non-opaque SCREEN struct.  The first two replace
+  PDC_getcbreak() and PDC_getecho().  98b6969a7e
+
+- Windows can be created,  moved,  and resized that go off the right
+  and bottom edges of the screen,  a la ncurses.  (I think this was
+  an acknowledgment of the fact that after resizing a screen,  windows
+  might go over those edges anyway.)  Windows still cannot go off the
+  left or top edges.   bc51d18ff1
+
+- Added a new 'test' program for the issues mentioned above with
+  scrolling and winsertln(), wdeleteln(), winsdelln().  98c7405a3f
+
+- Three new small test programs to investigate various aspects of
+  how curses works (or doesn't work).  5cef1e3d00
+
+- The 'tests' programs can now be built,  on some platforms,  with
+  'make -f Makefile tests'.  200b548516  e611673b49  63138eaf34
+  80fdfe7095  218aa8c0ed
+
+- Switched from defaulting to ncurses-6.4 tests to ncurses-6.5.
+
+- WinGUI now defaults to resizable windows,  similar to SDLn,  WinCon,
+  and X11.  58807ea498
+
+- winsnstr() handled 513 _bytes_ from the input,  instead of the clearly
+  intended 513 wchar_ts.  This worked,  but was an unnecessarily low
+  limitation.  It is now fixed,  and the function can now handle
+  arbitrarily long strings via recursion.  Added some code to test this
+  in 'show_col.c'.  3f8dfa9e06   18ef78de69
+
 Bug fixes
 ---------
 
@@ -62,7 +101,8 @@ Bug fixes
 - PDC_set_box_type() has been removed,  because it's an unneeded redundancy.
   You can get double-lined or thick-lined boxes,  and/or rounded corners,
   via the standard Curses wborder_set() function,  and it'll work with
-  ncurses and other libraries.  f8d87ed549  099fa2876c
+  ncurses and other libraries.  'test_pan' revised to provide an example
+  of how that's done.   f8d87ed549  099fa2876c
 
 - printw() overflowed a buffer when asked to output more than 512 bytes.
   ddf80d010f
@@ -78,49 +118,6 @@ Bug fixes
 
 - Fixes for Borland Turbo C compilation. a59f452e78  26128c29aa
   d6b7e998eb
-
-Minor new features
-------------------
-
-- The DRM and Linux framebuffer port now allows for screen rotation.
-  Hit Alt-/ for a 90-degree rotation.  This should pave the way for
-  support on phones and other rotatable displays (and already helps if
-  you have a monitor in portrait mode).  0e41ba5e68  1b7b432f9c
-
-- Added is_cbreak(), is_echo(), is_nl(), is_raw() functions to access
-  members of the non-opaque SCREEN struct.  The first two replace
-  PDC_getcbreak() and PDC_getecho().  98b6969a7e
-
-- Windows can be created,  moved,  and resized that go off the right
-  and bottom edges of the screen,  a la ncurses.  (I think this was
-  an acknowledgment of the fact that after resizing a screen,  windows
-  might go over those edges anyway.)  Windows still cannot go off the
-  left or top edges.   bc51d18ff1
-
-- Added a new 'test' program for the issues mentioned above with
-  scrolling and winsertln(), wdeleteln(), winsdelln().  98c7405a3f
-
-- Three new small test programs to investigate various aspects of
-  how curses works (or doesn't work).  5cef1e3d00
-
-- The 'tests' programs can now be built,  on some platforms,  with
-  'make -f Makefile tests'.  200b548516  e611673b49  63138eaf34
-  80fdfe7095  218aa8c0ed
-
-- Switched from defaulting to ncurses-6.4 tests to ncurses-6.5.
-
-- 'test_pan' now demonstates double-lined,  thick-lined,  and rounded
-  box corners using wborder_set() instead of with the PDCursesMod-only
-  PDC_set_box_type() function.  f8d87ed549  099fa2876c
-
-- WinGUI now defaults to resizable windows,  similar to SDLn,  WinCon,
-  and X11.  58807ea498
-
-- winsnstr() handled 513 _bytes_ from the input,  instead of the clearly
-  intended 513 wchar_ts.  This worked,  but was an unnecessarily low
-  limitation.  It is now fixed,  and the function can now handle
-  arbitrarily long strings via recursion.  Added some code to test this
-  in 'show_col.c'.  3f8dfa9e06   18ef78de69
 
 PDCursesMod 4.4.0 - 2023 November 30
 ===================================
