@@ -38,11 +38,11 @@ Defined by this header:
          /* NOTE : For version changes that are not backward compatible, */
          /* the 'endwin_*' #defines below should be updated.             */
 #define PDC_VER_MAJOR    4
-#define PDC_VER_MINOR    4
+#define PDC_VER_MINOR    5
 #define PDC_VER_CHANGE   0
 #define PDC_VER_YEAR   2024
 #define PDC_VER_MONTH    12
-#define PDC_VER_DAY      11
+#define PDC_VER_DAY      31
 
 #define PDC_STRINGIZE( x) #x
 #define PDC_stringize( x) PDC_STRINGIZE( x)

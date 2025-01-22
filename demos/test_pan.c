@@ -279,10 +279,10 @@ int main( const int argc, const char **argv)
          case 9:
             if( curr_top)
                {
-#ifdef __PDCURSES__
-               if( panel_hidden( curr_top) == OK)
-#else
-               if( panel_hidden( curr_top) == TRUE)
+#if (defined( PDCURSES) && (!defined( __PDCURSESMOD__) || PDC_BUILD < 4500))
+               if( panel_hidden( curr_top) == OK)    /* old,  non-standard behavior */
+#else            
+               if( panel_hidden( curr_top) == TRUE)   /* correct behavior according to SVR4 */
 #endif
                   show_panel( curr_top);
                else
