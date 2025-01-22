@@ -1,8 +1,5 @@
 /* PDCurses */
 
-#include <curspriv.h>
-#include <assert.h>
-
 /*man-start**************************************************************
 
 panel
@@ -71,7 +68,8 @@ panel
 
    ceiling_panel() returns a pointer to the top panel in the deck.
 
-   panel_hidden() returns OK if pan is hidden and ERR if it is not.
+   panel_hidden() returns TRUE if pan is hidden, FALSE if not and
+   ERR if pan is NULL.
 
    panel_userptr() - Each panel has a user pointer available for
    maintaining relevant information. This function returns a pointer to
@@ -100,7 +98,8 @@ panel
 
    Each routine that returns a pointer to an object returns NULL if an
    error occurs. Each panel routine that returns an integer, returns OK
-   if it executes successfully and ERR if it does not.
+   if it executes successfully and ERR if it does not, with the exception
+   of panel_hidden returning TRUE/FALSE/ERR.
 
 ### Portability
                              X/Open  ncurses  NetBSD
@@ -122,13 +121,20 @@ panel
     top_panel                   -       Y       Y
     update_panels               -       Y       Y
 
+  Note: Before PDC_BUILD 4500 panel_hidden did not return the expected
+        values TRUE (1) and FALSE (0), but OK (0) and ERR (-1).
+
   Credits:
     Original Author - Warren Tucker <wht@n4hgf.mt-park.ga.us>
 
 **man-end****************************************************************/
 
-#include <panel.h>
 #include <stdlib.h>
+
+#include <assert.h>
+
+#include "curspriv.h"
+#include <panel.h>
 
 struct panel
 {
@@ -430,11 +436,10 @@ PANEL *ground_panel( SCREEN *sp)
 
 int panel_hidden(const PANEL *pan)
 {
-    assert( pan);
     if (!pan)
         return ERR;
 
-    return _panel_is_linked(pan) ? ERR : OK;
+    return _panel_is_linked(pan) ? FALSE : TRUE;
 }
 
 const void *panel_userptr(const PANEL *pan)

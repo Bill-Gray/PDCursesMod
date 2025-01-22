@@ -1,7 +1,7 @@
 Generally speaking,  this history mentions only the more significant
 changes.  See the git log for full details.
 
-Current PDCursesMod - 2024 Oct 28
+PDCursesMod 4.5.0 - 2024 Dec 31
 =================================
 
 Major new features
@@ -53,6 +53,8 @@ Minor new features
   limitation.  It is now fixed,  and the function can now handle
   arbitrarily long strings via recursion.  Added some code to test this
   in 'show_col.c'.  3f8dfa9e06   18ef78de69
+
+- PDC_wcwidth( ) updated from Unicode 14.0.0 to 16.0.0   93e32ef a5f13c2
 
 Bug fixes
 ---------
@@ -118,6 +120,10 @@ Bug fixes
 
 - Fixes for Borland Turbo C compilation. a59f452e78  26128c29aa
   d6b7e998eb
+
+- panel_hidden() is now portable, returning TRUE (1) and FALSE (0) instead
+  of OK (0) and ERR (-1) This may break existing applications, so you possibly
+  want to check for the PDCursesMod build (PDC_BUILD < 4500).
 
 PDCursesMod 4.4.0 - 2023 November 30
 ===================================
