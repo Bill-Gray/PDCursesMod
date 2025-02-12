@@ -927,6 +927,7 @@ void clipboardTest(WINDOW *win)
         clear();
         mvaddstr(1, 1, "Clipboard contents...");
         mvprintw(2, 1, "%s\n", ptr);
+        PDC_freeclipboard( ptr);
     }
 
     Continue2();
