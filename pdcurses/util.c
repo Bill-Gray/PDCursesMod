@@ -482,9 +482,9 @@ size_t PDC_wcstombs(char *dest, const wchar_t *src, size_t n)
     if (!src || !dest)
         return 0;
 
-    while (*src && i + 4 < n)
+    while( i + 4 < n && *src)
        i += PDC_wc_to_utf8( dest + i, *src++);
-    while (*src && i < n)
+    while( i < n && *src)
     {
        char tbuff[4];
        size_t count = (size_t)PDC_wc_to_utf8( tbuff, *src++);
