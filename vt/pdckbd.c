@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <signal.h>
 #if defined( _WIN32) || defined( DOS)
    #include <conio.h>
    #define USE_CONIO
@@ -652,6 +653,8 @@ int PDC_get_key( void)
          }
       SP->key_modifiers = modifiers;
       }
+   if( rval > 0 && rval == PDC_get_function_key( FUNCTION_KEY_ABORT))
+      raise( SIGINT);
    return( rval);
 }
 
