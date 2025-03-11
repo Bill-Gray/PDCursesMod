@@ -456,6 +456,13 @@ int PDC_get_key( void)
             PDC_rotate_font( );
             rval = -1;
             }
+#ifdef USE_DRM
+         if( rval == ALT_EQUAL)
+            {
+            PDC_cycle_display( );
+            rval = -1;
+            }
+#endif
 #endif
          if( !count)             /* Escape hit */
             rval = 27;

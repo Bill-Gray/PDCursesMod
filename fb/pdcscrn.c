@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
@@ -338,14 +339,53 @@ int PDC_cycle_font( void)
 #define MAX_LINES 1000
 #define MAX_COLUMNS 1000
 
+#ifdef USE_DRM
+static int curr_screen_number = 0;
+
+int PDC_cycle_display( void)
+{
+    int error;
+
+    if( !can_set_master || n_connectors < 2)      /* can't reset */
+        return( -1);               /* or can't cycle the display */
+    close_drm( );
+    curr_screen_number++;
+    error = init_drm( "/dev/dri/card0", curr_screen_number);
+    if( error)
+    {
+        fprintf( stderr, "Error %d on DRM opening\n", error);
+        return( -1);
+    }
+    SP->lines = PDC_get_rows();
+    SP->cols = PDC_get_columns();
+    if (SP->lines < 2 || SP->lines > MAX_LINES
+       || SP->cols < 2 || SP->cols > MAX_COLUMNS)
+    {
+        fprintf(stderr, "LINES value must be >= 2 and <= %d: got %d\n",
+                MAX_LINES, SP->lines);
+        fprintf(stderr, "COLS value must be >= 2 and <= %d: got %d\n",
+                MAX_COLUMNS, SP->cols);
+
+        return ERR;
+    }
+
+    PDC_resize_occurred = TRUE;
+    return( 0);
+}
+#endif
+
 int PDC_scr_open(void)
 {
     struct sigaction sa;
     int error;
-
 #ifdef USE_DRM
+    const char *screen_number = getenv( "PDC_SCREEN");
+
     PDC_LOG(("PDC_scr_open called\n"));
-    error = init_drm( "/dev/dri/card0", getenv( "PDC_SCREEN"));
+    if( screen_number)
+        curr_screen_number = atoi( screen_number);
+    error = init_drm( "/dev/dri/card0", curr_screen_number);
+
     if( error)
     {
         fprintf( stderr, "Error %d on DRM opening\n", error);

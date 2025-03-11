@@ -35,45 +35,15 @@ struct framebuffer {
     drmModeModeInfoPtr resolution;
 };
 
-static const struct type_name connector_type_names[] = {
-    { DRM_MODE_CONNECTOR_Unknown, "unknown" },
-    { DRM_MODE_CONNECTOR_VGA, "VGA" },
-    { DRM_MODE_CONNECTOR_DVII, "DVI-I" },
-    { DRM_MODE_CONNECTOR_DVID, "DVI-D" },
-    { DRM_MODE_CONNECTOR_DVIA, "DVI-A" },
-    { DRM_MODE_CONNECTOR_Composite, "composite" },
-    { DRM_MODE_CONNECTOR_SVIDEO, "s-video" },
-    { DRM_MODE_CONNECTOR_LVDS, "LVDS" },
-    { DRM_MODE_CONNECTOR_Component, "component" },
-    { DRM_MODE_CONNECTOR_9PinDIN, "9-pin DIN" },
-    { DRM_MODE_CONNECTOR_DisplayPort, "DP" },
-    { DRM_MODE_CONNECTOR_HDMIA, "HDMI-A" },
-    { DRM_MODE_CONNECTOR_HDMIB, "HDMI-B" },
-    { DRM_MODE_CONNECTOR_TV, "TV" },
-    { DRM_MODE_CONNECTOR_eDP, "eDP" },
-    { DRM_MODE_CONNECTOR_VIRTUAL, "Virtual" },
-    { DRM_MODE_CONNECTOR_DSI, "DSI" },
-    { DRM_MODE_CONNECTOR_DPI, "DPI" },
-};
-
-#define ARRAY_SIZE(array) (sizeof(array) / sizeof(array[0]))
-
-const char *connector_type_name(unsigned int type)
-{
-    if (type < ARRAY_SIZE(connector_type_names)) {
-        return connector_type_names[type].name;
-    }
-
-    return "INVALID";
-}
-
 void release_framebuffer(struct framebuffer *fb)
 {
     if (fb->fd) {
         /* Try to become master again, else we can't set CRTC. Then the current master needs to reset everything. */
-        drmSetMaster(fb->fd);
+        const int err = drmSetMaster(fb->fd);
+
+//      assert( !err);
         if (fb->crtc) {
-            /* Set back to orignal frame buffer */
+            /* Set back to original frame buffer */
             drmModeSetCrtc(fb->fd, fb->crtc->crtc_id, fb->crtc->buffer_id, 0, 0, &fb->connector->connector_id, 1, fb->resolution);
             drmModeFreeCrtc(fb->crtc);
         }
@@ -86,7 +56,9 @@ void release_framebuffer(struct framebuffer *fb)
         }
 /*      if (fb->dumb_framebuffer.handle)
             ioctl(fb->fd, DRM_IOCTL_MODE_DESTROY_DUMB, fb->dumb_framebuffer);
-*/      close(fb->fd);
+*/      if( !err)
+            drmDropMaster( fb->fd);
+        close(fb->fd);
     }
 }
 
@@ -100,15 +72,15 @@ void release_framebuffer(struct framebuffer *fb)
 #define FRAMEBUFFER_MODE_MAP_FRAMEBUFFER_FAILED        -8
 #define FRAMEBUFFER_MODE_MAP_FAILED                    -9
 
-int get_framebuffer(const char *dri_device, const char *connector_name, struct framebuffer *fb)
+static int n_connectors;
+
+int get_framebuffer(const char *dri_device, const int connector_num, struct framebuffer *fb)
 {
     int err;
-    int fd;
+    int i, fd, j;
     drmModeResPtr res;
     drmModeEncoderPtr encoder = 0;
-
-    if( !connector_name || !*connector_name)
-        connector_name = "def";
+    drmModeConnectorPtr connector = 0;
 
     /* Open the dri device /dev/dri/cardX */
     fd = open(dri_device, O_RDWR);
@@ -122,25 +94,31 @@ int get_framebuffer(const char *dri_device, const char *connector_name, struct f
         return FRAMEBUFFER_COULD_NOT_GET_RESOURCES;
     }
 
+            /* Count the connectors */
+    if( !n_connectors) {
+        for( i = 0; i < res->count_connectors; i++) {
+            connector = drmModeGetConnectorCurrent(fd, res->connectors[i]);
+            if( connector) {
+                if( connector->count_modes)
+                    n_connectors++;
+                drmModeFreeConnector(connector);
+            }
+        }
+    }
+    assert( n_connectors);
+
     /* Search the connector provided as argument */
-    drmModeConnectorPtr connector = 0;
-    for (int i = 0; i < res->count_connectors; i++) {
-        char name[32];
 
+    for( i = j = 0; i < res->count_connectors; i++) {
         connector = drmModeGetConnectorCurrent(fd, res->connectors[i]);
-        if (!connector)
-            continue;
-
-        snprintf(name, sizeof(name), "%s-%u", connector_type_name(connector->connector_type),
-                connector->connector_type_id);
-
-        if( !strncmp(name, connector_name, strlen( connector_name)))
-                break;
-
-        if (strcmp( "def", connector_name) == 0 && connector->count_modes)
-                break;
-
-        drmModeFreeConnector(connector);
+        if( connector)  {
+            if( connector->count_modes) {
+                if( j == connector_num % n_connectors)
+                    break;
+                j++;
+            }
+            drmModeFreeConnector(connector);
+        }
     }
     drmModeFreeResources( res);
 
@@ -160,6 +138,7 @@ int get_framebuffer(const char *dri_device, const char *connector_name, struct f
         goto cleanup;
     }
 
+    memset( fb, 0, sizeof( struct framebuffer));
     fb->dumb_framebuffer.height = resolution->vdisplay;
     fb->dumb_framebuffer.width = resolution->hdisplay;
     fb->dumb_framebuffer.bpp = 32;
@@ -215,6 +194,7 @@ cleanup:
     if (encoder)
         drmModeFreeEncoder(encoder);
 
+
     if (err)
         release_framebuffer(fb);
 
@@ -224,11 +204,13 @@ cleanup:
 /* Interface between DRM functions above and PDCursesMod */
 
 static struct framebuffer _drm_framebuffer;
+int can_set_master;
 
-static int init_drm( const char *dri_device, const char *connector_name)
+static int init_drm( const char *dri_device, const int connector_num)
 {
-    int rval = get_framebuffer( dri_device, connector_name, &_drm_framebuffer);
+    int err, rval;
 
+    rval = get_framebuffer( dri_device, connector_num, &_drm_framebuffer);
     if( !rval)
     {
         PDC_fb.framebuf = _drm_framebuffer.data;
@@ -237,10 +219,24 @@ static int init_drm( const char *dri_device, const char *connector_name)
         PDC_fb.bits_per_pixel = 32;
         PDC_fb.line_length = _drm_framebuffer.dumb_framebuffer.pitch;
         PDC_fb.smem_len = 0;        /* unused */
-        drmSetMaster(_drm_framebuffer.fd);
-        drmModeSetCrtc( _drm_framebuffer.fd, _drm_framebuffer.crtc->crtc_id, 0, 0, 0, NULL, 0, NULL);
-        drmModeSetCrtc( _drm_framebuffer.fd, _drm_framebuffer.crtc->crtc_id, _drm_framebuffer.buffer_id, 0, 0, &_drm_framebuffer.connector->connector_id, 1, _drm_framebuffer.resolution);
-        drmDropMaster(_drm_framebuffer.fd);
+        err = drmSetMaster(_drm_framebuffer.fd);
+        can_set_master = !err;
+        err = drmModeSetCrtc( _drm_framebuffer.fd, _drm_framebuffer.crtc->crtc_id,
+                      0, 0, 0, NULL, 0, NULL);
+        if( err)
+           return( -1);
+        assert( !err);
+        err = drmModeSetCrtc( _drm_framebuffer.fd, _drm_framebuffer.crtc->crtc_id,
+                     _drm_framebuffer.buffer_id, 0, 0,
+                     &_drm_framebuffer.connector->connector_id, 1,
+                     _drm_framebuffer.resolution);
+        if( err)
+           drmError( err, "SetCrtc (2)");
+        assert( !err);
+        if( can_set_master)
+           err = drmDropMaster(_drm_framebuffer.fd);
+        if( err)
+           drmError( err, "DropMaster");
     }
     return( rval);
 }
