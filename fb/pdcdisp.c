@@ -411,10 +411,11 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
             run_len++;
         if( PDC_fb.bits_per_pixel == 32)
         {
-            int i;
             uint32_t *tptr = (uint32_t *)PDC_fb.framebuf + video_offset;
 
-            for( i = 0; i < run_len; i++)
+            len -= run_len;
+            x += run_len;
+            while( run_len--)
             {
                 const uint8_t *fontptr = _get_glyph( *srcp, cursor_to_draw, scratch);
                 uint32_t *fb_ptr = tptr;
@@ -428,9 +429,7 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
                     fontptr += font_char_size_in_bytes;
                 }
                 srcp++;
-                len--;
                 tptr += next_glyph;
-                x++;
             }
         }
         if( PDC_fb.bits_per_pixel == 8)
