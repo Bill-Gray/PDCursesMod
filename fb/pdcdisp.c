@@ -194,11 +194,6 @@ void PDC_draw_rectangle( const int xpix, const int ypix,
     }
 }
 
-/* see 'addch.c' for an explanation of how combining chars are handled. */
-
-#ifdef USING_COMBINING_CHARACTER_SCHEME
-   int PDC_expand_combined_characters( const cchar_t c, cchar_t *added);  /* addch.c */
-
 static void _add_combining_character_glyph( uint8_t *glyph, const int code_point)
 {
     const uint8_t *add_in = _get_raw_glyph_bytes( &PDC_font_info, code_point);
@@ -207,7 +202,6 @@ static void _add_combining_character_glyph( uint8_t *glyph, const int code_point
     for( i = 0; i < (int)PDC_font_info.charsize; i++)
         glyph[i] ^= add_in[i];
 }
-#endif
 
 #define LINE_ATTRIBS (WA_UNDERLINE | WA_TOP | WA_LEFT | WA_RIGHT | WA_STRIKEOUT)
 
@@ -253,7 +247,7 @@ static const uint8_t *_get_glyph( const chtype ch, const int cursor_type,
 #endif
     {
         const int font_char_size_in_bytes = (PDC_font_info.width + 7) >> 3;
-        int i, j, line_mask;
+        int i, line_mask;
         extern int PDC_orientation;
 
         memcpy( scratch, rval, PDC_font_info.charsize);
@@ -281,14 +275,12 @@ static const uint8_t *_get_glyph( const chtype ch, const int cursor_type,
             _add_combining_character_glyph( scratch, (int)newchar);
         }
 #endif
-        if( cursor_type)
+        if( cursor_type > 0 && cursor_type < 8)
         {
-            i = (cursor_type == 1 ? PDC_font_info.height - 2 : 0);
-            scratch += i * font_char_size_in_bytes;
-            for( ; i < (int)PDC_font_info.height; i++)
-               for( j = 0; j < font_char_size_in_bytes; j++)
-                   *scratch++ ^= 0xff;
-            scratch -= PDC_font_info.charsize;
+            const int cursors[8] = { 0, '_', FULL_BLOCK, 0,   /*outlined block */
+                           LEFT_HALF_BLOCK, LOWER_HALF_BLOCK, 0, '+' };
+
+            _add_combining_character_glyph( scratch, cursors[cursor_type]);
         }
         line_mask = (ch & WA_UNDERLINE ? LOC_UNDERLINE : 0)
                            | (ch & WA_LEFT ? LOC_LEFT : 0)
