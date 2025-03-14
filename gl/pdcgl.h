@@ -23,12 +23,18 @@
                                          text. */
 #define PDC_GL_INTERPOLATE_BILINEAR 1 /* Bilinear interpolation for text. */
 
+#define PDC_GL_SINGLE_THREADED_RENDERING 0 /* Renders on refresh() */
+#define PDC_GL_MULTI_THREADED_RENDERING 1  /* Renders the latest refresh()ed
+                                              state at a steady rate. */
+
 #include <curspriv.h>
 
 PDCEX  TTF_Font *pdc_ttffont;
 PDCEX  int pdc_font_size;
 PDCEX  int pdc_resize_mode;        /* PDC_GL_RESIZE_NORMAL by default */
 PDCEX  int pdc_interpolation_mode; /* PDC_GL_INTERPOLATE_BILINEAR by default */
+PDCEX  int pdc_threading_mode; /* PDC_GL_MULTI_THREADED_RENDERING by default.
+                                  Must be set before initscr()! */
 PDCEX  SDL_Window *pdc_window;
 PDCEX  SDL_Surface *pdc_icon;
 PDCEX  int pdc_sheight, pdc_swidth;
@@ -38,6 +44,8 @@ extern int pdc_glyph_cache_size[4];
 extern int pdc_glyph_row_capacity, pdc_glyph_col_capacity;
 extern int pdc_glyph_cache_w, pdc_glyph_cache_h;
 extern int* pdc_glyph_start_col;
+extern SDL_mutex *pdc_render_mutex;
+extern SDL_cond *pdc_render_cond;
 
 extern unsigned pdc_color_buffer, pdc_glyph_buffer;
 extern unsigned pdc_background_shader_program, pdc_foreground_shader_program;
@@ -50,3 +58,4 @@ extern int pdc_fthick;               /* thickness for highlights and
 extern void PDC_pump_and_peep(void);
 extern void PDC_blink_text(void);
 extern SDL_Rect PDC_get_viewport(void);
+extern void PDC_render_frame(void);
