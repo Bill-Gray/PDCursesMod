@@ -90,9 +90,14 @@ static PACKED_RGB _reversed( const PACKED_RGB ival)
 void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
 {
     XChar2b string[OBUFF_SIZE];
+    static PACKED_RGB prev_bg = (PACKED_RGB)-2;
+    static PACKED_RGB prev_fg = (PACKED_RGB)-2;
 
     if( !srcp)
+    {
+        prev_bg = prev_fg = (PACKED_RGB)-2;
         return;
+    }
     assert( x >= 0);
     assert( len <= SP->cols - x);
     assert( lineno >= 0);
@@ -102,8 +107,6 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
     while( len)
     {
        int i = 0;
-       static PACKED_RGB prev_bg = (PACKED_RGB)-2;
-       static PACKED_RGB prev_fg = (PACKED_RGB)-2;
        PACKED_RGB bg, fg;
 
        while( i < len && !((srcp[i] ^ srcp[0]) & ~A_CHARTEXT))

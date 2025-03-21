@@ -71,6 +71,7 @@ void PDC_scr_free( void)
    PDC_free_palette( );
    PDC_free_xim_xic( );
    PDC_setclipboard( NULL, 0);
+   PDC_transform_line( 0, 0, 0, NULL);
    XFree( xchClass);
    XFree( xwmhHints);
    XFree( xshSize);
