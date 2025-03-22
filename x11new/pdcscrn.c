@@ -19,7 +19,7 @@ Window win;
 GC curr_gc;
 Font font;
 int PDC_rows = -1, PDC_cols = -1;
-int PDC_font_width, PDC_font_height;
+int PDC_font_width, PDC_font_height, PDC_font_descent;
 
 /* COLOR_PAIR to attribute encoding table. */
 
@@ -84,6 +84,22 @@ void PDC_scr_free( void)
 #endif
 }
 
+static Font _load_font( Display *dis, const char *font_name)
+{
+    Font rval = XLoadFont( dis, font_name);
+    XFontStruct *xfont = XQueryFont( dis, rval);
+    int direction, font_ascent, font_descent;
+    XCharStruct overall;
+
+    assert( xfont);
+    XTextExtents( xfont, "A", 1, &direction, &font_ascent, &font_descent, &overall);
+    XFreeFontInfo( NULL, xfont, 0);
+    PDC_font_descent = font_descent;
+    PDC_font_width = overall.width;
+    PDC_font_height = font_ascent + font_descent;
+    return( rval);
+}
+
 #define MAX_LINES 1000
 #define MAX_COLUMNS 1000
 
@@ -142,10 +158,7 @@ int PDC_scr_open(void)
 
     dis = XOpenDisplay(NULL);
     assert( dis);
-/*  PDC_font_width = 7;
-    PDC_font_height = 13;     */
-    PDC_font_width = 9;
-    PDC_font_height = 15;
+    font = _load_font( dis, font_name);
     win = XCreateSimpleWindow(dis, DefaultRootWindow( dis),
                1, 1, PDC_cols * PDC_font_width, PDC_rows * PDC_font_height,
                0, WhitePixel (dis, 0), BlackPixel (dis, 0));
@@ -179,7 +192,6 @@ int PDC_scr_open(void)
 
     XSelectInput(dis, win, event_mask);
 
-    font = XLoadFont( dis, font_name);
     XSetFont( dis, curr_gc, font);
 
     PDC_reset_prog_mode();

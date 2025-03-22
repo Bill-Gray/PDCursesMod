@@ -137,7 +137,7 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
           prev_bg = bg;
           }
        XDrawImageString16( dis, win, curr_gc, x * PDC_font_width,
-                     (lineno + 1) * PDC_font_height, string, i);
+                     (lineno + 1) * PDC_font_height - PDC_font_descent, string, i);
        if( lineno == SP->cursrow && x <= SP->curscol && x + i > SP->curscol
                            && PDC_blink_state && SP->visibility)
           {
