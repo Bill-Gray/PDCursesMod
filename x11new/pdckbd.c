@@ -312,6 +312,19 @@ static void add_to_queue( const int c)
       }
 }
 
+static int xlate_mouse_mask( const unsigned xevent_state)
+{
+   int rval = 0;
+
+   if( xevent_state & Mod1Mask)
+      rval |= PDC_BUTTON_ALT;
+   else if( xevent_state & ShiftMask)
+      rval |= PDC_BUTTON_SHIFT;
+   if( xevent_state & ControlMask)
+      rval |= PDC_BUTTON_CONTROL;
+   return( rval);
+}
+
 #ifdef NOT_YET
 static int _modifier_key( KeySym *key)
 {
@@ -334,7 +347,7 @@ static int _modifier_key( KeySym *key)
 static bool check_key( int *c)
 {
    XEvent report;
-   bool rval = false;
+   bool rval = false, ongoing_mouse_event = false;
 
    if( !_xim)
       _xim = XOpenIM( dis, NULL, NULL, NULL);
@@ -450,6 +463,57 @@ static bool check_key( int *c)
             break;
          case ButtonPress:
          case ButtonRelease:
+            {
+            const int button_idx = report.xbutton.button - 1;
+
+            if( !ongoing_mouse_event)
+               memset( &SP->mouse_status, 0, sizeof( MOUSE_STATUS));
+            ongoing_mouse_event = true;
+            if( button_idx >=0 && button_idx < PDC_MAX_MOUSE_BUTTONS)
+               {
+               int state = SP->mouse_status.button[button_idx] & BUTTON_ACTION_MASK;
+
+               if( report.type == ButtonPress)
+                  switch( state)
+                     {
+                     case 0:
+                        state = BUTTON_PRESSED;
+                        break;
+                     case BUTTON_CLICKED:
+                        state = BUTTON_DOUBLE_CLICKED;
+                        break;
+                     case BUTTON_DOUBLE_CLICKED:
+                        state = BUTTON_TRIPLE_CLICKED;
+                        break;
+                     default:
+                        break;
+                     }
+               else        /* for release events... */
+                  switch( state)
+                     {
+                     case 0:
+                        state = BUTTON_RELEASED;
+                        add_to_queue( KEY_MOUSE);
+                        ongoing_mouse_event = false;
+                        break;
+                     case BUTTON_TRIPLE_CLICKED:
+                        add_to_queue( KEY_MOUSE);
+                        ongoing_mouse_event = false;
+                        break;
+                     case BUTTON_PRESSED:
+                        state = BUTTON_CLICKED;
+                        break;
+                     case BUTTON_DOUBLE_CLICKED:
+                        break;      /* do nothing,  intentionally */
+                     default:
+                        break;
+                     }
+               SP->mouse_status.button[button_idx] = state | xlate_mouse_mask( report.xkey.state);
+               }
+            SP->mouse_status.changes = (1 << button_idx);
+            SP->mouse_status.x = report.xbutton.x / PDC_font_width;
+            SP->mouse_status.y = report.xbutton.y / PDC_font_height;
+            }
             break;
          case ClientMessage:
             if( (Atom)report.xclient.data.l[0] == wmDeleteMessage)
@@ -459,6 +523,45 @@ static bool check_key( int *c)
                }
             break;
          case MotionNotify:
+            {
+            const int x = report.xbutton.x / PDC_font_width;
+            const int y = report.xbutton.y / PDC_font_height;
+
+            if( x != SP->mouse_status.x || y != SP->mouse_status.y)
+               if( !ongoing_mouse_event)
+                  {
+                  int i, button = -1;
+                  bool report_this = false;
+
+                  for( i = 0; i < 3; i++)
+                     {
+                     const int action = SP->mouse_status.button[i] & BUTTON_ACTION_MASK;
+
+                     if( action == BUTTON_PRESSED || action == BUTTON_MOVED)
+                        button = i;
+                     }
+                  if( SP->_trap_mbe & REPORT_MOUSE_POSITION)
+                     report_this = true;
+                  if( button >= 0)
+                     if( SP->_trap_mbe & PDC_SHIFTED_BUTTON( BUTTON1_MOVED, button + 1))
+                        report_this = true;
+                  if( report_this)
+                     {
+                     int report_event = PDC_MOUSE_MOVED;
+
+                     if( button >= 0)
+                        {
+                        report_event |= (1 << button);
+                        SP->mouse_status.button[button] = BUTTON_MOVED | xlate_mouse_mask( report.xkey.state);
+                        }
+                     SP->mouse_status.changes = report_event;
+                     SP->mouse_status.x = x;
+                     SP->mouse_status.y = y;
+                     add_to_queue( KEY_MOUSE);
+                     }
+                  }
+            }
+            ongoing_mouse_event = false;
             break;
          case ConfigureNotify:
             break;
@@ -466,6 +569,16 @@ static bool check_key( int *c)
             break;
          default:
             break;
+         }
+      if( ongoing_mouse_event)    /* wait for a possible press or release event */
+         {
+         const long t_end = PDC_millisecs( ) + SP->mouse_wait;
+         long t;
+
+         while( (t = PDC_millisecs( )) < t_end && !XPending( dis))
+            napms( t_end - t < 20L ? (int)( t_end - t) : 20);
+         if( !XPending( dis))
+            add_to_queue( KEY_MOUSE);
          }
       }
    if( queue_low != queue_high)
