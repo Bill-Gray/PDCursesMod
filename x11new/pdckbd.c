@@ -390,11 +390,6 @@ static bool check_key( int *c)
 
             count = XwcLookupString( _xic, &(report.xkey), buff, 1,
                             &key, &status);
-            if( report.type == KeyRelease)
-               {
-/*             printf( "Released code %u\n", report.xkey.keycode);
-*/             break;
-               }
             if( count)
                key = *buff;
             if( key > 0 && key < 0xff)
@@ -455,11 +450,7 @@ static bool check_key( int *c)
             break;
          case ButtonPress:
          case ButtonRelease:
-/*          printf( "Button %u %s at %d, %d\n",
-                     report.xbutton.button,
-                     (report.type == ButtonPress ? "pressed" : "released"),
-                     report.xbutton.x, report.xbutton.y);
-*/          break;
+            break;
          case ClientMessage:
             if( (Atom)report.xclient.data.l[0] == wmDeleteMessage)
                {
@@ -468,9 +459,8 @@ static bool check_key( int *c)
                }
             break;
          case MotionNotify:
-/*          printf( "Moved to %d, %d\n", report.xbutton.x, report.xbutton.y);
             break;
-*/       case ConfigureNotify:
+         case ConfigureNotify:
             break;
          case MapNotify :
             break;
