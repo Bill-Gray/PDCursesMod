@@ -72,7 +72,6 @@ void PDC_gotoyx(int y, int x)
       SP->visibility = temp_visibility;
       return;
       }
-   PDC_doupdate( );
 }
 
 #ifdef USING_COMBINING_CHARACTER_SCHEME
@@ -92,6 +91,7 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
     XChar2b string[OBUFF_SIZE];
     static PACKED_RGB prev_bg = (PACKED_RGB)-2;
     static PACKED_RGB prev_fg = (PACKED_RGB)-2;
+    int cursor_to_draw = 0;
 
     if( !srcp)
     {
@@ -104,6 +104,8 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
     assert( lineno < SP->lines);
     assert( len > 0);
     assert( len < MAX_PACKET_LEN);
+    if( lineno == SP->cursrow && SP->curscol >= x && SP->curscol < x + len)
+        cursor_to_draw = (PDC_blink_state ? SP->visibility & 0xff : (SP->visibility >> 8));
     while( len)
     {
        int i = 0;
@@ -121,11 +123,18 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
           string[i].byte2 = ch & 0xff;
           i++;
           }
-       PDC_get_rgb_values( srcp[0], &fg, &bg);
+       PDC_get_rgb_values( *srcp & ~A_REVERSE, &fg, &bg);
        if( bg == (PACKED_RGB)-1)   /* default background */
           bg = (PACKED_RGB)0;
        if( fg == (PACKED_RGB)-1)   /* default foreground */
           fg = (PACKED_RGB)0xffffff;
+       if( *srcp & A_REVERSE)
+          {
+          const PACKED_RGB temp_rgb = fg;
+
+          fg = bg;
+          bg = temp_rgb;
+          }
        if( fg != prev_fg)
           {
           XSetForeground(dis, curr_gc, _reversed( fg));
@@ -138,14 +147,14 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
           }
        XDrawImageString16( dis, win, curr_gc, x * PDC_font_width,
                      (lineno + 1) * PDC_font_height - PDC_font_descent, string, i);
-       if( lineno == SP->cursrow && x <= SP->curscol && x + i > SP->curscol
-                           && PDC_blink_state && SP->visibility)
+       if( x <= SP->curscol && x + i > SP->curscol && cursor_to_draw)
           {
-          const int cursor_height = PDC_font_height / (SP->visibility == 2 ? 1 : 4);
+          const int cursor_height = PDC_font_height / (cursor_to_draw == 2 ? 1 : 4);
 
           XSetFunction( dis, curr_gc, GXinvert);
           XFillRectangle( dis, win, curr_gc,
-                  x * PDC_font_width, (lineno + 1) * PDC_font_height - cursor_height,
+                  SP->curscol * PDC_font_width,
+                  (lineno + 1) * PDC_font_height - cursor_height,
                   PDC_font_width, cursor_height);
           XSetFunction( dis, curr_gc, GXcopy);
           }
