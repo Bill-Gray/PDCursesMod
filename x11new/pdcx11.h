@@ -9,7 +9,7 @@ extern Window win;
 extern GC curr_gc;
 extern Font font;
 extern Atom wmDeleteMessage;
-extern int PDC_font_width, PDC_font_height;
+extern int PDC_font_width, PDC_font_height, PDC_font_descent;
 extern int PDC_cols, PDC_rows;
 
 void PDC_free_xim_xic( void);
