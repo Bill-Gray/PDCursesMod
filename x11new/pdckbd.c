@@ -23,7 +23,6 @@
    #endif
 #endif
 
-
 static struct
 {
     KeySym keycode;
@@ -294,8 +293,25 @@ static struct
  {0,            0,      0,           0,            0,           0}
 };
 
+/* Xlib leaks a _lot_ of memory.  If you attempt to debug using Valgrind and
+attempt to clean up all allocations,  this can be a significant problem;  the
+memory you leak will be overwhelmed by hundreds of small allocations that
+Xlib neglects to free.  Almost all of these allocations are in XIM (X Input
+Methods).  Compile with -DNO_LEAKS,  and XIM will not be used,  and most
+of the memory will be correctly freed,  making it _much_ easier to see any
+mistakes you've made.
+
+   Unfortunately,  without XIM,  some keyboard input will not be correctly
+translated,  and a US keyboard is assumed.  So this is for debugging only.
+
+   The proper fix would be for Xlib to clean up after itself,  and I've
+raised a GitHub issue suggesting that.  But not much is happening with Xlib
+these days. */
+
+#ifndef NO_LEAKS
 static XIC _xic;
 static XIM _xim;
+#endif
 
 #define QUEUE_SIZE 10
 
@@ -349,6 +365,7 @@ static bool check_key( int *c)
    XEvent report;
    bool rval = false, ongoing_mouse_event = false;
 
+#ifndef NO_LEAKS
    if( !_xim)
       _xim = XOpenIM( dis, NULL, NULL, NULL);
    assert( _xim);
@@ -357,6 +374,7 @@ static bool check_key( int *c)
                             XIMPreeditNothing | XIMStatusNothing,
                             XNClientWindow, win, NULL);
    assert( _xic);
+#endif
    while( queue_low == queue_high && XPending( dis))
       {
       PDC_check_for_blinking( );
@@ -397,6 +415,7 @@ static bool check_key( int *c)
             {
             int i, key_to_add = -1;
             KeySym key;
+#ifndef NO_LEAKS
             Status status;
             int count;
             wchar_t buff[2];
@@ -405,6 +424,9 @@ static bool check_key( int *c)
                             &key, &status);
             if( count)
                key = *buff;
+#else                                /* non-leaky,  i.e.,  non-XIM,  method */
+            key = XLookupKeysym( &report.xkey, 0);
+#endif
             if( key > 0 && key < 0xff)
                {
                if( report.xkey.state & Mod1Mask)
@@ -416,6 +438,24 @@ static bool check_key( int *c)
                    else if (key >= '0' && key <= '9')
                        key += ALT_0 - '0';
                    }
+#ifdef NO_LEAKS
+               if( report.xkey.state & ControlMask)
+                   {
+                   if( key >= 'a' && key <= 'z')
+                       key -= 'a' - 1;
+                   }
+               if( report.xkey.state & ShiftMask)
+                   {
+                   const char *unshifted = "1234567890[]\',./=-\\", *tptr;
+                   const char *shifted   = "!@#$%^&*(){}\"<>?+_|";
+
+                   if( key >= 'a' && key <= 'z')
+                       key -= 'a' - 'A';
+                   else if( key > ' ' && key < 127
+                                && NULL != (tptr = strchr( unshifted, (char)key)))
+                       key = shifted[tptr - unshifted];
+                   }
+#endif
                if( key == 3 && !SP->raw_inp)
                    exit( 0);
                key_to_add = (int)key;
@@ -638,6 +678,7 @@ void PDC_set_keyboard_binary( bool on)
 
 void PDC_free_xim_xic( void)
 {
+#ifndef NO_LEAKS
     assert( _xic);
     if( _xic)
         XDestroyIC( _xic);
@@ -646,4 +687,5 @@ void PDC_free_xim_xic( void)
         XCloseIM( _xim);
     _xic = 0;
     _xim = NULL;
+#endif
 }

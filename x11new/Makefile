@@ -29,6 +29,10 @@ else
 	CFLAGS  += -O2
 endif
 
+ifeq ($(NO_LEAKS),Y)
+	CFLAGS  += -DNO_LEAKS
+endif
+
 ifeq ($(DOS),Y)
 	CFLAGS	+= -DDOS
 	E = .exe
