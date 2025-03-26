@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <curspriv.h>
 #include "pdcx11.h"
 
@@ -79,5 +80,12 @@ void PDC_set_title( const char *title)
 {
     PDC_LOG(("PDC_set_title() - called:<%s>\n", title));
 
-    INTENTIONALLY_UNUSED_PARAMETER( title);
+    char *temp_string = strdup( title);
+
+    if( xtpWinName.value)
+        XFree( xtpWinName.value);
+    XStringListToTextProperty( &temp_string, 1, &xtpWinName);
+    if( dis && win)
+       XSetWMName( dis, win, &xtpWinName);
+    free( temp_string);
 }

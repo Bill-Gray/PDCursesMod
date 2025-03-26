@@ -64,7 +64,7 @@ void PDC_scr_close( void)
    return;
 }
 
-static XTextProperty xtpWinName, xtpIconName;
+XTextProperty xtpWinName, xtpIconName;
 
 void PDC_scr_free( void)
 {
@@ -76,8 +76,10 @@ void PDC_scr_free( void)
    XFree( xwmhHints);
    XFree( xshSize);
    XFreeGC( dis, curr_gc);
+   XUnloadFont( dis, font);
    XCloseDisplay( dis);
-   XFree( xtpWinName.value);
+   if( xtpWinName.value)
+      XFree( xtpWinName.value);
    XFree( xtpIconName.value);
 #ifdef USING_COMBINING_CHARACTER_SCHEME
    PDC_expand_combined_characters( 0, NULL);
@@ -109,7 +111,7 @@ int PDC_scr_open(void)
     long event_mask = ExposureMask | KeyPressMask | ButtonPressMask | ClientMessage
                 | ButtonReleaseMask | StructureNotifyMask | PointerMotionMask;
     char *pcIconName = "Icon Name?";
-    char *pcWinName = "Insert Window Name Here", *pcProgName = "Test App";
+    char *pcProgName = "Test App";
     const char *font_name = "-misc-fixed-medium-r-normal--15-*10646-1*";
 
     PDC_LOG(("PDC_scr_open called\n"));
@@ -171,7 +173,6 @@ int PDC_scr_open(void)
     xchClass = XAllocClassHint();
 
     xshSize->flags = PPosition | PSize;
-    XStringListToTextProperty(&pcWinName, 1, &xtpWinName);
     XStringListToTextProperty(&pcIconName, 1, &xtpIconName);
 
     xwmhHints->initial_state = NormalState;
@@ -181,8 +182,10 @@ int PDC_scr_open(void)
     xchClass->res_name = pcProgName;
     xchClass->res_class = "Base Win";
 
-    XSetWMProperties( dis, win, &xtpWinName, &xtpIconName, NULL, 0,
+    XSetWMProperties( dis, win, NULL, &xtpIconName, NULL, 0,
                       xshSize, xwmhHints, xchClass);
+    if( xtpWinName.value)
+       XSetWMName( dis, win, &xtpWinName);
     XSetWMProtocols( dis, win, &wmDeleteMessage, 1);
     XMapWindow(dis, win);
 

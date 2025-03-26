@@ -11,6 +11,7 @@ extern Font font;
 extern Atom wmDeleteMessage;
 extern int PDC_font_width, PDC_font_height, PDC_font_descent;
 extern int PDC_cols, PDC_rows;
+extern XTextProperty xtpWinName, xtpIconName;
 
 void PDC_free_xim_xic( void);
 void PDC_check_for_blinking( void);
