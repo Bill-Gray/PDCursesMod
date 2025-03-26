@@ -297,9 +297,9 @@ static struct
 attempt to clean up all allocations,  this can be a significant problem;  the
 memory you leak will be overwhelmed by hundreds of small allocations that
 Xlib neglects to free.  Almost all of these allocations are in XIM (X Input
-Methods).  Compile with -DNO_LEAKS,  and XIM will not be used,  and most
-of the memory will be correctly freed,  making it _much_ easier to see any
-mistakes you've made.
+Methods),  plus a couple in the font code (see pdcscrn.c).  Compile with
+-DNO_LEAKS,  and XIM will not be used,  and memory should be correctly freed,
+making it _much_ easier to see any mistakes you've made.
 
    Unfortunately,  without XIM,  some keyboard input will not be correctly
 translated,  and a US keyboard is assumed.  So this is for debugging only.
