@@ -47,7 +47,7 @@ int main( const int argc, const char **argv)
 {
     int ch = 0;
     SCREEN *screen_pointer;
-    int i, slk_format = 0;
+    int i, slk_format = 0, n_lines_failed = 0;
 
     for( i = 1; i < argc; i++)
         switch( argv[i][0])
@@ -55,10 +55,7 @@ int main( const int argc, const char **argv)
             case 't':    /* rip off line from top */
             case 'b':    /* rip off line from bottom */
                 if( ERR == ripoffline( (argv[i][0] == 't' ? 1 : -1), ripoff_callback))
-                {
-                    fprintf( stderr, "Only five lines can be ripped off\n");
-                    return( -1);
-                }
+                    n_lines_failed++;
                 break;
             case 's':    /* set SLK format   */
             case 'S':    /* set SLK format with index line : PDCursesMod extension */
@@ -96,6 +93,11 @@ int main( const int argc, const char **argv)
         int x = COLS / 2 - 15, y = LINES / 2 - 1;
 
         clear( );
+        if( n_lines_failed)
+            {
+            mvprintw( y++, x, "Only five lines can be ripped off.");
+            mvprintw( y++, x, "%d of the lines you requested failed.", n_lines_failed);
+            }
         mvprintw( y++, x, "stdscr has %d lines, %d columns", LINES, COLS);
 #ifdef __PDCURSESMOD__
         mvaddstr( y++, x, "Hit Escape or q or 7 to quit");
