@@ -11,32 +11,31 @@ and unfinished bits of functionality).
 Building
 --------
 
-- Run "make".  Add UTF8=Y to force the wide-character version.  Add
-  DEBUG=Y for the debug version.  Add NO_LEAKS=Y to avoid Xlib's tendency
+- Run `make`.  Add `UTF8=Y` to force the wide-character version.  Add
+  `DEBUG=Y` for the debug version.  Add `NO_LEAKS=Y` to avoid Xlib's tendency
   to leak lots of memory (this does limit you to a US keyboard;  see
-  pdckbd.c.)  Add the target "demos" to build the sample programs,
-  and/or "tests" for the test programs.
+  `pdckbd.c`.)  Add the target `demos` to build the sample programs,
+  and/or `tests` for the test programs.
 
-- Currently,  there is no "make install".
+- Currently,  there is no `make install`.
 
 Usage
 -----
 
-When compiling your application, you need to include the \<curses.h\>
+When compiling your application, you need to include the `\<curses.h\>`
 that comes with PDCursesMod. You also need to link your code with
 libXCurses. You will need to link with the following libraries:
 
-   -lX11 -lpthread
+   `-lX11 -lpthread`
 
 To do
 -----
 
-- Add mouse wheel handling
 - Combining and fullwidth characters
 - How to do SMB (Unicode > 0xffff)?
-- Under/over/strikeout/left/right lines
 - Bold & italic text
 - Respond to Ctrl-plus and Ctrl-minus with font size changes?
+- Add `make install`.
 
 Most of these shouldn't be all that tough to do.
 
@@ -48,6 +47,12 @@ underneath them will be very disappointed! Output directed to stdout
 will go to the xterm that invoked the PDCursesMod application, or to the
 console if not invoked directly from an xterm. Similarly, stdin will
 expect its input from the same place as stdout.
+
+Note that this isn't entirely a bad thing.  You can use `printf()`s for
+debugging,  secure in the knowledge that they'll go to the terminal
+and won't mess up the Curses screen.  You do have to remember to
+disable them when using the VT or WinCon or DOS ports,  or when
+building with `ncurses`.
 
 Distribution Status
 -------------------
