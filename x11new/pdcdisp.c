@@ -167,4 +167,5 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
 
 void PDC_doupdate(void)
 {
+   XSync( dis, False);
 }
