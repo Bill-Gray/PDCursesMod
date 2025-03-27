@@ -108,8 +108,10 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
         cursor_to_draw = (PDC_blink_state ? SP->visibility & 0xff : (SP->visibility >> 8));
     while( len)
     {
-       int i = 0;
+       int i = 0, j;
        PACKED_RGB bg, fg;
+       int xpix = x * PDC_font_width;
+       const int ypix = (lineno + 1) * PDC_font_height;
 
        while( i < len && !((srcp[i] ^ srcp[0]) & ~A_CHARTEXT))
           {
@@ -145,19 +147,46 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
           XSetBackground(dis, curr_gc, _reversed( bg));
           prev_bg = bg;
           }
-       XDrawImageString16( dis, win, curr_gc, x * PDC_font_width,
-                     (lineno + 1) * PDC_font_height - PDC_font_descent, string, i);
+       XDrawImageString16( dis, win, curr_gc, xpix,
+                                 ypix - PDC_font_descent, string, i);
        if( x <= SP->curscol && x + i > SP->curscol && cursor_to_draw)
           {
           const int cursor_height = PDC_font_height / (cursor_to_draw == 2 ? 1 : 4);
 
           XSetFunction( dis, curr_gc, GXinvert);
-          XFillRectangle( dis, win, curr_gc,
-                  SP->curscol * PDC_font_width,
-                  (lineno + 1) * PDC_font_height - cursor_height,
-                  PDC_font_width, cursor_height);
+          XFillRectangle( dis, win, curr_gc, SP->curscol * PDC_font_width,
+                      ypix - cursor_height, PDC_font_width, cursor_height);
           XSetFunction( dis, curr_gc, GXcopy);
           }
+       if( *srcp & (A_LEFT | A_RIGHT | A_UNDERLINE | A_TOP | A_STRIKEOUT))
+       {
+          if (SP->line_color != -1)
+          {
+             prev_fg = PDC_get_palette_entry( SP->line_color);
+             XSetForeground(dis, curr_gc, _reversed( prev_fg));
+          }
+          if( *srcp & A_UNDERLINE)
+             XDrawLine( dis, win, curr_gc, xpix, ypix - 1,
+                           xpix + len * PDC_font_width, ypix - 1);
+          if( *srcp & A_STRIKEOUT)
+             XDrawLine( dis, win, curr_gc, xpix, ypix - PDC_font_height / 2,
+                           xpix + len * PDC_font_width, ypix - PDC_font_height / 2);
+          if( *srcp & A_TOP)
+             XDrawLine( dis, win, curr_gc, xpix, ypix - PDC_font_height,
+                           xpix + len * PDC_font_width, ypix - PDC_font_height);
+          if( *srcp & (A_LEFT | A_RIGHT))
+             for( j = i; j; j--)
+             {
+                 if( *srcp & A_LEFT)
+                    XDrawLine( dis, win, curr_gc, xpix, ypix - PDC_font_height,
+                                                  xpix, ypix);
+                 xpix += PDC_font_width - 1;
+                 if( *srcp & A_RIGHT)
+                    XDrawLine( dis, win, curr_gc, xpix, ypix - PDC_font_height,
+                                                  xpix, ypix);
+                 xpix++;
+             }
+       }
        srcp += i;
        len -= i;
        x += i;
