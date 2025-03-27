@@ -290,6 +290,32 @@ static struct
  {XF86XK_Launch10,      FALSE, KEY_LAUNCH_APP10, KEY_LAUNCH_APP10, KEY_LAUNCH_APP10, KEY_LAUNCH_APP10 },
 #endif
 
+#ifdef NO_LEAKS
+            /* See comments below about advantages/drawbacks of the 'no    */
+            /* (memory) leaks' build.  Without XIM,  we use the following  */
+            /* translations,  which suit a US layout and maybe not others. */
+    {';', FALSE, ';', ':', ';', ALT_SEMICOLON   },
+    {'=', FALSE, '=', '+', '=', ALT_EQUAL       },
+    {',', FALSE, ',', '<', ',', ALT_COMMA       },
+    {'-', FALSE, '-', '_', '-', ALT_MINUS       },
+    {'.', FALSE, '.', '>', '.', ALT_STOP        },
+    {'/', FALSE, '/', '?', '/', ALT_FSLASH      },
+    {'`', FALSE, '`', '~', '`', ALT_BQUOTE      },
+    {'1', FALSE, '1', '!', '1', ALT_1           },
+    {'2', FALSE, '2', '@', '2', ALT_2           },
+    {'3', FALSE, '3', '#', '3', ALT_3           },
+    {'4', FALSE, '4', '$', '4', ALT_4           },
+    {'5', FALSE, '5', '%', '5', ALT_5           },
+    {'6', FALSE, '6', '^', '6', ALT_6           },
+    {'7', FALSE, '7', '&', '7', ALT_7           },
+    {'8', FALSE, '8', '*', '8', ALT_8           },
+    {'9', FALSE, '9', '(', '9', ALT_9           },
+    {'0', FALSE, '0', ')', '0', ALT_0           },
+    {'[', FALSE, '[', '{', '[', ALT_LBRACKET    },
+    {']', FALSE, ']', '}', ']', ALT_RBRACKET    },
+    {'\'', FALSE, '\'', '"', '\'', ALT_FQUOTE   },
+    {'\\', FALSE, '\\', '|', '\\', ALT_BSLASH   },
+#endif
  {0,            0,      0,           0,            0,           0}
 };
 
@@ -427,41 +453,41 @@ static bool check_key( int *c)
 #else                                /* non-leaky,  i.e.,  non-XIM,  method */
             key = XLookupKeysym( &report.xkey, 0);
 #endif
-            if( key > 0 && key < 0xff)
-               {
-               if( report.xkey.state & Mod1Mask)
-                   {
-                   if (key >= 'A' && key <= 'Z')
-                       key += ALT_A - 'A';
-                   else if (key >= 'a' && key <= 'z')
-                       key += ALT_A - 'a';
-                   else if (key >= '0' && key <= '9')
-                       key += ALT_0 - '0';
-                   }
-#ifdef NO_LEAKS
-               if( report.xkey.state & ControlMask)
-                   {
-                   if( key >= 'a' && key <= 'z')
-                       key -= 'a' - 1;
-                   }
-               if( report.xkey.state & ShiftMask)
-                   {
-                   const char *unshifted = "`;1234567890[]\',./=-\\", *tptr;
-                   const char *shifted   = "~:!@#$%^&*(){}\"<>?+_|";
 
-                   if( key >= 'a' && key <= 'z')
-                       key -= 'a' - 'A';
-                   else if( key > ' ' && key < 127
-                                && NULL != (tptr = strchr( unshifted, (char)key)))
-                       key = shifted[tptr - unshifted];
-                   }
+            if( key >= 'a' && key <= 'z')
+                {
+                if( report.xkey.state & Mod1Mask)
+                    key += ALT_A - 'a';
+#ifdef NO_LEAKS
+                else if( report.xkey.state & ControlMask)
+                    key -= 'a' - 1;
+                else if( report.xkey.state & ShiftMask)
+                    key -= 'a' - 'A';
 #endif
-               if( key == 3 && !SP->raw_inp)
-                   exit( 0);
-               key_to_add = (int)key;
-               }
+                key_to_add = key;
+                }
+            else if( key >= 'A' && key <= 'Z')
+                {
+                if( report.xkey.state & Mod1Mask)
+                    key += ALT_A - 'A';
+#ifdef NO_LEAKS
+                else if( report.xkey.state & ControlMask)
+                    key -= 'A' - 1;
+                else if( report.xkey.state & ShiftMask)
+                    key += 'a' - 'A';
+#endif
+                key_to_add = key;
+                }
             else if( key >= XK_BackSpace && key <= XK_Escape)
                key_to_add = (int)( key & 0xff);
+#ifdef NO_LEAKS
+            else if( key > 0 && key < ' ')
+#else
+            else if( key >= '0' && key <= '9' && (report.xkey.state & Mod1Mask))
+               key_to_add = key + ALT_0 - '0';
+            else if( key > 0 && key < 0xff)
+#endif
+               key_to_add = key;
             else for( i = 0; (size_t)i < sizeof( key_table) / sizeof( key_table[0]); i++)
                if( key_table[i].keycode == key)
                   {
