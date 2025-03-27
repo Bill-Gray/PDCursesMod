@@ -446,8 +446,8 @@ static bool check_key( int *c)
                    }
                if( report.xkey.state & ShiftMask)
                    {
-                   const char *unshifted = "1234567890[]\',./=-\\", *tptr;
-                   const char *shifted   = "!@#$%^&*(){}\"<>?+_|";
+                   const char *unshifted = "`;1234567890[]\',./=-\\", *tptr;
+                   const char *shifted   = "~:!@#$%^&*(){}\"<>?+_|";
 
                    if( key >= 'a' && key <= 'z')
                        key -= 'a' - 'A';
@@ -505,14 +505,28 @@ static bool check_key( int *c)
          case ButtonRelease:
             {
             const int button_idx = report.xbutton.button - 1;
+            const int modifiers = xlate_mouse_mask( report.xkey.state);
+            size_t i;
 
             if( !ongoing_mouse_event)
+               {
                memset( &SP->mouse_status, 0, sizeof( MOUSE_STATUS));
-            ongoing_mouse_event = true;
-            if( button_idx >=0 && button_idx < PDC_MAX_MOUSE_BUTTONS)
+               for( i = 0; i < 7; i++)
+                  SP->mouse_status.button[i] = modifiers;
+               }
+            if( button_idx >= 3 && button_idx < 7)
+               {     /* mouse wheel up, down, left, right */
+               SP->mouse_status.changes = (4 << button_idx);
+               SP->mouse_status.button[button_idx] = BUTTON_PRESSED | modifiers;
+               if( report.type == ButtonPress)
+                  add_to_queue( KEY_MOUSE);
+               ongoing_mouse_event = false;
+               }
+            if( button_idx >= 0 && button_idx < 3)
                {
                int state = SP->mouse_status.button[button_idx] & BUTTON_ACTION_MASK;
 
+               ongoing_mouse_event = true;
                if( report.type == ButtonPress)
                   switch( state)
                      {
@@ -548,9 +562,9 @@ static bool check_key( int *c)
                      default:
                         break;
                      }
-               SP->mouse_status.button[button_idx] = state | xlate_mouse_mask( report.xkey.state);
+               SP->mouse_status.button[button_idx] = state | modifiers;
+               SP->mouse_status.changes = (1 << button_idx);
                }
-            SP->mouse_status.changes = (1 << button_idx);
             SP->mouse_status.x = report.xbutton.x / PDC_font_width;
             SP->mouse_status.y = report.xbutton.y / PDC_font_height;
             }
