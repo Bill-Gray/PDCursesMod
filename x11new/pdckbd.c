@@ -481,7 +481,7 @@ static bool check_key( int *c)
             else if( key >= XK_BackSpace && key <= XK_Escape)
                key_to_add = (int)( key & 0xff);
 #ifdef NO_LEAKS
-            else if( key > 0 && key < ' ')
+            else if( key > 0 && key <= ' ')
 #else
             else if( key >= '0' && key <= '9' && (report.xkey.state & Mod1Mask))
                key_to_add = key + ALT_0 - '0';
