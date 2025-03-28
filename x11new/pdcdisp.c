@@ -46,7 +46,7 @@ void PDC_check_for_blinking( void)
             if( c[x1] & A_BLINK)
             {
                x2 = x1 + 1;
-               while( x2 < SP->cols && c[x2] & A_BLINK)
+               while( x2 < SP->cols && (c[x2] & A_BLINK) && x2 - x1 < MAX_PACKET_LEN - 1)
                   x2++;
                PDC_transform_line( y, x1, x2 - x1, c + x1);
                x1 = x2;
