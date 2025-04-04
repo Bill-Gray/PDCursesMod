@@ -505,6 +505,9 @@ static bool check_key( int *c)
                   }
             if( key_to_add > -1)
                {
+               if( key_to_add == PDC_get_function_key( FUNCTION_KEY_ABORT)
+                        || (key_to_add == 3 && !SP->raw_inp))
+                  raise( SIGINT);
                add_to_queue( key_to_add);
                SP->key_modifiers = 0;
                if( report.xkey.state & Mod2Mask)
