@@ -5,16 +5,16 @@ menudir = $(HOME)/ncurses-6.5/menu
 formdir = $(HOME)/ncurses-6.5/form
 
 NCURSES_TESTS	= back_ground$(E) background$(E) blue$(E) \
-bs$(E) cardfile$(E) chgat$(E) clip_printw$(E) color_content$(E) \
-color_set$(E) demo_altkeys$(E) demo_defkey$(E) demo_forms$(E) \
+bs$(E)  chgat$(E) clip_printw$(E) color_content$(E) \
+color_set$(E) demo_altkeys$(E) demo_defkey$(E)  \
 demo_keyok$(E) demo_menus$(E) demo_new_pair$(E)  \
 demo_panels$(E) demo_termcap$(E) demo_terminfo$(E) ditto$(E) \
 dots$(E) dots_curses$(E) dots_mvcur$(E) dots_termcap$(E) \
-dots_xcurses$(E) dup_field$(E) echochar$(E)  extended_color$(E) \
-filter$(E) firstlast$(E) foldkeys$(E) form_driver_w$(E) gdc$(E) \
+dots_xcurses$(E)  echochar$(E)  extended_color$(E) \
+filter$(E) firstlast$(E) foldkeys$(E) gdc$(E) \
 hanoi$(E) hashtest$(E) inchs$(E) inch_wide$(E) insdelln$(E) \
 inserts$(E) ins_wide$(E) key_names$(E) keynames$(E) knight$(E) \
-list_keys$(E) lrtest$(E) move_field$(E) \
+list_keys$(E) lrtest$(E)  \
 movewindow$(E) newdemo$(E) padview$(E) pair_content$(E) \
 picsmap$(E) railroad$(E) redraw$(E) savescreen$(E) sp_tinfo$(E) \
 tclock$(E) testaddch$(E) test_addchstr$(E) test_addstr$(E) \
@@ -22,6 +22,11 @@ test_add_wchstr$(E) test_addwstr$(E) test_arrays$(E) \
 test_delwin$(E) test_getstr$(E) test_get_wstr$(E) test_instr$(E) \
 test_opaque$(E) testscanw$(E) test_setupterm$(E) test_sgr$(E) test_termattrs$(E) \
 test_tparm$(E) test_vid_puts$(E) test_vidputs$(E) view$(E)
+
+ifneq ($(WIDE),Y)
+NCURSES_TESTS += cardfile$(E) demo_forms$(E) dup_field$(E) form_driver_w$(E) \
+move_field$(E)
+endif
 
 MENUOBJS = m_attribs.$(O) m_cursor.$(O) m_driver.$(O) m_format.$(O)  \
 	m_global.$(O) m_hook.$(O) m_item_cur.$(O) m_item_nam.$(O) m_item_new.$(O) \
@@ -203,8 +208,8 @@ lrtest$(E): $(ncurses_testdir)/lrtest.c
 move_field$(E): $(ncurses_testdir)/move_field.c $(ncurses_testdir)/edit_field.c $(ncurses_testdir)/popup_msg.c $(LIBFORM)
 	$(BUILD) $(NCFLAGS) -o $@ $^ $(LDFLAGS)
 
-movewindow$(E): $(ncurses_testdir)/movewindow.c
-	$(BUILD) $(NCFLAGS) -o $@ $< $(LDFLAGS)
+movewindow$(E): $(ncurses_testdir)/movewindow.c $(ncurses_testdir)/popup_msg.c
+	$(BUILD) $(NCFLAGS) -o $@ $^ $(LDFLAGS)
 
 ncurses$(E): $(ncurses_testdir)/ncurses.c $(ncurses_testdir)/popup_msg.c $(LIBFORM) $(LIBMENU)
 	$(BUILD) $(NCFLAGS) -o $@ $^ $(LDFLAGS) $(LIBFORM) $(LIBMENU)
