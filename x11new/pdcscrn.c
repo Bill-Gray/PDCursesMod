@@ -13,11 +13,11 @@ static int initial_PDC_rows, initial_PDC_cols;
 static XSizeHints *xshSize;
 static XWMHints *xwmhHints;
 static XClassHint *xchClass;
+static Font font;
 
 Display *dis;
 Window win;
 GC curr_gc;
-Font font;
 int PDC_rows = -1, PDC_cols = -1;
 int PDC_font_width, PDC_font_height, PDC_font_descent;
 
