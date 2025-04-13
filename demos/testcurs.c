@@ -613,7 +613,7 @@ void inputTest(WINDOW *win)
     mvwaddstr(win, 6, 2, "Enter a number then a string separated by space");
     mvwin(win, 2, 1);
     wrefresh(win);
-    mvwscanw(win, 7, 6, "%d %s", &num, buffer);
+    mvwscanw(win, 7, 6, "%d %79s", &num, buffer);
     mvwprintw(win, 8, 6, "String: %s Number: %d", buffer, num);
     Continue(win);
 
@@ -743,11 +743,11 @@ void outputTest(WINDOW *win)
     mvwaddstr(win, 10, 1, "Enter a string: ");
     wrefresh(win);
     echo();
-    wscanw(win, "%s", Buffer);
+    wscanw(win, "%79s", Buffer);
 
     printw("This is a formatted string in stdscr: %d %s\n", 42, "is it");
     mvaddstr(10, 1, "Enter a string: ");
-    scanw("%s", Buffer);
+    scanw("%79s", Buffer);
 
     wclear(win);
     curs_set(2);
