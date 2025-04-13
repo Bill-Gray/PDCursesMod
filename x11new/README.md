@@ -50,8 +50,9 @@ expect its input from the same place as stdout.
 
 Note that this isn't entirely a bad thing.  You can use `printf()`s for
 debugging,  secure in the knowledge that they'll go to the terminal
-and won't mess up the Curses screen.  You do have to remember to
-disable them when using the VT or WinCon or DOS ports,  or when
+and won't mess up the Curses screen.  You can do this for the X11
+ports and GL, SDL1/2,  WinGUI,  and the OS/2 GUI ports.  You can't
+with the other ports (they all do have terminals under them) or when
 building with `ncurses`.
 
 Distribution Status
