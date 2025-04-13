@@ -93,7 +93,7 @@ endif
 BUILD		= $(CC) $(CFLAGS) -I$(PDCURSES_SRCDIR)
 
 LINK		= $(CC)
-LDFLAGS		= $(LIBCURSES)
+LDFLAGS		= $(LIBCURSES) $(XLIBS)
 RANLIB		= $(PREFIX)ranlib
 
 .PHONY: all libs clean demos tests
@@ -135,13 +135,13 @@ $(PDCOBJS) : %.o: $(osdir)/%.c
 	$(BUILD) $(SFLAGS) -c $<
 
 $(DEMOS_EXCEPT_TUIDEMO): %: $(demodir)/%.c
-	$(BUILD) $(DEMOFLAGS) -o$@ $< $(LDFLAGS) $(XLIBS)
+	$(BUILD) $(DEMOFLAGS) -o$@ $< $(LDFLAGS)
 
 $(TESTS): %: $(testdir)/%.c
-	$(BUILD) $(DEMOFLAGS) -o$@ $< $(LDFLAGS) $(XLIBS)
+	$(BUILD) $(DEMOFLAGS) -o$@ $< $(LDFLAGS)
 
 tuidemo$(E) : tuidemo.o tui.o
-	$(LINK) tui.o tuidemo.o -o $@ $(LDFLAGS) $(XLIBS)
+	$(LINK) tui.o tuidemo.o -o $@ $(LDFLAGS)
 
 tui.o: $(demodir)/tui.c $(demodir)/tui.h
 	$(BUILD) -c $(DEMOFLAGS) $(demodir)/tui.c
