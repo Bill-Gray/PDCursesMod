@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -288,10 +289,17 @@ static const xlate_t xlates[] =  {
              { KEY_NPAGE,  0,        "[6~"     },
              { KEY_HOME,   0,        "[7~"     },    /* rxvt */
              { KEY_END,    0,        "[8~"     },    /* rxvt */
+#ifdef __HAIKU__
+             { KEY_UP,     0,        "OA"      },
+             { KEY_DOWN,   0,        "OB"      },
+             { KEY_RIGHT,  0,        "OC"      },
+             { KEY_LEFT,   0,        "OD"      },
+#else
              { KEY_UP,     0,        "[A"      },
              { KEY_DOWN,   0,        "[B"      },
              { KEY_RIGHT,  0,        "[C"      },
              { KEY_LEFT,   0,        "[D"      },
+#endif
              { KEY_B2,     0,        "[E"      },
              { KEY_END,    0,        "[F"      },
              { KEY_HOME,   0,        "[H"      },
@@ -504,10 +512,21 @@ int PDC_get_key( void)
                assert( n_bytes == count - 2);
                release = (c[count] == 'm');
                button = idx & 3;
+#ifdef __HAIKU__
+               if( !release)
+                  {
+                  if( button == 3 || (held >> button) & 1)
+                     idx |= 0x40;         /* it's actually a mouse movement */
+                  }
+               else if( button < 3)
+                  held &= ~(1 << button);
+               idx &= ~0x20;
+#else
                if( idx & 0x40)            /* (SGR) wheel mouse event; */
                   idx |= 0x20;            /* requires this bit set in 'traditional' encoding */
                else if( idx & 0x20)       /* (SGR) mouse move event sets a different bit */
                   idx ^= 0x60;            /* in the traditional encoding */
+#endif
                x--;
                y--;
                }
