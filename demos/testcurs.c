@@ -108,8 +108,86 @@ COMMAND command[MAX_OPTIONS] =
 };
 
 int width, height;
-static bool report_mouse_movement = FALSE;
+static mmask_t test_mouse_mask = ALL_MOUSE_EVENTS;
 static SCREEN *screen_pointer;
+
+static mmask_t parse_mouse_mask( const char *str)
+{
+   test_mouse_mask = 0;
+   while( *str)
+      {
+      const mmask_t *event_ptr = NULL;
+      const mmask_t pressed[5] = { BUTTON1_PRESSED, BUTTON2_PRESSED,
+                  BUTTON3_PRESSED, BUTTON4_PRESSED, BUTTON5_PRESSED };
+      const mmask_t released[5] = { BUTTON1_RELEASED, BUTTON2_RELEASED,
+                  BUTTON3_RELEASED, BUTTON4_RELEASED, BUTTON5_RELEASED };
+      const mmask_t clicked[5] = { BUTTON1_CLICKED, BUTTON2_CLICKED,
+                  BUTTON3_CLICKED, BUTTON4_CLICKED, BUTTON5_CLICKED };
+      const mmask_t dblclk[5] = { BUTTON1_DOUBLE_CLICKED, BUTTON2_DOUBLE_CLICKED,
+                  BUTTON3_DOUBLE_CLICKED, BUTTON4_DOUBLE_CLICKED, BUTTON5_DOUBLE_CLICKED };
+      const mmask_t triclk[5] = { BUTTON1_TRIPLE_CLICKED, BUTTON2_TRIPLE_CLICKED,
+                  BUTTON3_TRIPLE_CLICKED, BUTTON4_TRIPLE_CLICKED, BUTTON5_TRIPLE_CLICKED };
+#ifdef BUTTON1_MOVED
+      const mmask_t moved[5] = { BUTTON1_MOVED, BUTTON2_MOVED,
+                  BUTTON3_MOVED, BUTTON4_MOVED, BUTTON5_MOVED };
+#endif
+
+      switch( *str)
+         {
+         case 'p':
+            event_ptr = pressed;
+            break;
+         case 'r':
+            event_ptr = released;
+            break;
+         case 'c':
+            event_ptr = clicked;
+            break;
+         case 'd':
+            event_ptr = dblclk;
+            break;
+         case 't':
+            event_ptr = triclk;
+            break;
+#ifdef BUTTON1_MOVED
+         case 'm':
+            event_ptr = moved;
+            break;
+#endif
+#ifdef MOUSE_WHEEL_SCROLL
+         case 'w':
+            test_mouse_mask |= MOUSE_WHEEL_SCROLL;
+            break;
+#endif
+#ifdef BUTTON_MODIFIER_SHIFT
+         case 's':
+            test_mouse_mask |= BUTTON_MODIFIER_SHIFT;
+            break;
+#endif
+#ifdef BUTTON_MODIFIER_CONTROL
+         case 'x':
+            test_mouse_mask |= BUTTON_MODIFIER_CONTROL;
+            break;
+#endif
+#ifdef BUTTON_MODIFIER_ALT
+         case 'a':
+            test_mouse_mask |= BUTTON_MODIFIER_ALT;
+            break;
+#endif
+         case 'M':
+            test_mouse_mask |= REPORT_MOUSE_POSITION;
+            break;
+         case '0':
+            mouseinterval( 0);
+            break;
+         }
+      str++;
+      if( event_ptr)
+         while( *str >= '1' && *str <= '5')
+            test_mouse_mask |= event_ptr[*str++ - '1'];
+      }
+   return test_mouse_mask;
+}
 
 int main(int argc, char *argv[])
 {
@@ -161,7 +239,10 @@ int main(int argc, char *argv[])
 #endif
 #endif
                 case 'z':
-                    report_mouse_movement = TRUE;
+                    if( !argv[i][2])
+                       test_mouse_mask = ALL_MOUSE_EVENTS | REPORT_MOUSE_POSITION;
+                    else
+                       test_mouse_mask = parse_mouse_mask( argv[i] + 2);
                     break;
                 default:
                     break;
@@ -425,8 +506,7 @@ void inputTest(WINDOW *win)
     wtimeout(win, 200);
 
 #ifdef PDCURSES
-    mouse_set( ALL_MOUSE_EVENTS |
-            (report_mouse_movement ? REPORT_MOUSE_POSITION : 0));
+    mouse_set( test_mouse_mask);
 #endif
     curs_set(0);        /* turn cursor off */
 
