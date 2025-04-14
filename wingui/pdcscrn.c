@@ -1667,6 +1667,8 @@ static void add_mouse_event_to_queue( const int button, const int action,
 has been;  two if pressed/released (clicked);  three if clicked and
 pressed again... all the way up to six if it's been triple-clicked. */
 
+#define BUTTON_N_CLICKED(N)   PDC_SHIFTED_BUTTON( BUTTON1_CLICKED, (N))
+
 static int add_mouse( int button, const int action, const int x, const int y)
 {
    bool flush_events_to_queue = (button == -1 || action == BUTTON_MOVED);
@@ -1694,6 +1696,10 @@ static int add_mouse( int button, const int action, const int x, const int y)
    {
       mouse_state |= (1 << button);
       button_count[button - 1]++;
+      if( !SP->mouse_wait)
+         flush_events_to_queue = TRUE;
+      if( !(SP->_trap_mbe & BUTTON_N_CLICKED( button)))
+         flush_events_to_queue = TRUE;
    }
    if( button >= 0)
    {
