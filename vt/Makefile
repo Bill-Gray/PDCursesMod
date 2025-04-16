@@ -144,10 +144,10 @@ $(LIBOBJS) : %.o: $(srcdir)/%.c
 $(PDCOBJS) : %.o: $(osdir)/%.c
 	$(BUILD) $(SFLAGS) -c $<
 
-$(DEMOS_EXCEPT_TUIDEMO): %: $(demodir)/%.c
+$(DEMOS_EXCEPT_TUIDEMO): %$(E): $(demodir)/%.c
 	$(BUILD) $(DEMOFLAGS) -o$@ $< $(LDFLAGS)
 
-$(TESTS): %: $(testdir)/%.c
+$(TESTS): %$(E): $(testdir)/%.c
 	$(BUILD) $(DEMOFLAGS) -o$@ $< $(LDFLAGS)
 
 tuidemo$(E) : tuidemo.o tui.o
