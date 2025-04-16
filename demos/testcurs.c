@@ -10,6 +10,16 @@
 # define _XOPEN_SOURCE_EXTENDED 1
 #endif
 
+/* Uncomment the following #define to test the 'classic' (undocumented
+SysV) mouse functions in inputTest.  Otherwise,  the ncurses mouse
+interface will be used.       */
+
+/* #define CLASSIC_MOUSE_INTERFACE  */
+
+#if !defined( CLASSIC_MOUSE_INTERFACE)
+   #define PDC_NCMOUSE
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -465,6 +475,9 @@ void inputTest(WINDOW *win)
     static const char spinner[5] = "/-\\|";
     int spinner_count = 0;
     int line = 3;
+#ifndef CLASSIC_MOUSE_INTERFACE
+    int mouse_buttons_held = 0;
+#endif
 
     wclear(win);
 
@@ -505,8 +518,14 @@ void inputTest(WINDOW *win)
 
     wtimeout(win, 200);
 
-#ifdef PDCURSES
+#ifdef CLASSIC_MOUSE_INTERFACE
     mouse_set( test_mouse_mask);
+#else
+    mousemask( test_mouse_mask, NULL);
+#endif
+#ifdef NCURSES_VERSION
+    if( test_mouse_mask & REPORT_MOUSE_POSITION)
+      printf( "\x1b\x5b?1003h\n");        /* command string to enable mouse movement */
 #endif
     curs_set(0);        /* turn cursor off */
 
@@ -551,7 +570,7 @@ void inputTest(WINDOW *win)
             waddch( win, c);
         else
             wprintw(win, "%s", unctrl(c));
-#ifdef PDCURSES
+#ifdef CLASSIC_MOUSE_INTERFACE
         if (c == KEY_MOUSE)
         {
             int button = 0;
@@ -625,6 +644,59 @@ void inputTest(WINDOW *win)
             if (PDC_get_key_modifiers() & PDC_KEY_MODIFIER_NUMLOCK)
                 waddstr(win, " NUMLOCK");
         }
+#else             /* ncurses mouse handling */
+        if (c == KEY_MOUSE)
+        {
+            MEVENT mevent;
+
+            wmove(win, line, 5);
+            wclrtoeol(win);
+            if( OK == getmouse( &mevent))
+            {
+                const mmask_t events[] = { BUTTON1_PRESSED, BUTTON1_RELEASED,
+                        BUTTON1_CLICKED, BUTTON1_DOUBLE_CLICKED, BUTTON1_TRIPLE_CLICKED,
+                        BUTTON2_PRESSED, BUTTON2_RELEASED, BUTTON2_CLICKED,
+                         BUTTON2_DOUBLE_CLICKED, BUTTON2_TRIPLE_CLICKED,
+                        BUTTON3_PRESSED, BUTTON3_RELEASED, BUTTON3_CLICKED,
+                         BUTTON3_DOUBLE_CLICKED, BUTTON3_TRIPLE_CLICKED,
+                        BUTTON4_PRESSED, BUTTON4_RELEASED, BUTTON4_CLICKED,
+                         BUTTON4_DOUBLE_CLICKED, BUTTON4_TRIPLE_CLICKED,
+                        BUTTON5_PRESSED, BUTTON5_RELEASED, BUTTON5_CLICKED,
+                         BUTTON5_DOUBLE_CLICKED, BUTTON5_TRIPLE_CLICKED,
+#ifdef BUTTON_CTRL
+                  BUTTON_CTRL,
+#else
+                  BUTTON_CONTROL,
+#endif
+                        BUTTON_SHIFT, BUTTON_ALT };
+
+                for( i = 0; (size_t)i < sizeof( events) / sizeof( events[0]); i++)
+                    if( mevent.bstate & events[i])
+                    {
+                        const char *text[8] = { "pressed", "released", "clicked",
+                               "dblclick", "triple-click", "Ctrl", "Shift", "Alt" };
+
+                        if( i < 25)
+                           wprintw( win, "button %d %s", i / 5 + 1, text[i % 5]);
+                        else
+                           wprintw( win, "  %s", text[i - 20]);
+                        if( i % 5 == 0)    /* button pressed */
+                           mouse_buttons_held |= (1 << (i / 5));
+                        if( i % 5 == 1)    /* button released */
+                           mouse_buttons_held &= ~(1 << (i / 5));
+                    }
+                if( mevent.bstate & REPORT_MOUSE_POSITION)
+                {
+                    wprintw( win, "moved");
+                    for( i = 0; i < 5; i++)
+                        if( (mouse_buttons_held >> i) & 1)
+                            wprintw( win, "  Button %d", i + 1);
+                }
+                wprintw(win, "  Posn: Y: %d X: %d", mevent.y, mevent.x);
+            }
+            else
+                wprintw( win, "  ? getmouse failed ?");
+        }
 #endif
         wrefresh(win);
         line++;
@@ -636,9 +708,15 @@ void inputTest(WINDOW *win)
     wtimeout(win, -1);  /* turn off timeout() */
     curs_set(1);        /* turn cursor back on */
 
-#ifdef PDCURSES
+#ifdef CLASSIC_MOUSE_INTERFACE
     mouse_set(0L);
     PDC_return_key_modifiers(FALSE);
+#else
+    mousemask( (mmask_t)0, NULL);
+#endif
+#ifdef NCURSES_VERSION
+    if( test_mouse_mask & REPORT_MOUSE_POSITION)
+      printf( "\x1b\x5b?1003l\n");        /* disables mouse movement reports */
 #endif
     wclear(win);
     if( c == 1)
