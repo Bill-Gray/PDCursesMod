@@ -97,6 +97,7 @@ const char *PDC_sysname(void);
 
 /* Internal cross-module functions */
 
+void   *PDC_realloc_array( void *ptr, const size_t nmemb, const size_t size);
 int     PDC_init_atrtab(void);
 void    PDC_free_atrtab(void);
 WINDOW *PDC_makelines(WINDOW *);
@@ -263,6 +264,7 @@ struct _screen
     unsigned trace_flags;
     bool want_trace_fflush;
     FILE *output_fd, *input_fd;
+    struct _port_info *pinfo;
 };
 
 PDCEX  SCREEN       *SP;          /* curses variables */

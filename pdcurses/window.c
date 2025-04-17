@@ -239,7 +239,7 @@ exists for all platforms,  and always frees the pointer and returns NULL for a
 zero-byte allocation.  realloc() does this on most platforms, but not FreeBSD,
 and it's not guaranteed in the C specifications. */
 
-static void *PDC_realloc_array( void *ptr, const size_t nmemb, const size_t size)
+void *PDC_realloc_array( void *ptr, const size_t nmemb, const size_t size)
 {
     if( !nmemb || !size)
     {
