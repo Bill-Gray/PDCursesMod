@@ -1799,6 +1799,8 @@ void gradient(int tmarg)
     curs_set(1);
 
     attrset(A_NORMAL);
+    if( cnum >= COLORS || pnum >= COLOR_PAIRS)
+       mvaddstr(tmarg + 18, 3, "RAN OUT OF COLORS");
     mvaddstr(tmarg + 19, 3, "Press any key to continue");
     curTest();
 }
