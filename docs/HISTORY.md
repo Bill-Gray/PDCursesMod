@@ -1,6 +1,52 @@
 Generally speaking,  this history mentions only the more significant
 changes.  See the git log for full details.
 
+Current version - 2025 Apr 18
+=============================
+
+Major new features
+------------------
+
+- Added an 'x11new' port : X11 written from scratch to require fewer
+  dependencies and to allow a memory-leakage-free build.
+
+Minor new features
+------------------
+
+- Framebuffer/DRM : simplified specifying which display to use.  If you
+  have suitable permissions,  Alt-= will cycle through displays.
+  db3cbb7b0e
+
+- `testcurs` now allows one to specify mouse mask parameters more precisely,
+  and/or to set a zero mouse interval (which should result in clicks being
+  converted to presses and releases).  Also,  can test using the ncurses
+  mouse interface instead of the 'classic' undocumented SysV mouse interface.
+  de6c742b4a   7a520f6261
+
+- VT port now works on Haiku.   e8f098d6de
+
+Bug fixes
+---------
+
+- Framebuffer/DRM port cursor didn't rotate when you rotated the screen.
+  f3188affb9
+
+- When restarting Curses,  the foreground/background weren't stored,
+  resulting in odd colors.  433dbfb1d7
+
+- The ncurses forms library does not build correctly for wide characters.
+  Until it's fixed,  it and the tests relying on it are only built in
+  narrow-character (8-bit) mode.     0f3125393c
+
+- Fixed possible read-outside-bounds error in UTF8 conversion.  5a6170982e
+
+- `testcurs` called scanw() with a "plain" %s format specifier.  The lack of
+  a width left it open to buffer overflow if more than 79 bytes were entered.
+  8bf383a7b5
+
+- VT build failed when using GNU make to cross-compile demos and tests for
+  Windows using MinGW.  d391921be0
+
 PDCursesMod 4.5.0 - 2024 Dec 31
 =================================
 
