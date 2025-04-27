@@ -258,6 +258,8 @@ struct _screen
     int first_col;
     int blink_state;
     bool default_colors;
+    int default_foreground_idx;     /* defaults to COLOR_WHITE */
+    int default_background_idx;     /* defaults to COLOR_BLACK */
     hash_idx_t *pair_hash_tbl;
     int pair_hash_tbl_size, pair_hash_tbl_used;
     int n_windows, off_screen_windows;
