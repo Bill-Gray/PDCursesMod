@@ -316,7 +316,7 @@ PDC_set_line_color() is called (and changes the way in which text
 with those attributes is drawn),  the corresponding text should be
 redrawn.    */
 
-void PDC_set_cells_to_refresh_for_attr_change( const attr_t attr)
+static void _set_cells_to_refresh_for_attr_change( const chtype attr)
 {
     int x, y;
 
@@ -534,8 +534,8 @@ int PDC_set_line_color(short color)
     if( SP->line_color != color)
     {
         SP->line_color = color;
-        PDC_set_cells_to_refresh_for_attr_change(
-               WA_TOP | WA_UNDERLINE | WA_LEFT | WA_RIGHT | WA_STRIKEOUT);
+        _set_cells_to_refresh_for_attr_change(
+               A_TOP | A_UNDERLINE | A_LEFT | A_RIGHT | A_STRIKEOUT);
     }
     return OK;
 }
