@@ -1602,7 +1602,7 @@ static void HandleTimer( void )
 {
     int i;           /* see WndProc() notes */
 
-    PDC_blink_state ^= 1;
+    SP->blink_state ^= 1;
     for( i = 0; i < SP->lines; i++)
     {
         if( curscr->_y[i])

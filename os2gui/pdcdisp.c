@@ -96,7 +96,7 @@ box) in place of any visible cursor.  */
 
 static int PDC_current_cursor_state( void)
 {
-    const int shift_amount = (PDC_blink_state ? 0 : 8);
+    const int shift_amount = (SP->blink_state ? 0 : 8);
     const int cursor_style_for_unfocussed_window =
                PDC_CURSOR( PDC_CURSOR_OUTLINE, PDC_CURSOR_OUTLINE);
     int cursor_style;

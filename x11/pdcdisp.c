@@ -139,7 +139,7 @@ void PDC_blink_text(XtPointer unused, XtIntervalId *id)
     INTENTIONALLY_UNUSED_PARAMETER( id);
     PDC_LOG(("PDC_blink_text() - called:\n"));
 
-    PDC_blink_state = pdc_blinked_off = !pdc_blinked_off;
+    SP->blink_state = pdc_blinked_off = !pdc_blinked_off;
 
     /* Redraw changed lines on the screen to match the blink state */
 

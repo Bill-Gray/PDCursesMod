@@ -19,12 +19,10 @@
 #include "../common/acs_defs.h"
 #include "../common/pdccolor.h"
 
-extern int PDC_blink_state;
-
 /* Blinking of text and the cursor in this port has to be handled a
 little strangely.  "When possible",  we check to see if blink_interval
 milliseconds (currently set to 0.5 seconds) has elapsed since the
-blinking text was drawn.  If it has,  we flip the PDC_blink_state
+blinking text was drawn.  If it has,  we flip the SP->blink_state
 bit and redraw all blinking text and the cursor.
 
 Currently,  "when possible" is in PDC_napms( ) and in check_key( )
@@ -43,7 +41,7 @@ void PDC_check_for_blinking( void)
       int x1, y, x2;
 
       prev_time = t;
-      PDC_blink_state ^= 1;
+      SP->blink_state ^= 1;
       for( y = 0; y < SP->lines; y++)
       {
          chtype *c = curscr->_y[y];
@@ -339,7 +337,7 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
     assert( len > 0);
     if( lineno == SP->cursrow && x <= SP->curscol && x + len > SP->curscol)
     {
-        cursor_to_draw = (PDC_blink_state ? SP->visibility & 0xff : (SP->visibility >> 8));
+        cursor_to_draw = (SP->blink_state ? SP->visibility & 0xff : (SP->visibility >> 8));
         if( cursor_to_draw)   /* if there's a cursor appearing in this run of text... */
         {
             if( x < SP->curscol)  /* ...draw the part _before_ the cursor (if any)... */
@@ -440,7 +438,7 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
                 if( !(SP->termattrs & A_BLINK))   /* convert 'blinking' to 'bold' */
                     intensify_backgnd = TRUE;
 #endif
-                if( PDC_blink_state)
+                if( SP->blink_state)
                     reverse_colors ^= 1;
             }
             if( reverse_colors)

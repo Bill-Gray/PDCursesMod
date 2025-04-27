@@ -256,6 +256,7 @@ struct _screen
     struct _pdc_pair *pairs;
     int pairs_allocated;
     int first_col;
+    int blink_state;
     bool default_colors;
     hash_idx_t *pair_hash_tbl;
     int pair_hash_tbl_size, pair_hash_tbl_used;

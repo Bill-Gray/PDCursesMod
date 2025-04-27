@@ -1493,7 +1493,7 @@ static void HandleTimer( const WPARAM wParam )
     int i;           /* see WndProc() notes */
 
     INTENTIONALLY_UNUSED_PARAMETER( wParam);
-    PDC_blink_state ^= 1;
+    SP->blink_state ^= 1;
     if( SP->termattrs & A_BLINK)
     {
         for( i = 0; i < SP->lines; i++)

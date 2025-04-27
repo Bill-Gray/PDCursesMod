@@ -18,8 +18,6 @@ See 'pdccolor.txt' for a rationale of how this works. */
 #include <curspriv.h>
 #include "pdccolor.h"
 
-int PDC_blink_state = 0;
-
 static PACKED_RGB *rgbs;   /* the 'standard' 256-color palette,  plus any allocated */
 static int _palette_size;
 
@@ -190,7 +188,7 @@ void PDC_get_rgb_values( const chtype srcp,
     {
         if( !(SP->termattrs & A_BLINK))   /* convert 'blinking' to 'bold' */
             intensify_backgnd = TRUE;
-        else if( PDC_blink_state)
+        else if( SP->blink_state)
             reverse_colors ^= 1;
     }
     if( default_foreground)

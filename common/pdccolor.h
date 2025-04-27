@@ -1,7 +1,6 @@
 #ifndef PDCCOLOR_H
 
 #define PDCCOLOR_H
-extern int PDC_blink_state;
 
 typedef uint32_t PACKED_RGB;
 
