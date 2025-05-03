@@ -1,6 +1,6 @@
 name: Build
 
-on: [push, pull_request]
+on: [push, pull_request, workflow_dispatch]
 
 jobs:
   buildUbuntu:
@@ -26,7 +26,7 @@ jobs:
          make CLANG=Y demos
 
   buildWindows:
-    runs-on: windows-2022
+    runs-on: windows-latest
 
     steps:
     - uses: actions/checkout@master
@@ -40,3 +40,76 @@ jobs:
         cd ..\vt
         nmake CHTYPE_32=Y -f Makefile.vc demos
       shell: cmd
+
+  XbuildWindows:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: VT_W32,          arch: _w32, ENV: vt,     UTF8: N, PREFIX: i686-w64-mingw32 }
+          - { name: WINCON_W32,      arch: _w32, ENV: wincon, UTF8: N, PREFIX: i686-w64-mingw32 }
+          - { name: WINGUI_W32,      arch: _w32, ENV: wingui, UTF8: N, PREFIX: i686-w64-mingw32 }
+          - { name: SDL2_W32,        arch: _w32, ENV: sdl2,   UTF8: N, PREFIX: i686-w64-mingw32 }
+          - { name: VT_W64,          arch: _w64, ENV: vt,     UTF8: N, PREFIX: x86_64-w64-mingw32 }
+          - { name: WINCON_W64,      arch: _w64, ENV: wincon, UTF8: N, PREFIX: x86_64-w64-mingw32 }
+          - { name: WINGUI_W64,      arch: _w64, ENV: wingui, UTF8: N, PREFIX: x86_64-w64-mingw32 }
+          - { name: SDL2_W64,        arch: _w64, ENV: sdl2,   UTF8: N, PREFIX: x86_64-w64-mingw32 }
+          - { name: VT_WoA,          arch: _a64, ENV: vt,     UTF8: N, PREFIX: aarch64-w64-mingw32 }
+          - { name: WINCON_WoA,      arch: _a64, ENV: wincon, UTF8: N, PREFIX: aarch64-w64-mingw32 }
+          - { name: WINGUI_WoA,      arch: _a64, ENV: wingui, UTF8: N, PREFIX: aarch64-w64-mingw32 }
+          - { name: VT_W32_UTF8,     arch: _w32, ENV: vt,     UTF8: Y, PREFIX: i686-w64-mingw32 }
+          - { name: WINCON_W32_UTF8, arch: _w32, ENV: wincon, UTF8: Y, PREFIX: i686-w64-mingw32 }
+          - { name: WINGUI_W32_UTF8, arch: _w32, ENV: wingui, UTF8: Y, PREFIX: i686-w64-mingw32 }
+          - { name: SDL2_W32_UTF8,   arch: _w32, ENV: sdl2,   UTF8: Y, PREFIX: i686-w64-mingw32 }
+          - { name: VT_W64_UTF8,     arch: _w64, ENV: vt,     UTF8: Y, PREFIX: x86_64-w64-mingw32 }
+          - { name: WINCON_W64_UTF8, arch: _w64, ENV: wincon, UTF8: Y, PREFIX: x86_64-w64-mingw32 }
+          - { name: WINGUI_W64_UTF8, arch: _w64, ENV: wingui, UTF8: Y, PREFIX: x86_64-w64-mingw32 }
+          - { name: SDL2_W64_UTF8,   arch: _w64, ENV: sdl2,   UTF8: Y, PREFIX: x86_64-w64-mingw32 }
+          - { name: VT_WoA_UTF8,     arch: _a64, ENV: vt,     UTF8: Y, PREFIX: aarch64-w64-mingw32 }
+          - { name: WINCON_WoA_UTF8, arch: _a64, ENV: wincon, UTF8: Y, PREFIX: aarch64-w64-mingw32 }
+          - { name: WINGUI_WoA_UTF8, arch: _a64, ENV: wingui, UTF8: Y, PREFIX: aarch64-w64-mingw32 }
+    steps:
+    - uses: actions/checkout@master
+    - name: ${{ matrix.name }}
+      shell: bash
+      run: |
+        ## download llvm-MinGW
+        assetsUrl=$(wget -qO- https://github.com/mstorsjo/llvm-mingw/releases/latest | grep "expanded_assets" | grep -Po 'https[^"]+')
+        pkgUrl="http://github.com$(wget -qO- $assetsUrl | grep 'href.*ucrt.*x86_64.tar.xz' | grep -Po '/[^"]+')"
+        wget -qO- $pkgUrl | tar -Jxvf -
+        mv llvm* llvm-mingw
+        LLVMBASE="$(pwd)/llvm-mingw"
+
+        if [[ "${{ matrix.ENV }}" == "sdl2" ]]; then
+            ## download SDL2
+            assetsUrl=$(wget -qO- https://github.com/libsdl-org/SDL/releases/latest | grep "expanded_assets" | grep -Po 'https[^"]+')
+            pkgUrl="http://github.com$(wget -qO- $assetsUrl | grep 'href.*mingw.tar.gz' | grep -Po '/[^"]+')"
+            wget -qO- $pkgUrl | tar xzvf -
+            mv SDL2-* SDL2-dev
+            export SDLBASE="$(pwd)/SDL2-dev"
+            cp $SDLBASE/${{ matrix.PREFIX }}/bin/*.dll sdl2
+
+            ## download SDL2_ttf
+            assetsUrl=$(wget -qO- https://github.com/libsdl-org/SDL_ttf/releases/latest | grep "expanded_assets" | grep -Po 'https[^"]+')
+            pkgUrl="http://github.com$(wget -qO- $assetsUrl | grep 'href.*mingw.tar.gz' | grep -Po '/[^"]+')"
+            wget -qO- $pkgUrl | tar xzvf -
+            mv SDL2_ttf* SDL2_ttf-dev
+            export TTFBASE="$(pwd)/SDL2_ttf-dev"
+            cp $TTFBASE/${{ matrix.PREFIX }}/bin/*.dll sdl2
+
+            export PATH="$SDLBASE/${{ matrix.PREFIX }}/bin:$TTFBASE/${{ matrix.PREFIX }}/bin:$PATH"
+        fi
+
+        export PATH="$LLVMBASE/bin:$PATH"
+
+        cd ${{ matrix.ENV }}
+        [[ "${{ matrix.UTF8 }}" == "Y" ]] && make -j$(nproc) demos ${{ matrix.ARCH }}=Y WIDE=Y UTF8=Y || make -j$(nproc) demos ${{ matrix.ARCH }}=Y
+
+    - name: "Upload Artifact"
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ matrix.name }}
+        path: |
+          ${{ matrix.ENV }}/*.exe
+          ${{ matrix.ENV }}/*.dll
