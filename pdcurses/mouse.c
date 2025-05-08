@@ -293,6 +293,10 @@ bool mouse_trafo(int *y, int *x, bool to_screen)
     return wmouse_trafo(stdscr, y, x, to_screen);
 }
 
+#define BUTTON_MOVE_EVENTS (BUTTON1_MOVED | BUTTON2_MOVED | BUTTON3_MOVED \
+                          | BUTTON4_MOVED | BUTTON5_MOVED)
+#define ALL_MOVE_EVENTS  (BUTTON_MOVE_EVENTS | REPORT_MOUSE_POSITION)
+
 mmask_t mousemask(mmask_t mask, mmask_t *oldmask)
 {
     PDC_LOG(("mousemask() - called\n"));
@@ -308,7 +312,7 @@ mmask_t mousemask(mmask_t mask, mmask_t *oldmask)
        when using 32-bit mmask_ts,  so filter them here */
 
 #if !defined( PDC_LONG_MMASK)
-    mask &= ~(BUTTON1_MOVED | BUTTON2_MOVED | BUTTON3_MOVED);
+    mask &= ~BUTTON_MOVE_EVENTS;
 #endif
 
     mouse_set(mask);
@@ -362,11 +366,6 @@ int nc_getmouse(MEVENT *event)
         bstate |= BUTTON4_PRESSED;
     else if (MOUSE_WHEEL_DOWN)
         bstate |= BUTTON5_PRESSED;
-                     /* 'Moves' (i.e.,  button is pressed) and 'position reports' */
-                     /* (mouse moved with no button down) are all reported as     */
-                     /* 'position reports' in NCurses,  which lacks 'move' events. */
-    if( MOUSE_MOVED && (SP->_trap_mbe & REPORT_MOUSE_POSITION))
-        bstate |= REPORT_MOUSE_POSITION;
 
     for( i = 0; i < 3; i++)
     {
@@ -381,6 +380,12 @@ int nc_getmouse(MEVENT *event)
     /* extra filter pass -- mainly for button modifiers */
 
     event->bstate = bstate & SP->_trap_mbe;
+
+                     /* 'Moves' (i.e.,  button is pressed) and 'position reports' */
+                     /* (mouse moved with no button down) are all reported as     */
+                     /* 'position reports' in NCurses,  which lacks 'move' events. */
+    if( MOUSE_MOVED && (SP->_trap_mbe & ALL_MOVE_EVENTS))
+       event->bstate |= REPORT_MOUSE_POSITION;
 
     return OK;
 }
