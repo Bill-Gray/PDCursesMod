@@ -1628,7 +1628,7 @@ static LRESULT ALIGN_STACK CALLBACK WndProc (const HWND hwnd,
     static int modified_key_to_return = 0;
     static bool ignore_resize = FALSE;
     int button, i;
-    bool wait_for_more_mouse = false;
+    bool wait_for_more_mouse = FALSE;
     const int modifiers = convert_key_modifiers_for_mouse( SP->key_modifiers);
     const int mouse_x = LOWORD( lParam) / PDC_cxChar;
     const int mouse_y = HIWORD( lParam) / PDC_cyChar;
