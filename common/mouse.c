@@ -129,7 +129,7 @@ buttons are held and filter out the events you aren't interested in.  */
 static MOUSE_STATUS mouse_list[MLIST_SIZE];
 static int _mlist_count = 0;
 
-static int _button_change_flag( const int button)
+static short _button_change_flag( const int button)
 {
    return( (button < 3 ? 1 : 64) << button);
 }
@@ -188,7 +188,7 @@ bool _add_raw_mouse_event( const int button, const int event_type, const int mod
             }
          break;
       case BUTTON_PRESSED:
-         mptr->button[button] = BUTTON_PRESSED | modifiers;
+         mptr->button[button] = BUTTON_PRESSED | (short)modifiers;
          mptr->changes = _button_change_flag( button);
          held_buttons |= (1 << button);
          _mlist_count++;
@@ -196,24 +196,24 @@ bool _add_raw_mouse_event( const int button, const int event_type, const int mod
             wait_for_next_event = TRUE;   /* may need to synthesize a click */
          break;
       case BUTTON_RELEASED:
-         mptr->button[button] = BUTTON_RELEASED | modifiers;
+         mptr->button[button] = BUTTON_RELEASED | (short)modifiers;
          mptr->changes = _button_change_flag( button);
          held_buttons &= ~(1 << button);
          mptr->changes = _button_change_flag( button);
          if( _mlist_count && mptr[-1].changes == mptr->changes
                      && mptr[-1].button[button] == (BUTTON_PRESSED | modifiers))
             {        /* can combine press with release to make a click */
-            mptr[-1].button[button] = BUTTON_CLICKED | modifiers;
+            mptr[-1].button[button] = BUTTON_CLICKED | (short)modifiers;
             if( _mlist_count > 1 && mptr[-2].changes == mptr->changes)
                {
                if( mptr[-2].button[button] == (BUTTON_DOUBLE_CLICKED | modifiers))
                   {
-                  mptr[-2].button[button] = BUTTON_TRIPLE_CLICKED | modifiers;
+                  mptr[-2].button[button] = BUTTON_TRIPLE_CLICKED | (short)modifiers;
                   _mlist_count--;
                   }
                if( mptr[-2].button[button] == (BUTTON_CLICKED | modifiers))
                   {
-                  mptr[-2].button[button] = BUTTON_DOUBLE_CLICKED | modifiers;
+                  mptr[-2].button[button] = BUTTON_DOUBLE_CLICKED | (short)modifiers;
                   _mlist_count--;
                   if( TRAPPING_EVENT( BUTTON1_TRIPLE_CLICKED, button))
                       wait_for_next_event = TRUE;
