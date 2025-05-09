@@ -637,7 +637,7 @@ static void _process_mouse_event(void)
         static const DWORD button_mask[] = {1, 4, 2};
         static DWORD prev_state;
         DWORD changes = prev_state ^ MEV.dwButtonState;
-        bool incomplete_event = false;
+        bool incomplete_event = FALSE;
 
         prev_state = MEV.dwButtonState;
         for( i = 0; i < 3; i++)
@@ -665,7 +665,7 @@ static void _process_mouse_event(void)
                  remaining_ms -= nap_len;
                  GetNumberOfConsoleInputEvents(pdc_con_in, &event_count);
              }
-             incomplete_event = false;
+             incomplete_event = FALSE;
              if( event_count)
              {
                  INPUT_RECORD ip;
