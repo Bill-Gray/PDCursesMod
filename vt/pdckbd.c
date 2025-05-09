@@ -13,6 +13,7 @@
 #endif
 #include "curspriv.h"
 #include "pdcvt.h"
+#include "../common/mouse.c"
 
 #if defined( __BORLANDC__) || defined( DOS)
    #define WINDOWS_VERSION_OF_KBHIT kbhit
@@ -85,12 +86,10 @@ static bool check_key( int *c)
     return( rval);
 }
 
-static MOUSE_STATUS _cached_mouse_status;
-
 bool PDC_check_key( void)
 {
-   if( _cached_mouse_status.changes)
-      return( TRUE);
+   if( _mlist_count)
+      return TRUE;
    return( check_key( NULL));
 }
 
@@ -98,9 +97,9 @@ void PDC_flushinp( void)
 {
    int thrown_away_char;
 
-   _cached_mouse_status.changes = 0;
    while( check_key( &thrown_away_char))
       ;
+   _mlist_count = 0;
 }
 
 #ifdef USE_CONIO
@@ -420,10 +419,9 @@ int PDC_get_key( void)
       PDC_resize_occurred = FALSE;
       return( KEY_RESIZE);
       }
-   if( !recursed && _cached_mouse_status.changes)
+   if( !recursed && _mlist_count)
       {
-      SP->mouse_status = _cached_mouse_status;
-      _cached_mouse_status.changes = 0;
+      _get_mouse_event( &SP->mouse_status);
       return( KEY_MOUSE);
       }
    if( check_key( &rval))
@@ -479,8 +477,8 @@ int PDC_get_key( void)
          if( rval == KEY_MOUSE)
             {
             int idx, button, flags = 0, i, x, y;
+            int event_type = -1;
             static int held = 0;
-            bool release;
 
             if( c[1] == 'M')     /* 'traditional' mouse encoding */
                {
@@ -488,13 +486,16 @@ int PDC_get_key( void)
                y = (unsigned char)( c[4] - ' ' - 1);
                idx = c[2];
                button = idx & 3;
-               release = (button == 3);
-               if( release)         /* which button was released? */
+
+               if( 3 == button)     /* need to determine which button released */
                   {
+                  event_type = BUTTON_PRESSED;
                   button = 0;
                   while( button < 3 && !((held >> button) & 1))
                      button++;
                   }
+               else
+                  event_type = BUTTON_PRESSED;
                }
             else                 /* SGR mouse encoding */
                {
@@ -510,7 +511,7 @@ int PDC_get_key( void)
                assert( n_fields == 3);
                assert( c[count] == 'M' || c[count] == 'm');
                assert( n_bytes == count - 2);
-               release = (c[count] == 'm');
+               event_type = ((c[count] == 'm') ? BUTTON_RELEASED : BUTTON_PRESSED);
                button = idx & 3;
 #ifdef __HAIKU__
                if( !release)
@@ -536,81 +537,36 @@ int PDC_get_key( void)
                flags |= BUTTON_ALT;
             if( idx & 16)
                flags |= BUTTON_CONTROL;
-            if( (idx & 0x60) == 0x40)    /* mouse move */
+            if( (idx & 0x60) == 0x40)
+               event_type = BUTTON_MOVED;
+            if( (idx & 0x60) == 0x60)    /* actually mouse wheel event */
+               event_type = (button ? PDC_MOUSE_WHEEL_DOWN : PDC_MOUSE_WHEEL_UP);
+            if( _add_raw_mouse_event( button, event_type, flags, x, y))
                {
-               if( x != SP->mouse_status.x || y != SP->mouse_status.y)
+               bool more_mouse = TRUE;
+
+               if( recursed)
+                  return KEY_MOUSE;
+               recursed = TRUE;
+               while( more_mouse)
                   {
-                  int report_event = PDC_MOUSE_MOVED;
+                  const long t_end = PDC_millisecs( ) + SP->mouse_wait;
 
-                  if( button == 0)
-                     report_event |= 1;
-                  if( button == 1)
-                     report_event |= 2;
-                  if( button == 2)
-                     report_event |= 4;
-                  SP->mouse_status.changes = report_event;
-                  for( i = 0; i < 3; i++)
-                     SP->mouse_status.button[i] = (i == button ? BUTTON_MOVED : 0);
-                  for( i = 0; i < 3; i++)
-                     SP->mouse_status.button[i] |= flags;
-                  button = 3;
+                  while( !check_key( NULL) && PDC_millisecs( ) < t_end)
+                     PDC_napms( 20);
+                  more_mouse = (check_key( NULL) && PDC_get_key( ) == KEY_MOUSE);
                   }
-               else              /* mouse didn't actually move */
-                  return( -1);
+               recursed = FALSE;
                }
-            if( button < 3)
+            else if( recursed)
+               return 0;
+            if( _mlist_count)
                {
-               memset(&SP->mouse_status, 0, sizeof(MOUSE_STATUS));
-               SP->mouse_status.button[button] =
-                              (release ? BUTTON_RELEASED : BUTTON_PRESSED);
-               if( (idx & 0x60) == 0x60)    /* actually mouse wheel event */
-                  SP->mouse_status.changes =
-                        (button ? PDC_MOUSE_WHEEL_DOWN : PDC_MOUSE_WHEEL_UP);
-               else     /* "normal" mouse button */
-                  SP->mouse_status.changes = (1 << button);
-               if( !release && !(idx & 0x40) && !recursed)   /* wait for possible */
-                  {                                       /* release, click, etc. */
-                  int n_events = 0;
-                  const MOUSE_STATUS stored = SP->mouse_status;
-                  bool keep_going = TRUE;
-
-                  recursed = TRUE;
-                  while( keep_going && n_events < 5)
-                     {
-                     PDC_napms( SP->mouse_wait);
-                     keep_going = FALSE;
-                     while( check_key( NULL) && n_events < 5)
-                        if( PDC_get_key( ) == KEY_MOUSE)
-                           {
-                           if( SP->mouse_status.x == x && SP->mouse_status.y == y
-                                   && ((SP->mouse_status.changes >> button) & 1))
-                              {
-                              keep_going = TRUE;
-                              n_events++;
-                              }
-                           else     /* some other mouse event;  store and report */
-                              {     /* next time we're asked for a key/mouse event */
-                              keep_going = FALSE;
-                              _cached_mouse_status = SP->mouse_status;
-                              }
-                           }
-                     }
-                  SP->mouse_status = stored;
-                  recursed = FALSE;
-                  if( !n_events)   /* just a click,  no release(s) */
-                     held ^= (1 << button);
-                  else if( n_events < 3)
-                      SP->mouse_status.button[button] = BUTTON_CLICKED;
-                  else if( n_events < 5)
-                      SP->mouse_status.button[button] = BUTTON_DOUBLE_CLICKED;
-                  else
-                      SP->mouse_status.button[button] = BUTTON_TRIPLE_CLICKED;
-                  }
+               _get_mouse_event( &SP->mouse_status);
+               return KEY_MOUSE;
                }
-            for( i = 0; i < 3; i++)
-               SP->mouse_status.button[i] |= flags;
-            SP->mouse_status.x = x;
-            SP->mouse_status.y = y;
+            else        /* event filtered out */
+               return -1;
             }
          }
       else if( (rval & 0xc0) == 0xc0)      /* start of UTF-8 */
