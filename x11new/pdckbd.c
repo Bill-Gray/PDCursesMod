@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <signal.h>
 #include "curspriv.h"
+#include "../common/mouse.c"
 #include "pdcx11.h"
 
 #if defined( __has_include)
@@ -389,7 +390,8 @@ static int _modifier_key( KeySym *key)
 static bool check_key( int *c)
 {
    XEvent report;
-   bool rval = false, ongoing_mouse_event = false;
+   bool rval = false;
+   bool wait_for_more_mouse = false;
 
 #ifndef NO_LEAKS
    if( !_xim)
@@ -533,69 +535,29 @@ static bool check_key( int *c)
          case ButtonPress:
          case ButtonRelease:
             {
-            const int button_idx = report.xbutton.button - 1;
-            const int modifiers = xlate_mouse_mask( report.xkey.state);
-            size_t i;
+            int button_idx = report.xbutton.button - 1;
+            const int modifs = xlate_mouse_mask( report.xkey.state);
+            const int x = report.xbutton.x / PDC_font_width;
+            const int y = report.xbutton.y / PDC_font_height;
+            int event_type =
+                     (report.type == ButtonPress ? BUTTON_PRESSED : BUTTON_RELEASED);
 
-            if( !ongoing_mouse_event)
-               {
-               memset( &SP->mouse_status, 0, sizeof( MOUSE_STATUS));
-               for( i = 0; i < 7; i++)
-                  SP->mouse_status.button[i] = modifiers;
-               }
-            if( button_idx >= 3 && button_idx < 7)
-               {     /* mouse wheel up, down, left, right */
-               SP->mouse_status.changes = (4 << button_idx);
-               SP->mouse_status.button[button_idx] = BUTTON_PRESSED | modifiers;
+            if( button_idx >= 3 && button_idx <= 6)     /* mouse wheel events are */
+               {                                        /* remapped to buttons 3-6 */
                if( report.type == ButtonPress)
-                  add_to_queue( KEY_MOUSE);
-               ongoing_mouse_event = false;
-               }
-            if( button_idx >= 0 && button_idx < 3)
-               {
-               int state = SP->mouse_status.button[button_idx] & BUTTON_ACTION_MASK;
+                  {
+                  const int remaps[4] = { PDC_MOUSE_WHEEL_UP, PDC_MOUSE_WHEEL_DOWN,
+                                PDC_MOUSE_WHEEL_LEFT, PDC_MOUSE_WHEEL_RIGHT };
 
-               ongoing_mouse_event = true;
-               if( report.type == ButtonPress)
-                  switch( state)
-                     {
-                     case 0:
-                        state = BUTTON_PRESSED;
-                        break;
-                     case BUTTON_CLICKED:
-                        state = BUTTON_DOUBLE_CLICKED;
-                        break;
-                     case BUTTON_DOUBLE_CLICKED:
-                        state = BUTTON_TRIPLE_CLICKED;
-                        break;
-                     default:
-                        break;
-                     }
-               else        /* for release events... */
-                  switch( state)
-                     {
-                     case 0:
-                        state = BUTTON_RELEASED;
-                        add_to_queue( KEY_MOUSE);
-                        ongoing_mouse_event = false;
-                        break;
-                     case BUTTON_TRIPLE_CLICKED:
-                        add_to_queue( KEY_MOUSE);
-                        ongoing_mouse_event = false;
-                        break;
-                     case BUTTON_PRESSED:
-                        state = BUTTON_CLICKED;
-                        break;
-                     case BUTTON_DOUBLE_CLICKED:
-                        break;      /* do nothing,  intentionally */
-                     default:
-                        break;
-                     }
-               SP->mouse_status.button[button_idx] = state | modifiers;
-               SP->mouse_status.changes = (1 << button_idx);
+                  event_type = remaps[button_idx - 3];
+                  }
+               else                         /* ignore the "button release"; */
+                  break;                    /* meaningless for wheel events */
                }
-            SP->mouse_status.x = report.xbutton.x / PDC_font_width;
-            SP->mouse_status.y = report.xbutton.y / PDC_font_height;
+            if( button_idx > 6)
+               button_idx -= 4;
+            wait_for_more_mouse = _add_raw_mouse_event( button_idx, event_type,
+                     modifs, x, y);
             }
             break;
          case ClientMessage:
@@ -606,45 +568,10 @@ static bool check_key( int *c)
                }
             break;
          case MotionNotify:
-            {
-            const int x = report.xbutton.x / PDC_font_width;
-            const int y = report.xbutton.y / PDC_font_height;
-
-            if( x != SP->mouse_status.x || y != SP->mouse_status.y)
-               if( !ongoing_mouse_event)
-                  {
-                  int i, button = -1;
-                  bool report_this = false;
-
-                  for( i = 0; i < 3; i++)
-                     {
-                     const int action = SP->mouse_status.button[i] & BUTTON_ACTION_MASK;
-
-                     if( action == BUTTON_PRESSED || action == BUTTON_MOVED)
-                        button = i;
-                     }
-                  if( SP->_trap_mbe & REPORT_MOUSE_POSITION)
-                     report_this = true;
-                  if( button >= 0)
-                     if( SP->_trap_mbe & PDC_SHIFTED_BUTTON( BUTTON1_MOVED, button + 1))
-                        report_this = true;
-                  if( report_this)
-                     {
-                     int report_event = PDC_MOUSE_MOVED;
-
-                     if( button >= 0)
-                        {
-                        report_event |= (1 << button);
-                        SP->mouse_status.button[button] = BUTTON_MOVED | xlate_mouse_mask( report.xkey.state);
-                        }
-                     SP->mouse_status.changes = report_event;
-                     SP->mouse_status.x = x;
-                     SP->mouse_status.y = y;
-                     add_to_queue( KEY_MOUSE);
-                     }
-                  }
-            }
-            ongoing_mouse_event = false;
+            wait_for_more_mouse = _add_raw_mouse_event( 0, BUTTON_MOVED,
+                     xlate_mouse_mask( report.xkey.state),
+                     report.xbutton.x / PDC_font_width,
+                     report.xbutton.y / PDC_font_height);
             break;
          case ConfigureNotify:
             break;
@@ -653,14 +580,19 @@ static bool check_key( int *c)
          default:
             break;
          }
-      if( ongoing_mouse_event)    /* wait for a possible press or release event */
+      if( wait_for_more_mouse)   /* wait for a possible press or release event */
          {
          const long t_end = PDC_millisecs( ) + SP->mouse_wait;
          long t;
 
          while( (t = PDC_millisecs( )) < t_end && !XPending( dis))
             napms( t_end - t < 20L ? (int)( t_end - t) : 20);
-         if( !XPending( dis))
+         }
+      if( !XPending( dis) || (!wait_for_more_mouse && _mlist_count))
+         {
+         int i;
+
+         for( i = 0; i < _mlist_count; i++)
             add_to_queue( KEY_MOUSE);
          }
       }
@@ -670,6 +602,8 @@ static bool check_key( int *c)
       if( c)
          {
          *c = key_queue[queue_low++];
+         if( *c == KEY_MOUSE)
+            _get_mouse_event( &SP->mouse_status);
          if( queue_low == QUEUE_SIZE)
             queue_low = 0;
          }

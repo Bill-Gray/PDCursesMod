@@ -41,8 +41,8 @@ Defined by this header:
 #define PDC_VER_MINOR    5
 #define PDC_VER_CHANGE   0
 #define PDC_VER_YEAR   2025
-#define PDC_VER_MONTH     4
-#define PDC_VER_DAY      17
+#define PDC_VER_MONTH     5
+#define PDC_VER_DAY       7
 
 #define PDC_STRINGIZE( x) #x
 #define PDC_stringize( x) PDC_STRINGIZE( x)
@@ -277,7 +277,12 @@ typedef struct
 
 /* With the "traditional" 32-bit mmask_t,  mouse move and triple-clicks
 share the same bit and can't be distinguished.  64-bit mmask_ts allow us
-to make the distinction,  and will allow other events to be added later. */
+to make the distinction,  and will allow other events to be added later.
+
+Note that the BUTTONn_MOVED masks are PDCurses*-specific.  For portable
+code,  use REPORT_MOUSE_POSITION to get all mouse movement events,  and
+keep track of press/release events to determine which button(s) are
+held at a given time.            */
 
 #ifdef PDC_LONG_MMASK
    #define BUTTON1_MOVED           (mmask_t)0x20      /* PDCurses */
