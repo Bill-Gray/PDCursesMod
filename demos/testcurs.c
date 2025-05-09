@@ -14,10 +14,15 @@
 SysV) mouse functions in inputTest.  Otherwise,  the ncurses mouse
 interface will be used.       */
 
-/* #define CLASSIC_MOUSE_INTERFACE  */
+ #define CLASSIC_MOUSE_INTERFACE
 
-#if !defined( CLASSIC_MOUSE_INTERFACE)
+#if defined( CLASSIC_MOUSE_INTERFACE)
+   #define BUTTON_MOVE_EVENTS (BUTTON1_MOVED | BUTTON2_MOVED | BUTTON3_MOVED \
+                          | BUTTON4_MOVED | BUTTON5_MOVED)
+   #define ALL_MOVE_EVENTS  (BUTTON_MOVE_EVENTS | REPORT_MOUSE_POSITION)
+#else
    #define PDC_NCMOUSE
+   #define ALL_MOVE_EVENTS   REPORT_MOUSE_POSITION
 #endif
 
 #include <stdio.h>
@@ -187,8 +192,8 @@ static mmask_t parse_mouse_mask( const char *str)
          case 'M':
             test_mouse_mask |= REPORT_MOUSE_POSITION;
             break;
-         case '0':
-            mouseinterval( 0);
+         case 'W':
+            mouseinterval( atoi( str + 1));
             break;
          }
       str++;
@@ -576,12 +581,9 @@ void inputTest(WINDOW *win)
             int button = 0;
             request_mouse_pos();
 
-            if (BUTTON_CHANGED(1))
-                button = 1;
-            else if (BUTTON_CHANGED(2))
-                button = 2;
-            else if (BUTTON_CHANGED(3))
-                button = 3;
+            for( i = 0; i < PDC_MAX_MOUSE_BUTTONS; i++)
+                if (BUTTON_CHANGED(i))
+                    button = i;
 
             wmove(win, line, 5);
             wclrtoeol(win);
@@ -685,10 +687,10 @@ void inputTest(WINDOW *win)
                         if( i % 5 == 1)    /* button released */
                            mouse_buttons_held &= ~(1 << (i / 5));
                     }
-                if( mevent.bstate & REPORT_MOUSE_POSITION)
+                if( mevent.bstate & ALL_MOVE_EVENTS)
                 {
-                    wprintw( win, "moved");
-                    for( i = 0; i < 5; i++)
+                    wprintw( win, "moved <%d>", mouse_buttons_held);
+                    for( i = 0; i < 3; i++)
                         if( (mouse_buttons_held >> i) & 1)
                             wprintw( win, "  Button %d", i + 1);
                 }
