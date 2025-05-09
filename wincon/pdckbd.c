@@ -1,12 +1,13 @@
 /* PDCurses */
 
+#include <assert.h>
 #include "pdcwin.h"
+#include "../common/mouse.c"
 
 /* These variables are used to store information about the next
    Input Event. */
 
 static INPUT_RECORD save_ip;
-static MOUSE_STATUS old_mouse_status;
 static DWORD event_count = 0;
 static SHORT left_key;
 static int key_count = 0;
@@ -171,6 +172,7 @@ static KPTAB kptab[] =
     {0,       0,      0,        0,       0   },  /* 85 133 VK_F22 */
     {0,       0,      0,        0,       0   },  /* 86 134 VK_F23 */
     {0,       0,      0,        0,       0   },  /* 87 135 VK_F24 */
+
     {0, 0, 0, 0, 0},  /* 136 unassigned */
     {0, 0, 0, 0, 0},  /* 137 unassigned */
     {0, 0, 0, 0, 0},  /* 138 unassigned */
@@ -590,145 +592,105 @@ static int _process_key_event(void)
     return key;
 }
 
-static int _process_mouse_event(void)
+#define BUTTON_N_CLICKED(N)   PDC_SHIFTED_BUTTON( BUTTON1_CLICKED, (N))
+#ifndef MOUSE_HWHEELED
+   #define MOUSE_HWHEELED 0x8
+#endif
+
+
+static void _process_mouse_event(void)
 {
-    static const DWORD button_mask[] = {1, 4, 2};
-    short action, shift_flags = 0;
-    int i;
+    int i, event = -1, modifiers = 0;
+    const int x = MEV.dwMousePosition.X;
+    const int y = MEV.dwMousePosition.Y;
 
     save_press = 0;
 
-    memset(&SP->mouse_status, 0, sizeof(MOUSE_STATUS));
+    if (MEV.dwControlKeyState & (LEFT_ALT_PRESSED|RIGHT_ALT_PRESSED))
+        modifiers |= BUTTON_ALT;
 
-    SP->mouse_status.x = MEV.dwMousePosition.X;
-    SP->mouse_status.y = MEV.dwMousePosition.Y;
+    if (MEV.dwControlKeyState & (LEFT_CTRL_PRESSED|RIGHT_CTRL_PRESSED))
+        modifiers |= BUTTON_CONTROL;
+
+    if (MEV.dwControlKeyState & SHIFT_PRESSED)
+        modifiers |= BUTTON_SHIFT;
 
     /* Handle scroll wheel */
 
-    if (MEV.dwEventFlags == 4)
+    if (MEV.dwEventFlags == MOUSE_WHEELED)
+        event = (MEV.dwButtonState & 0xFF000000) ?
+               PDC_MOUSE_WHEEL_DOWN : PDC_MOUSE_WHEEL_UP;
+
+    if (MEV.dwEventFlags == MOUSE_HWHEELED)
+        event = (MEV.dwButtonState & 0xFF000000) ?
+               PDC_MOUSE_WHEEL_RIGHT : PDC_MOUSE_WHEEL_LEFT;
+
+    if (MEV.dwEventFlags == 1)
+        event = BUTTON_MOVED;
+
+    if( event != -1)
+        _add_raw_mouse_event( 0, event, modifiers, x, y);
+
+    if (MEV.dwEventFlags == 0)
     {
-        SP->mouse_status.changes = (MEV.dwButtonState & 0xFF000000) ?
-            PDC_MOUSE_WHEEL_DOWN : PDC_MOUSE_WHEEL_UP;
+        int button = -1;
+        static const DWORD button_mask[] = {1, 4, 2};
+        static DWORD prev_state;
+        DWORD changes = prev_state ^ MEV.dwButtonState;
+        bool incomplete_event = false;
 
-        memset(&old_mouse_status, 0, sizeof(old_mouse_status));
-
-        return KEY_MOUSE;
-    }
-
-    if (MEV.dwEventFlags == 8)
-    {
-        SP->mouse_status.changes = (MEV.dwButtonState & 0xFF000000) ?
-            PDC_MOUSE_WHEEL_RIGHT : PDC_MOUSE_WHEEL_LEFT;
-
-        memset(&old_mouse_status, 0, sizeof(old_mouse_status));
-
-        return KEY_MOUSE;
-    }
-
-    action = (MEV.dwEventFlags == 2) ? BUTTON_DOUBLE_CLICKED :
-            ((MEV.dwEventFlags == 1) ? BUTTON_MOVED : BUTTON_PRESSED);
-
-    for (i = 0; i < 3; i++)
-        SP->mouse_status.button[i] =
-            (MEV.dwButtonState & button_mask[i]) ? action : 0;
-
-    if (action == BUTTON_PRESSED && MEV.dwButtonState & 7 && SP->mouse_wait)
-    {
-        /* Check for a click -- a PRESS followed immediately by a release */
-
-        if (!event_count)
-        {
-            napms(SP->mouse_wait);
-
-            GetNumberOfConsoleInputEvents(pdc_con_in, &event_count);
-        }
-
-        if (event_count)
-        {
-            INPUT_RECORD ip;
-            DWORD count;
-            bool have_click = FALSE;
-
-            PeekConsoleInput(pdc_con_in, &ip, 1, &count);
-
-            for (i = 0; i < 3; i++)
+        prev_state = MEV.dwButtonState;
+        for( i = 0; i < 3; i++)
+            if( changes == button_mask[i])
             {
-                if (SP->mouse_status.button[i] == BUTTON_PRESSED &&
-                    !(ip.Event.MouseEvent.dwButtonState & button_mask[i]))
-                {
-                    SP->mouse_status.button[i] = BUTTON_CLICKED;
-                    have_click = TRUE;
-                }
+                button = i;
+                event = (MEV.dwButtonState & button_mask[button]) ?
+                                 BUTTON_PRESSED : BUTTON_RELEASED;
             }
 
-            /* If a click was found, throw out the event */
+        if( button < 0)
+            return;
 
-            if (have_click)
-                ReadConsoleInput(pdc_con_in, &ip, 1, &count);
+        incomplete_event = _add_raw_mouse_event( button, event, modifiers, x, y);
+        while( incomplete_event)
+         {
+             DWORD event_count = 0;
+             int remaining_ms = SP->mouse_wait;
+
+             while( !event_count && remaining_ms)
+             {
+                 const int nap_len = (remaining_ms > 20 ? 20 : remaining_ms);
+
+                 napms( nap_len);
+                 remaining_ms -= nap_len;
+                 GetNumberOfConsoleInputEvents(pdc_con_in, &event_count);
+             }
+             incomplete_event = false;
+             if( event_count)
+             {
+                 INPUT_RECORD ip;
+
+                 PeekConsoleInput(pdc_con_in, &ip, 1, &event_count);
+                 if( (prev_state ^ button_mask[button])
+                                     == ip.Event.MouseEvent.dwButtonState)
+                     {
+                     ReadConsoleInput(pdc_con_in, &ip, 1, &event_count);
+                     prev_state ^= button_mask[button];
+                     event = (prev_state & button_mask[button]) ?
+                                  BUTTON_PRESSED : BUTTON_RELEASED;
+                     incomplete_event = _add_raw_mouse_event( button, event, modifiers, x, y);
+                     }
+             }
         }
     }
-
-    SP->mouse_status.changes = 0;
-
-    for (i = 0; i < 3; i++)
-    {
-        if (old_mouse_status.button[i] != SP->mouse_status.button[i])
-            SP->mouse_status.changes |= (1 << i);
-
-        if (SP->mouse_status.button[i] == BUTTON_MOVED)
-        {
-            /* Discard non-moved "moves" */
-
-            if (SP->mouse_status.x == old_mouse_status.x &&
-                SP->mouse_status.y == old_mouse_status.y)
-                return -1;
-
-            /* Motion events always flag the button as changed */
-
-            SP->mouse_status.changes |= (1 << i);
-            SP->mouse_status.changes |= PDC_MOUSE_MOVED;
-            break;
-        }
-    }
-
-    old_mouse_status = SP->mouse_status;
-
-    /* Treat click events as release events for comparison purposes */
-
-    for (i = 0; i < 3; i++)
-    {
-        if (old_mouse_status.button[i] == BUTTON_CLICKED ||
-            old_mouse_status.button[i] == BUTTON_DOUBLE_CLICKED)
-            old_mouse_status.button[i] = BUTTON_RELEASED;
-    }
-
-    /* Check for SHIFT/CONTROL/ALT */
-
-    if (MEV.dwControlKeyState & (LEFT_ALT_PRESSED|RIGHT_ALT_PRESSED))
-        shift_flags |= BUTTON_ALT;
-
-    if (MEV.dwControlKeyState & (LEFT_CTRL_PRESSED|RIGHT_CTRL_PRESSED))
-        shift_flags |= BUTTON_CONTROL;
-
-    if (MEV.dwControlKeyState & SHIFT_PRESSED)
-        shift_flags |= BUTTON_SHIFT;
-
-    if (shift_flags)
-    {
-        for (i = 0; i < 3; i++)
-        {
-            if (SP->mouse_status.changes & (1 << i))
-                SP->mouse_status.button[i] |= shift_flags;
-        }
-    }
-
-    return KEY_MOUSE;
 }
 
 /* return the next available key or mouse event */
 
 int PDC_get_key(void)
 {
+    if( _get_mouse_event( &SP->mouse_status))
+        return( KEY_MOUSE);
     if (!key_count)
     {
         DWORD count;
@@ -754,7 +716,10 @@ int PDC_get_key(void)
             return _process_key_event();
 
         case MOUSE_EVENT:
-            return _process_mouse_event();
+            _process_mouse_event();
+             if( _get_mouse_event( &SP->mouse_status))
+                 return( KEY_MOUSE);
+             break;
 
         case WINDOW_BUFFER_SIZE_EVENT:
             if (REV.dwSize.Y != LINES || REV.dwSize.X != COLS)
@@ -799,8 +764,6 @@ int PDC_mouse_set(void)
     mode = (mode & 1) | 0x0088;
     SetConsoleMode(pdc_con_in, mode | (SP->_trap_mbe ?
                    ENABLE_MOUSE_INPUT : pdc_quick_edit));
-
-    memset(&old_mouse_status, 0, sizeof(old_mouse_status));
 
     return OK;
 }
