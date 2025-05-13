@@ -22,9 +22,9 @@ Building
 Usage
 -----
 
-When compiling your application, you need to include the `\<curses.h\>`
-that comes with PDCursesMod. You also need to link your code with
-libXCurses. You will need to link with the following libraries:
+When compiling your application, you need to include the `<curses.h>`
+that comes with PDCursesMod. You also need to link your code with this
+library,  of course,  and to the following libraries:
 
    `-lX11 -lpthread`
 
