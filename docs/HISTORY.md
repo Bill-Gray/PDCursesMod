@@ -1,7 +1,7 @@
 Generally speaking,  this history mentions only the more significant
 changes.  See the git log for full details.
 
-Current version - 2025 Apr 18
+Current version - 2025 May 12
 =============================
 
 Major new features
@@ -21,7 +21,7 @@ Minor new features
   and/or to set a zero mouse interval (which should result in clicks being
   converted to presses and releases).  Also,  can test using the ncurses
   mouse interface instead of the 'classic' undocumented SysV mouse interface.
-  de6c742b4a   7a520f6261
+  de6c742b4a   7a520f6261   91645ceb9b
 
 - VT port now works on Haiku.   e8f098d6de
 
@@ -46,6 +46,13 @@ Bug fixes
 
 - VT build failed when using GNU make to cross-compile demos and tests for
   Windows using MinGW.  d391921be0
+
+- Mouse input inconsistently respected `mousemask()` on most platforms.
+  The common logic for combining press/releases into clicks,  double- and
+  triple-clicks has been abstracted into `common/mouse.c`,  and is now used
+  by the WinCon,  WinGUI,  x11new,  and VT platforms (and will probably be
+  used eventually by most other platforms).  See issue #330.   52d206870c
+  9e857e7792  812bd6953a  592d27f164
 
 PDCursesMod 4.5.0 - 2024 Dec 31
 =================================
