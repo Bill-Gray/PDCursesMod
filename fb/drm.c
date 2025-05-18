@@ -41,7 +41,6 @@ void release_framebuffer(struct framebuffer *fb)
         /* Try to become master again, else we can't set CRTC. Then the current master needs to reset everything. */
         const int err = drmSetMaster(fb->fd);
 
-//      assert( !err);
         if (fb->crtc) {
             /* Set back to original frame buffer */
             drmModeSetCrtc(fb->fd, fb->crtc->crtc_id, fb->crtc->buffer_id, 0, 0, &fb->connector->connector_id, 1, fb->resolution);
