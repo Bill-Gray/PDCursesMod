@@ -390,8 +390,8 @@ static int _modifier_key( KeySym *key)
 static bool check_key( int *c)
 {
    XEvent report;
-   bool rval = false;
-   bool wait_for_more_mouse = false;
+   bool rval = FALSE;
+   bool wait_for_more_mouse = FALSE;
 
 #ifndef NO_LEAKS
    if( !_xim)
@@ -419,13 +419,13 @@ static bool check_key( int *c)
             new_rows = attrib.height / PDC_font_height;
             if( new_cols != PDC_cols || new_rows != PDC_rows)
                {
-               bool resize_not_in_queue = true;
+               bool resize_not_in_queue = TRUE;
                int i;
 
                PDC_resize_screen( new_rows, new_cols);
                for( i = queue_low; i != queue_high; i = (i + 1) % QUEUE_SIZE)
                   if( key_queue[i] == KEY_RESIZE)
-                     resize_not_in_queue = false;
+                     resize_not_in_queue = FALSE;
                if( resize_not_in_queue)
                   {
                   SP->resized = TRUE;

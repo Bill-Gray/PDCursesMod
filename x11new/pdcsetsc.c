@@ -78,10 +78,9 @@ int PDC_set_bold(bool boldon)
 
 void PDC_set_title( const char *title)
 {
-    PDC_LOG(("PDC_set_title() - called:<%s>\n", title));
-
     char *temp_string = strdup( title);
 
+    PDC_LOG(("PDC_set_title() - called:<%s>\n", title));
     if( xtpWinName.value)
         XFree( xtpWinName.value);
     XStringListToTextProperty( &temp_string, 1, &xtpWinName);

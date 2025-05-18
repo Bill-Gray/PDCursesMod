@@ -81,6 +81,8 @@ int get_framebuffer(const char *dri_device, const int connector_num, struct fram
     drmModeResPtr res;
     drmModeEncoderPtr encoder = 0;
     drmModeConnectorPtr connector = 0;
+    drmModeModeInfoPtr resolution = 0;
+    struct drm_mode_map_dumb mreq;
 
     /* Open the dri device /dev/dri/cardX */
     fd = open(dri_device, O_RDWR);
@@ -126,8 +128,7 @@ int get_framebuffer(const char *dri_device, const int connector_num, struct fram
         return FRAMEBUFFER_COULD_NOT_FIND_CONNECTOR;
 
     /* Get the preferred resolution */
-    drmModeModeInfoPtr resolution = 0;
-    for (int i = 0; i < connector->count_modes; i++) {
+    for( i = 0; i < connector->count_modes; i++) {
             resolution = &connector->modes[i];
             if (resolution->type & DRM_MODE_TYPE_PREFERRED)
                     break;
@@ -164,8 +165,6 @@ int get_framebuffer(const char *dri_device, const int connector_num, struct fram
 
     /* Get the crtc settings */
     fb->crtc = drmModeGetCrtc(fd, encoder->crtc_id);
-
-    struct drm_mode_map_dumb mreq;
 
     memset(&mreq, 0, sizeof(mreq));
     mreq.handle = fb->dumb_framebuffer.handle;

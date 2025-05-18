@@ -173,7 +173,7 @@ int PDC_scr_open(void)
     assert( win);
     wmDeleteMessage = XInternAtom( dis, "WM_DELETE_WINDOW", True);
 
-    //Allocate space for the hints
+    /* Allocate space for the hints */
     xshSize = XAllocSizeHints();
     xwmhHints = XAllocWMHints();
     xchClass = XAllocClassHint();
