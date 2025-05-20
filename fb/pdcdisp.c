@@ -201,6 +201,8 @@ static void _add_combining_character_glyph( uint8_t *glyph, const int code_point
         glyph[i] ^= add_in[i];
 }
 
+extern int PDC_orientation;
+
 #define LINE_ATTRIBS (WA_UNDERLINE | WA_TOP | WA_LEFT | WA_RIGHT | WA_STRIKEOUT)
 
 #define LOC_UNDERLINE      1
@@ -246,7 +248,6 @@ static const uint8_t *_get_glyph( const chtype ch, const int cursor_type,
     {
         const int font_char_size_in_bytes = (PDC_font_info.width + 7) >> 3;
         int i, line_mask;
-        extern int PDC_orientation;
 
         memcpy( scratch, rval, PDC_font_info.charsize);
         rval = (const uint8_t *)scratch;
@@ -317,6 +318,145 @@ static const uint8_t *_get_glyph( const chtype ch, const int cursor_type,
     return( rval);
 }
 
+#ifdef HAVE_MOUSE
+
+int PDC_mouse_x = 317, PDC_mouse_y = 131;
+int32_t mouse_pixel = 0xff;
+
+         /* see 'cursor.c' for an explanation of this array */
+const unsigned char cursor_data[117] = { 19, 1, 1,
+       0x03,  0x00,  0x00,  0x07,  0x00,  0x00,  0x07,  0x00,  0x00,
+       0x07,  0x00,  0x00,  0x0f,  0x00,  0x00,  0x1f,  0x00,  0x00,
+       0x1f,  0x00,  0x00,  0x3f,  0x00,  0x00,  0x7f,  0x00,  0x00,
+       0x7f,  0x00,  0x00,  0xff,  0x00,  0x00,  0xff,  0x01,  0x00,
+       0xff,  0x01,  0x00,  0xff,  0x03,  0x00,  0xff,  0x03,  0x00,
+       0xf3,  0x00,  0x00,  0xe0,  0x01,  0x00,  0xe0,  0x01,  0x00,
+       0xc0,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,
+       0x02,  0x00,  0x00,  0x02,  0x00,  0x00,  0x06,  0x00,  0x00,
+       0x0e,  0x00,  0x00,  0x0e,  0x00,  0x00,  0x1e,  0x00,  0x00,
+       0x3e,  0x00,  0x00,  0x3e,  0x00,  0x00,  0x7e,  0x00,  0x00,
+       0xfe,  0x00,  0x00,  0xde,  0x00,  0x00,  0xb6,  0x01,  0x00,
+       0x32,  0x00,  0x00,  0x60,  0x00,  0x00,  0xc0,  0x00,  0x00,
+       0xc0,  0x00,  0x00,  0x00,  0x00,  0x00};
+
+static void _draw_pixel( int xpix, int ypix, const int black)
+{
+    extern int PDC_orientation;
+    const int line_len = PDC_fb.line_length * 8 / PDC_fb.bits_per_pixel;
+    int tval;
+    long video_offset;
+
+    switch( PDC_orientation)
+    {
+        case 1:
+            tval = SP->lines * PDC_font_info.width - ypix - 1;
+            ypix = xpix;
+            xpix = tval;
+            break;
+        case 2:
+            xpix = COLS * PDC_font_info.width - xpix - 1;
+            ypix = SP->lines * PDC_font_info.height - ypix - 1;
+            break;
+        case 3:
+            tval = COLS * PDC_font_info.height - xpix - 1;
+            xpix = ypix;
+            ypix = tval;
+            break;
+        default:   /* a.k.a. case 0... do nothing */
+            break;
+    }
+    video_offset = xpix + ypix * line_len;
+    if( PDC_fb.bits_per_pixel == 32)
+    {
+        uint32_t *tptr = (uint32_t *)PDC_fb.framebuf + video_offset;
+
+        *tptr = (black ? 0 : 0xffffff);
+    }
+    if( PDC_fb.bits_per_pixel == 8)
+    {
+        uint8_t *tptr = (uint8_t *)PDC_fb.framebuf + video_offset;
+
+        *tptr = (black ? 0x0 : 0x7);
+    }
+}
+
+static bool _mouse_cursor_shown = TRUE;
+
+static int _orig_font_width( void)
+{
+   return (PDC_orientation & 1) ? PDC_font_info.height : PDC_font_info.width;
+}
+
+static int _orig_font_height( void)
+{
+   return (PDC_orientation & 1) ? PDC_font_info.width : PDC_font_info.height;
+}
+
+bool PDC_remove_mouse_cursor( void)
+{
+   const int mx = PDC_mouse_x - cursor_data[1];
+   const int my = PDC_mouse_y - cursor_data[2];
+   int left = mx / _orig_font_width( );
+   int right = (mx + cursor_data[0] - 1) / _orig_font_width( );
+   int y = my / _orig_font_height( );
+   int bottom = (my + cursor_data[0] - 1) / _orig_font_height( );
+
+   if( left < 0)
+      left = 0;
+   if( right > SP->cols - 1)
+      right = SP->cols - 1;
+   if( y < 0)
+      y = 0;
+   _mouse_cursor_shown = FALSE;
+   assert( right >= left);
+   while( y <= bottom && y < SP->lines && right >= left)
+      {
+      PDC_transform_line( y, left, right - left + 1, curscr->_y[y] + left);
+      y++;
+      }
+   _mouse_cursor_shown = TRUE;
+   return( TRUE);
+}
+
+bool PDC_update_mouse_cursor( int left, int right, int top, int bottom, const bool draw_it)
+{
+   const int mouse_size = cursor_data[0], bytes_per_line = (mouse_size + 7) >> 3;
+   const int mx = PDC_mouse_x - cursor_data[1];
+   const int my = PDC_mouse_y - cursor_data[2];
+
+   mouse_pixel = rand( ) & 0xffffff;
+   if( left < mx)
+      left = mx;
+   if( right >= mx + mouse_size)
+      right = mx + mouse_size - 1;
+   if( right <= left)      /* cursor is off the left or right edge */
+      return FALSE;
+   if( top < my)
+      top = my;
+   if( bottom >= my + mouse_size)
+      bottom = my + mouse_size - 1;
+   if( top >= bottom)      /* cursor above or below desired rectangle */
+      return FALSE;
+   if( draw_it)
+      {
+      const unsigned char *mask1 = cursor_data + 3 + (top - my) * bytes_per_line;
+      const unsigned char *mask2 = mask1 + bytes_per_line * mouse_size;
+      int x, y, i;
+
+      for( y = top; y < bottom; y++)
+         {
+         for( x = left, i = left - mx; x < right; x++, i++)
+            if( (mask1[i >> 3] >> (i & 7)) & 1)
+               _draw_pixel( x, y, (mask2[i >> 3] >> (i & 7)) & 1);
+         mask1 += bytes_per_line;
+         mask2 += bytes_per_line;
+         }
+      }
+   return( TRUE);
+}
+
+#endif         /* #ifdef HAVE_MOUSE */
+
 /* The framebuffer appears to store red,  green,  and blue in the opposite
 order from what the other platforms expect : */
 
@@ -328,6 +468,10 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
     int cursor_to_draw = 0;
     const int line_len = PDC_fb.line_length * 8 / PDC_fb.bits_per_pixel;
     uint8_t scratch[300];
+#ifdef HAVE_MOUSE
+    const int t_width = _orig_font_width( );
+    const int left = x * t_width, right = (x + len) * t_width;
+#endif
 
     assert( srcp);
     assert( x >= 0);
@@ -355,9 +499,9 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
         int run_len = 0, x1, y1;
         PACKED_RGB fg, bg;
         long video_offset, next_glyph;
-        extern int PDC_orientation;
 
-        switch( PDC_orientation & 3)
+        assert( PDC_orientation >= 0 && PDC_orientation < 4);
+        switch( PDC_orientation)
             {
             case 0:   /* 'normal' */
                x1 = x;
@@ -471,6 +615,11 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
             }
         }
     }
+#ifdef HAVE_MOUSE
+    if( _mouse_cursor_shown)
+        PDC_update_mouse_cursor( left, right, lineno * _orig_font_height( ),
+                                   (lineno + 1) * _orig_font_height( ), TRUE);
+#endif
 }
 
 void PDC_doupdate(void)

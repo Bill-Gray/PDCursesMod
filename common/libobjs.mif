@@ -20,7 +20,7 @@ panel.$(O) printw.$(O) refresh.$(O) scanw.$(O) scr_dump.$(O) scroll.$(O) \
 slk.$(O) termattr.$(O) terminfo.$(O) touch.$(O) util.$(O) window.$(O)
 
 PDCOBJS = pdcclip.$(O) pdcdisp.$(O) pdcgetsc.$(O) pdckbd.$(O) pdcscrn.$(O) \
-pdcsetsc.$(O) pdcutil.$(O)
+pdcsetsc.$(O) pdcutil.$(O) $(ADDED_PDCOBJS)
 
 DEMOS_EXCEPT_TUIDEMO =   calendar$(E) firework$(E) init_col$(E)  \
 mbrot$(E) newtest$(E) ozdemo$(E) picsview$(E) ptest$(E) rain$(E)  \

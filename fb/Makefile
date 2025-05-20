@@ -29,6 +29,11 @@ else
 	CFLAGS  += -O2
 endif
 
+ifeq ($(HAVE_MOUSE),Y)
+	CFLAGS  += -DHAVE_MOUSE
+	ADDED_PDCOBJS=pdcmouse.$(O)
+endif
+
 CFLAGS	+= -fPIC
 
 ifeq ($(UTF8),Y)

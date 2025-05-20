@@ -49,6 +49,9 @@ static bool check_key( int *c)
     if( PDC_resize_occurred)
        return( TRUE);
 
+#ifdef HAVE_MOUSE
+    _check_mouse( );
+#endif
 #ifdef LINUX_FRAMEBUFFER_PORT
     PDC_check_for_blinking( );
 #endif

@@ -224,11 +224,19 @@ void PDC_rotate_font( void)
       {
       PDC_rows = PDC_fb.xres / PDC_font_info.width;
       PDC_cols = PDC_fb.yres / PDC_font_info.height;
+#ifdef HAVE_MOUSE
+      PDC_mouse_x = PDC_fb.yres / 2;
+      PDC_mouse_y = PDC_fb.xres / 2;
+#endif
       }
    else
       {
       PDC_cols = PDC_fb.xres / PDC_font_info.width;
       PDC_rows = PDC_fb.yres / PDC_font_info.height;
+#ifdef HAVE_MOUSE
+      PDC_mouse_x = PDC_fb.xres / 2;
+      PDC_mouse_y = PDC_fb.yres / 2;
+#endif
       }
    PDC_resize_occurred = TRUE;
    SP->cols = PDC_cols;
