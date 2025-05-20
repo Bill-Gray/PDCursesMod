@@ -1,8 +1,25 @@
 Generally speaking,  this history mentions only the more significant
 changes.  See the git log for full details.
 
-Current version - 2025 May 12
+Current version - 2025 May 20
 =============================
+
+Minor new features
+------------------
+
+- Framebuffer/DRM shows a mouse cursor now,  if built with HAVE_MOUSE=Y.
+  It doesn't actually respond to mouse events yet,  but that should be
+  relatively straightforward.  7578a604b9
+
+- x11new and framebuffer/DRM ports cleaned up,  READMEs updated,  some
+  unnecessary code removed.  b08805c7dd  6221595646  f300bfa0c0  bae06a863c
+
+- Fixes for C90 compliance : removed some C++-style // comments,  moved
+  variables to the top of code blocks,  used TRUE/FALSE instead of
+  true/false.  880000943a  9efd32336c
+
+PDCursesMod 4.5.1 - 2025 May 12
+===============================
 
 Major new features
 ------------------
