@@ -1,5 +1,5 @@
-PDCursesMod for Framebuffer
-========================
+PDCursesMod for DRM and Linux framebuffer
+=========================================
 
 This directory contains source code to support PDCursesMod using either the 'traditional',  now-deprecated [Linux framebuffer](https://en.wikipedia.org/wiki/Linux_framebuffer) library,  or the newer [Direct Rendering Manager (DRM)](https://en.wikipedia.org/wiki/Direct_Rendering_Manager) library,  which works on Linux and *BSD.  Much of the [VT port](../vt) is recycled;  for example, the input routines are identical.  You will see that some source files simply `#include` a file from the VT port.
 

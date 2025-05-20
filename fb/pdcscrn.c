@@ -55,11 +55,6 @@ void PDC_reset_prog_mode( void)
     term.c_cc[VSTOP] = _POSIX_VDISABLE;   /* disable Ctrl-S */
     term.c_cc[VSTART] = _POSIX_VDISABLE;   /* disable Ctrl-Q */
     tcsetattr( STDIN, TCSANOW, &term);
-    PDC_puts_to_stdout( "\033[?1006h");    /* Set SGR mouse tracking,  if available */
-#ifdef HOW_DO_WE_PRESERVE_THE_SCREEN
-    if( !SP->_preserve)
-       PDC_puts_to_stdout( "\033[?47h");      /* Save screen */
-#endif
     SP->_trap_mbe = _stored_trap_mbe;
     PDC_mouse_set( );          /* clear any mouse event captures */
     PDC_resize_occurred = FALSE;
@@ -134,7 +129,7 @@ void PDC_scr_close( void)
    tcsetattr( STDIN, TCSANOW, &orig_term);
    PDC_draw_rectangle( 0, 0, PDC_fb.xres, PDC_fb.yres, 0);
    PDC_doupdate( );
-   PDC_puts_to_stdout( NULL);      /* free internal cache */
+   printf( "\033[?25h\033[?0c");    /* restore cursor */
 #ifdef USE_DRM
    close_drm( );
 #else
@@ -225,8 +220,8 @@ void PDC_rotate_font( void)
       PDC_rows = PDC_fb.xres / PDC_font_info.width;
       PDC_cols = PDC_fb.yres / PDC_font_info.height;
 #ifdef HAVE_MOUSE
-      PDC_mouse_x = PDC_fb.yres / 2;
-      PDC_mouse_y = PDC_fb.xres / 2;
+      PDC_mouse_x = PDC_mouse_x * PDC_fb.yres / PDC_fb.xres;
+      PDC_mouse_y = PDC_mouse_y * PDC_fb.xres / PDC_fb.yres;
 #endif
       }
    else
@@ -234,8 +229,8 @@ void PDC_rotate_font( void)
       PDC_cols = PDC_fb.xres / PDC_font_info.width;
       PDC_rows = PDC_fb.yres / PDC_font_info.height;
 #ifdef HAVE_MOUSE
-      PDC_mouse_x = PDC_fb.xres / 2;
-      PDC_mouse_y = PDC_fb.yres / 2;
+      PDC_mouse_x = PDC_mouse_x * PDC_fb.xres / PDC_fb.yres;
+      PDC_mouse_y = PDC_mouse_y * PDC_fb.yres / PDC_fb.xres;
 #endif
       }
    PDC_resize_occurred = TRUE;
@@ -427,6 +422,8 @@ int PDC_scr_open(void)
         return( -4);
 
 #endif
+    printf( "\033[?25l\033[?1c");    /* Shut off cursor */
+    fflush( stdout);
     PDC_has_rgb_color = (PDC_fb.bits_per_pixel > 8);
     if( PDC_has_rgb_color)
        COLORS = 256 + (256 * 256 * 256);

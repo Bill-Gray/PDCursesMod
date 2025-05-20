@@ -61,66 +61,6 @@ void PDC_check_for_blinking( void)
    }
 }
 
-                   /* Rarely,  writes to stdout fail if a signal handler is
-                      called.  In which case we just try to write out the
-                      remainder of the buffer until success happens.     */
-
-#define TBUFF_SIZE 512
-
-static void put_to_stdout( const char *buff, size_t bytes_out)
-{
-    static char *tbuff = NULL;
-    static size_t bytes_cached;
-    const int stdout_fd = 1;
-
-    if( !buff && !tbuff)
-        return;
-
-    if( !buff && bytes_out == 1)        /* release memory at shutdown */
-    {
-        free( tbuff);
-        tbuff = NULL;
-        bytes_cached = 0;
-        return;
-    }
-
-    if( buff && !tbuff)
-        tbuff = (char *)malloc( TBUFF_SIZE);
-    while( bytes_out || (!buff && bytes_cached))
-    {
-        if( buff)
-        {
-            size_t n_copy = bytes_out;
-
-            if( n_copy > TBUFF_SIZE - bytes_cached)
-                n_copy = TBUFF_SIZE - bytes_cached;
-            memcpy( tbuff + bytes_cached, buff, n_copy);
-            buff += n_copy;
-            bytes_out -= n_copy;
-            bytes_cached += n_copy;
-        }
-        if( bytes_cached == TBUFF_SIZE || !buff)
-            while( bytes_cached)
-            {
-#ifdef _WIN32
-                const size_t bytes_written = _write( stdout_fd, tbuff,
-                                             (unsigned int)bytes_cached);
-#else
-                const size_t bytes_written = write( stdout_fd, tbuff, bytes_cached);
-#endif
-
-                bytes_cached -= bytes_written;
-                if( bytes_cached)
-                    memmove( tbuff, tbuff + bytes_written, bytes_cached);
-            }
-    }
-}
-
-void PDC_puts_to_stdout( const char *buff)
-{
-   put_to_stdout( buff, (buff ? strlen( buff) : 1));
-}
-
 void PDC_gotoyx( int row, int col)
 {
     PDC_LOG(("PDC_gotoyx() - called: row %d col %d from row %d col %d\n",
