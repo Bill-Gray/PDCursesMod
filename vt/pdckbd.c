@@ -663,7 +663,6 @@ int PDC_mouse_set( void)
 {
 #ifndef LINUX_FRAMEBUFFER_PORT
    if( !PDC_is_ansi)
-#endif
       {
       static int curr_tracking_state = -1;
       int tracking_state;
@@ -700,6 +699,7 @@ int PDC_mouse_set( void)
          PDC_doupdate( );
          }
       }
+#endif      /* #ifndef LINUX_FRAMEBUFFER_PORT */
    return(  OK);
 }
 
