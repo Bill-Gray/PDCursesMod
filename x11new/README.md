@@ -3,10 +3,9 @@ PDCursesMod for X11 (new,  experimental)
 
 This port of PDCursesMod for X11 has been written from scratch,  with
 (thus far) only the key remapping array taken from pdckbd.c of the
-"original" X11 port.  It is,  as yet,  unclear if this will be a
-replacement for the original port.  As noted in the 'to do' section,
-it's early days for this port (no known bugs,  but many unimplemented
-and unfinished bits of functionality).
+"original" X11 port.  The only shortcoming of this version relative to
+the original port is the lack of bold and italic fonts.  Once that's
+fixed,  the original X11 port will be deprecated in favor of this one.
 
 Building
 --------
@@ -14,10 +13,11 @@ Building
 - Run `make`.  Add `UTF8=Y` to force the wide-character version.  Add
   `DEBUG=Y` for the debug version.  Add `NO_LEAKS=Y` to avoid Xlib's tendency
   to leak lots of memory (this does limit you to a US keyboard;  see
-  `pdckbd.c`.)  Add the target `demos` to build the sample programs,
-  and/or `tests` for the test programs.
+  `pdckbd.c`.)  Add `DLL=Y` to generate a shared library.  Add the target
+  `demos` to build the sample programs,  and/or `tests` for the test programs.
 
-- Currently,  there is no `make install`.
+- If you've built a shared library via `UTF8=Y`,  you can then run `make install`
+  to install it.  Most likely,  you'll have to run as root or use `sudo`.
 
 Usage
 -----
@@ -35,9 +35,9 @@ To do
 - How to do SMB (Unicode > 0xffff)?
 - Bold & italic text
 - Respond to Ctrl-plus and Ctrl-minus with font size changes?
-- Add `make install`.
 
-Most of these shouldn't be all that tough to do.
+The last two should be relatively straightforward.  The first two appear
+to be more challenging than I'd have expected.
 
 Interaction with stdio
 ----------------------
