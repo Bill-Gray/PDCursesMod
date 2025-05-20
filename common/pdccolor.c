@@ -188,7 +188,7 @@ void PDC_get_rgb_values( const chtype srcp,
     {
         if( !(SP->termattrs & A_BLINK))   /* convert 'blinking' to 'bold' */
             intensify_backgnd = TRUE;
-        else if( SP->blink_state)
+        else if( SP->blink_state & 1)
             reverse_colors ^= 1;
     }
     if( default_foreground)
