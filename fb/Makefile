@@ -141,13 +141,9 @@ tuidemo.o: $(demodir)/tuidemo.c
 include $(demodir)/nctests.mif
 
 install:
-ifneq ($(OS),Windows_NT)
 	cp lib$(DLLNAME).so /usr/local/lib
 	ldconfig /usr/local/lib
-endif
 
 uninstall:
-ifneq ($(OS),Windows_NT)
 	$(RM) /usr/local/lib/lib$(DLLNAME).so
 	ldconfig /usr/local/lib
-endif
