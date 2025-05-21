@@ -95,12 +95,8 @@ static Font _load_font( Display *dis, const char *font_name)
 
     assert( xfont);
     XTextExtents( xfont, "A", 1, &direction, &font_ascent, &font_descent, &overall);
-#ifdef NO_LEAKS
-    if( xfont->properties)
-       free( xfont->properties);       /* frees 368 bytes */
-    if( xfont->per_char)
-       free( xfont->per_char);         /* frees 786,432 bytes */
-#endif
+    free( xfont->properties);
+    free( xfont->per_char);
     XFreeFontInfo( NULL, xfont, 0);
     PDC_font_descent = font_descent;
     PDC_font_width = overall.width;
