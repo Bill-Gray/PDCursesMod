@@ -18,22 +18,22 @@ void trap(int);
 
 const char *AusMap[17] =
 {
-    "                 _,__        .:",
-    "         Darwin <*  /        | \\",
-    "            .-./     |.     :  :,",
-    "           /    |      '-._/     \\_",
-    "          /     |   N.T. | '       \\",
-    "        .'      |        |   Qld.  *: Brisbane",
-    "     .-'        |        |           ;",
-    "     |   W.A.   |----------|         |",
-    "     \\          |          |--------/",
-    "      |         |   S.A.   | N.S.W./",
-    "Perth  *        |__.--._   |-,_   *  Sydney",
-    "        \\     _.'       \\:.|Vic'-,|",
-    "        >__,-'   Adelaide  \\_/*_.-'",
-    "                              Melbourne",
-    "                             :--,",
-    "                        Tas.  '* Hobart",
+    "                   _,__        .:",
+    "         Darwin    *   --.     | \\",
+    "            .---,_/     /     :  :,",
+    "           /      |      '-._/     \\_",
+    "          /       |  N.T.  |         \\",
+    "      _..'        |        |   Qld.   \\",
+    "     (            |        |           )",
+    "     |    W.A.    |----------,        *; Brisbane",
+    "     \\            |          |---------|",
+    "      |           |   S.A.   | N.S.W. /",
+    "Perth  *          |__.--._   |-,_    * Sydney",
+    "       )      ___.'       \\*.|Vic'-,/",
+    "       >.__,-'     Adelaide  \\_,*_.-'",
+    "                                Melbourne",
+    "                                :--,",
+    "                           Tas.  \\*  Hobart",
     ""
 };
 
@@ -305,7 +305,7 @@ int main(int argc, char **argv)
 
         /* Erase and draw green window */
 
-        init_pair(4, COLOR_YELLOW, COLOR_GREEN);
+        init_pair(4, COLOR_BLACK, COLOR_GREEN);
         wbkgd(win, COLOR_PAIR(4));
         wattrset(win, A_BOLD);
         werase(win);
