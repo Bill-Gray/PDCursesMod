@@ -41,8 +41,8 @@ Defined by this header:
 #define PDC_VER_MINOR    5
 #define PDC_VER_CHANGE   1
 #define PDC_VER_YEAR   2025
-#define PDC_VER_MONTH     5
-#define PDC_VER_DAY      20
+#define PDC_VER_MONTH     6
+#define PDC_VER_DAY      12
 
 #define PDC_STRINGIZE( x) #x
 #define PDC_stringize( x) PDC_STRINGIZE( x)
@@ -285,10 +285,10 @@ keep track of press/release events to determine which button(s) are
 held at a given time.            */
 
 #ifdef PDC_LONG_MMASK
-   #define BUTTON1_MOVED           (mmask_t)0x20      /* PDCurses */
+   #define BUTTON1_MOVED           (mmask_t)0x20  /* PDCurses* only; deprecated */
    #define PDC_BITS_PER_BUTTON     6
 #else
-   #define BUTTON1_MOVED           (mmask_t)0x10      /* PDCurses */
+   #define BUTTON1_MOVED           (mmask_t)0x10  /* PDCurses* only; deprecated */
    #define PDC_BITS_PER_BUTTON     5
 #endif
 
@@ -299,6 +299,7 @@ held at a given time.            */
 #define BUTTON2_CLICKED        PDC_SHIFTED_BUTTON( BUTTON1_CLICKED,        2)
 #define BUTTON2_DOUBLE_CLICKED PDC_SHIFTED_BUTTON( BUTTON1_DOUBLE_CLICKED, 2)
 #define BUTTON2_TRIPLE_CLICKED PDC_SHIFTED_BUTTON( BUTTON1_TRIPLE_CLICKED, 2)
+             /* mouse move events are PDCurses*-only;  deprecated */
 #define BUTTON2_MOVED          PDC_SHIFTED_BUTTON( BUTTON1_MOVED,          2)
 
 #define BUTTON3_RELEASED       PDC_SHIFTED_BUTTON( BUTTON1_RELEASED,       3)
@@ -1870,6 +1871,15 @@ PDCEX  int     wunderscore(WINDOW *);
 #define PDC_KEY_MODIFIER_ALT     4
 #define PDC_KEY_MODIFIER_NUMLOCK 8
 #define PDC_KEY_MODIFIER_REPEAT  16
+
+/* Modifier masks not used at present,  but which could be added to at  */
+/* least some platforms.  'Super' usually corresponds to the 'Windows' key. */
+
+#define PDC_KEY_MODIFIER_SUPER      0x20
+#define PDC_KEY_MODIFIER_CAPSLOCK   0x40
+#define PDC_KEY_MODIFIER_META       0x80
+#define PDC_KEY_MODIFIER_HYPER      0x100
+#define PDC_KEY_MODIFIER_MENU       0x200
 
 /* Bitflags for trace(), curses_trace(),  for ncurses compatibility.
 Values were copied from ncurses.  Note that those involving terminfo,
