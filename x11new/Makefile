@@ -70,6 +70,8 @@ STRIP	= $(PREFIX)strip
 
 ifeq ($(shell uname -s),FreeBSD)
 	CC = cc
+	CFLAGS += -I/usr/local/include
+	LDFLAGS += -L /usr/local/lib
 endif
 
 ifeq ($(DLL),Y)
