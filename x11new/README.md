@@ -1,4 +1,4 @@
-PDCursesMod for X11 (new,  experimental)
+PDCursesMod for X11 (new)
 ========================================
 
 This port of PDCursesMod for X11 has been written from scratch,  with
@@ -28,15 +28,17 @@ library,  of course,  and to the following libraries:
 
    `-lX11 -lpthread`
 
+Hitting Ctrl-Plus or Ctrl-Minus will increase or decrease the font size,
+respectively.
+
 To do
 -----
 
 - Combining and fullwidth characters
 - How to do SMB (Unicode > 0xffff)?
 - Bold & italic text
-- Respond to Ctrl-plus and Ctrl-minus with font size changes?
 
-The last two should be relatively straightforward.  The first two appear
+The last should be relatively straightforward.  The first two appear
 to be more challenging than I'd have expected.
 
 Interaction with stdio
