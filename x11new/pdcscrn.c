@@ -86,14 +86,25 @@ void PDC_scr_free( void)
 #endif
 }
 
-static Font _load_font( Display *dis, const char *font_name)
+static int _font_size = 15;
+      /* this is the value requested in the font name.  The actual */
+      /* font size may be something else.  Don't use this except   */
+      /* in choosing a font name!                                  */
+
+static Font _load_font( Display *dis)
 {
-    Font rval = XLoadFont( dis, font_name);
-    XFontStruct *xfont = XQueryFont( dis, rval);
+    const char *font_template = "-misc-fixed-medium-r-normal--%d-*10646-1*";
+    char font_name[80];
+    Font rval;
+    XFontStruct *xfont;
     int direction, font_ascent, font_descent;
     XCharStruct overall;
 
-    assert( xfont);
+    snprintf( font_name, sizeof( font_name), font_template, _font_size);
+    xfont = XLoadQueryFont( dis, font_name);
+    if( !xfont)
+        return( 0);
+    rval = xfont->fid;
     XTextExtents( xfont, "A", 1, &direction, &font_ascent, &font_descent, &overall);
     free( xfont->properties);
     free( xfont->per_char);
@@ -101,6 +112,28 @@ static Font _load_font( Display *dis, const char *font_name)
     PDC_font_descent = font_descent;
     PDC_font_width = overall.width;
     PDC_font_height = font_ascent + font_descent;
+    return( rval);
+}
+
+int PDC_look_for_font( const int step)
+{
+    int saved_size = _font_size, rval = 0;
+    Font new_font = 0;
+
+    while( !new_font && _font_size < 21 && _font_size > 1)
+    {
+        _font_size += step;
+        new_font = _load_font( dis);
+    }
+    if( new_font)
+    {
+        XUnloadFont( dis, font);
+        XSetFont( dis, curr_gc, new_font);
+        font = new_font;
+        rval = 1;
+    }
+    else
+        _font_size = saved_size;
     return( rval);
 }
 
@@ -114,7 +147,6 @@ int PDC_scr_open(void)
                 | ButtonReleaseMask | StructureNotifyMask | PointerMotionMask;
     char *pcIconName = "Icon Name?";
     char *pcProgName = "Test App";
-    const char *font_name = "-misc-fixed-medium-r-normal--15-*10646-1*";
 
     PDC_LOG(("PDC_scr_open called\n"));
     COLORS = 256 + (256 * 256 * 256);
@@ -162,7 +194,7 @@ int PDC_scr_open(void)
 
     dis = XOpenDisplay(NULL);
     assert( dis);
-    font = _load_font( dis, font_name);
+    font = _load_font( dis);
     win = XCreateSimpleWindow(dis, DefaultRootWindow( dis),
                1, 1, PDC_cols * PDC_font_width, PDC_rows * PDC_font_height,
                0, WhitePixel (dis, 0), BlackPixel (dis, 0));

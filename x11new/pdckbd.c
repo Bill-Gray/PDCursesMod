@@ -387,6 +387,45 @@ static int _modifier_key( KeySym *key)
 }
 #endif
 
+static int _is_maximized( void)
+{
+    const Atom wmState = XInternAtom(dis, "_NET_WM_STATE", True);
+    const Atom max_vert = XInternAtom(dis, "_NET_WM_STATE_MAXIMIZED_VERT", True);
+    const Atom max_horz = XInternAtom(dis, "_NET_WM_STATE_MAXIMIZED_HORZ", True);
+    Atom type;
+    int format, rval = 0;
+    unsigned long nItem, bytesAfter, i;
+    unsigned char *properties = NULL;
+
+    XGetWindowProperty(dis, win, wmState, 0, (~0L), False, AnyPropertyType,
+                       &type, &format, &nItem, &bytesAfter, &properties);
+    assert( properties);
+    for( i = 0; i < nItem; i++)
+        if( ((long *)properties)[i] == (long)max_vert)
+            rval |= 1;
+        else if( ((long *)properties)[i] == (long)max_horz)
+            rval |= 2;
+    XFree( properties);
+    return( rval);
+}
+
+static void _check_for_resize( )
+{
+   bool resize_not_in_queue = TRUE;
+   int i;
+
+   for( i = queue_low; i != queue_high; i = (i + 1) % QUEUE_SIZE)
+      if( key_queue[i] == KEY_RESIZE)
+         resize_not_in_queue = FALSE;
+   if( resize_not_in_queue)
+      {
+      SP->resized = TRUE;
+      add_to_queue( KEY_RESIZE);
+      }
+}
+
+int PDC_look_for_font( const int step);      /* pdcscrn.c */
+
 static bool check_key( int *c)
 {
    XEvent report;
@@ -419,18 +458,8 @@ static bool check_key( int *c)
             new_rows = attrib.height / PDC_font_height;
             if( new_cols != PDC_cols || new_rows != PDC_rows)
                {
-               bool resize_not_in_queue = TRUE;
-               int i;
-
                PDC_resize_screen( new_rows, new_cols);
-               for( i = queue_low; i != queue_high; i = (i + 1) % QUEUE_SIZE)
-                  if( key_queue[i] == KEY_RESIZE)
-                     resize_not_in_queue = FALSE;
-               if( resize_not_in_queue)
-                  {
-                  SP->resized = TRUE;
-                  add_to_queue( KEY_RESIZE);
-                  }
+               _check_for_resize( );
                }
             else
                {
@@ -504,6 +533,25 @@ static bool check_key( int *c)
                   else
                       key = key_table[i].normal;
                   key_to_add = (int)key;
+                  }
+            if( report.xkey.state & ControlMask)
+               if( key_to_add == '-' || key_to_add == '+')
+                  {
+                  if( PDC_look_for_font( (key_to_add == '+') ? 1 : -1))
+                     {
+                     if( _is_maximized( ))
+                        {
+                        XWindowAttributes attrib;
+
+                        XGetWindowAttributes( dis, win, &attrib);
+                        PDC_resize_screen( attrib.height / PDC_font_height,
+                                           attrib.width / PDC_font_width);
+                        _check_for_resize( );
+                        }
+                     else
+                        PDC_resize_screen( PDC_rows, PDC_cols);
+                     }
+                  key_to_add = -1;     /* suppress it */
                   }
             if( key_to_add > -1)
                {
