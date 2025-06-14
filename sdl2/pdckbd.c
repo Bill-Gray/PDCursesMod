@@ -180,10 +180,16 @@ static int _handle_alt_keys(int key)
 static int _process_key_event(void)
 {
     int i, key = 0;
+    static int repeat_count;
     static int _key_already_handled = 0;
 #ifdef PDC_WIDE
     size_t bytes;
 #endif
+
+    if( event.key.repeat && event.type == SDL_KEYDOWN)
+        repeat_count++;
+    else
+        repeat_count = 0;
 
     if (event.type == SDL_KEYUP)
     {
@@ -205,6 +211,8 @@ static int _process_key_event(void)
 
         if (!(SDL_GetModState() & KMOD_NUM))
             SP->key_modifiers &= ~PDC_KEY_MODIFIER_NUMLOCK;
+        if( !repeat_count)
+            SP->key_modifiers &= ~PDC_KEY_MODIFIER_REPEAT;
 
         if (SP->return_key_modifiers && event.key.keysym.sym == oldkey)
         {
@@ -263,6 +271,8 @@ static int _process_key_event(void)
     oldkey = event.key.keysym.sym;
     if (SDL_GetModState() & KMOD_NUM)
         SP->key_modifiers |= PDC_KEY_MODIFIER_NUMLOCK;
+    if( repeat_count)
+        SP->key_modifiers |= PDC_KEY_MODIFIER_REPEAT;
 
     switch (event.key.keysym.sym)
     {
