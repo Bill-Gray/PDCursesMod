@@ -113,6 +113,7 @@ int SDL_WaitEventTimeout( SDL_Event *event, int timeout_ms)
 static int _process_key_event(void)
 {
     int i, key = 0;
+    static int prev_key = -1;     /* used to detect repeats */
 
     SP->key_modifiers = 0L;
 
@@ -138,7 +139,7 @@ static int _process_key_event(void)
                 break;
             }
         }
-
+        prev_key = -1;
         return -1;
     }
 
@@ -222,6 +223,10 @@ static int _process_key_event(void)
     }
     if( key == 3 && !SP->raw_inp)
         exit( 0);
+
+    if( key > 0 && prev_key == key)
+        SP->key_modifiers |= PDC_KEY_MODIFIER_REPEAT;
+    prev_key = key;
 
     return key ? key : -1;
 }

@@ -428,6 +428,7 @@ int PDC_look_for_font( const int step);      /* pdcscrn.c */
 
 static bool check_key( int *c)
 {
+   static XEvent prev_report;
    XEvent report;
    bool rval = FALSE;
    bool wait_for_more_mouse = FALSE;
@@ -560,6 +561,11 @@ static bool check_key( int *c)
                   raise( SIGINT);
                add_to_queue( key_to_add);
                SP->key_modifiers = 0;
+               if( prev_report.xkey.type == KeyRelease
+                      && report.xkey.time == prev_report.xkey.time
+                      && report.xkey.keycode == prev_report.xkey.keycode)
+                   SP->key_modifiers |= PDC_KEY_MODIFIER_REPEAT;
+
                if( report.xkey.state & Mod2Mask)
                    SP->key_modifiers |= PDC_KEY_MODIFIER_NUMLOCK;
 
@@ -628,6 +634,7 @@ static bool check_key( int *c)
          default:
             break;
          }
+      prev_report = report;
       if( wait_for_more_mouse)   /* wait for a possible press or release event */
          {
          const long t_end = PDC_millisecs( ) + SP->mouse_wait;
