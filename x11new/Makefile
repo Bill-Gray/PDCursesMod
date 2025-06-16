@@ -33,13 +33,7 @@ ifeq ($(NO_LEAKS),Y)
 	CFLAGS  += -DNO_LEAKS
 endif
 
-ifeq ($(DOS),Y)
-	CFLAGS	+= -DDOS
-	E = .exe
-	RM = del
-else
-	CFLAGS	+= -fPIC
-endif
+CFLAGS	+= -fPIC
 
 ifeq ($(UTF8),Y)
 	CFLAGS	+= -DPDC_FORCE_UTF8
@@ -51,11 +45,6 @@ endif
 
 ifdef CHTYPE_32
 	CFLAGS += -DCHTYPE_32
-endif
-
-ifdef _a64
-	PREFIX  = aarch64-w64-mingw32-
-	E = .exe
 endif
 
 LIBNAME=libpdcurses
@@ -75,21 +64,14 @@ ifeq ($(shell uname -s),FreeBSD)
 endif
 
 ifeq ($(DLL),Y)
-	ifeq ($(E),.exe)
-		CFLAGS += -DPDC_DLL_BUILD
-		LIBCURSES	= $(DLLNAME).dll
-		LIBEXE = $(CC)
-		LIBFLAGS = -Wl,--out-implib,$(LIBNAME).a -shared -o
+	ifeq ($(shell uname -s),Darwin)
+		DLL_SUFFIX = .dylib
 	else
-		ifeq ($(shell uname -s),Darwin)
-			DLL_SUFFIX = .dylib
-		else
-			DLL_SUFFIX = .so
-		endif
-		LIBEXE = $(CC)
-		LIBFLAGS = -shared -o
-		LIBCURSES = lib$(DLLNAME)$(DLL_SUFFIX)
+		DLL_SUFFIX = .so
 	endif
+	LIBEXE = $(CC)
+	LIBFLAGS = -shared -o
+	LIBCURSES = lib$(DLLNAME)$(DLL_SUFFIX)
 endif
 
 BUILD		= $(CC) $(CFLAGS) -I$(PDCURSES_SRCDIR)
@@ -152,13 +134,9 @@ tuidemo.o: $(demodir)/tuidemo.c
 	$(BUILD) -c $(DEMOFLAGS) $(demodir)/tuidemo.c
 
 configure :
-	$(CC) $(CFLAGS) -o config_curses$(E) $(common)/config_curses.c
-ifdef PREFIX
-	wine config_curses$(E) -v -d.. $(CFLAGS)
-else
-	./config_curses$(E) -v -d.. $(CFLAGS)
-endif
-	rm config_curses$(E)
+	$(CC) $(CFLAGS) -o config_curses $(common)/config_curses.c
+	./config_curses -v -d.. $(CFLAGS)
+	rm config_curses
 
 include $(demodir)/nctests.mif
 
