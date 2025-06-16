@@ -758,9 +758,11 @@ int wgetch(WINDOW *win)
         if( rval != ERR && (rval < 0 || rval > 127)
                   && !PDC_is_function_key( rval))
         {
-            wchar_t c = (wchar_t)rval;
+            wchar_t c[2];
 
-            n_buff = PDC_wcstombs( (char *)buffered, &c, 1);
+            c[0] = (wchar_t)rval;
+            c[1] = L'\0';
+            n_buff = PDC_wcstombs( (char *)buffered, c, sizeof( buffered));
             if( (int)n_buff <= 0)
             {
                 n_buff = 0;
