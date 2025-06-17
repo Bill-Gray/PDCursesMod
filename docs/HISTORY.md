@@ -1,7 +1,7 @@
 Generally speaking,  this history mentions only the more significant
 changes.  See the git log for full details.
 
-Current version - 2025 May 20
+Current version - 2025 June 16
 =============================
 
 Minor new features
@@ -17,6 +17,25 @@ Minor new features
 - Fixes for C90 compliance : removed some C++-style // comments,  moved
   variables to the top of code blocks,  used TRUE/FALSE instead of
   true/false.  880000943a  9efd32336c
+
+- In x11new,  you can hit Ctrl-Minus and Ctrl-Plus to go to the next smaller
+  or larger font size,  respectively.  43066a8c8c
+
+- The `PDC_KEY_MODIFIER_REPEAT` modifier was not applied in SDL1 and x11new.
+  83fa89ce74
+
+Bug fixes
+---------
+
+- getch() triggered an assert() if fed a character that expanded to a
+  multi-byte string in PDC_FORCE_UTF8 builds (issue #335,  reported by
+  Robin Haberkorn).  6306ac2d48
+
+- WinCon/pdckbd.c contained a poorly-written cast to which the C23 standard
+  objects,  resulting in warnings/errors when built to that standard
+  (issue #333).  Fix supplied by Gisle Vanem.  2426dbc85e
+
+- The `PDC_KEY_MODIFIER_REPEAT` modifier was broken in SDL2.  6bf92e1a06
 
 PDCursesMod 4.5.1 - 2025 May 12
 ===============================
