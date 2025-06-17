@@ -23,10 +23,6 @@ static struct termios orig_term;
 #include "../common/pdccolor.h"
 #include "../common/pdccolor.c"
 
-#ifdef USING_COMBINING_CHARACTER_SCHEME
-int PDC_expand_combined_characters( const cchar_t c, cchar_t *added);
-#endif
-
 #ifdef DOS
 int PDC_is_ansi = TRUE;
 #else

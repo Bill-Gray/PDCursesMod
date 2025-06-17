@@ -1,16 +1,28 @@
 /* Platform-independent parts of mouse handling.  This is surprisingly
 hard to get right.
 
-   The idea here is that the various platforms detect "raw" mouse events
-(buttons pressed and released,  mouse and wheel movements) in very
-different,  platform-specific ways.  But they all should use the same logic
-to "cook" those raw events into the clicks,  double-clicks,  etc.  that
-the PDCursesMod library eventually returns,  and to determine which events
-get filtered.
+   The idea here is that the various platforms detect "raw" mouse
+events.  The actual methods are,  of course,  platform-dependent,
+but the "raw" events will consist of
 
-   This code will convert the raw event stream to "cooked" events.  Some
-events may be omitted,  if the corresponding bits in SP->_trap_mbe aren't
-set.  Presses and releases will be combined into clicks _if_ we're actually
+- button N pressed
+- button N released
+- mouse moved
+- wheel up/down/left/right
+
+   The actual events returned by the PDCursesMod library,  however,
+will be the above plus "cooked" events made from presses and releases :
+
+- button N clicked
+- button N double-clicked
+- button N triple-clicked
+
+   Some of these will be filtered,  according to the bits set in
+SP->_trap_mbe.  This code contains the (platform-independent) logic
+used to turn "raw" mouse events from the platform into "cooked"
+events returned by the library,  with unwanted events filtered out.
+
+   Presses and releases will be combined into clicks _if_ we're actually
 looking for clicks from that button.  (If not,  PDCursesMod may return a
 press and a click... if,  again,  corresponding bits are turned on.)  Two
 clicks will be combined into a double-click, _if_ we're actually looking
