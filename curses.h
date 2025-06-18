@@ -408,10 +408,10 @@ have bits devoted to character data,  attribute data,  and color pair data.
 There are three configurations supported :
 
 Default, 64-bit chtype,  both wide- and 8-bit character builds:
--------------------------------------------------------------------------------
-|63|62|..|45|44|43|..|38|37|36|35|34|33|..|22|21|20|19|18|17|16|..| 3| 2| 1| 0|
--------------------------------------------------------------------------------
-|  color pair  | unused |        modifiers      |         character eg 'a'
+
+   color pair    | unused |  modifiers      | character eg 'a'
+   --------------|--------|-----------------------|--------------------
+   63 62 .. 45 44|43 .. 39|37 36 35 .. 22 21|20 19 18 .. 3 2 1 0
 
    21 character bits (0-20),  enough for full Unicode coverage
    17 attribute bits (21-37)
@@ -419,19 +419,21 @@ Default, 64-bit chtype,  both wide- and 8-bit character builds:
    20 color pair bits (44-63),  enough for 1048576 color pairs
 
 32-bit chtypes with wide characters (CHTYPE_32 and PDC_WIDE are #defined):
-    +--------------------------------------------------------------------+
-    |31|30|29|28|27|26|25|24|23|22|21|20|19|18|17|16|15|14|13|..| 2| 1| 0|
-    +--------------------------------------------------------------------+
-          color pair        |     modifiers         |   character eg 'a'
+
+   color pair       | modifiers             | character eg 'a'
+   -----------------|-----------------------|--------------------
+   31 30 29 .. 25 24|23 22 21 20 19 18 17 16|15 14 13 .. 2 1 0
+
    16 character bits (0-16),  enough for BMP (Unicode below 64K)
    8 attribute bits (16-23)
    8 color pair bits (24-31),  for 256 color pairs
 
 32-bit chtypes with narrow characters (CHTYPE_32 #defined,  PDC_WIDE is not):
-    +--------------------------------------------------------------------+
-    |31|30|29|28|..|22|21|20|19|18|17|16|..|12|11|10| 9| 8| 7| 6|..| 1| 0|
-    +--------------------------------------------------------------------+
-          color pair        |     modifiers               |character
+
+   color pair          |     modifiers       |character
+   --------------------|---------------------|----------------
+   31 30 29 .. 22 21 20|19 18 17 16 .. 10 9 8|7 6 5 4 3 2 1
+
    8 character bits (0-7);  only 8-bit charsets will work
    12 attribute bits (8-19)
    12 color pair bits (20-31),  for 4096 pairs
