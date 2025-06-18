@@ -32,39 +32,6 @@ Defined by this header:
 Text Attributes
 ===============
 
-By default,  PDCurses uses 64-bit integers for its chtype.  All chtypes
-have bits devoted to character data,  attribute data,  and color pair data.
-There are three configurations supported :
-
-Default, 64-bit chtype,  both wide- and 8-bit character builds:
--------------------------------------------------------------------------------
-|63|62|..|45|44|43|..|38|37|36|35|34|33|..|22|21|20|19|18|17|16|..| 3| 2| 1| 0|
--------------------------------------------------------------------------------
-|  color pair  | unused |        modifiers      |         character eg 'a'
-
-   21 character bits (0-20),  enough for full Unicode coverage
-   17 attribute bits (21-37)
-    6 currently unused bits (38-43)
-   20 color pair bits (44-63),  enough for 1048576 color pairs
-
-32-bit chtypes with wide characters (CHTYPE_32 and PDC_WIDE are #defined):
-    +--------------------------------------------------------------------+
-    |31|30|29|28|27|26|25|24|23|22|21|20|19|18|17|16|15|14|13|..| 2| 1| 0|
-    +--------------------------------------------------------------------+
-          color pair        |     modifiers         |   character eg 'a'
-   16 character bits (0-16),  enough for BMP (Unicode below 64K)
-   8 attribute bits (16-23)
-   8 color pair bits (24-31),  for 256 color pairs
-
-32-bit chtypes with narrow characters (CHTYPE_32 #defined,  PDC_WIDE is not):
-    +--------------------------------------------------------------------+
-    |31|30|29|28|..|22|21|20|19|18|17|16|..|12|11|10| 9| 8| 7| 6|..| 1| 0|
-    +--------------------------------------------------------------------+
-          color pair        |     modifiers               |character
-   8 character bits (0-7);  only 8-bit charsets will work
-   12 attribute bits (8-19)
-   12 color pair bits (20-31),  for 4096 pairs
-
 All attribute modifier schemes include eight "basic" bits:  bold, underline,
 right-line, left-line, italic, reverse and blink attributes,  plus the
 alternate character set indicator. For 32-bit narrow builds, three more
@@ -72,12 +39,46 @@ bits are used for overlined, dimmed, and strikeout attributes; a fourth
 bit is reserved.
 
 Default chtypes have enough character bits to support the full range of
-Unicode,  all attributes,  and 2^20 = 1048576 color pairs.  Note,  though,
-that as of 2022 Jun 17,  only WinGUI,  VT,  X11,  Linux framebuffer,  OpenGL,
-and SDLn have COLOR_PAIRS = 1048576.  Other platforms (DOSVGA,  Plan9, WinCon)
-may join them.  Some (DOS,  OS/2) simply do not have full-color
-capability.
+Unicode,  all attributes,  and 2^20 = 1048576 color pairs.  
+Note, though, that as of 2025 June 17, only WinGUI, VT, X11, X11new, Linux framebuffer,
+OpenGL, and SDLn have COLOR_PAIRS = 1048576.  Other platforms (DOSVGA,  Plan9, WinCon)
+may join them.  Some (DOS, OS/2) simply do not have full-color capability.
 
+By default,  PDCurses uses 64-bit integers for its chtype.  All chtypes
+have bits devoted to character data,  attribute data,  and color pair data.
+
+There are three configurations supported :
+
+### Default, 64-bit chtype,  both wide- and 8-bit character builds:
+
+    +-----------------------------------------------------------------------------+
+    |63|62|..|45|44|43|..|38|37|36|35|34|33|..|22|21|20|19|18|17|16|..| 3| 2| 1| 0|
+    +-----------------------------------------------------------------------------+
+       color pair  | unused |        modifiers      |         character eg 'a'
+    21 character bits (0-20),  enough for full Unicode coverage
+    17 attribute bits (21-37)
+     6 currently unused bits (38-43)
+    20 color pair bits (44-63),  enough for 1048576 color pairs
+
+### 32-bit chtypes with wide characters (CHTYPE_32 and PDC_WIDE are #defined):
+
+    +--------------------------------------------------------------------+
+    |31|30|29|28|27|26|25|24|23|22|21|20|19|18|17|16|15|14|13|..| 2| 1| 0|
+    +--------------------------------------------------------------------+
+          color pair        |     modifiers         |   character eg 'a'
+    16 character bits (0-16),  enough for BMP (Unicode below 64K)
+     8 attribute bits (16-23)
+     8 color pair bits (24-31),  for 256 color pairs
+
+### 32-bit chtypes with narrow characters (CHTYPE_32 #defined,  PDC_WIDE is not):
+
+    +--------------------------------------------------------------------+
+    |31|30|29|28|..|22|21|20|19|18|17|16|..|12|11|10| 9| 8| 7| 6|..| 1| 0|
+    +--------------------------------------------------------------------+
+          color pair        |     modifiers               |character
+     8 character bits (0-7);  only 8-bit charsets will work
+    12 attribute bits (8-19)
+    12 color pair bits (20-31),  for 4096 pairs
 
 
 --------------------------------------------------------------------------
