@@ -133,7 +133,7 @@ For chtype:
    A_ALTCHARSET | use the alternate character set
    A_BLINK      | bright background or blinking
    A_BOLD       | bright foreground or bold
-   A_DIM        | half bright -- no effect in PDCurses
+   A_DIM        | half bright
    A_INVIS      | invisible -- no effect in PDCurses
    A_ITALIC     | italic
    A_LEFT       | line along the left edge
@@ -141,13 +141,14 @@ For chtype:
    A_REVERSE    | reverse video
    A_RIGHT      | line along the right edge
    A_STANDOUT   | terminal's best highlighting mode
+   A_STRIKEOUT  | strikeout
    A_UNDERLINE  | underline
    A_ATTRIBUTES | bit-mask to extract attributes
    A_CHARTEXT   | bit-mask to extract a character
    A_COLOR      | bit-mask to extract a color-pair
 
 Not all attributes will work on all terminals. A_ITALIC is not standard,
-but is shared with ncurses.
+but is shared with ncurses.  A_STRIKEOUT is a PDCursesMod extension.
 
 For attr_t:
 
@@ -164,6 +165,7 @@ For attr_t:
    WA_REVERSE   | same as A_REVERSE
    WA_RIGHT     | same as A_RIGHT
    WA_STANDOUT  | same as A_STANDOUT
+   WA_STRIKEOUT | same as A_STRIKEOUT
    WA_UNDERLINE | same as A_UNDERLINE
 
 Note that on PDCurses*,  ncurses,  and most other implementations,  the
@@ -250,6 +252,68 @@ Box character aliases:
    ACS_BSBS     | same as ACS_HLINE
    ACS_SBSB     | same as ACS_VLINE
    ACS_SSSS     | same as ACS_PLUS
+
+PDCursesMod-only ACS chars.  Don't use if compatibility with any other
+curses implementation matters.  Some won't work in non-wide X11 builds
+(see 'common/acs_defs.h' for details).  Best avoided.
+
+   Name              | Description
+   :-----------------|:-------------------------------
+   ACS_CENT          | Cent symbol
+   ACS_YEN           | Yen symbol
+   ACS_PESETA        | Peseta symbol
+   ACS_HALF          | 1/2 vulgar fraction
+   ACS_QUARTER       | 1/4 vulgar fraction
+   ACS_LEFT_ANG_QU   | Left-angle quote
+   ACS_RIGHT_ANG_QU  | Right-angle quote
+   ACS_CLUB          | Club (card suit)
+   ACS_HEART         | Heart (card suit)
+   ACS_SPADE         | Spade (card suit)
+   ACS_SMILE         | Smile
+   ACS_REV_SMILE     | Inverse-video smile
+   ACS_MED_BULLET    | Medium bullet
+   ACS_WHITE_BULLET  | Large bullet
+   ACS_PILCROW       | Pilcrow (paragraph mark)
+   ACS_SECTION       | Section mark
+                     |
+   ACS_SUP2          | Superscript 2
+   ACS_ALPHA         | Lowercase alpha
+   ACS_BETA          | Lowercase beta
+   ACS_GAMMA         | Uppercase gamma
+   ACS_UP_SIGMA      | Uppeccase sigma
+   ACS_LO_SIGMA      | Lowercase sigma
+   ACS_MU            | Lowercase mu
+   ACS_TAU           | Lowercase tau
+   ACS_UP_PHI        | Uppercase phi
+   ACS_THETA         | Lowercase theta
+   ACS_OMEGA         | Uppercase omega
+   ACS_DELTA         | Lowercase delta
+   ACS_INFINITY      | Infinity sign
+   ACS_LO_PHI        | Lowercase phi
+   ACS_EPSILON       | Lowercase epsilon
+   ACS_INTERSECT     | Intersection symbol
+   ACS_TRIPLE_BAR    | Triple bar
+   ACS_DIVISION      | Division sign
+   ACS_APPROX_EQ     | Approximate-equality sign
+   ACS_SM_BULLET     | Small bullet
+   ACS_SQUARE_ROOT   | Square root symbol
+   ACS_UBLOCK        | Upper-half block
+   ACS_BBLOCK        | Lower-half block
+   ACS_LBLOCK        | Left-half block
+   ACS_RBLOCK        | Right-half block
+                     |
+   ACS_A_ORDINAL     | a-ordinal sign
+   ACS_O_ORDINAL     | o-ordinal sign
+   ACS_INV_QUERY     | Inverted question mark
+   ACS_REV_NOT       | Logical not sign,  mirrored
+   ACS_NOT           | Logical not sign
+   ACS_INV_BANG      | Inverted question mark
+   ACS_UP_INTEGRAL   | Upper half of an integral sign
+   ACS_LO_INTEGRAL   | Lower half of an integral sign
+   ACS_SUP_N         | Superscript n
+   ACS_CENTER_SQU    | Center square
+   ACS_F_WITH_HOOK   | Hooked f
+
 
 For cchar_t and wide-character functions, WACS_ equivalents are also
 defined.

@@ -653,8 +653,9 @@ consider these to be completely non-portable. */
 #define ACS_BSDS      ACS_DS_TTEE
 #define ACS_DSDS      ACS_DS_PLUS
 
-/* PDCurses-only ACS chars.  Don't use if ncurses compatibility matters.
-Some won't work in non-wide X11 builds (see 'acs_defs.h' for details). */
+/* PDCursesMod-only ACS chars.  Don't use if compatibility with any
+other curses implementation matters.  Some won't work in non-wide
+X11 builds (see 'common/acs_defs.h' for details).  Best avoided. */
 
 #define ACS_CENT          PDC_ACS('{')
 #define ACS_YEN           PDC_ACS('|')
