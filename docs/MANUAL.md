@@ -2342,7 +2342,8 @@ panel
 
    ceiling_panel() returns a pointer to the top panel in the deck.
 
-   panel_hidden() returns OK if pan is hidden and ERR if it is not.
+   panel_hidden() returns TRUE if pan is hidden, FALSE if not and
+   ERR if pan is NULL.
 
    panel_userptr() - Each panel has a user pointer available for
    maintaining relevant information. This function returns a pointer to
@@ -2371,7 +2372,8 @@ panel
 
    Each routine that returns a pointer to an object returns NULL if an
    error occurs. Each panel routine that returns an integer, returns OK
-   if it executes successfully and ERR if it does not.
+   if it executes successfully and ERR if it does not, with the exception
+   of panel_hidden returning TRUE/FALSE/ERR.
 
 ### Portability
                              X/Open  ncurses  NetBSD
@@ -2392,6 +2394,9 @@ panel
     show_panel                  -       Y       Y
     top_panel                   -       Y       Y
     update_panels               -       Y       Y
+
+  Note: Before PDC_BUILD 4500 panel_hidden did not return the expected
+        values TRUE (1) and FALSE (0), but OK (0) and ERR (-1).
 
   Credits:
     Original Author - Warren Tucker <wht@n4hgf.mt-park.ga.us>
@@ -2915,6 +2920,10 @@ util
                  short color_pair, const void *opts);
     wchar_t *wunctrl(cchar_t *wc);
 
+    int PDC_mbtowc(wchar_t *pwc, const char *s, size_t n);
+    size_t PDC_mbstowcs(wchar_t *dest, const char *src, size_t n);
+    size_t PDC_wcstombs(char *dest, const wchar_t *src, size_t n);
+
 ### Description
 
    unctrl() expands the text portion of the chtype c into a printable
@@ -2939,6 +2948,13 @@ util
    the opts argument is non-NULL,  it is treated as a pointer to an
    integer containing the desired color pair and color_pair is ignored.
 
+   PDC_mbtowc(),  PDC_mbstowcs(), and PDC_wcstombs() correspond to the
+   POSIX and C99 standard functions mbtowc(),  mbstowcs(),  and
+   wcstombs().  If the library is built for "forced" UTF8 encoding,
+   the PDC_* functions do UTF8 encoding and decoding.  If it is built
+   without forced encoding,  then the standard library functions are
+   used instead.
+
 ### Return Value
 
    wunctrl() returns NULL on failure. delay_output() always returns OK.
@@ -2957,6 +2973,9 @@ util
     getcchar                    Y       Y       Y
     setcchar                    Y       Y       Y
     wunctrl                     Y       Y       Y
+    PDC_mbtowc                  -       -       -
+    PDC_mbstowcs                -       -       -
+    PDC_wcstombs                -       -       -
 
 
 
