@@ -41,10 +41,10 @@ Defined by this header:
          /* the 'endwin_*' #defines below should be updated.             */
 #define PDC_VER_MAJOR    4
 #define PDC_VER_MINOR    5
-#define PDC_VER_CHANGE   1
+#define PDC_VER_CHANGE   2
 #define PDC_VER_YEAR   2025
 #define PDC_VER_MONTH     6
-#define PDC_VER_DAY      18
+#define PDC_VER_DAY      19
 
 #define PDC_STRINGIZE( x) #x
 #define PDC_stringize( x) PDC_STRINGIZE( x)

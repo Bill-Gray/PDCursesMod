@@ -1,8 +1,8 @@
 Generally speaking,  this history mentions only the more significant
 changes.  See the git log for full details.
 
-Current version - 2025 June 16
-=============================
+PDCursesMod 4.5.2 - 2025 June 19
+================================
 
 Minor new features
 ------------------
@@ -21,8 +21,12 @@ Minor new features
 - In x11new,  you can hit Ctrl-Minus and Ctrl-Plus to go to the next smaller
   or larger font size,  respectively.  43066a8c8c
 
-- The `PDC_KEY_MODIFIER_REPEAT` modifier was not applied in SDL1 and x11new.
-  83fa89ce74
+- The `PDC_KEY_MODIFIER_REPEAT` modifier was not applied in SDL1 and x11new,
+  and was broken in SDL2.  83fa89ce74  6bf92e1a06
+
+- Changed some documentation to be more markdown-friendly when read into
+  MANUAL.md,  a la William McBrine's work upstream.  07a5469785
+  b786e76322  1cc01e4ec3  7cc0f0d1bb  c58fd922d0  a06e0be5ab
 
 Bug fixes
 ---------
