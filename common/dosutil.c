@@ -43,7 +43,7 @@ void PDC_napmsl( long ms)
            that would overflow,  and we'd need floating point math.
            47181/859 = MS_PER_DAY / MAX_TICK to within four parts per
            billion and won't overflow (because 0 <= ms <= MAX_NAP_SPAN). */
-    ticks_to_wait = (ms * 859L + 2359L) / 47181L;
+    ticks_to_wait = (ms * 859L + 23590L) / 47181L;
     if( ms && !ticks_to_wait)
         ticks_to_wait = 1;
     tick0 = getdosmemdword(0x46c);
