@@ -2080,6 +2080,11 @@ INLINE int set_up_window( void)
     return( 0);
 }
 
+/* In casting function pointers,  we first cast them through a void function pointer.
+This suppresses cast-function-type warnings on gcc and MinGW.   */
+
+#define VOID_FN_PTR (void(*)(void))
+
 /* open the physical screen -- allocate SP, miscellaneous intialization,
    and may save the existing screen for later restoration.
 
@@ -2093,6 +2098,8 @@ INLINE int set_up_window( void)
 #define MAX_LINES   50000
 #define MAX_COLUMNS 50000
 
+typedef HRESULT (*dpi_aware_func_t)(int);
+
 int PDC_scr_open(void)
 {
     const HMODULE hntdll = GetModuleHandle( _T("ntdll.dll"));
@@ -2105,8 +2112,8 @@ int PDC_scr_open(void)
 
     if ( shcoredll) {
         static int ADJUST_DPI_PER_MONITOR = 2;
-        FARPROC set_process_dpi_awareness_func =
-                     GetProcAddress(shcoredll, "SetProcessDpiAwareness");
+        dpi_aware_func_t set_process_dpi_awareness_func = (dpi_aware_func_t)
+                VOID_FN_PTR GetProcAddress(shcoredll, "SetProcessDpiAwareness");
 
         if ( set_process_dpi_awareness_func) {
             set_process_dpi_awareness_func(ADJUST_DPI_PER_MONITOR);
