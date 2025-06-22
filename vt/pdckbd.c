@@ -100,9 +100,9 @@ void PDC_flushinp( void)
 {
    int thrown_away_char;
 
+   _mlist_count = 0;
    while( check_key( &thrown_away_char))
       ;
-   _mlist_count = 0;
 }
 
 #ifdef USE_CONIO
