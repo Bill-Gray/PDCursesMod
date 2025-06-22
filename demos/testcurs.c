@@ -192,9 +192,6 @@ static mmask_t parse_mouse_mask( const char *str)
          case 'M':
             test_mouse_mask |= REPORT_MOUSE_POSITION;
             break;
-         case 'W':
-            mouseinterval( atoi( str + 1));
-            break;
          }
       str++;
       if( event_ptr)
@@ -226,6 +223,9 @@ int main(int argc, char *argv[])
         if( argv[i][0] == '-')
             switch( argv[i][1])
             {
+                case 'i': case 'I':
+                    mouseinterval( atoi( argv[i] + 2));
+                    break;
                 case 'l': case 'L':
                     setlocale( LC_CTYPE, argv[i] + 2);
                     break;
