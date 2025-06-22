@@ -15,6 +15,10 @@
     #include <unistd.h>
 #endif
 
+#ifdef __WATCOMC__
+   #include <io.h>
+#endif
+
 #ifdef WACS_S1
 # define HAVE_WIDE
 #endif
