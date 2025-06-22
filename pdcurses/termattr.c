@@ -121,7 +121,7 @@ chtype termattrs(void)
 {
     PDC_LOG(("termattrs() - called\n"));
 
-    return SP ? SP->termattrs : (chtype)0;
+    return SP ? (chtype)SP->termattrs : (chtype)0;
 }
 
 attr_t term_attrs(void)
