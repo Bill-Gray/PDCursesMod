@@ -266,6 +266,7 @@ struct _screen
     WINDOW **window_list;
     unsigned trace_flags;
     bool want_trace_fflush;
+    bool ncurses_mouse;          /* map wheel events to button 4,5 presses */
     FILE *output_fd, *input_fd;
     struct _port_info *pinfo;
 };

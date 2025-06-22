@@ -148,7 +148,7 @@ static short _button_change_flag( const int button)
 
 #define TRAPPING_EVENT( event, button) (SP->_trap_mbe & PDC_SHIFTED_BUTTON( event, (button) + 1))
 
-bool _add_raw_mouse_event( const int button, const int event_type, const int modifiers,
+bool _add_raw_mouse_event( int button, int event_type, const int modifiers,
                   const int x, const int y)
 {
    bool wait_for_next_event = FALSE;
@@ -160,6 +160,22 @@ bool _add_raw_mouse_event( const int button, const int event_type, const int mod
    assert( button >= 0 && button < PDC_MAX_MOUSE_BUTTONS);
    mptr->x = x;
    mptr->y = y;
+   if( SP->ncurses_mouse)
+      {
+      if( event_type == PDC_MOUSE_WHEEL_LEFT
+               || event_type == PDC_MOUSE_WHEEL_LEFT)
+         return( FALSE);      /* 'real' ncurses interface doesn't know about tilt mice */
+      if( event_type == PDC_MOUSE_WHEEL_UP)
+         {
+         button = 3;
+         event_type = BUTTON_PRESSED;
+         }
+      if( event_type == PDC_MOUSE_WHEEL_DOWN)
+         {
+         button = 4;
+         event_type = BUTTON_PRESSED;
+         }
+      }
    for( i = 0; i < PDC_MAX_MOUSE_BUTTONS; i++)
       mptr->button[i] = (short)modifiers;
    switch( event_type)
@@ -206,6 +222,8 @@ bool _add_raw_mouse_event( const int button, const int event_type, const int mod
          _mlist_count++;
          if( SP->mouse_wait && TRAPPING_EVENT( BUTTON1_CLICKED, button))
             wait_for_next_event = TRUE;   /* may need to synthesize a click */
+         if( SP->ncurses_mouse && button >= 3)
+            wait_for_next_event = FALSE;  /* is really mouse wheel event */
          break;
       case BUTTON_RELEASED:
          mptr->button[button] = BUTTON_RELEASED | (short)modifiers;

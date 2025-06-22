@@ -281,10 +281,10 @@ typedef struct
 share the same bit and can't be distinguished.  64-bit mmask_ts allow us
 to make the distinction,  and will allow other events to be added later.
 
-Note that the BUTTONn_MOVED masks are PDCurses*-specific.  For portable
-code,  use REPORT_MOUSE_POSITION to get all mouse movement events,  and
-keep track of press/release events to determine which button(s) are
-held at a given time.            */
+Note that the BUTTONn_MOVED masks are PDCurses*-specific,  and won't work
+if PDC_NCMOUSE is defined.  For portable code,  use REPORT_MOUSE_POSITION
+to get all mouse movement events,  and keep track of press/release events
+to determine which button(s) are held at a given time.            */
 
 #ifdef PDC_LONG_MMASK
    #define BUTTON1_MOVED           (mmask_t)0x20  /* PDCurses* only; deprecated */
@@ -337,7 +337,14 @@ held at a given time.            */
 #define BUTTON_MODIFIER_ALT     (MOUSE_WHEEL_SCROLL << 3)
 #define REPORT_MOUSE_POSITION   (MOUSE_WHEEL_SCROLL << 4)
 
-#define ALL_MOUSE_EVENTS        (REPORT_MOUSE_POSITION - 1)
+#if defined(PDC_NCMOUSE)      /* ncurses lacks button move and wheel scroll events */
+   #define ALL_BUTTON_MOVE_EVENTS  (BUTTON1_MOVED | BUTTON2_MOVED \
+                  | BUTTON3_MOVED | BUTTON4_MOVED | BUTTON5_MOVED)
+   #define ALL_MOUSE_EVENTS      ((REPORT_MOUSE_POSITION - 1) \
+                  ^ ALL_BUTTON_MOVE_EVENTS ^ MOUSE_WHEEL_SCROLL)
+#else                      /* the 'classic' interface has all events */
+   #define ALL_MOUSE_EVENTS        (REPORT_MOUSE_POSITION - 1)
+#endif
 
 /* ncurses mouse interface */
 
@@ -1744,6 +1751,7 @@ PDCEX  int     mouseinterval(int);
 PDCEX  mmask_t mousemask(mmask_t, mmask_t *);
 PDCEX  bool    mouse_trafo(int *, int *, bool);
 PDCEX  int     nc_getmouse(MEVENT *);
+PDCEX  mmask_t nc_mousemask(mmask_t, mmask_t *);
 PDCEX  int     ungetmouse(MEVENT *);
 PDCEX  bool    wenclose(const WINDOW *, int, int);
 PDCEX  bool    wmouse_trafo(const WINDOW *, int *, int *, bool);
@@ -1854,7 +1862,10 @@ PDCEX  int     wunderscore(WINDOW *);
                              else getyx(curscr,(y),(x)); }
 
 #ifdef NCURSES_MOUSE_VERSION
+PDCEX  mmask_t nc_mousemask(mmask_t, mmask_t *);
+
 # define getmouse(x) nc_getmouse(x)
+# define mousemask(x, ret_mask) nc_mousemask(x, ret_mask)
 #endif
 
 /* Deprecated */

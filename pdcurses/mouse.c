@@ -320,6 +320,17 @@ mmask_t mousemask(mmask_t mask, mmask_t *oldmask)
     return SP->_trap_mbe;
 }
 
+/* For full compatibility with the ncurses mouse interface,  we need
+to account for the fact that ncurses maps wheel-up to a button4 press
+and wheel-down to a button5 press.  It lacks PDCursesMod's separate
+wheel scroll event flag.        */
+
+mmask_t nc_mousemask(mmask_t mask, mmask_t *oldmask)
+{
+    SP->ncurses_mouse = TRUE;
+    return( mousemask( mask, oldmask));
+}
+
 int nc_getmouse(MEVENT *event)
 {
     int i;
@@ -362,12 +373,12 @@ int nc_getmouse(MEVENT *event)
         }
     }
 
-    if (MOUSE_WHEEL_UP)
+    if (MOUSE_WHEEL_UP || (Mouse_status.changes & 0x200))
         bstate |= BUTTON4_PRESSED;
-    else if (MOUSE_WHEEL_DOWN)
+    else if (MOUSE_WHEEL_DOWN || (Mouse_status.changes & 0x400))
         bstate |= BUTTON5_PRESSED;
 
-    for( i = 0; i < 3; i++)
+    for( i = 0; i < 5; i++)
     {
        if( Mouse_status.button[i] & PDC_BUTTON_SHIFT)
            bstate |= BUTTON_MODIFIER_SHIFT;
