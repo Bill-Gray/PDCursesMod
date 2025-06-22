@@ -89,8 +89,8 @@ typedef struct _CONSOLE_SCREEN_BUFFER_INFOEX {
 typedef CONSOLE_SCREEN_BUFFER_INFOEX    *PCONSOLE_SCREEN_BUFFER_INFOEX;
 #endif
 
-typedef BOOL (WINAPI *SetConsoleScreenBufferInfoExFn) (_In_ HANDLE, _Out_ CONSOLE_SCREEN_BUFFER_INFOEX *);
-typedef BOOL (WINAPI *GetConsoleScreenBufferInfoExFn) (_In_ HANDLE, _Out_ CONSOLE_SCREEN_BUFFER_INFOEX *);
+typedef BOOL (WINAPI *SetConsoleScreenBufferInfoExFn) (HANDLE, CONSOLE_SCREEN_BUFFER_INFOEX *);
+typedef BOOL (WINAPI *GetConsoleScreenBufferInfoExFn) (HANDLE, CONSOLE_SCREEN_BUFFER_INFOEX *);
 
 static SetConsoleScreenBufferInfoExFn pSetConsoleScreenBufferInfoEx = NULL;
 static GetConsoleScreenBufferInfoExFn pGetConsoleScreenBufferInfoEx = NULL;
