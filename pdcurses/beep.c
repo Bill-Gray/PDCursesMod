@@ -27,9 +27,10 @@ beep
    These functions return ERR if called before initscr(), otherwise OK.
 
 ### Portability
-                             X/Open  ncurses  NetBSD
-    beep                        Y       Y       Y
-    flash                       Y       Y       Y
+   Function              | X/Open | ncurses | NetBSD
+   :---------------------|:------:|:-------:|:------:
+   beep                  |    Y   |    Y    |   Y
+   flash                 |    Y   |    Y    |   Y
 
 **man-end****************************************************************/
 

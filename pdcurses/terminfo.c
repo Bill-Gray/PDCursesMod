@@ -40,8 +40,9 @@ terminfo
    They are only compiled and used for certain ncurses tests.
 
 ### Portability
-                             X/Open    BSD    SYS V
-    mvcur                       Y       Y       Y
+   Function              | X/Open | ncurses | NetBSD
+   :---------------------|:------:|:-------:|:------:
+   mvcur                 |    Y   |    Y    |   Y
 
 **man-end****************************************************************/
 

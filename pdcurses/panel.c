@@ -102,24 +102,25 @@ panel
    of panel_hidden returning TRUE/FALSE/ERR.
 
 ### Portability
-                             X/Open  ncurses  NetBSD
-    bottom_panel                -       Y       Y
-    del_panel                   -       Y       Y
-    hide_panel                  -       Y       Y
-    move_panel                  -       Y       Y
-    new_panel                   -       Y       Y
-    panel_above                 -       Y       Y
-    panel_below                 -       Y       Y
-    ground_panel                -       Y       N
-    ceiling_panel               -       Y       N
-    panel_hidden                -       Y       Y
-    panel_userptr               -       Y       Y
-    panel_window                -       Y       Y
-    replace_panel               -       Y       Y
-    set_panel_userptr           -       Y       Y
-    show_panel                  -       Y       Y
-    top_panel                   -       Y       Y
-    update_panels               -       Y       Y
+   Function              | X/Open | ncurses | NetBSD
+   :---------------------|:------:|:-------:|:------:
+   bottom_panel          |    -   |    Y    |   Y
+   del_panel             |    -   |    Y    |   Y
+   hide_panel            |    -   |    Y    |   Y
+   move_panel            |    -   |    Y    |   Y
+   new_panel             |    -   |    Y    |   Y
+   panel_above           |    -   |    Y    |   Y
+   panel_below           |    -   |    Y    |   Y
+   ground_panel          |    -   |    Y    |   N
+   ceiling_panel         |    -   |    Y    |   N
+   panel_hidden          |    -   |    Y    |   Y
+   panel_userptr         |    -   |    Y    |   Y
+   panel_window          |    -   |    Y    |   Y
+   replace_panel         |    -   |    Y    |   Y
+   set_panel_userptr     |    -   |    Y    |   Y
+   show_panel            |    -   |    Y    |   Y
+   top_panel             |    -   |    Y    |   Y
+   update_panels         |    -   |    Y    |   Y
 
   Note: Before PDC_BUILD 4500 panel_hidden did not return the expected
         values TRUE (1) and FALSE (0), but OK (0) and ERR (-1).

@@ -34,9 +34,10 @@ pdcsetsc
    platforms.
 
 ### Portability
-                             X/Open  ncurses  NetBSD
-    PDC_set_blink               -       -       -
-    PDC_set_title               -       -       -
+   Function              | X/Open | ncurses | NetBSD
+   :---------------------|:------:|:-------:|:------:
+   PDC_set_blink         |    -   |    -    |   -
+   PDC_set_title         |    -   |    -    |   -
 
 **man-end****************************************************************/
 

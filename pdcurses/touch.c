@@ -50,14 +50,15 @@ touch
    is_wintouched() and is_linetouched().
 
 ### Portability
-                             X/Open  ncurses  NetBSD
-    touchwin                    Y       Y       Y
-    touchline                   Y       Y       Y
-    untouchwin                  Y       Y       Y
-    wtouchln                    Y       Y       Y
-    is_linetouched              Y       Y       Y
-    is_wintouched               Y       Y       Y
-    touchoverlap                -       -       Y
+   Function              | X/Open | ncurses | NetBSD
+   :---------------------|:------:|:-------:|:------:
+   touchwin              |    Y   |    Y    |   Y
+   touchline             |    Y   |    Y    |   Y
+   untouchwin            |    Y   |    Y    |   Y
+   wtouchln              |    Y   |    Y    |   Y
+   is_linetouched        |    Y   |    Y    |   Y
+   is_wintouched         |    Y   |    Y    |   Y
+   touchoverlap          |    -   |    -    |   Y
 
 **man-end****************************************************************/
 

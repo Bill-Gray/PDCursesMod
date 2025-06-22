@@ -125,38 +125,39 @@ inopts
    always return FALSE.
 
 ### Portability
-                             X/Open  ncurses  NetBSD
-    cbreak                      Y       Y       Y
-    nocbreak                    Y       Y       Y
-    echo                        Y       Y       Y
-    noecho                      Y       Y       Y
-    is_cbreak                   -       Y       -
-    is_echo                     -       Y       -
-    is_nl                       -       Y       -
-    is_raw                      -       Y       -
-    PDC_getcbreak               -       -       -
-    PDC_getecho                 -       -       -
-    halfdelay                   Y       Y       Y
-    intrflush                   Y       Y       Y
-    keypad                      Y       Y       Y
-    meta                        Y       Y       Y
-    nl                          Y       Y       Y
-    nonl                        Y       Y       Y
-    nodelay                     Y       Y       Y
-    notimeout                   Y       Y       Y
-    raw                         Y       Y       Y
-    noraw                       Y       Y       Y
-    noqiflush                   Y       Y       Y
-    qiflush                     Y       Y       Y
-    timeout                     Y       Y       Y
-    wtimeout                    Y       Y       Y
-    wgetdelay                   -       Y       -
-    typeahead                   Y       Y       Y
-    crmode                      Y       Y       Y
-    nocrmode                    Y       Y       Y
-    is_keypad                   -       Y       Y
-    is_nodelay                  -       Y       -
-    is_notimeout                -       Y       -
+   Function              | X/Open | ncurses | NetBSD
+   :---------------------|:------:|:-------:|:------:
+   cbreak                |    Y   |    Y    |   Y
+   nocbreak              |    Y   |    Y    |   Y
+   echo                  |    Y   |    Y    |   Y
+   noecho                |    Y   |    Y    |   Y
+   is_cbreak             |    -   |    Y    |   -
+   is_echo               |    -   |    Y    |   -
+   is_nl                 |    -   |    Y    |   -
+   is_raw                |    -   |    Y    |   -
+   PDC_getcbreak         |    -   |    -    |   -
+   PDC_getecho           |    -   |    -    |   -
+   halfdelay             |    Y   |    Y    |   Y
+   intrflush             |    Y   |    Y    |   Y
+   keypad                |    Y   |    Y    |   Y
+   meta                  |    Y   |    Y    |   Y
+   nl                    |    Y   |    Y    |   Y
+   nonl                  |    Y   |    Y    |   Y
+   nodelay               |    Y   |    Y    |   Y
+   notimeout             |    Y   |    Y    |   Y
+   raw                   |    Y   |    Y    |   Y
+   noraw                 |    Y   |    Y    |   Y
+   noqiflush             |    Y   |    Y    |   Y
+   qiflush               |    Y   |    Y    |   Y
+   timeout               |    Y   |    Y    |   Y
+   wtimeout              |    Y   |    Y    |   Y
+   wgetdelay             |    -   |    Y    |   -
+   typeahead             |    Y   |    Y    |   Y
+   crmode                |    Y   |    Y    |   Y
+   nocrmode              |    Y   |    Y    |   Y
+   is_keypad             |    -   |    Y    |   Y
+   is_nodelay            |    -   |    Y    |   -
+   is_notimeout          |    -   |    Y    |   -
 
 **man-end****************************************************************/
 

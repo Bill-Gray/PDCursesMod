@@ -43,13 +43,14 @@ debug
    it to enable this (may affect performance).
 
 ### Portability
-                             X/Open  ncurses  NetBSD
-    traceon                     -       -       -
-    traceoff                    -       -       -
-    trace                       -       Y       -
-    curses_trace                -       Y       -
-    PDC_debug                   -       -       -
-    _tracef                     -       Y       -
+   Function              | X/Open | ncurses | NetBSD
+   :---------------------|:------:|:-------:|:------:
+   traceon               |    -   |    -    |   -
+   traceoff              |    -   |    -    |   -
+   trace                 |    -   |    Y    |   -
+   curses_trace          |    -   |    Y    |   -
+   PDC_debug             |    -   |    -    |   -
+   _tracef               |    -   |    Y    |   -
 
 **man-end****************************************************************/
 
