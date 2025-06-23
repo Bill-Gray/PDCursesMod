@@ -165,7 +165,7 @@ bool _add_raw_mouse_event( int button, int event_type, const int modifiers,
    mptr->y = y;
    if( SP->ncurses_mouse)
       {
-      if( event_type == PDC_MOUSE_WHEEL_LEFT
+      if( event_type == PDC_MOUSE_WHEEL_RIGHT
                || event_type == PDC_MOUSE_WHEEL_LEFT)
          return( FALSE);      /* 'real' ncurses interface doesn't know about tilt mice */
       if( event_type == PDC_MOUSE_WHEEL_UP)
