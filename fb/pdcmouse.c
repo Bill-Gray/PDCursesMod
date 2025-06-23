@@ -37,6 +37,19 @@ group (or run with root privileges,  but that'd be overdoing things.)
 #define bits_per_long (sizeof( long) << 3)
 #define test_bit(bit, array)   ((array[bit / bits_per_long] >> (bit % bits_per_long)) & 1)
 
+/* Unfortunately,  Curses has a _lot_ of overlapping #defines with the
+Linux input system.  So we can't #include <curses.h> here.  Instead,  the
+following #defines are cherry-picked.  If they're ever re-defined in Curses,
+chaos will ensue.       */
+
+#define BUTTON_RELEASED         0x0000
+#define BUTTON_PRESSED          0x0001
+#define BUTTON_MOVED            0x0005  /* PDCurses */
+#define PDC_MOUSE_WHEEL_UP      0x0020
+#define PDC_MOUSE_WHEEL_DOWN    0x0040
+#define PDC_MOUSE_WHEEL_LEFT    0x0080
+#define PDC_MOUSE_WHEEL_RIGHT   0x0100
+
 static int _get_mouse_fds( int *return_fds)
 {
    int fd, n_found = 0;
@@ -76,14 +89,14 @@ static int _get_mouse_fds( int *return_fds)
    return n_found;
 }
 
-int PDC_update_mouse( void)
+int PDC_update_mouse( int *button)
 {
    static int n_fds = -1, fds[20];
-   int i, rval = 0;
+   int i, rval = -1;
 
    if( n_fds == -1)
       n_fds = _get_mouse_fds( fds);
-   for( i = 0; !rval && i < n_fds; i++)
+   for( i = 0; rval < 0 && i < n_fds; i++)
       {
       struct input_event ev = {0};
 
@@ -93,10 +106,23 @@ int PDC_update_mouse( void)
             {
             if( ev.code == REL_X)
                PDC_mouse_x += ev.value;
-            else
+            else if( ev.code == REL_Y)
                PDC_mouse_y += ev.value;
-            rval = 1;
+                        /* else it's a scroll-wheel event */
+            rval = BUTTON_MOVED;
             }
+         else if( EV_KEY == ev.type &&
+                    ev.code >= BTN_LEFT && ev.code <= BTN_TASK)
+            {
+            *button = ev.code - BTN_LEFT + 1;
+            if( *button == 2 || *button == 3)      /* Linux input system swaps */
+               *button = 5 - *button;           /* these buttons relative to curses */
+            rval = (ev.value ? BUTTON_PRESSED : BUTTON_RELEASED);
+            }
+         else if( EV_REL == ev.type && ev.code == REL_WHEEL_HI_RES)
+            rval = (ev.value > 0 ? PDC_MOUSE_WHEEL_UP : PDC_MOUSE_WHEEL_DOWN);
+         else if( EV_REL == ev.type && ev.code == REL_HWHEEL_HI_RES)
+            rval = (ev.value > 0 ? PDC_MOUSE_WHEEL_RIGHT : PDC_MOUSE_WHEEL_LEFT);
       }
    return( rval);
 }

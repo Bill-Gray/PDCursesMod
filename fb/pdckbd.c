@@ -21,7 +21,10 @@ int PDC_cycle_display( void);
 #include "psf.h"
 #include "pdcfb.h"
 
-int PDC_update_mouse( void);
+#define PDC_MOUSE_WHEEL_EVENTS (PDC_MOUSE_WHEEL_UP | PDC_MOUSE_WHEEL_DOWN \
+                        | PDC_MOUSE_WHEEL_RIGHT | PDC_MOUSE_WHEEL_LEFT)
+
+int PDC_update_mouse( int *button);
 bool PDC_update_mouse_cursor( int left, int right, int top, int bottom, const bool draw_it);
 bool PDC_remove_mouse_cursor( void);
 
@@ -30,11 +33,19 @@ static void _check_mouse( )
    const int mx = PDC_mouse_x, my = PDC_mouse_y;
    extern struct font_info PDC_font_info;
    extern int PDC_orientation;
-   const int xmax = SP->cols * ((PDC_orientation & 1) ? PDC_font_info.height : PDC_font_info.width);
-   const int ymax = SP->lines * ((PDC_orientation & 1) ? PDC_font_info.width : PDC_font_info.height);
+   int button, event;
+   const int xper = ((PDC_orientation & 1) ? PDC_font_info.height : PDC_font_info.width);
+   const int yper = ((PDC_orientation & 1) ? PDC_font_info.width : PDC_font_info.height);
+   const int xmax = SP->cols * xper;
+   const int ymax = SP->lines * yper;
+   long timeout = 0;
 
-   while( PDC_update_mouse( ))
+   if( _get_mouse_event( NULL))      /* already got events queued up */
+      return;
+   while( (event = PDC_update_mouse( &button)) >= 0 || PDC_millisecs() < timeout)
       {
+      int x, y, modifs = 0;
+
       if( PDC_mouse_x < 0)
          PDC_mouse_x = 0;
       if( PDC_mouse_x > xmax - 1)
@@ -43,6 +54,27 @@ static void _check_mouse( )
          PDC_mouse_y = 0;
       if( PDC_mouse_y > ymax - 1)
          PDC_mouse_y = ymax - 1;
+      x = PDC_mouse_x / xper;
+      y = PDC_mouse_y / yper;
+      if( event >= 0)
+         {
+         if( x != mx / xper || y != my / yper)
+            _add_raw_mouse_event( 0, event, modifs, x, y);
+         else if( event & PDC_MOUSE_WHEEL_EVENTS)
+            {
+            _add_raw_mouse_event( 0, event, modifs, x, y);
+            break;
+            }
+         else if( event == BUTTON_PRESSED || event == BUTTON_RELEASED)
+            {
+            if( _add_raw_mouse_event( button - 1, event, modifs, x, y))
+               timeout = PDC_millisecs( ) + SP->mouse_wait;
+            else
+               break;
+            }
+         }
+      else if( timeout)
+         napms( 10);
       }
    if( mx != PDC_mouse_x || my != PDC_mouse_y)
       {
