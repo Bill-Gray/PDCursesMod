@@ -409,7 +409,7 @@ static int _is_maximized( void)
     return( rval);
 }
 
-static void _check_for_resize( )
+static void _check_for_resize( void)
 {
    bool resize_not_in_queue = TRUE;
    int i;
