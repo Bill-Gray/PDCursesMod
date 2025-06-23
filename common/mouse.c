@@ -134,9 +134,12 @@ REPORT_MOUSE_POSITION to get _all_ mouse events.  Then keep track of which
 buttons are held and filter out the events you aren't interested in.  */
 
 /* I don't think we can ever have more than three events in the list.
-(For example,  button 2 clicked,  button 2 pressed,  mouse moved.) */
+(For example,  button 2 clicked,  button 2 pressed,  mouse moved.)  But
+some platforms (framebuffer/DRM) can have a temporary fourth event if an
+extra move event hasn't been merged.  And a larger queue paves the way for
+a working ungetmouse() function.                 */
 
-#define MLIST_SIZE 3
+#define MLIST_SIZE 8
 
 static MOUSE_STATUS mouse_list[MLIST_SIZE];
 static int _mlist_count = 0;
@@ -198,6 +201,11 @@ bool _add_raw_mouse_event( int button, int event_type, const int modifiers,
                   }
             if( mptr->changes)
                {
+               if( _mlist_count && prev->changes == mptr->changes)
+                  {   /* already got a mouse move event;  just update that one */
+                  _mlist_count--;
+                  mptr--;
+                  }
                mptr->x = x;
                mptr->y = y;
                _mlist_count++;
@@ -265,6 +273,8 @@ bool _add_raw_mouse_event( int button, int event_type, const int modifiers,
 
 bool _get_mouse_event( MOUSE_STATUS *mstatus)
 {
+   if( !mstatus)                    /* just checking to see if events are queued up */
+      return( _mlist_count ? TRUE : FALSE);
    if( _mlist_count)                /* should filter untrapped press/releases */
       {
       *mstatus = mouse_list[0];
