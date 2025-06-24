@@ -122,6 +122,11 @@ while( the platform has a new mouse event && TRUE == _add_raw_mouse_event( ))
       }
    }
 
+   (Strictly speaking,  the naps are unnecessary.  Without them,  you
+simply go to 100% CPU usage looking for the next mouse event during those
+SP->mouse_wait milliseconds.  With enough clicking,  those cycles would
+start to add up.)
+
    (2) In the above logic,  you can't get double-clicks without also getting
 single-clicks,  and you can't get triple-clicks without getting doubles and
 singles.  This may be changed eventually,  though it seems like an unlikely

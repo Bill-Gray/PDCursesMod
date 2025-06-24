@@ -1,6 +1,33 @@
 Generally speaking,  this history mentions only the more significant
 changes.  See the git log for full details.
 
+Current version - 2025 June 23
+==============================
+
+Minor new features
+------------------
+
+- More fixes a la those in 'upstream' PDCurses to make MANUAL.md more
+  markdown-friendly.  3e528a85d4  ed3103d705
+
+- Framebuffer and DRM ports now have full mouse support.  7ec7b956f0
+
+- Zooming/panning around in 'picsview' no longer flickers.  af4a7c5d72
+
+Bug fixes
+---------
+
+- C23-compliant compilers (and some others) objected to the casting of
+  function pointers returned by GetProcAddress().  ce60aa6608
+
+- If PDC_NCMOUSE is #defined,  the behavior of the mouse routines should
+  copy that of ncurses,  warts and all.  Scroll-up and down are mapped
+  to presses on buttons 4 and 5,  and tilt-scroll events and "real"
+  button 4 and 5 events are ignored.  0de9f723e3
+
+- Minor fixes for Digital Mars and OpenWATCOM compilation of WinCon and
+  WinGUI.  a4c01532e8  6af988940d  6eedea061c
+
 PDCursesMod 4.5.2 - 2025 June 19
 ================================
 
