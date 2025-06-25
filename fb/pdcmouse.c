@@ -50,7 +50,7 @@ chaos will ensue.       */
 #define PDC_MOUSE_WHEEL_LEFT    0x0080
 #define PDC_MOUSE_WHEEL_RIGHT   0x0100
 
-static int _get_mouse_fds( int *return_fds)
+static int _get_mouse_or_keyboard_fds( int *return_fds, const int is_keyboard)
 {
    int fd, n_found = 0;
    const char *directory = "/dev/input";
@@ -76,9 +76,11 @@ static int _get_mouse_fds( int *return_fds)
             ioctl(fd, EVIOCGBIT( 0, EV_MAX), bits);
             if( test_bit( EV_KEY, bits))
                {
+               const int bit_to_test = (is_keyboard ? KEY_A : BTN_LEFT);
+
                ioctl( fd, EVIOCGBIT( EV_KEY, KEY_MAX), bits);
 
-               if( test_bit( BTN_LEFT, bits))
+               if( test_bit( bit_to_test, bits))
                   return_fds[n_found++] = fd;
                }
             else
@@ -95,7 +97,7 @@ int PDC_update_mouse( int *button)
    int i, rval = -1;
 
    if( n_fds == -1)
-      n_fds = _get_mouse_fds( fds);
+      n_fds = _get_mouse_or_keyboard_fds( fds, 0);
    for( i = 0; rval < 0 && i < n_fds; i++)
       {
       struct input_event ev = {0};
