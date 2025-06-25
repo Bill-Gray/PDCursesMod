@@ -36,7 +36,7 @@ Run `make`, `make WIDE=Y`, or `make UTF8=Y`. Add `DLL=Y` to get a shared library
 Permissions
 -----------
 
-Access to either the framebuffer or to DRM requires that a user be in the `video` group.
+Access to either the framebuffer or to DRM requires that a user be in the `video` group.  Access to the mouse requires a user to be in the `input` group.
 
 Caveats
 -------
