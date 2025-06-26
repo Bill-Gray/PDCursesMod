@@ -83,7 +83,7 @@ static int next_pow_2(int n)
 /* This function attempts to double the glyph cache size, but can also evict
  * unused characters out if growing is not an option.
  */
-static void enlarge_glyph_cache()
+static void enlarge_glyph_cache( void)
 {
     GLuint new_font_texture = 0;
     int new_glyph_cache_w = 2 * pdc_glyph_cache_w;
@@ -364,7 +364,7 @@ static void ensure_glyph_grid(int min_layers)
 /* Tries to find unused layers and delete them, so that we don't waste time on
  * unused glyph grids.
  */
-static void shrink_glyph_grid()
+static void shrink_glyph_grid( void)
 {
     int layer;
     for(layer = 1; layer < grid_layers;)

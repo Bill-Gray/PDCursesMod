@@ -136,7 +136,7 @@ GLFUNCS
 #undef GLFUNCPROTO
 #undef GLFUNC
 
-static void load_gl_funcs()
+static void load_gl_funcs( void)
 {
     void (*(*loader)(const char*))(void) = (void (*(*)(const char*))(void))SDL_GL_GetProcAddress;
 #define GLFUNC(sig, name) pdc_gl##name = (PFNGL##sig##PROC)loader("gl" #name);
