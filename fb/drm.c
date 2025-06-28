@@ -86,12 +86,16 @@ int get_framebuffer(const char *dri_device, const int connector_num, struct fram
     /* Open the dri device /dev/dri/cardX */
     fd = open(dri_device, O_RDWR);
     if (fd < 0)
+    {
+        perror( "Couldn't open the video card device");
         return FRAMEBUFFER_COULD_NOT_OPEN_DEVICE;
+    }
 
     /* Get the resources of the DRM device (connectors, encoders, etc.)*/
     res = drmModeGetResources(fd);
     if (!res) {
         close( fd);
+        fprintf( stderr, "Couldn't get resources\n");
         return FRAMEBUFFER_COULD_NOT_GET_RESOURCES;
     }
 
@@ -124,7 +128,10 @@ int get_framebuffer(const char *dri_device, const int connector_num, struct fram
     drmModeFreeResources( res);
 
     if (!connector)
+    {
+        fprintf( stderr, "Couldn't find connector\n");
         return FRAMEBUFFER_COULD_NOT_FIND_CONNECTOR;
+    }
 
     /* Get the preferred resolution */
     for( i = 0; i < connector->count_modes; i++) {
@@ -194,8 +201,10 @@ cleanup:
 
 
     if (err)
+    {
+        fprintf( stderr, "Error %d in get_framebuffer( )\n", err);
         release_framebuffer(fb);
-
+    }
     return err;
 }
 
@@ -222,8 +231,10 @@ static int init_drm( const char *dri_device, const int connector_num)
         err = drmModeSetCrtc( _drm_framebuffer.fd, _drm_framebuffer.crtc->crtc_id,
                       0, 0, 0, NULL, 0, NULL);
         if( err)
+        {
+           fprintf( stderr, "Can't set CRTC\n");
            return( -1);
-        assert( !err);
+        }
         err = drmModeSetCrtc( _drm_framebuffer.fd, _drm_framebuffer.crtc->crtc_id,
                      _drm_framebuffer.buffer_id, 0, 0,
                      &_drm_framebuffer.connector->connector_id, 1,
