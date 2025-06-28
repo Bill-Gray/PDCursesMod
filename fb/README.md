@@ -12,7 +12,9 @@ The default font,  borrowed from [DOSVGA](../dosvga),  is fixed at 8x14.  Set th
 
 Alt-/ (Alt-Slash) will rotate the screen 90 degrees clockwise;  repeat for 180- and 270-degree rotation.  This may be useful on phones and other handheld,  hand-rotatable displays.  It also can help if you have a monitor set up in portrait mode.
 
-With the Linux framebuffer,  all monitors will be used.  With DRM,  the default one will normally be used.  But you can set `PDC_SCREEN=1`, `PDC_SCREEN=2`, `PDC_SCREEN=3`,  etc. as an environment variable to specify a particular display.
+You also/in addition can export the environment variable `PDC_ORIENT=1` to get a 90-degree clockwise rotation,  `PDC_ORIENT=2` for 180,  `PDC_ORIENT=3` for 270.
+
+With the Linux framebuffer,  all monitors will be used.  (I've been unable to find a way around this.)  With DRM,  the default one will normally be used.  But you can set `PDC_SCREEN=1`, `PDC_SCREEN=2`, `PDC_SCREEN=3`,  etc. as an environment variable to specify a particular display.
 
 Also with DRM,  you can cycle among available displays with Alt-=.  On my system,  at least,  this only works when one is root.  I've yet to figure out why.
 

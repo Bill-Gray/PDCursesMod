@@ -380,7 +380,8 @@ int PDC_cycle_display( void)
 int PDC_scr_open(void)
 {
     struct sigaction sa;
-    int error;
+    int error, i;
+    const char *orientation = getenv( "PDC_ORIENT");
 #ifdef USE_DRM
     const char *screen_number = getenv( "PDC_SCREEN");
 
@@ -469,15 +470,16 @@ int PDC_scr_open(void)
 
     SP->_preserve = (getenv("PDC_PRESERVE_SCREEN") != NULL);
     if( PDC_fb.bits_per_pixel == 8)        /* 256 color palette */
-    {
-        int i, r, g, b;
-
         for( i = 0; i < 256; i++)
         {
-        PDC_color_content( i, &r, &g, &b);
-        PDC_init_color( i, r, g, b);
+           int r, g, b;
+
+           PDC_color_content( i, &r, &g, &b);
+           PDC_init_color( i, r, g, b);
         }
-    }
+    if( orientation)
+        for( i = (atoi( orientation) & 3); i; i--)
+            PDC_rotate_font( );
     PDC_reset_prog_mode();
     PDC_LOG(("PDC_scr_open exit\n"));
     return( 0);
