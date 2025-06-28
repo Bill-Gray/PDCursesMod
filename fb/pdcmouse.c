@@ -29,10 +29,7 @@ mouse button) event for the mouse,  or a KEY_A event for the keyboard.
 (A one-button mouse returns a left click.)
 
    Also note that to get this access,  you must be a member of the 'input'
-group (or run with root privileges,  but that'd be overdoing things.)
-
-   Compile with gcc -Wall -Wextra -pedantic -o mouse3 mouse3.c -levdev
-*/
+group (or run with root privileges,  but that'd be overdoing things.)  */
 
 #define bits_per_long (sizeof( long) << 3)
 #define test_bit(bit, array)   ((array[bit / bits_per_long] >> (bit % bits_per_long)) & 1)
@@ -49,6 +46,10 @@ chaos will ensue.       */
 #define PDC_MOUSE_WHEEL_DOWN    0x0040
 #define PDC_MOUSE_WHEEL_LEFT    0x0080
 #define PDC_MOUSE_WHEEL_RIGHT   0x0100
+#define PDC_BUTTON_SHIFT        0x0008  /* PDCurses */
+#define PDC_BUTTON_CONTROL      0x0010  /* PDCurses */
+#define PDC_BUTTON_ALT          0x0020  /* PDCurses */
+#define BUTTON_MODIFIER_MASK    0x0038  /* PDCurses */
 
 static int _get_mouse_or_keyboard_fds( int *return_fds, const int is_keyboard)
 {
@@ -63,10 +64,11 @@ static int _get_mouse_or_keyboard_fds( int *return_fds, const int is_keyboard)
       if( !memcmp( direntp->d_name, "event", 5))
          {
          unsigned long bits[KEY_MAX / sizeof( long) + 1];
-         char full_name[PATH_MAX];
+         char full_name[60];
 
          strcpy( full_name, directory);
          strcat( full_name, "/");
+         assert( strlen( direntp->d_name) < 30);
          strcat( full_name, direntp->d_name);
          fd = open( full_name, O_RDONLY | O_NONBLOCK);
          assert( fd > 0);
@@ -91,6 +93,52 @@ static int _get_mouse_or_keyboard_fds( int *return_fds, const int is_keyboard)
    return n_found;
 }
 
+int PDC_get_mouse_modifiers( void)
+{
+   static int n_fds = -1, fds[20];
+   int i;
+   static int modifiers = 0;
+
+   if( n_fds == -1)
+      n_fds = _get_mouse_or_keyboard_fds( fds, 1);
+   for( i = 0; i < n_fds; i++)
+      {
+      struct input_event ev = {0};
+
+      while( read(fds[i], &ev, sizeof(ev)) == sizeof( ev))
+         if( EV_KEY == ev.type && (ev.value == 0 || ev.value == 1))
+            {
+            int mask;
+
+            switch( ev.code)
+               {
+               case KEY_LEFTSHIFT:
+               case KEY_RIGHTSHIFT:
+                  mask = PDC_BUTTON_SHIFT;
+                  break;
+               case KEY_LEFTALT:
+               case KEY_RIGHTALT:
+                  mask = PDC_BUTTON_ALT;
+                  break;
+               case KEY_LEFTCTRL:
+               case KEY_RIGHTCTRL:
+                  mask = PDC_BUTTON_CONTROL;
+                  break;
+               default:
+                  mask = 0;
+               }
+            if( mask)
+               {
+               if( ev.value)
+                  modifiers |= mask;
+               else
+                  modifiers &= ~mask;
+               }
+            }
+      }
+   return( modifiers);
+}
+
 int PDC_update_mouse( int *button)
 {
    static int n_fds = -1, fds[20];
@@ -102,7 +150,7 @@ int PDC_update_mouse( int *button)
       {
       struct input_event ev = {0};
 
-      while( read(fds[i], &ev, sizeof(ev)) && EV_SYN != ev.type)
+      while( rval < 0 && sizeof( ev) == read(fds[i], &ev, sizeof(ev)))
          if( EV_REL == ev.type &&
                         (ev.code == REL_X || ev.code == REL_Y))
             {

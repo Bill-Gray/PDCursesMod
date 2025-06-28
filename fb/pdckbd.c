@@ -27,6 +27,7 @@ int PDC_cycle_display( void);
 int PDC_update_mouse( int *button);
 bool PDC_update_mouse_cursor( int left, int right, int top, int bottom, const bool draw_it);
 bool PDC_remove_mouse_cursor( void);
+int PDC_get_mouse_modifiers( void);
 
 static void _check_mouse( void)
 {
@@ -39,12 +40,13 @@ static void _check_mouse( void)
    const int xmax = SP->cols * xper;
    const int ymax = SP->lines * yper;
    long timeout = 0;
+   const int modifs = PDC_get_mouse_modifiers( );
 
    if( _get_mouse_event( NULL))      /* already got events queued up */
       return;
    while( (event = PDC_update_mouse( &button)) >= 0 || PDC_millisecs() < timeout)
       {
-      int x, y, modifs = 0;
+      int x, y;
 
       if( PDC_mouse_x < 0)
          PDC_mouse_x = 0;
