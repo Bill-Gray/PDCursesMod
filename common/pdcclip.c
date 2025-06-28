@@ -25,7 +25,7 @@ clipboard
    memory returned, via PDC_freeclipboard(). The length of the clipboard
    contents is returned in the length argument.
 
-   PDC_setclipboard copies the supplied text into the system's
+   PDC_setclipboard() copies the supplied text into the system's
    clipboard, emptying the clipboard prior to the copy.
 
    PDC_clearclipboard() clears the internal clipboard.
@@ -67,7 +67,7 @@ int PDC_getclipboard(char **contents, long *length)
         return PDC_CLIP_EMPTY;
 
     len = (int)strlen(pdc_clipboard);
-    *contents = malloc(len + 1);
+    *contents = (char *)malloc(len + 1);
     if (!*contents)
         return PDC_CLIP_MEMORY_ERROR;
 
@@ -85,7 +85,7 @@ int PDC_setclipboard(const char *contents, long length)
 
     if (contents)
     {
-        pdc_clipboard = malloc(length + 1);
+        pdc_clipboard = (char *)malloc(length + 1);
         if (!pdc_clipboard)
             return PDC_CLIP_MEMORY_ERROR;
 
