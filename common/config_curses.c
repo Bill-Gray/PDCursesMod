@@ -122,7 +122,7 @@ int main( const int argc, const char **argv)
       }
    fclose( ofile);
    fclose( ifile);
-#ifdef _WIN32
+#if defined( _WIN32) && !defined( __WATCOMC__)
    _unlink( curses_h_filename);
 #else
    unlink( curses_h_filename);
