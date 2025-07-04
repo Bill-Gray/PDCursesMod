@@ -1,7 +1,7 @@
 Generally speaking,  this history mentions only the more significant
 changes.  See the git log for full details.
 
-Current version - 2025 June 23
+Current version - 2025 July 04
 ==============================
 
 Minor new features
@@ -11,6 +11,7 @@ Minor new features
   markdown-friendly.  3e528a85d4  ed3103d705
 
 - Framebuffer and DRM ports now have full mouse support.  7ec7b956f0
+  2728d46838
 
 - Zooming/panning around in 'picsview' no longer flickers.  af4a7c5d72
 

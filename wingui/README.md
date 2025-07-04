@@ -1,14 +1,14 @@
-PDCurses for WinGUI
-==================
+PDCursesMod for WinGUI
+======================
 
-This directory contains PDCurses source code files specific to Win32
+This directory contains PDCursesMod source code files specific to Win32
 graphics mode (Win95 and all subsequent forks of Windows).
 
 Building
 --------
 
    (Note that the following is almost identical to the instructions
-   for the Win32 console flavor of PDCurses.)
+   for the Win32 console flavor of PDCursesMod.)
 
 - Choose the appropriate makefile for your compiler:
 
@@ -20,7 +20,7 @@ Building
 
 - Optionally, you can build in a different directory than the platform
   directory by setting PDCURSES_SRCDIR to point to the directory where
-  you unpacked PDCurses, and changing to your target directory:
+  you unpacked PDCursesMod, and changing to your target directory:
 
         set PDCURSES_SRCDIR=c:\pdcurses
 
@@ -52,7 +52,7 @@ Building
   By default,  Makefile.vc results in 64-bit code for both VC and Intel(R).
   Add IX86=Y to generate 32-bit code.  (Other builds are 32-bit only.)
 
-  Another option, "UTF8=Y", makes PDCurses ignore the system locale, and
+  Another option, "UTF8=Y", makes PDCursesMod ignore the system locale, and
   treat all narrow-character strings as UTF-8. This option has no effect
   unless WIDE=Y is also set. This was originally provided to get around
   poor support for UTF-8 in the Win32 console:
@@ -61,9 +61,9 @@ Building
 
   WinGUI doesn't have the same limitations as the Win32 console flavor,
   but UTF-8 and non-UTF-8 versions are still available.  If nothing else,
-  this means that if you've built a Win32 console PDCurses DLL with any
+  this means that if you've built a Win32 console PDCursesMod DLL with any
   configuration,  you can build a matching WinGUI DLL and swap between
-  console or GUI PDCurses just by swapping DLLs.
+  console or GUI PDCursesMod just by swapping DLLs.
 
   You can also use the optional parameter "DLL=Y" with Visual C++,
   MinGW or Cygwin, to build the library as a DLL:
@@ -89,4 +89,4 @@ Acknowledgements
 
 Based heavily on the Win32 console flavor of PDCurses by Chris Szurgot
 <szurgot[at]itribe.net>,  ported to Win32 GUI by Bill Gray
-<pluto[at]projectpluto.com>.
+<p&#x202e;&ocirc;&#xe7;.&ouml;tulp&#x165;c&eacute;j&ocirc;&#x159;p&#x40;ot&uacute;l&#x202c;m>.

@@ -24,9 +24,9 @@ events returned by the library,  with unwanted events filtered out.
 
    Presses and releases will be combined into clicks _if_ we're actually
 looking for clicks from that button.  (If not,  PDCursesMod may return a
-press and a click... if,  again,  corresponding bits are turned on.)  Two
-clicks will be combined into a double-click, _if_ we're actually looking
-for double-clicks.  And so on.
+press and a release... if,  again,  corresponding bits are turned on.)
+Two clicks will be combined into a double-click, _if_ we're actually
+looking for double-clicks.  And so on.
 
    In some cases,  the raw event may leave us in an "incomplete" state.
 Let's say a mouse button is pressed, and we're looking for clicks on that
@@ -36,7 +36,8 @@ button.  If that happens,  the button is clicked.  If not,  the button is
 pressed (and presumably held,  and sometime later,  we should get a
 'release' event for that button... should note that there's not actually
 any guarantee that we won't get two presses or two releases in a row from
-the same button.)
+the same button.  In theory,  presses and releases alternate;  in practice,
+they sometimes don't.)
 
    If we're looking for double-clicks on that button,  we need to wait
 yet another SP->mouse_wait milliseconds for another button press.  If we

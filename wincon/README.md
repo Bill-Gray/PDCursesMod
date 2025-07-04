@@ -1,10 +1,10 @@
-PDCurses for Windows console
+PDCursesMod for Windows console
 ============================
 
-This directory contains PDCurses source code files specific to the
+This directory contains PDCursesMod source code files specific to the
 Microsoft Windows console. Although historically called "Win32", this
 port can just as easily be built for 64-bit systems. Windows 95 through
-Windows 10 are covered. (Some features require later versions.)
+Windows 11 are covered. (Some features require later versions.)
 
 
 Building
@@ -19,7 +19,7 @@ Building
 
 - Optionally, you can build in a different directory than the platform
   directory by setting PDCURSES_SRCDIR to point to the directory where
-  you unpacked PDCurses, and changing to your target directory:
+  you unpacked PDCursesMod, and changing to your target directory:
 
         set PDCURSES_SRCDIR=c:\pdcurses
 
