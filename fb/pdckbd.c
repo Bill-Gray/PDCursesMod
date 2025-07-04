@@ -5,7 +5,7 @@ int PDC_cycle_font( void);
 void PDC_rotate_font( void);
 
 #ifdef HAVE_MOUSE
-   static void _check_mouse( void);
+   static void _check_mouse( );
 #endif
 
 #ifdef USE_DRM
@@ -29,7 +29,7 @@ bool PDC_update_mouse_cursor( int left, int right, int top, int bottom, const bo
 bool PDC_remove_mouse_cursor( void);
 int PDC_get_mouse_modifiers( void);
 
-static void _check_mouse( void)
+static void _check_mouse( )
 {
    const int mx = PDC_mouse_x, my = PDC_mouse_y;
    extern struct font_info PDC_font_info;
