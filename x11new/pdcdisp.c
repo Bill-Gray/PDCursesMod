@@ -158,20 +158,21 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
           }
        if( *srcp & (A_LEFT | A_RIGHT | A_UNDERLINE | A_TOP | A_STRIKEOUT))
        {
+          const int xend = xpix + len * PDC_font_width - 1;
+
           if (SP->line_color != -1)
           {
              prev_fg = PDC_get_palette_entry( SP->line_color);
              XSetForeground(dis, curr_gc, _reversed( prev_fg));
           }
           if( *srcp & A_UNDERLINE)
-             XDrawLine( dis, win, curr_gc, xpix, ypix - 1,
-                           xpix + len * PDC_font_width, ypix - 1);
+             XDrawLine( dis, win, curr_gc, xpix, ypix - 1, xend, ypix - 1);
           if( *srcp & A_STRIKEOUT)
              XDrawLine( dis, win, curr_gc, xpix, ypix - PDC_font_height / 2,
-                           xpix + len * PDC_font_width, ypix - PDC_font_height / 2);
+                           xend, ypix - PDC_font_height / 2);
           if( *srcp & A_TOP)
              XDrawLine( dis, win, curr_gc, xpix, ypix - PDC_font_height,
-                           xpix + len * PDC_font_width, ypix - PDC_font_height);
+                           xend, ypix - PDC_font_height);
           if( *srcp & (A_LEFT | A_RIGHT))
              for( j = i; j; j--)
              {
