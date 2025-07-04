@@ -12,27 +12,30 @@ Legal Stuff
 
 The core package is in the public domain, but small portions of PDCursesMod are subject to copyright under various licenses.  Each directory contains a README file, with a section titled "Distribution Status" which describes the status of the files in that directory.
 
-If you use PDCursesMod in an application, an acknowledgement would be appreciated, but is not mandatory. If you make corrections or enhancements to PDCursesMod, please forward them to the current maintainer for the benefit of other users.
+If you use PDCursesMod in an application, an acknowledgement would be appreciated, but is not mandatory. If you make corrections or enhancements to PDCursesMod, or find bugs,  please forward them to the current maintainer or raise an issue/pull request for the benefit of other users.
 
 This software is provided AS IS with NO WARRANTY whatsoever.
 
 Ports
 -----
 
-PDCurses has been ported to DOS, OS/2, Win32, X11 and SDL1 and SDL2. PDCursesMod adds DOSVGA,  Windows GUI,  Plan 9,  Linux/*BSD framebuffer,  and VT-like console ports. A directory containing the port-specific source files exists for each of these platforms.
+PDCurses has been ported to DOS, OS/2, Win32, X11 and SDL1 and SDL2. PDCursesMod adds DOSVGA,  OS/2 GUI,  Windows GUI,  Plan 9,  Linux/*BSD framebuffer,  and VT-like console ports. A directory containing the port-specific source files exists for each of these platforms.
 
 Build instructions are in the README file for each platform:
 
 -  [DOS](dos/README.md) for use on DOS
 -  [DOSVGA](dosvga/README.md) for use on DOS in graphical modes
--  [fb](fb/README.md) for use on the Linux/*BSD framebuffer
--  [OS/2](os2/README.md) for use on OS/2
+-  [fb](fb/README.md) for use on the Linux/*BSD framebuffer or with [DRM](https://en.wikipedia.org/wiki/Direct_Rendering_Manager)
+-  [GL](gl/README.md) for use as separate SDL version 2 window,  rendered with OpenGL
+-  [OS/2](os2/README.md) for use on OS/2 within a console
+-  [OS/2 GUI](os2gui/README.md) for use on OS/2 in a graphical window
 -  [Plan9](plan9/README.md) for use on Plan9 (APE)
 -  [SDL 1.x](sdl1/README.md) for use as separate SDL version 1 window
 -  [SDL 2.x](sdl2/README.md) for use as separate SDL version 2 window
 -  [wincon](wincon/README.md) (formerly win32) for use on Windows Console
 -  [WinGUI](wingui/README.md) for use on Windows Graphics Mode
--  [X11](x11/README.md) (also called XCurses) for use as separate X11 window
+-  [X11](x11/README.md) (also called XCurses) for use as separate X11 window (but see below)
+-  [X11new](x11new/README.md) New and improved X11 version
 -  [VT](vt/README.md) for use on terminal
 -  [OpenGL](gl/README.md) for use as separate window with OpenGL rendering
 
