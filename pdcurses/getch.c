@@ -647,13 +647,11 @@ static int _raw_wgetch_no_surrogate_pairs( WINDOW *win)
     }
 }
 
-#define IS_HIGH_SURROGATE( x)  ((x) >= 0xd800 && (x) < 0xdc00)
-#define IS_LOW_SURROGATE( x)   ((x) >= 0xdc00 && (x) < 0xe000)
-
 static int _raw_wgetch( WINDOW *win)
 {
    int rval = _raw_wgetch_no_surrogate_pairs( win);
 
+#ifdef PDC_WIDE
    if( IS_HIGH_SURROGATE( rval))
       {
       const int c = _raw_wgetch_no_surrogate_pairs( win);
@@ -661,6 +659,7 @@ static int _raw_wgetch( WINDOW *win)
       if( IS_LOW_SURROGATE( c))
          rval = ((rval - 0xd800) << 10) + 0x10000 + c - 0xdc00;
       }
+#endif
    return( rval);
 }
 

@@ -116,6 +116,12 @@ bool    PDC_touched_range( const WINDOW *win, const int y, int *firstch, int *la
 int     PDC_wscrl(WINDOW *win, const int top, const int bottom, int n);
 
 #ifdef PDC_WIDE
+#ifndef IS_LOW_SURROGATE         /* Microsoft(R) Windows redefines these */
+   #define IS_LOW_SURROGATE( c) ((c) >= 0xdc00 && (c) < 0xe000)
+   #define IS_SURROGATE( x)       ((x) >= 0xd800 && (x) < 0xe000)
+   #define IS_HIGH_SURROGATE( c) ((c) >= 0xd800 && (c) < 0xdc00)
+#endif
+
 int     PDC_mbtowc(wchar_t *, const char *, size_t);
 size_t  PDC_mbstowcs(wchar_t *, const char *, size_t);
 size_t  PDC_wcstombs(char *, const wchar_t *, size_t);

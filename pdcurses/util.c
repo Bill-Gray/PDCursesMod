@@ -195,10 +195,6 @@ int PDC_wc_to_utf8( char *dest, const int32_t code)
    has Unicode surrogate pairs in it.  In that case,  each input pair will
    result in only one output value. */
 
-#define IS_HIGH_SURROGATE( x)  ((x) >= 0xd800 && (x) < 0xdc00)
-#define IS_LOW_SURROGATE( x)   ((x) >= 0xdc00 && (x) < 0xe000)
-#define IS_SURROGATE( x)       ((x) >= 0xd800 && (x) < 0xe000)
-
 static int _wchar_to_int32_array( int32_t *obuff, const int obuffsize, const wchar_t *wch)
 {
     int i;
