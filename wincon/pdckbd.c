@@ -654,27 +654,27 @@ static void _process_mouse_event(void)
         incomplete_event = _add_raw_mouse_event( button, event, modifiers, x, y);
         while( incomplete_event)
          {
-             DWORD event_count = 0;
+             DWORD n_mouse_events = 0;
              int remaining_ms = SP->mouse_wait;
 
-             while( !event_count && remaining_ms)
+             while( !n_mouse_events && remaining_ms)
              {
                  const int nap_len = (remaining_ms > 20 ? 20 : remaining_ms);
 
                  napms( nap_len);
                  remaining_ms -= nap_len;
-                 GetNumberOfConsoleInputEvents(pdc_con_in, &event_count);
+                 GetNumberOfConsoleInputEvents(pdc_con_in, &n_mouse_events);
              }
              incomplete_event = FALSE;
-             if( event_count)
+             if( n_mouse_events)
              {
                  INPUT_RECORD ip;
 
-                 PeekConsoleInput(pdc_con_in, &ip, 1, &event_count);
+                 PeekConsoleInput(pdc_con_in, &ip, 1, &n_mouse_events);
                  if( (prev_state ^ button_mask[button])
                                      == ip.Event.MouseEvent.dwButtonState)
                      {
-                     ReadConsoleInput(pdc_con_in, &ip, 1, &event_count);
+                     ReadConsoleInput(pdc_con_in, &ip, 1, &n_mouse_events);
                      prev_state ^= button_mask[button];
                      event = (prev_state & button_mask[button]) ?
                                   BUTTON_PRESSED : BUTTON_RELEASED;
