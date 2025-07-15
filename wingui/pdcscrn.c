@@ -2099,7 +2099,7 @@ This suppresses cast-function-type warnings on gcc and MinGW.   */
 #define MAX_COLUMNS 50000
 
 #ifndef __DMC__
-typedef HRESULT (*dpi_aware_func_t)(int);
+typedef HRESULT (WINAPI *dpi_aware_func_t)(int);
 #endif
 
 int PDC_scr_open(void)
