@@ -502,7 +502,8 @@ int PDC_get_key( void)
                }
             else                 /* SGR mouse encoding */
                {
-               int n_fields, n_bytes;
+               int n_fields;
+               int n_bytes;
                char tbuff[MAX_COUNT];
 
                assert( c[1] == '<');
@@ -514,25 +515,28 @@ int PDC_get_key( void)
                assert( n_fields == 3);
                assert( c[count] == 'M' || c[count] == 'm');
                assert( n_bytes == count - 2);
-               event_type = ((c[count] == 'm') ? BUTTON_RELEASED : BUTTON_PRESSED);
                button = idx & 3;
-#ifdef __HAIKU__
-               if( !release)
+               if( 3 == n_fields)
                   {
-                  if( button == 3 || (held >> button) & 1)
-                     idx |= 0x40;         /* it's actually a mouse movement */
-                  }
-               else if( button < 3)
-                  held &= ~(1 << button);
-               idx &= ~0x20;
+                  event_type = ((c[count] == 'm') ? BUTTON_RELEASED : BUTTON_PRESSED);
+#ifdef __HAIKU__
+                  if( !release)
+                     {
+                     if( button == 3 || (held >> button) & 1)
+                        idx |= 0x40;         /* it's actually a mouse movement */
+                     }
+                  else if( button < 3)
+                     held &= ~(1 << button);
+                  idx &= ~0x20;
 #else
-               if( idx & 0x40)            /* (SGR) wheel mouse event; */
-                  idx |= 0x20;            /* requires this bit set in 'traditional' encoding */
-               else if( idx & 0x20)       /* (SGR) mouse move event sets a different bit */
-                  idx ^= 0x60;            /* in the traditional encoding */
+                  if( idx & 0x40)            /* (SGR) wheel mouse event; */
+                     idx |= 0x20;            /* requires this bit set in 'traditional' encoding */
+                  else if( idx & 0x20)       /* (SGR) mouse move event sets a different bit */
+                     idx ^= 0x60;            /* in the traditional encoding */
 #endif
-               x--;
-               y--;
+                  x--;
+                  y--;
+                  }
                }
             if( idx & 4)
                flags |= BUTTON_SHIFT;
@@ -629,7 +633,11 @@ int PDC_get_key( void)
          if( shifted_keys[rval >> 4] & (1 << (rval & 0xf)))
             modifiers = SHF;
          }
+#if defined( LINUX_FRAMEBUFFER_PORT) && defined( HAVE_MOUSE)
+      SP->key_modifiers = _key_modifiers;
+#else
       SP->key_modifiers = modifiers;
+#endif
       }
    if( rval > 0 && rval == PDC_get_function_key( FUNCTION_KEY_ABORT))
       raise( SIGINT);

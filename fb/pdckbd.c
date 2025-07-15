@@ -6,6 +6,7 @@ void PDC_rotate_font( void);
 
 #ifdef HAVE_MOUSE
    static void _check_mouse( );
+   static int _key_modifiers;
 #endif
 
 #ifdef USE_DRM
@@ -21,13 +22,29 @@ int PDC_cycle_display( void);
 #include "psf.h"
 #include "pdcfb.h"
 
+static int _key_to_mouse_modifiers( const int key_modifs)
+{
+#ifdef NOT_CURRENTLY_NEEDED
+   int mouse_modifs = 0;
+
+   if( key_modifs & PDC_KEY_MODIFIER_SHIFT)     /* At least at present,   */
+      mouse_modifs = PDC_BUTTON_SHIFT;          /* we can use the simpler */
+   if( key_modifs & PDC_KEY_MODIFIER_ALT)       /* bit-twiddling method   */
+      mouse_modifs |= PDC_BUTTON_ALT;           /* shown below.  If       */
+   if( key_modifs & PDC_KEY_MODIFIER_CONTROL)   /* things change,  they   */
+      mouse_modifs |= PDC_BUTTON_CONTROL;       /* will be different      */
+   return mouse_modifs;
+#endif
+   return( (key_modifs & 7) << 3);
+}
+
 #define PDC_MOUSE_WHEEL_EVENTS (PDC_MOUSE_WHEEL_UP | PDC_MOUSE_WHEEL_DOWN \
                         | PDC_MOUSE_WHEEL_RIGHT | PDC_MOUSE_WHEEL_LEFT)
 
 int PDC_update_mouse( int *button);
 bool PDC_update_mouse_cursor( int left, int right, int top, int bottom, const bool draw_it);
 bool PDC_remove_mouse_cursor( void);
-int PDC_get_mouse_modifiers( void);
+int PDC_get_modifiers( void);
 
 static void _check_mouse( )
 {
@@ -40,8 +57,8 @@ static void _check_mouse( )
    const int xmax = SP->cols * xper;
    const int ymax = SP->lines * yper;
    long timeout = 0;
-   const int modifs = PDC_get_mouse_modifiers( );
 
+   _key_modifiers = PDC_get_modifiers( );
    if( _get_mouse_event( NULL))      /* already got events queued up */
       return;
    while( (event = PDC_update_mouse( &button)) >= 0 || PDC_millisecs() < timeout)
@@ -60,6 +77,8 @@ static void _check_mouse( )
       y = PDC_mouse_y / yper;
       if( event >= 0)
          {
+         const int modifs = _key_to_mouse_modifiers( _key_modifiers);
+
          if( x != mx / xper || y != my / yper)
             _add_raw_mouse_event( 0, event, modifs, x, y);
          else if( event & PDC_MOUSE_WHEEL_EVENTS)

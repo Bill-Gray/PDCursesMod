@@ -46,10 +46,13 @@ chaos will ensue.       */
 #define PDC_MOUSE_WHEEL_DOWN    0x0040
 #define PDC_MOUSE_WHEEL_LEFT    0x0080
 #define PDC_MOUSE_WHEEL_RIGHT   0x0100
-#define PDC_BUTTON_SHIFT        0x0008  /* PDCurses */
-#define PDC_BUTTON_CONTROL      0x0010  /* PDCurses */
-#define PDC_BUTTON_ALT          0x0020  /* PDCurses */
-#define BUTTON_MODIFIER_MASK    0x0038  /* PDCurses */
+
+#define PDC_KEY_MODIFIER_SHIFT   1
+#define PDC_KEY_MODIFIER_CONTROL 2
+#define PDC_KEY_MODIFIER_ALT     4
+#define PDC_KEY_MODIFIER_NUMLOCK 8
+#define PDC_KEY_MODIFIER_REPEAT  16
+
 
 static int _get_mouse_or_keyboard_fds( int *return_fds, const int is_keyboard)
 {
@@ -93,7 +96,7 @@ static int _get_mouse_or_keyboard_fds( int *return_fds, const int is_keyboard)
    return n_found;
 }
 
-int PDC_get_mouse_modifiers( void)
+int PDC_get_modifiers( void)
 {
    static int n_fds = -1, fds[20];
    int i;
@@ -114,15 +117,15 @@ int PDC_get_mouse_modifiers( void)
                {
                case KEY_LEFTSHIFT:
                case KEY_RIGHTSHIFT:
-                  mask = PDC_BUTTON_SHIFT;
+                  mask = PDC_KEY_MODIFIER_SHIFT;
                   break;
                case KEY_LEFTALT:
                case KEY_RIGHTALT:
-                  mask = PDC_BUTTON_ALT;
+                  mask = PDC_KEY_MODIFIER_ALT;
                   break;
                case KEY_LEFTCTRL:
                case KEY_RIGHTCTRL:
-                  mask = PDC_BUTTON_CONTROL;
+                  mask = PDC_KEY_MODIFIER_CONTROL;
                   break;
                default:
                   mask = 0;
