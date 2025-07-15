@@ -73,18 +73,25 @@ void release_framebuffer(struct framebuffer *fb)
 
 static int n_connectors;
 
-int get_framebuffer(const char *dri_device, const int connector_num, struct framebuffer *fb)
+int get_framebuffer( const int connector_num, struct framebuffer *fb)
 {
     int err;
-    int i, fd, j;
+    int i, fd = -1, j;
     drmModeResPtr res;
     drmModeEncoderPtr encoder = 0;
     drmModeConnectorPtr connector = 0;
     drmModeModeInfoPtr resolution = 0;
     struct drm_mode_map_dumb mreq;
 
-    /* Open the dri device /dev/dri/cardX */
-    fd = open(dri_device, O_RDWR);
+    /* Open the dri device /dev/dri/cardX.  That'll usually be card0, */
+    /* but I've seen a card1 case;  there are no guarantees */
+    for( i = 0; fd < 0 && i < 10; i++)
+    {
+        char filename[30];
+
+        snprintf( filename, sizeof( filename), "/dev/dri/card%d", i);
+        fd = open( filename, O_RDWR);
+    }
     if (fd < 0)
     {
         perror( "Couldn't open the video card device");
@@ -213,11 +220,11 @@ cleanup:
 static struct framebuffer _drm_framebuffer;
 int can_set_master;
 
-static int init_drm( const char *dri_device, const int connector_num)
+static int init_drm( const int connector_num)
 {
     int err, rval;
 
-    rval = get_framebuffer( dri_device, connector_num, &_drm_framebuffer);
+    rval = get_framebuffer( connector_num, &_drm_framebuffer);
     if( !rval)
     {
         PDC_fb.framebuf = _drm_framebuffer.data;
@@ -233,6 +240,7 @@ static int init_drm( const char *dri_device, const int connector_num)
         if( err)
         {
            fprintf( stderr, "Can't set CRTC\n");
+           drmError( err, "SetCrtc (1)");
            return( -1);
         }
         err = drmModeSetCrtc( _drm_framebuffer.fd, _drm_framebuffer.crtc->crtc_id,

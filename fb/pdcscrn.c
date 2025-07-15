@@ -353,7 +353,7 @@ int PDC_cycle_display( void)
         return( -1);               /* or can't cycle the display */
     close_drm( );
     curr_screen_number++;
-    error = init_drm( "/dev/dri/card0", curr_screen_number);
+    error = init_drm( curr_screen_number);
     if( error)
     {
         fprintf( stderr, "Error %d on DRM opening\n", error);
@@ -388,8 +388,7 @@ int PDC_scr_open(void)
     PDC_LOG(("PDC_scr_open called\n"));
     if( screen_number)
         curr_screen_number = atoi( screen_number);
-    error = init_drm( "/dev/dri/card0", curr_screen_number);
-
+    error = init_drm( curr_screen_number);
     if( error)
     {
         fprintf( stderr, "Error %d on DRM opening\n", error);
