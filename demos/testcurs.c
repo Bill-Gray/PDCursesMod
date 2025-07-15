@@ -1,3 +1,4 @@
+
 /*
  * This is a test program for PDCurses. Originally by
  * John Burnell <johnb@kea.am.dsir.govt.nz>
@@ -14,7 +15,7 @@
 SysV) mouse functions in inputTest.  Otherwise,  the ncurses mouse
 interface will be used.       */
 
- #define CLASSIC_MOUSE_INTERFACE
+// #define CLASSIC_MOUSE_INTERFACE
 
 #if defined( CLASSIC_MOUSE_INTERFACE)
    #define BUTTON_MOVE_EVENTS (BUTTON1_MOVED | BUTTON2_MOVED | BUTTON3_MOVED \
@@ -223,6 +224,14 @@ int main(int argc, char *argv[])
         if( argv[i][0] == '-')
             switch( argv[i][1])
             {
+                case 'd':
+                    {
+                        unsigned flags;
+
+                        if( 1 == sscanf( argv[i] + 2, "%x", &flags))
+                            curses_trace( flags);
+                    }
+                    break;
                 case 'i': case 'I':
                     mouseinterval( atoi( argv[i] + 2));
                     break;

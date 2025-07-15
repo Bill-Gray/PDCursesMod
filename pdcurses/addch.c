@@ -513,7 +513,7 @@ int waddch( WINDOW *win, const chtype ch)
     chtype text, attr;
     bool xlat;
 
-    PDC_LOG(("waddch() - called: win=%p ch=%x (text=%c attr=0x%x)\n",
+    PDC_LOG_F( TRACE_VIRTPUT, ("waddch() - called: win=%p ch=%x (text=%c attr=0x%x)\n",
              win, ch, ch & A_CHARTEXT, ch & A_ATTRIBUTES));
 
     assert( SP);
@@ -702,14 +702,14 @@ int waddch( WINDOW *win, const chtype ch)
 
 int addch(const chtype ch)
 {
-    PDC_LOG(("addch() - called: ch=%x\n", ch));
+    PDC_LOG_F( TRACE_VIRTPUT, ("addch() - called: ch=%x\n", ch));
 
     return waddch(stdscr, ch);
 }
 
 int mvaddch(int y, int x, const chtype ch)
 {
-    PDC_LOG(("mvaddch() - called: y=%d x=%d ch=%x\n", y, x, ch));
+    PDC_LOG_F( TRACE_VIRTPUT, ("mvaddch() - called: y=%d x=%d ch=%x\n", y, x, ch));
 
     if (move(y,x) == ERR)
         return ERR;
@@ -719,7 +719,7 @@ int mvaddch(int y, int x, const chtype ch)
 
 int mvwaddch(WINDOW *win, int y, int x, const chtype ch)
 {
-    PDC_LOG(("mvwaddch() - called: win=%p y=%d x=%d ch=%d\n", win, y, x, ch));
+    PDC_LOG_F( TRACE_VIRTPUT, ("mvwaddch() - called: win=%p y=%d x=%d ch=%d\n", win, y, x, ch));
 
     if (wmove(win, y, x) == ERR)
         return ERR;
@@ -729,14 +729,14 @@ int mvwaddch(WINDOW *win, int y, int x, const chtype ch)
 
 int echochar(const chtype ch)
 {
-    PDC_LOG(("echochar() - called: ch=%x\n", ch));
+    PDC_LOG_F( TRACE_VIRTPUT, ("echochar() - called: ch=%x\n", ch));
 
     return wechochar(stdscr, ch);
 }
 
 int wechochar(WINDOW *win, const chtype ch)
 {
-    PDC_LOG(("wechochar() - called: win=%p ch=%x\n", win, ch));
+    PDC_LOG_F( TRACE_VIRTPUT, ("wechochar() - called: win=%p ch=%x\n", win, ch));
 
     if (waddch(win, ch) == ERR)
         return ERR;
@@ -746,7 +746,7 @@ int wechochar(WINDOW *win, const chtype ch)
 
 int waddrawch(WINDOW *win, chtype ch)
 {
-    PDC_LOG(("waddrawch() - called: win=%p ch=%x (text=%c attr=0x%x)\n",
+    PDC_LOG_F( TRACE_VIRTPUT, ("waddrawch() - called: win=%p ch=%x (text=%c attr=0x%x)\n",
              win, ch, ch & A_CHARTEXT, ch & A_ATTRIBUTES));
 
     if ((ch & A_CHARTEXT) < ' ' || (ch & A_CHARTEXT) == 0x7f)
@@ -757,14 +757,14 @@ int waddrawch(WINDOW *win, chtype ch)
 
 int addrawch(chtype ch)
 {
-    PDC_LOG(("addrawch() - called: ch=%x\n", ch));
+    PDC_LOG_F( TRACE_VIRTPUT, ("addrawch() - called: ch=%x\n", ch));
 
     return waddrawch(stdscr, ch);
 }
 
 int mvaddrawch(int y, int x, chtype ch)
 {
-    PDC_LOG(("mvaddrawch() - called: y=%d x=%d ch=%d\n", y, x, ch));
+    PDC_LOG_F( TRACE_VIRTPUT, ("mvaddrawch() - called: y=%d x=%d ch=%d\n", y, x, ch));
 
     if (move(y, x) == ERR)
         return ERR;
@@ -774,7 +774,7 @@ int mvaddrawch(int y, int x, chtype ch)
 
 int mvwaddrawch(WINDOW *win, int y, int x, chtype ch)
 {
-    PDC_LOG(("mvwaddrawch() - called: win=%p y=%d x=%d ch=%d\n",
+    PDC_LOG_F( TRACE_VIRTPUT, ("mvwaddrawch() - called: win=%p y=%d x=%d ch=%d\n",
              win, y, x, ch));
 
     if (wmove(win, y, x) == ERR)
@@ -786,7 +786,7 @@ int mvwaddrawch(WINDOW *win, int y, int x, chtype ch)
 #ifdef PDC_WIDE
 int wadd_wch(WINDOW *win, const cchar_t *wch)
 {
-    PDC_LOG(("wadd_wch() - called: win=%p wch=%x\n", win, *wch));
+    PDC_LOG_F( TRACE_VIRTPUT, ("wadd_wch() - called: win=%p wch=%x\n", win, *wch));
 
     assert( wch);
     return wch ? waddch(win, *wch) : ERR;
@@ -794,7 +794,7 @@ int wadd_wch(WINDOW *win, const cchar_t *wch)
 
 int add_wch(const cchar_t *wch)
 {
-    PDC_LOG(("add_wch() - called: wch=%x\n", *wch));
+    PDC_LOG_F( TRACE_VIRTPUT, ("add_wch() - called: wch=%x\n", *wch));
 
     return wadd_wch(stdscr, wch);
 }

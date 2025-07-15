@@ -129,8 +129,10 @@ int PDC_expand_combined_characters( const cchar_t c, cchar_t *added);
 
 #ifdef PDCDEBUG
 # define PDC_LOG(x) if (SP && SP->dbfp) PDC_debug x
+# define PDC_LOG_F( flag, x) if (SP && SP->dbfp && (SP->trace_flags & (flag))) PDC_debug x
 #else
 # define PDC_LOG(x)
+# define PDC_LOG_F( flag, x)
 #endif
 
 /* Internal macros for attributes */
