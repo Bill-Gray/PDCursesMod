@@ -7,6 +7,12 @@
 #endif
 #include "curspriv.h"
 
+#ifdef DOS
+         /* cheat and use DOS utils from the DOS port for beep and nap */
+   #include "../dos/pdcdos.h"
+   #include "../common/dosutil.c"
+#else
+
 void PDC_beep(void)
 {
 }
@@ -33,6 +39,7 @@ void PDC_napms(int ms)
 #endif
 #endif
 }
+#endif               /* non-DOS case */
 
 
 const char *PDC_sysname(void)
