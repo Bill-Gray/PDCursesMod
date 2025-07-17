@@ -1,4 +1,8 @@
-#define USE_UNICODE_ACS_CHARS 1
+#ifdef DOS
+   #define USE_UNICODE_ACS_CHARS 0
+#else
+   #define USE_UNICODE_ACS_CHARS 1
+#endif
 
 #include <wchar.h>
 #include <assert.h>
@@ -11,8 +15,6 @@
 #else
     #include <unistd.h>
 #endif
-
-#define USE_UNICODE_ACS_CHARS 1
 
 #include "curspriv.h"
 #include "pdcvt.h"
@@ -281,8 +283,10 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
           strcat( obuff, (*srcp & A_UNDERLINE) ? UNDERLINE_ON : UNDERLINE_OFF);
        if( changes & A_ITALIC)
           strcat( obuff, (*srcp & A_ITALIC) ? ITALIC_ON : ITALIC_OFF);
+#ifndef DOS
        if( changes & A_REVERSE)
           strcat( obuff, REVERSE_ON);
+#endif
 #ifndef _WIN32                /* MS doesn't support strikeout text */
        if( changes & A_STRIKEOUT)
           strcat( obuff, STRIKEOUT_ON);
@@ -290,7 +294,11 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
        if( SP->termattrs & changes & A_BLINK)
           strcat( obuff, (*srcp & A_BLINK) ? BLINK_ON : BLINK_OFF);
        if( changes & (A_COLOR | A_STANDOUT | A_BLINK | A_REVERSE))
+#ifdef DOS
+          reset_color( obuff + strlen( obuff), *srcp);
+#else
           reset_color( obuff + strlen( obuff), *srcp & ~A_REVERSE);
+#endif
        PDC_puts_to_stdout( obuff);
 #ifdef USING_COMBINING_CHARACTER_SCHEME
        if( ch > (int)MAX_UNICODE)      /* chars & fullwidth supported */
@@ -318,15 +326,24 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
        else if( ch < (int)MAX_UNICODE)
 #endif
        {
+#ifdef DOS
+           bytes_out = 1;
+           *obuff = (char)ch;
+#else
            bytes_out = PDC_wc_to_utf8( obuff, (wchar_t)ch);
+#endif
            while( count < len && !((srcp[0] ^ srcp[count]) & ~A_CHARTEXT)
                         && (ch = (srcp[count] & A_CHARTEXT)) < (int)MAX_UNICODE)
            {
                if( _is_altcharset( srcp[count]))
                   ch = (int)acs_map[ch & 0x7f];
+#ifdef DOS
+               obuff[bytes_out++] = (char)ch;
+#else
                if( ch < (int)' ' || (ch >= 0x80 && ch <= 0x9f))
                   ch = ' ';
                bytes_out += PDC_wc_to_utf8( obuff + bytes_out, (wchar_t)ch);
+#endif
                if( bytes_out > OBUFF_SIZE - 6)
                   {
                   put_to_stdout( obuff, bytes_out);
