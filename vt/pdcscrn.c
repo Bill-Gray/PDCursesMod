@@ -129,12 +129,14 @@ void PDC_reset_prog_mode( void)
     term.c_cc[VSTART] = _POSIX_VDISABLE;   /* disable Ctrl-Q */
     tcsetattr( fileno( SP->input_fd), TCSANOW, &term);
 #endif
-#ifndef _WIN32
+#if !defined( _WIN32) && !defined( DOS)
     if( !PDC_is_ansi)
         PDC_puts_to_stdout( CSI "?1006h");    /* Set SGR mouse tracking,  if available */
 #endif
+#ifndef DOS
     if( !SP->_preserve)
        PDC_puts_to_stdout( CSI "?47h");      /* Save screen */
+#endif
     PDC_puts_to_stdout( "\033" "7");         /* save cursor & attribs (VT100) */
 
     SP->_trap_mbe = _stored_trap_mbe;
