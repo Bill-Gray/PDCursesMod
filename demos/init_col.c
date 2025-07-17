@@ -101,10 +101,10 @@ int main( const int argc, const char *argv[])
     mvaddstr( line++, 12, "This should be  green text on blue.");
     attrset( COLOR_PAIR( 4));
     mvaddstr( line++, 2, "This uses an uninitialized color pair.  Its behavior is");
-    mvaddstr( line++, 2, "undefined,  but it'll be red-on-blue in PDCurses.");
+    mvaddstr( line++, 2, "undefined,  but it'll be red-on-blue in PDCursesMod.");
     attrset( COLOR_PAIR( 0));
     mvaddstr( line++, 2, "The above two lines were drawn with an uninitialized color");
-    mvaddstr( line++, 2, "pair.  The resulting behavior is undefined.  PDCurses will use");
+    mvaddstr( line++, 2, "pair.  The resulting behavior is undefined.  PDCursesMod will use");
     mvaddstr( line++, 2, "unusual colors in hopes you'll notice your mistake.  On ncurses,");
     mvaddstr( line++, 2, "you just get black text.  Hit a key...");
     while( getch( ) == KEY_RESIZE)
@@ -139,7 +139,7 @@ int main( const int argc, const char *argv[])
     mvaddstr( line++, 2, "And here's what things look like after reset_color_pairs().");
     mvaddstr( line++, 2, "We've discarded all color-pair info.  So all non-default");
     mvaddstr( line++, 2, "(i.e.,  not color pair 0) text will become black (in ncurses)");
-    mvaddstr( line++, 2, "or red on blue (in PDCurses).");
+    mvaddstr( line++, 2, "or red on blue (in PDCursesMod).");
     mvaddstr( line++, 2, "Hit a key");
     while( getch( ) == KEY_RESIZE)
         resize_term( 0, 0);
