@@ -61,12 +61,55 @@ struct glyph_grid_layer
      *
      * See also: BUILD_GLYPH_INDEX
      */
-    Uint32* grid;
+    Uint32* glyph_grid;
+
+    /* The codepoints are temporarily stored here, as the 'grid' array is only
+     * updated when rendering.
+     * 0-30: Unicode code point
+     * 30-31: attribute index
+     */
+    Uint32* codepoint_attr;
 };
+
+/* The `glyph_grid` members from `glyph_grid_layers` are only used in 
+ * single-threaded mode; multithreaded mode instead builds them in the render
+ * states below.
+ */
 static struct glyph_grid_layer* glyph_grid_layers = NULL;
 static int grid_w = 0, grid_h = 0, grid_layers = 0;
 static int cur_render_target_w = 0, cur_render_target_h = 0;
-static int cache_attr_index = 0;
+static int cache_attr_index = 0; /* Value range is 0 to 3 */
+
+/* All dynamically changing state required for rendering is duplicated in this
+ * structure for multithreading. This avoids race conditions, as the glyph grid
+ * layers can be updated while the duplicate is used for rendering.
+ */
+struct mt_render_state
+{
+    struct color_data* color_grid;
+    struct glyph_grid_layer* glyph_grid_layers;
+    int grid_w, grid_h, grid_layers;
+
+    SDL_Rect viewport;
+    int hcol;
+    PACKED_RGB hcol_rgb;
+
+    int updated;
+};
+
+/* When preparing to render a new frame, its data is put into submitted_state
+ * and its 'updated' is set to 1. This signals the rendering thread that it can
+ * copy that data over to 'locked_state' and keep reading from that. This
+ * approach makes it so that 'submitted_state' is not locked for the whole
+ * rendering duration, but only for the amount of time needed to swap
+ * submitted_state and locked_state around.
+ */
+static struct mt_render_state submitted_state = {
+    NULL, NULL, 0, 0, 0, {0, 0, 0, 0}, 0, 0
+};
+static struct mt_render_state locked_state = {
+    NULL, NULL, 0, 0, 0, {0, 0, 0, 0}, 0, 0
+};
 
 static int next_pow_2(int n)
 {
@@ -169,7 +212,10 @@ static void enlarge_glyph_cache( void)
     }
     else
     {
-        bool* visited = calloc(grid_w * grid_h * grid_layers, sizeof(bool));
+        bool* visited = calloc(
+            locked_state.grid_w * locked_state.grid_h * locked_state.grid_layers,
+            sizeof(bool)
+        );
         int attr;
 
         /* If we're here, it's not possible to enlarge the texture, so we have
@@ -191,12 +237,12 @@ static void enlarge_glyph_cache( void)
                 continue;
 
             /* Check if glyph is used in any layer */
-            for(layer = 0; layer < grid_layers; ++layer)
-            for(j = 0; j < grid_w * grid_h; ++j)
+            for(layer = 0; layer < locked_state.grid_layers; ++layer)
+            for(j = 0; j < locked_state.grid_w * locked_state.grid_h; ++j)
             {
                 if(
-                    glyph_grid_layers[layer].grid[j] == old_glyph &&
-                    !visited[j + layer * grid_w * grid_h]
+                    locked_state.glyph_grid_layers[layer].glyph_grid[j] == old_glyph &&
+                    !visited[j + layer * locked_state.grid_w * locked_state.grid_h]
                 ){
                     used = TRUE;
                     break;
@@ -231,15 +277,15 @@ static void enlarge_glyph_cache( void)
             }
 
             /* Update existing uses of the updated glyph */
-            for(layer = 0; layer < grid_layers; ++layer)
-            for(j = 0; j < grid_w * grid_h; ++j)
+            for(layer = 0; layer < locked_state.grid_layers; ++layer)
+            for(j = 0; j < locked_state.grid_w * locked_state.grid_h; ++j)
             {
                 if(
-                    glyph_grid_layers[layer].grid[j] == old_glyph &&
-                    !visited[j + layer * grid_w * grid_h]
+                    locked_state.glyph_grid_layers[layer].glyph_grid[j] == old_glyph &&
+                    !visited[j + layer * locked_state.grid_w * locked_state.grid_h]
                 ){
-                    glyph_grid_layers[layer].grid[j] = *cached_glyph;
-                    visited[j + layer * grid_w * grid_h] = TRUE;
+                    locked_state.glyph_grid_layers[layer].glyph_grid[j] = *cached_glyph;
+                    visited[j + layer * locked_state.grid_w * locked_state.grid_h] = TRUE;
                 }
             }
         }
@@ -326,7 +372,8 @@ static void ensure_glyph_grid(int min_layers)
             for(layer = grid_layers; layer < min_layers; ++layer)
             {
                 glyph_grid_layers[layer].occupancy = 0;
-                glyph_grid_layers[layer].grid = NULL;
+                glyph_grid_layers[layer].glyph_grid = NULL;
+                glyph_grid_layers[layer].codepoint_attr = NULL;
             }
             grid_layers = min_layers;
         }
@@ -334,26 +381,51 @@ static void ensure_glyph_grid(int min_layers)
         /* Update the glyph grids on each layer.  */
         for(layer = 0; layer < grid_layers; ++layer)
         {
-            Uint32* new_glyphs = malloc(sizeof(Uint32) * SP->lines * SP->cols);
+            size_t old_size = sizeof(Uint32) * grid_w * grid_h;
+            size_t size = sizeof(Uint32) * SP->lines * SP->cols;
+            Uint32* new_codepoints = malloc(size);
+            memset(new_codepoints, 0, size);
+
             for(j = 0; j < SP->lines; ++j)
             {
                 i = 0;
-                if(j < grid_h && glyph_grid_layers[layer].grid)
+                if(j < grid_h && glyph_grid_layers[layer].codepoint_attr)
                 {
                     int w = grid_w < SP->cols ? grid_w : SP->cols;
                     memcpy(
-                        &new_glyphs[j * SP->cols],
-                        &glyph_grid_layers[layer].grid[j * grid_w],
+                        &new_codepoints[j * SP->cols],
+                        &glyph_grid_layers[layer].codepoint_attr[j * grid_w],
                         sizeof(Uint32) * w
                     );
                     i = w;
                 }
                 for(; i < SP->cols; ++i)
-                    new_glyphs[i + j * SP->cols] = BUILD_GLYPH_INDEX(0, 0, 1);
+                    new_codepoints[i + j * SP->cols] = 0;
             }
 
-            free(glyph_grid_layers[layer].grid);
-            glyph_grid_layers[layer].grid = new_glyphs;
+            free(glyph_grid_layers[layer].codepoint_attr);
+            glyph_grid_layers[layer].codepoint_attr = new_codepoints;
+
+            if(pdc_threading_mode == PDC_GL_SINGLE_THREADED_RENDERING)
+            {
+                /* The grid will get fully rewritten right before rendering
+                 * anyway, so keeping its layout doesn't matter as long as all
+                 * the old glyphs are still there (they must be kept around to
+                 * know how to perform glyph cache eviction).
+                 */
+                glyph_grid_layers[layer].glyph_grid = realloc(
+                    glyph_grid_layers[layer].glyph_grid,
+                    size
+                );
+                if(old_size < size)
+                {
+                    /* Make sure the new additions are zero-initialized */
+                    memset(
+                        glyph_grid_layers[layer].glyph_grid + grid_w * grid_h,
+                        0, old_size - size
+                    );
+                }
+            }
         }
 
         grid_w = SP->cols;
@@ -374,7 +446,8 @@ static void shrink_glyph_grid( void)
             ++layer;
             continue;
         }
-        free(glyph_grid_layers[layer].grid);
+        free(glyph_grid_layers[layer].glyph_grid);
+        free(glyph_grid_layers[layer].codepoint_attr);
         memmove(
             glyph_grid_layers+layer,
             glyph_grid_layers+layer+1,
@@ -393,14 +466,14 @@ static Uint32 get_pdc_color( const int color_idx)
         (Uint32)Get_BValue(rgb)<<16;
 }
 
-static Uint32 get_glyph_texture_index(Uint32 ch32)
+static Uint32 get_glyph_texture_index(Uint32 ch32, Uint32 attr_index)
 {
     SDL_Color white = {255,255,255,255};
-    int *cache_size = &pdc_glyph_cache_size[cache_attr_index];
-    Uint32 **cache = &pdc_glyph_cache[cache_attr_index];
+    int *cache_size = &pdc_glyph_cache_size[attr_index];
+    Uint32 **cache = &pdc_glyph_cache[attr_index];
 
     /* Fullwidth dummy char! 0 makes it stop existing! */
-    if(ch32 == 0x110000) return 0;
+    if(ch32 == 0x110000 || ch32 == 0) return 0;
 
 #ifndef PDC_SDL_SUPPLEMENTARY_PLANES_SUPPORT
     /* no support for supplementary planes */
@@ -420,11 +493,18 @@ static Uint32 get_glyph_texture_index(Uint32 ch32)
         Uint32 index;
         SDL_Surface* surf = NULL;
 
+        TTF_SetFontStyle(
+            pdc_ttffont,
+            (attr_index&1 ? TTF_STYLE_BOLD : 0) | (attr_index&2 ? TTF_STYLE_ITALIC : 0)
+        );
+
 #ifdef PDC_SDL_SUPPLEMENTARY_PLANES_SUPPORT
         surf = TTF_RenderGlyph32_Blended(pdc_ttffont, ch32, white);
 #else
         surf = TTF_RenderGlyph_Blended(pdc_ttffont, (Uint16)ch32, white);
 #endif
+        if(!surf) return 0;
+
         SDL_LockSurface(surf);
         /* Kind-of-fullwidthness-but-not-really: Italics can also overstep
          * and cause w = 2, which should still render completely fine.
@@ -505,10 +585,10 @@ static void draw_glyph(
     /* Clear all layers above the base */
     for(layer = 1; layer < grid_layers; ++layer)
     {
-        if(glyph_grid_layers[layer].grid[i] != 0)
+        if(glyph_grid_layers[layer].codepoint_attr[i] != 0)
         {
             glyph_grid_layers[layer].occupancy--;
-            glyph_grid_layers[layer].grid[i] = 0;
+            glyph_grid_layers[layer].codepoint_attr[i] = 0;
         }
     }
     layer = 0;
@@ -521,16 +601,14 @@ static void draw_glyph(
 
         cchar_t added = 0;
         ch32 = PDC_expand_combined_characters(ch32, &added);
-        Uint32 glyph_index = get_glyph_texture_index(added);
-        if(glyph_index != 0)
-        {
-            glyph_grid_layers[layer].occupancy++;
-            glyph_grid_layers[layer].grid[i] = glyph_index;
-        }
+        Uint32 codepoint_attr = added | (((Uint32)cache_attr_index)<<30u);
+        glyph_grid_layers[layer].occupancy++;
+        glyph_grid_layers[layer].codepoint_attr[i] = codepoint_attr;
     }
 #endif
 
-    glyph_grid_layers[0].grid[i] = get_glyph_texture_index(ch32);
+    Uint32 codepoint_attr = ch32 | (((Uint32)cache_attr_index)<<30u);
+    glyph_grid_layers[0].codepoint_attr[i] = codepoint_attr;
 }
 
 static void draw_cursor(int y, int x, int visibility)
@@ -559,10 +637,6 @@ static void _set_attr(chtype ch)
     int italic = 0;
 #endif
     cache_attr_index = (bold ? 1 : 0) | (italic ? 2 : 0);
-    TTF_SetFontStyle(
-        pdc_ttffont,
-        (bold ? TTF_STYLE_BOLD : 0) | (italic ? TTF_STYLE_ITALIC : 0)
-    );
 
     ch &= (A_COLOR|A_BOLD|A_BLINK|A_REVERSE);
 
@@ -722,17 +796,58 @@ void PDC_blink_text(void)
     PDC_doupdate();
 }
 
-void PDC_doupdate(void)
+void PDC_render_frame(void)
 {
-    int w, h;
-    SDL_Rect viewport = PDC_get_viewport();
     bool use_render_target = pdc_interpolation_mode == PDC_GL_INTERPOLATE_BILINEAR &&
         pdc_resize_mode != PDC_GL_RESIZE_NORMAL;
+    int w, h;
     int u_screen_size, u_glyph_size, u_fthick, u_line_color;
-    short hcol = SP->line_color;
+    SDL_Rect viewport;
     int layer;
+    struct glyph_grid_layer* layers;
 
-    ensure_glyph_grid(1);
+    if(pdc_threading_mode == PDC_GL_MULTI_THREADED_RENDERING)
+    {
+        struct mt_render_state tmp;
+
+        SDL_LockMutex(pdc_render_mutex);
+
+        if(submitted_state.updated == 0)
+        {
+            /* Wait until we have an update. */
+            SDL_CondWait(pdc_render_cond, pdc_render_mutex);
+            if(submitted_state.updated == 0)
+            { /* Signalled despite no update, this means that we should quit. */
+                return;
+            }
+        }
+
+        /* Swap locked_state and submitted_state. */
+        memcpy(&tmp, &submitted_state, sizeof(struct mt_render_state));
+        memcpy(&submitted_state, &locked_state, sizeof(struct mt_render_state));
+        memcpy(&locked_state, &tmp, sizeof(struct mt_render_state));
+
+        submitted_state.updated = 0;
+
+        SDL_UnlockMutex(pdc_render_mutex);
+    }
+
+    viewport = locked_state.viewport;
+
+    layers = locked_state.glyph_grid_layers;
+
+    for(layer = 0; layer < locked_state.grid_layers; ++layer)
+    {
+        int i;
+        for(i = 0; i < locked_state.grid_w * locked_state.grid_h; ++i)
+        {
+            Uint32 codepoint_attr = layers[layer].codepoint_attr[i];
+            layers[layer].glyph_grid[i] = get_glyph_texture_index(
+                codepoint_attr&0x3FFFFFFFu,
+                codepoint_attr>>30u
+            );
+        }
+    }
 
     /* Upload grid buffers at the start, before we queue the commands that need
      * them.
@@ -740,15 +855,15 @@ void PDC_doupdate(void)
     glBindBuffer(GL_ARRAY_BUFFER, pdc_color_buffer);
     glBufferData(
         GL_ARRAY_BUFFER,
-        sizeof(struct color_data) * SP->lines * SP->cols,
-        color_grid,
+        sizeof(struct color_data) * locked_state.grid_w * locked_state.grid_h,
+        locked_state.color_grid,
         GL_STREAM_DRAW
     );
     glBindBuffer(GL_ARRAY_BUFFER, pdc_glyph_buffer);
     glBufferData(
         GL_ARRAY_BUFFER,
-        sizeof(Uint32) * SP->lines * SP->cols,
-        glyph_grid_layers[0].grid,
+        sizeof(Uint32) * locked_state.grid_w * locked_state.grid_h,
+        layers[0].glyph_grid,
         GL_STREAM_DRAW
     );
 
@@ -765,8 +880,8 @@ void PDC_doupdate(void)
          * their edges would still appear sharp, as they could not blend
          * between cell edges.
          */
-        int content_w = SP->cols * pdc_fwidth;
-        int content_h = SP->lines * pdc_fheight;
+        int content_w = locked_state.grid_w * pdc_fwidth;
+        int content_h = locked_state.grid_h * pdc_fheight;
 
         if(!pdc_render_target_texture)
         {
@@ -826,20 +941,22 @@ void PDC_doupdate(void)
     glUseProgram(pdc_background_shader_program);
     u_screen_size = glGetUniformLocation(
         pdc_background_shader_program, "screen_size");
-    glUniform2i(u_screen_size, SP->cols, SP->lines);
+    glUniform2i(u_screen_size, locked_state.grid_w, locked_state.grid_h);
 
     u_glyph_size = glGetUniformLocation(
         pdc_background_shader_program, "glyph_size");
     glUniform2i(u_glyph_size, pdc_fwidth, pdc_fheight);
 
-    glDrawArraysInstanced(GL_TRIANGLES, 0, 6, SP->lines * SP->cols);
+    glDrawArraysInstanced(
+        GL_TRIANGLES, 0, 6, locked_state.grid_w * locked_state.grid_h
+    );
 
     /* Prepare for drawing foreground glyphs. */
     glUseProgram(pdc_foreground_shader_program);
 
     u_screen_size = glGetUniformLocation(
         pdc_foreground_shader_program, "screen_size");
-    glUniform2i(u_screen_size, SP->cols, SP->lines);
+    glUniform2i(u_screen_size, locked_state.grid_w, locked_state.grid_h);
 
     u_glyph_size = glGetUniformLocation(
         pdc_foreground_shader_program, "glyph_size");
@@ -850,20 +967,18 @@ void PDC_doupdate(void)
 
     u_line_color = glGetUniformLocation(
         pdc_foreground_shader_program, "line_color");
-    hcol = SP->line_color;
-    if(hcol >= 0)
+    if(locked_state.hcol >= 0)
     {
-        PACKED_RGB rgb = PDC_get_palette_entry(hcol);
         glUniform3f(u_line_color,
-            Get_RValue(rgb)/255.0f,
-            Get_GValue(rgb)/255.0f,
-            Get_BValue(rgb)/255.0f
+            Get_RValue(locked_state.hcol_rgb)/255.0f,
+            Get_GValue(locked_state.hcol_rgb)/255.0f,
+            Get_BValue(locked_state.hcol_rgb)/255.0f
         );
     }
     else glUniform3f(u_line_color, -1, -1, -1);
 
     /* Draw foreground colors, layer by layer. */
-    for(layer = 0; layer < grid_layers; ++layer)
+    for(layer = 0; layer < locked_state.grid_layers; ++layer)
     {
         if(layer != 0)
         {
@@ -873,12 +988,14 @@ void PDC_doupdate(void)
              */
             glBufferData(
                 GL_ARRAY_BUFFER,
-                sizeof(Uint32) * SP->lines * SP->cols,
-                glyph_grid_layers[layer].grid,
+                sizeof(Uint32) * locked_state.grid_w * locked_state.grid_h,
+                layers[layer].glyph_grid,
                 GL_STREAM_DRAW
             );
         }
-        glDrawArraysInstanced(GL_TRIANGLES, 0, 6, SP->lines * SP->cols);
+        glDrawArraysInstanced(
+            GL_TRIANGLES, 0, 6, locked_state.grid_w * locked_state.grid_h
+        );
     }
 
     if(use_render_target)
@@ -904,8 +1021,120 @@ void PDC_doupdate(void)
     }
 
     SDL_GL_SwapWindow(pdc_window);
+}
 
+void PDC_doupdate(void)
+{
+    ensure_glyph_grid(1);
     shrink_glyph_grid();
+
+    if(pdc_threading_mode == PDC_GL_MULTI_THREADED_RENDERING)
+    {
+        int i;
+        size_t grid_size = sizeof(Uint32) * grid_w * grid_h;
+        size_t color_grid_size = sizeof(struct color_data) * grid_w * grid_h;
+        size_t old_grid_size;
+        size_t old_color_grid_size;
+
+        SDL_LockMutex(pdc_render_mutex);
+
+        old_grid_size =
+            sizeof(Uint32) * submitted_state.grid_w * submitted_state.grid_h;
+        old_color_grid_size = sizeof(struct color_data) *
+            submitted_state.grid_w * submitted_state.grid_h;
+
+        /* Delete unneeded layer memory. */
+        for(i = grid_layers; i < submitted_state.grid_layers; ++i)
+        {
+            free(submitted_state.glyph_grid_layers[i].glyph_grid);
+            free(submitted_state.glyph_grid_layers[i].codepoint_attr);
+        }
+        /* Realloc enough layers. */
+        if(grid_layers != submitted_state.grid_layers)
+        {
+            submitted_state.glyph_grid_layers = realloc(
+                submitted_state.glyph_grid_layers,
+                sizeof(struct glyph_grid_layer) * grid_layers
+            );
+        }
+        /* Add missing layer memory and copy new data over. */
+        for(i = 0; i < grid_layers; ++i)
+        {
+            if(i >= submitted_state.grid_layers)
+            {
+                submitted_state.glyph_grid_layers[i].glyph_grid = malloc(grid_size);
+                submitted_state.glyph_grid_layers[i].codepoint_attr = malloc(grid_size);
+            }
+            else if(old_grid_size != grid_size)
+            {
+                /* The grid will get fully rewritten right before rendering
+                 * anyway, so keeping its layout doesn't matter as long as all
+                 * the old glyphs are still there (they must be kept around to
+                 * know how to perform glyph cache eviction).
+                 */
+                submitted_state.glyph_grid_layers[i].glyph_grid = realloc(
+                    submitted_state.glyph_grid_layers[i].glyph_grid,
+                    grid_size
+                );
+                if(old_grid_size < grid_size)
+                {
+                    /* Make sure the new additions are zero-initialized */
+                    memset(
+                        submitted_state.glyph_grid_layers[i].glyph_grid +
+                            submitted_state.grid_w * submitted_state.grid_h,
+                        0, old_grid_size - old_grid_size
+                    );
+                }
+                submitted_state.glyph_grid_layers[i].codepoint_attr = realloc(
+                    submitted_state.glyph_grid_layers[i].codepoint_attr,
+                    grid_size
+                );
+            }
+
+            submitted_state.glyph_grid_layers[i].occupancy =
+                glyph_grid_layers[i].occupancy;
+            memcpy(
+                submitted_state.glyph_grid_layers[i].codepoint_attr,
+                glyph_grid_layers[i].codepoint_attr,
+                grid_size
+            );
+        }
+
+        /* Copy color grid as well. */
+        if(color_grid_size != old_color_grid_size)
+        {
+            submitted_state.color_grid = realloc(
+                submitted_state.color_grid,
+                color_grid_size
+            );
+        }
+        memcpy(submitted_state.color_grid, color_grid, color_grid_size);
+
+        submitted_state.viewport = PDC_get_viewport();
+        submitted_state.hcol = SP->line_color;
+        if(SP->line_color > 0)
+            submitted_state.hcol_rgb = PDC_get_palette_entry(SP->line_color);
+        submitted_state.grid_w = grid_w;
+        submitted_state.grid_h = grid_h;
+        submitted_state.grid_layers = grid_layers;
+        submitted_state.updated = 1;
+
+        SDL_UnlockMutex(pdc_render_mutex);
+        SDL_CondBroadcast(pdc_render_cond);
+    }
+    else
+    {
+        locked_state.viewport = PDC_get_viewport();
+        locked_state.hcol = SP->line_color;
+        if(SP->line_color > 0)
+            locked_state.hcol_rgb = PDC_get_palette_entry(SP->line_color);
+        locked_state.glyph_grid_layers = glyph_grid_layers;
+        locked_state.color_grid = color_grid;
+        locked_state.grid_w = grid_w;
+        locked_state.grid_h = grid_h;
+        locked_state.grid_layers = grid_layers;
+        PDC_render_frame();
+    }
 }
 
 void PDC_pump_and_peep(void)

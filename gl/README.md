@@ -58,6 +58,35 @@ The default font (if not redefined) is based on the OS:
 
 - Other: /usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf
 
+Multithreading
+---------------
+
+This port has an option to change its threading approach:
+```
+PDCEX  int pdc_threading_mode;
+```
+
+You can set it to either `PDC_GL_SINGLE_THREADED_RENDERING` or
+`PDC_GL_MULTI_THREADED_RENDERING` (default). The former renders a frame every
+time the user calls `refresh()`/`doupdate()`, while the latter has a separate
+rendering thread that renders at a steady rate whenever new frames are
+available.
+
+For example, if your program is calling `doupdate()` 1000 times a second, the
+single-threaded mode tries to draw all of them, while the multithreaded one
+renders at the refresh rate of the screen (likely 60 fps), showing the latest
+state at screen refresh time.
+
+The multithreaded mode also enables vertical synchronization by default, as it
+does not kneecap the performance of `doupdate()` like in single-threaded mode.
+This means that the output image is tear-free, assuming the GPU driver isn't
+force-disabling vertical sync.
+
+A negative to multithreaded mode is that there may be use-cases where you do
+not want to use threads (e.g. they can make debugging harder) or need doupdate()
+to actually render every single time, even if your display can't show those
+frames.
+
 Icons
 -----
 

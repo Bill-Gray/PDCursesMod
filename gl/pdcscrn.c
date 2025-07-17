@@ -29,12 +29,15 @@ int pdc_font_size =
 #endif
 int pdc_resize_mode = PDC_GL_RESIZE_NORMAL;
 int pdc_interpolation_mode = PDC_GL_INTERPOLATE_BILINEAR;
+int pdc_threading_mode = PDC_GL_MULTI_THREADED_RENDERING;
 
 Uint32 *pdc_glyph_cache[4] = {NULL, NULL, NULL, NULL};
 int pdc_glyph_cache_size[4] = {0, 0, 0, 0};
 int pdc_glyph_row_capacity = 0, pdc_glyph_col_capacity = 0;
 int pdc_glyph_cache_w = 0, pdc_glyph_cache_h = 0;
 int* pdc_glyph_start_col = NULL;
+SDL_mutex *pdc_render_mutex = NULL;
+SDL_cond *pdc_render_cond = NULL;
 
 SDL_Window *pdc_window = NULL;
 SDL_Surface *pdc_icon = NULL;
@@ -48,6 +51,8 @@ unsigned pdc_tex_fbo = 0;
 static GLuint pdc_vao = 0;
 
 static SDL_GLContext pdc_gl_context = NULL;
+static int pdc_render_thread_should_quit = 0;
+static SDL_Thread *pdc_render_thread = NULL;
 
 /* The same vertex shader is used in both shader programs, the one that draws
  * the background colors and the one that draws the foreground glyphs. Vertex
@@ -144,6 +149,34 @@ static const char* pdc_foreground_fragment_shader_src =
 
 static void _clean(void)
 {
+    if(pdc_threading_mode == PDC_GL_MULTI_THREADED_RENDERING)
+    {
+        SDL_LockMutex(pdc_render_mutex);
+        pdc_render_thread_should_quit = 1;
+        SDL_UnlockMutex(pdc_render_mutex);
+        SDL_CondBroadcast(pdc_render_cond);
+
+        if(pdc_render_thread)
+        {
+            SDL_WaitThread(pdc_render_thread, NULL);
+            pdc_render_thread = NULL;
+        }
+
+        /* Steal back the GL context */
+        SDL_GL_MakeCurrent(pdc_window, pdc_gl_context);
+
+        if(pdc_render_mutex)
+        {
+            SDL_DestroyMutex(pdc_render_mutex);
+            pdc_render_mutex = NULL;
+        }
+        if(pdc_render_cond)
+        {
+            SDL_DestroyCond(pdc_render_cond);
+            pdc_render_cond = NULL;
+        }
+    }
+
     int i;
     if (pdc_ttffont)
     {
@@ -167,7 +200,6 @@ static void _clean(void)
 
     if( pdc_icon)
         SDL_FreeSurface(pdc_icon);
-
     pdc_icon = NULL;
 
     if(pdc_tex_fbo)
@@ -263,6 +295,24 @@ static void build_shader_program(GLuint shader_program)
     }
 }
 
+static int render_thread_worker(void *data)
+{
+    INTENTIONALLY_UNUSED_PARAMETER(data);
+
+    SDL_GL_MakeCurrent(pdc_window, pdc_gl_context);
+    for(;;)
+    {
+        int should_quit;
+        SDL_LockMutex(pdc_render_mutex);
+        should_quit = pdc_render_thread_should_quit;
+        SDL_UnlockMutex(pdc_render_mutex);
+        if(should_quit) break;
+        PDC_render_frame();
+    }
+    SDL_GL_MakeCurrent(pdc_window, NULL);
+    return 0;
+}
+
 void PDC_scr_close(void)
 {
     PDC_LOG(("PDC_scr_close() - called\n"));
@@ -307,6 +357,7 @@ int PDC_scr_open(void)
     int displaynum = 0;
     int h, w;
     const char *ptsz, *fname;
+    Uint32 init_flags;
 
     PDC_LOG(("PDC_scr_open() - called\n"));
 
@@ -432,7 +483,9 @@ int PDC_scr_open(void)
     }
     SDL_GL_MakeCurrent(pdc_window, pdc_gl_context);
 
-    SDL_GL_SetSwapInterval(0);
+    SDL_GL_SetSwapInterval(
+        pdc_threading_mode == PDC_GL_MULTI_THREADED_RENDERING ? 1 : 0
+    );
 
     /* Load the GL functions we use. */
     load_gl_funcs();
@@ -526,6 +579,17 @@ int PDC_scr_open(void)
 #endif
 
     PDC_reset_prog_mode();
+
+    if(pdc_threading_mode == PDC_GL_MULTI_THREADED_RENDERING)
+    {
+        SDL_GL_MakeCurrent(pdc_window, NULL);
+        pdc_render_mutex = SDL_CreateMutex();
+        pdc_render_cond = SDL_CreateCond();
+        pdc_render_thread_should_quit = 0;
+
+        pdc_render_thread = SDL_CreateThread(
+            render_thread_worker, "Rendering thread", NULL);
+    }
 
     return OK;
 }
