@@ -1918,7 +1918,7 @@ void wideTest(WINDOW *win)
     addwstr(tmp);
     addstr("\n\n\n Hex:\n\n ");
 
-    for (i = 0; i < wcslen(tmp); i++)
+    for (i = 0; tmp[i]; i++)
     {
         printw("%04x ", tmp[i]);
         addnwstr(tmp + i, 1);
