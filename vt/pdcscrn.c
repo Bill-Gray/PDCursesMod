@@ -185,14 +185,16 @@ void PDC_save_screen_mode(int i)
 
 void PDC_scr_close( void)
 {
-#ifndef _WIN32
+#if !defined( _WIN32) && !defined( DOS)
    if( !PDC_is_ansi)
        PDC_puts_to_stdout( CSI "?1006l");    /* Turn off SGR mouse tracking */
 #endif
    PDC_puts_to_stdout( "\033" "8");         /* restore cursor & attribs (VT100) */
    PDC_puts_to_stdout( CSI "m");         /* set default screen attributes */
+#if !defined( DOS)
    PDC_puts_to_stdout( CSI "?47l");      /* restore screen */
    PDC_curs_set( 2);          /* blinking block cursor */
+#endif
    PDC_gotoyx( PDC_cols - 1, 0);
    _stored_trap_mbe = SP->_trap_mbe;
    SP->_trap_mbe = 0;
@@ -393,18 +395,18 @@ int PDC_color_content( int color, int *red, int *green, int *blue)
 {
     const PACKED_RGB col = PDC_get_palette_entry( color);
 
-    *red = DIVROUND( Get_RValue(col) * 1000, 255);
-    *green = DIVROUND( Get_GValue(col) * 1000, 255);
-    *blue = DIVROUND( Get_BValue(col) * 1000, 255);
+    *red =   DIVROUND( (int32_t)Get_RValue(col) * (int32_t)1000, (int32_t)255);
+    *green = DIVROUND( (int32_t)Get_GValue(col) * (int32_t)1000, (int32_t)255);
+    *blue =  DIVROUND( (int32_t)Get_BValue(col) * (int32_t)1000, (int32_t)255);
 
     return OK;
 }
 
 int PDC_init_color( int color, int red, int green, int blue)
 {
-    const PACKED_RGB new_rgb = PACK_RGB(DIVROUND(red * 255, 1000),
-                                 DIVROUND(green * 255, 1000),
-                                 DIVROUND(blue * 255, 1000));
+    const PACKED_RGB new_rgb = PACK_RGB(DIVROUND((int32_t)red   * (int32_t)255, (int32_t)1000),
+                                        DIVROUND((int32_t)green * (int32_t)255, (int32_t)1000),
+                                        DIVROUND((int32_t)blue  * (int32_t)255, (int32_t)1000));
 
     if( !PDC_set_palette_entry( color, new_rgb))
         curscr->_clear = TRUE;
