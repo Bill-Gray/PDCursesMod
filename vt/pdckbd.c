@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -15,10 +14,14 @@
 #include "pdcvt.h"
 #include "../common/mouse.c"
 
-#if defined( __BORLANDC__) || defined( DOS)
+#if defined( __BORLANDC__)
    #define WINDOWS_VERSION_OF_KBHIT kbhit
 #else
    #define WINDOWS_VERSION_OF_KBHIT _kbhit
+#endif
+
+#ifdef __DMC__
+   int dmc_getch( void);         /* see 'getch2.c' */
 #endif
 
 /* Modified from the accepted answer at
@@ -81,7 +84,11 @@ static bool check_key( int *c)
        {
        rval = TRUE;
        if( c)
+#ifdef __DMC__
+          *c = dmc_getch( );         /* see 'getch2.c' */
+#else
           *c = _getch( );
+#endif
        }
     else
        rval = FALSE;
