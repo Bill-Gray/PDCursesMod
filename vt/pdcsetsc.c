@@ -56,7 +56,7 @@ int PDC_curs_set( int visibility)
 
     ret_vis = SP->visibility;
 
-#ifndef LINUX_FRAMEBUFFER_PORT
+#if !defined( LINUX_FRAMEBUFFER_PORT) && !defined( DOS)
     if( !SP->visibility && visibility)    /* turn cursor back on */
         PDC_puts_to_stdout( CURSOR_ON);
     else if( SP->visibility && !visibility)
