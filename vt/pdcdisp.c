@@ -250,6 +250,10 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
     assert( lineno < SP->lines);
     assert( len > 0);
     assert( len < MAX_PACKET_LEN);
+#ifdef DOS           /* can't write to last cell at lower right */
+    if( lineno == SP->lines - 1 && len == SP->cols - x)
+        len--;
+#endif
     PDC_gotoyx( lineno, x);
     if( force_reset_all_attribs || (!x && !lineno))
     {
