@@ -199,7 +199,7 @@ used to make the results marginally less ugly. */
 
 static int find_in_palette( const int32_t rgb, const int dither)
 {
-#ifndef CHTYPE_32
+#if !defined( CHTYPE_32) && INT_MAX > 65536
    if( COLORS > 0x100000)
       return( rgb + 256);
    else

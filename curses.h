@@ -471,7 +471,11 @@ capability.
     # define PDC_CHARTEXT_BITS   21
     # define PDC_ATTRIBUTE_BITS  17
     # define PDC_UNUSED_BITS      6
-    # define PDC_COLOR_BITS      20
+    #if INT_MAX > 65536
+       # define PDC_COLOR_BITS      20
+    #else
+       # define PDC_COLOR_BITS      13
+    #endif
 # else
 #ifdef PDC_WIDE
             /* 32-bit chtypes,  wide character */
