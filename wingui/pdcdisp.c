@@ -330,7 +330,7 @@ static bool character_is_in_font( chtype ichar)
     for( i = PDC_unicode_range_data->cRanges; i; i--, wptr++)
       if( wptr->wcLow > ichar)
          return( FALSE);
-      else if( wptr->wcLow + wptr->cGlyphs > ichar)
+      else if( wptr->wcLow + wptr->cGlyphs > (WCHAR)ichar)
          return( TRUE);
                /* Didn't find it in any range;  it must not be in the font */
     return( FALSE);
