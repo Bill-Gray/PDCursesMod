@@ -402,12 +402,15 @@ int PDC_scr_open(void)
     _reset_old_colors();
 
     std_con_out =
-    pdc_con_out = GetStdHandle(STD_OUTPUT_HANDLE);
-    pdc_con_in = GetStdHandle(STD_INPUT_HANDLE);
+    pdc_con_out = CreateFile(TEXT("CONOUT$"), GENERIC_READ | GENERIC_WRITE,
+                             FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
+    pdc_con_in = CreateFile(TEXT("CONIN$"), GENERIC_READ | GENERIC_WRITE,
+                            FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
 
-    if (GetFileType(pdc_con_in) != FILE_TYPE_CHAR)
+    if (pdc_con_out == INVALID_HANDLE_VALUE ||
+        pdc_con_in == INVALID_HANDLE_VALUE)
     {
-        fprintf(stderr, "\nRedirection is not supported.\n");
+        fprintf(stderr, "\nCannot open console.\n");
         exit(1);
     }
 
