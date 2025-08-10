@@ -2098,8 +2098,11 @@ This suppresses cast-function-type warnings on gcc and MinGW.   */
 #define MAX_LINES   50000
 #define MAX_COLUMNS 50000
 
-#ifndef __DMC__
-typedef HRESULT (WINAPI *dpi_aware_func_t)(int);
+#if !defined( __DMC__)
+   #if !defined( MSC_VER) || (MSC_VER > 1100)
+      typedef HRESULT (WINAPI *dpi_aware_func_t)(int);
+      #define USE_VOID_FN_PTR_TRICK
+   #endif
 #endif
 
 int PDC_scr_open(void)
@@ -2114,12 +2117,12 @@ int PDC_scr_open(void)
 
     if ( shcoredll) {
         static int ADJUST_DPI_PER_MONITOR = 2;
-#ifdef __DMC__
-    FARPROC set_process_dpi_awareness_func =
-                            GetProcAddress(shcoredll, "SetProcessDpiAwareness");
-#else
+#ifdef USE_VOID_FN_PTR_TRICK
         dpi_aware_func_t set_process_dpi_awareness_func = (dpi_aware_func_t)
                 VOID_FN_PTR GetProcAddress(shcoredll, "SetProcessDpiAwareness");
+#else
+    FARPROC set_process_dpi_awareness_func =
+                            GetProcAddress(shcoredll, "SetProcessDpiAwareness");
 #endif
 
         if ( set_process_dpi_awareness_func) {
