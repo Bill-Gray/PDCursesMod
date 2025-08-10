@@ -26,7 +26,7 @@ int main( const int argc, const char *argv[])
     const wchar_t *precomposed_string = L"\xc5ngstrom Pi\xf1" L"ata Fa\xe7"
                L"ade \xc6sop caf\xe9 No\xebl c\xf4te (precomposed)";
     const wchar_t *combining_string = L"A\x30angstrom\x327\x302 Pin\x303" L"ata Fac\x327"
-#ifdef _WIN32
+#if defined( WCHAR_MAX) && WCHAR_MAX <= 65535
                L"ade \xc6sop cafe\x301 Noe\x308l co\x302te \xd834\xdd1e (combining)";
 #else
                L"ade \xc6sop cafe\x301 Noe\x308l co\x302te \x1d11e (combining)";
