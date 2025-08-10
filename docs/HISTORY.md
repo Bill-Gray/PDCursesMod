@@ -1,8 +1,8 @@
 Generally speaking,  this history mentions only the more significant
 changes.  See the git log for full details.
 
-Current version - 2025 August 10
-================================
+PDCursesMod 4.5.3 - 2025 August 11
+==================================
 
 Minor new features
 ------------------
@@ -19,8 +19,15 @@ Minor new features
   Previously,  debug output was all or nothing (still is,  mostly,  but
   that can now be changed).  8f73eb0c1b
 
+- Various fixes to allow compilation of WinGUI and WinCon with Microsoft
+  Visual C 5.0.  b56ea997e7  5bd5a1d535  1de3e4d6b4  2b48f9541e
+  f381244bf5
+
 Bug fixes
 ---------
+
+- stdin/stdout redirection now works on the Windows console platform.  Fix
+  supplied by Robin Haberkorn.  6855b3247f  8fbb3a64ea
 
 - C23-compliant compilers (and some others) objected to the casting of
   function pointers returned by GetProcAddress().  ce60aa6608  7309a03c81
@@ -41,6 +48,8 @@ Bug fixes
   in issue #340.  0baaa34d0e
 
 - COLOR_PAIRS could be effectively truncated to 8192.  20160b07e0
+
+- Colors could get mangled if sizeof( int) == 2.  4682321794
 
 PDCursesMod 4.5.2 - 2025 June 19
 ================================
