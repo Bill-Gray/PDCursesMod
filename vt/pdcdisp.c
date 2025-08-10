@@ -137,6 +137,24 @@ void PDC_gotoyx(int y, int x)
 
 #ifdef USING_COMBINING_CHARACTER_SCHEME
    int PDC_expand_combined_characters( const cchar_t c, cchar_t *added);  /* addch.c */
+
+static size_t _unpack_combined_character( wchar_t *obuff, const size_t buffsize,
+                                       const cchar_t ch)
+{
+    cchar_t root, newchar;
+    size_t rval = 1;
+
+    root = ch;
+    while( rval < buffsize && (root = PDC_expand_combined_characters( root,
+                       &newchar)) > MAX_UNICODE)
+       obuff[rval++] = (wchar_t)newchar;
+    obuff[0] = (wchar_t)root;
+    if( rval < buffsize)
+       obuff[rval++] = (wchar_t)newchar;
+    assert( rval < buffsize);
+    assert( rval > 1);
+    return( rval);
+}
 #endif
 
 static void color_string( char *otext, const PACKED_RGB rgb)
@@ -305,27 +323,20 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
 #endif
        PDC_puts_to_stdout( obuff);
 #ifdef USING_COMBINING_CHARACTER_SCHEME
-       if( ch > (int)MAX_UNICODE)      /* chars & fullwidth supported */
+       if( ch > (int)MAX_UNICODE)      /* combining char sequence */
        {
-           cchar_t root, newchar;
+           wchar_t unpacked[10];
+           size_t i, n_wchars = _unpack_combined_character( unpacked, 10, ch);
 
-           root = ch;
-           while( (root = PDC_expand_combined_characters( root,
-                              &newchar)) > MAX_UNICODE)
-               ;
-           bytes_out = PDC_wc_to_utf8( obuff, (wchar_t)root);
-           root = ch;
-           while( (root = PDC_expand_combined_characters( root,
-                              &newchar)) > MAX_UNICODE)
-               {
-               bytes_out += PDC_wc_to_utf8( obuff + bytes_out, (wchar_t)newchar);
+           for( i = bytes_out = 0; i < n_wchars; i++)
+           {
+               bytes_out += PDC_wc_to_utf8( obuff + bytes_out, (wchar_t)unpacked[i]);
                if( bytes_out > OBUFF_SIZE - 6)
                   {
                   put_to_stdout( obuff, bytes_out);
                   bytes_out = 0;
                   }
-               }
-           bytes_out += PDC_wc_to_utf8( obuff + bytes_out, (wchar_t)newchar);
+           }
        }
        else if( ch < (int)MAX_UNICODE)
 #endif
