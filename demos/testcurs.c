@@ -238,6 +238,14 @@ int main(int argc, char *argv[])
                 case 'l': case 'L':
                     setlocale( LC_CTYPE, argv[i] + 2);
                     break;
+                case 's':
+                    {
+                        char tbuff[200];
+
+                        if( fgets( tbuff, sizeof( tbuff), stdin))
+                           printf( "Got a line\n%s", tbuff);
+                    }
+                    break;
 #ifdef __PDCURSESMOD__
                 case 'b': case 'B':
                     PDC_set_blink( TRUE);
