@@ -26,7 +26,7 @@ CC      = dmc
 CFLAGS      = -c -o+space -Nc
 
 # CPPFLAGS   = -I$(PDCURSES_SRCDIR)
-CPPFLAGS   = -I$(PDCURSES_SRCDIR) -DPDC_WIDE
+CPPFLAGS   = -I$(PDCURSES_SRCDIR) -DPDC_WIDE $(ADDED_FLAGS)
 
 LINK      = dmc
 LIBEXE      = lib
@@ -63,11 +63,11 @@ touch.obj util.obj window.obj debug.obj
 PDCOBJS = pdcclip.obj pdcdisp.obj pdcgetsc.obj pdckbd.obj pdcscrn.obj \
 pdcsetsc.obj pdcutil.obj
 
-DEMOOBS    =  calendar.obj firework.obj init_col.obj mbrot.obj \
+DEMOOBJS    =  calendar.obj firework.obj init_col.obj mbrot.obj \
 newtest.obj ozdemo.obj picsview.obj ptest.obj rain.obj speed.obj \
 testcurs.obj test_pan.obj tuidemo.obj widetest.obj worm.obj xmas.obj tui.obj
 
-TESTOBS    = brk_test.obj del_test.obj focus.obj ins_del.obj \
+TESTOBJS    = brk_test.obj del_test.obj focus.obj ins_del.obj \
 	keytest.obj opaque.obj restart.obj ripoff.obj show_col.obj
 
 LIBS = advapi32.lib gdi32.lib user32.lib shell32.lib comdlg32.lib winmm.lib
