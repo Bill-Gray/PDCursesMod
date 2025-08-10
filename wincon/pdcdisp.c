@@ -309,7 +309,7 @@ static void _new_packet( attr_t attr, const int lineno,
         return;
     }
 
-    extended_pair_content(PAIR_NUMBER(attr), &fore, &back);
+    extended_pair_content( (int)PAIR_NUMBER(attr), &fore, &back);
     ansi = pdc_ansi || (fore >= 16 || back >= 16);
     blink = (SP->termattrs & A_BLINK) && (attr & A_BLINK);
 

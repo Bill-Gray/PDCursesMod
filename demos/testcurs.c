@@ -1626,10 +1626,10 @@ void remap(int tmarg, const short *colors)
 
     for (i = 0; i < 8; i++)
     {
-        init_color(colors[i], i * 125, 0, i * 125);
+        init_color(colors[i], (short)( i * 125), 0, (short)( i * 125));
 
         if (COLORS >= 16)
-            init_color(colors[i] + 8, 0, i * 125, 0);
+            init_color((short)( colors[i] + 8), 0, (short)( i * 125), 0);
     }
 
     mvaddstr(tmarg + 19, 3, "Press any key to continue");
@@ -1785,31 +1785,33 @@ void gradient(int tmarg)
 
             if (!i || i == 3)
             {
-                init_color(cnum,    (i ? 0 : 1000), oval, oval);
-                init_color(cnum + 1,(i ? 1000 : 0), reverse, 0);
+                init_color(cnum,  (short)( i ? 0 : 1000), oval, oval);
+                cnum++;
+                init_color( cnum, (short)( i ? 1000 : 0), reverse, 0);
             }
             else if (i == 1 || i == 4)
             {
-                init_color(cnum,     (i == 4 ? 1000 : 0), 0, reverse);
-                init_color(cnum + 1, (i == 4 ? 0 : 1000), reverse, 0);
+                init_color( cnum, (short)( i == 4 ? 1000 : 0), 0, reverse);
+                cnum++;
+                init_color( cnum, (short)( i == 4 ? 0 : 1000), reverse, 0);
             }
             else if( i == 2 || i == 5)
             {
-                init_color(cnum,     reverse, (i == 2 ? 1000 : 0), reverse);
+                init_color(cnum, reverse, (short)( i == 2 ? 1000 : 0), reverse);
+                cnum++;
                 if( i == 2)
-                   init_color(cnum + 1, reverse, 0, oval);
+                   init_color(cnum, reverse, 0, oval);
                 else
-                   init_color(cnum + 1, oval, oval, oval);
+                   init_color(cnum, oval, oval, oval);
             }
-            init_pair(pnum, cnum, cnum + 1);
+            init_pair(pnum, (short)( cnum - 1), cnum);
+            cnum++;
             attrset(COLOR_PAIR(pnum));
             if (i == 2)
                 attron(A_UNDERLINE);
             else
                 attroff(A_UNDERLINE);
             addch(output_text[i][j]);
-
-            cnum += 2;
             pnum++;
         }
     }
@@ -1869,9 +1871,9 @@ void colorTest(WINDOW *win)
 
     for (i = 0; i < 8; i++)
     {
-        init_pair((short)i + 4, colors[i], COLOR_BLACK);
+        init_pair((short)( i + 4), colors[i], COLOR_BLACK);
         if (widecol)
-            init_pair((short)i + 12, colors[i] + 8, COLOR_BLACK);
+            init_pair((short)( i + 12), (short)( colors[i] + 8), COLOR_BLACK);
 
         mvaddstr(tmarg + i + 5, col1, colornames[i]);
 
