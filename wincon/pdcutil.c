@@ -24,8 +24,12 @@ void PDC_beep(void)
     PDC_LOG(("PDC_beep() - called\n"));
 
     _beep_count++;
+#if defined(_MSC_VER) && _MSC_VER < 1900
+    beep_thread( 0);    /* old MSVC lacks _beginthread */
+#else
     if( _beep_count == 1)
         _beginthread( beep_thread, 0, NULL);
+#endif
 }
 
 void PDC_napms(int ms)
