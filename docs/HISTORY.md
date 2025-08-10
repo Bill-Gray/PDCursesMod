@@ -1,8 +1,8 @@
 Generally speaking,  this history mentions only the more significant
 changes.  See the git log for full details.
 
-Current version - 2025 July 15
-==============================
+Current version - 2025 August 10
+================================
 
 Minor new features
 ------------------
@@ -23,7 +23,7 @@ Bug fixes
 ---------
 
 - C23-compliant compilers (and some others) objected to the casting of
-  function pointers returned by GetProcAddress().  ce60aa6608
+  function pointers returned by GetProcAddress().  ce60aa6608  7309a03c81
 
 - If PDC_NCMOUSE is #defined,  the behavior of the mouse routines should
   copy that of ncurses,  warts and all.  Scroll-up and down are mapped
@@ -32,6 +32,15 @@ Bug fixes
 
 - Minor fixes for Digital Mars and OpenWATCOM compilation of WinCon and
   WinGUI.  a4c01532e8  6af988940d  6eedea061c
+
+- Fixes for the VT port for DOS.  fdd95ca370  4e23068f85  2006f0a085
+  1994189705  bb1f6e4bc9  277765ecdc  6ab0a9b1a5  dd7a0a89f0
+
+- 'widetest.c' had a bad test to determine if wchar_t was two bytes
+  (instead of the obvious choice of four).  Pointed out by Gisle Vanem
+  in issue #340.  0baaa34d0e
+
+- COLOR_PAIRS could be effectively truncated to 8192.  20160b07e0
 
 PDCursesMod 4.5.2 - 2025 June 19
 ================================
