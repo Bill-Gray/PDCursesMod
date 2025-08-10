@@ -24,7 +24,13 @@ capability.       */
 
 #include <curses.h>
 
-#ifdef __DMC__
+#if defined(PDC_99) || defined(__WATCOMC__)
+# if !defined( HAVE_SNPRINTF) && !defined( __DMC__)
+#  define HAVE_SNPRINTF 1   /* have snprintf() */
+# endif
+#endif
+
+#if !defined( HAVE_SNPRINTF)
    #define snprintf _snprintf
 #endif
 

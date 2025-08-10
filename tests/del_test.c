@@ -35,7 +35,13 @@ More generally,  it maintains a list of "current" windows and will
 assert() if you pass a pointer to delwin() that isn't actually a
 valid window.   */
 
-#ifdef __DMC__
+#if defined(PDC_99) || defined(__WATCOMC__)
+# if !defined( HAVE_SNPRINTF) && !defined( __DMC__)
+#  define HAVE_SNPRINTF 1   /* have snprintf() */
+# endif
+#endif
+
+#if !defined( HAVE_SNPRINTF)
    #define snprintf _snprintf
 #endif
 
