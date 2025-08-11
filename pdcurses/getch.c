@@ -407,31 +407,31 @@ static int _mouse_key(void)
     return key;
 }
 
-/* ftime() is consided obsolete.  But it's all we have for
+/* ftime() is considered obsolete.  But it's all we have for
 millisecond precision on older compilers/systems.  We'll
 use clock_gettime() or gettimeofday() when available. */
 
-#if defined( _POSIX_C_SOURCE) && (_POSIX_C_SOURCE >= 199309L)
-   #define CLOCK_GETTIME_AVAILABLE    1
-#endif
-#if defined( _DEFAULT_SOURCE) || defined( _BSD_SOURCE) \
-     || defined(HAVE_GETTIMEOFDAY) || defined( __FreeBSD__)
-   #define GETTIMEOFDAY_AVAILABLE    1
-#endif
-
-#if defined( GETTIMEOFDAY_AVAILABLE)
-#include <sys/time.h>
-
-long PDC_millisecs( void)
-{
-    struct timeval t;
-
-    gettimeofday( &t, NULL);
-    return( t.tv_sec * 1000 + t.tv_usec / 1000);
-}
-#elif defined( CLOCK_GETTIME_AVAILABLE)
 #include <time.h>
+#ifdef __has_include
+   #if __has_include(<sys/time.h>)
+       #include <sys/time.h>
+   #endif
+#endif
 
+#if defined( _POSIX_C_SOURCE) && (_POSIX_C_SOURCE >= 199309L) \
+     && (!defined( __MINGW32__) || defined( CLOCK_REALTIME))
+   /* only newer MinGW environments have clock_gettime and
+      those have CLOCK_REALTIME as a macro */
+   #define HAVE_CLOCK_GETTIME
+#elif defined( _DEFAULT_SOURCE) || defined( _BSD_SOURCE) \
+     || defined( __FreeBSD__) || defined( __MINGW32__)
+   /* POSIX.1-2008 marks gettimeofday() as obsolete,
+      recommending the use of clock_gettime instead, so we
+      only use that alternative to POSIX_C conditionally */
+   #define HAVE_GETTIMEOFDAY
+#endif
+
+#if defined( HAVE_CLOCK_GETTIME)
 long PDC_millisecs( void)
 {
     struct timespec t;
@@ -439,6 +439,16 @@ long PDC_millisecs( void)
     clock_gettime( CLOCK_REALTIME, &t);
     return( t.tv_sec * 1000 + t.tv_nsec / 1000000);
 }
+
+#elif defined( HAVE_GETTIMEOFDAY)
+long PDC_millisecs( void)
+{
+    struct timeval t;
+
+    gettimeofday( &t, NULL);
+    return( t.tv_sec * 1000 + t.tv_usec / 1000);
+}
+
 #else    /* neither gettimeofday() or clock_gettime() available */
 #include <sys/timeb.h>
 
