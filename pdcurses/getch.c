@@ -1,5 +1,9 @@
 /* PDCurses */
 
+#if !defined( _WIN32) || defined ( ___MINGW32__)
+    #include <unistd.h>  /* included for POSIX definitions */
+#endif
+
 #include <curspriv.h>
 #include <assert.h>
 
@@ -418,10 +422,7 @@ use clock_gettime() or gettimeofday() when available. */
    #endif
 #endif
 
-#if defined( _POSIX_C_SOURCE) && (_POSIX_C_SOURCE >= 199309L) \
-     && (!defined( __MINGW32__) || defined( CLOCK_REALTIME))
-   /* only newer MinGW environments have clock_gettime and
-      those have CLOCK_REALTIME as a macro */
+#if defined( _POSIX_TIMERS) && (_POSIX_TIMERS > 0)
    #define HAVE_CLOCK_GETTIME
 #elif defined( _DEFAULT_SOURCE) || defined( _BSD_SOURCE) \
      || defined( __FreeBSD__) || defined( __MINGW32__)
