@@ -1,6 +1,7 @@
 /* PDCurses */
 
-/* Common pieces between DOS and DOSVGA 'pdcutil' functions */
+/* Common pieces between DOS,  DOSVGA,  and VT built for DOS
+'pdcutil' functions */
 
 void PDC_beep(void)
 {

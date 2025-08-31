@@ -31,7 +31,8 @@ printw
 ### Return Value
 
    All functions return the number of characters printed, or ERR on
-   error.
+   error.  Note that this is nonstandard;  other implementations return
+   OK upon successful completion.
 
 ### Portability
    Function              | X/Open | ncurses | NetBSD

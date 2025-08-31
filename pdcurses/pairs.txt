@@ -18,7 +18,7 @@ more than a few color pairs.  The 'mbrot',  'testcurs' and 'picsview'
 demos provide somewhat contrived examples of the use of hundreds or
 thousands of color pairs.
 
-   The color pair table (SP->atrtab) is dynamically reallocated to be
+   The color pair table (SP->pairs) is dynamically reallocated to be
 the power of two greater than or equal to the highest allocated index.
 Allocate pair 37,  and it will be reallocated to have 64 entries,  plus
 an extra 'dummy' entry.  (The color palette is similarly allocated
@@ -85,8 +85,10 @@ the table,  a 'deleted' slot can be used.
 deleting the old pair and then allocating the new pair.  After enough
 of this,  your table will have a mix of allocated,  'deleted',  and
 'free' slots.  When less than 20% or 25% of slots are 'free',  performance
-will start to drop a bit and the table is rebuilt.
+will start to drop a bit and the table is rebuilt,  at a doubled size if
+necessary,  and getting rid of the 'deleted' entries in the process.
 
-   Hash table collisions are handled by probing for an available
-entry using a hybrid linear/triangular numbers scheme.  See
-https://www.projectpluto.com/hashing.htm for details.
+   Hash table collisions are handled by probing for an available entry
+using a hybrid linear/triangular numbers scheme.  This provides good
+performance and ensures that if a free entry is available,  it'll get
+found.  See https://www.projectpluto.com/hashing.htm for details.
