@@ -107,7 +107,7 @@ DEMOS = calendar$(E) firework$(E) init_col$(E) mbrot$(E) newtest$(E) &
     testcurs$(E) tuidemo$(E) widetest$(E) worm$(E) xmas$(E)
 
 TESTS = brk_test$(E) del_test$(E) focus$(E) ins_del$(E) keytest$(E) &
-   opaque$(E) restart$(E) ripoff$(E) show_col$(E)
+   opaque$(E) restart$(E) ripoff$(E) show_col$(E) show_uni$(E)
 
 
 PDCNAME = pdcurses

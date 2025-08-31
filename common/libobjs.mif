@@ -29,4 +29,4 @@ speed$(E) test_pan$(E) testcurs$(E) widetest$(E) worm$(E) xmas$(E)
 DEMOS = $(DEMOS_EXCEPT_TUIDEMO) tuidemo$(E)
 
 TESTS = brk_test$(E) del_test$(E) focus$(E) ins_del$(E) keytest$(E) \
-	opaque$(E) restart$(E) ripoff$(E) show_col$(E)
+	opaque$(E) restart$(E) ripoff$(E) show_col$(E) show_uni$(E)
