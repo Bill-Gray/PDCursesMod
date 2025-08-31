@@ -16,6 +16,10 @@ gcc -Wall -Wextra -pedantic -o restart restart.c -DPDC_FORCE_UTF8 -I.. libpdcurs
 
 #include <curses.h>
 #include <stdlib.h>
+#ifdef _WIN32
+   #undef MOUSE_MOVED
+   #include <windows.h>
+#endif
 
 int main( void)
 {
@@ -40,6 +44,9 @@ int main( void)
             delscreen( sp);
             printf( "Curses has been temporarily closed.  Hit Enter,\n"
                     "and it should restart.\n");
+#ifdef _WIN32
+            Sleep( 1000);
+#endif
             getchar( );
             sp = newterm( NULL, stdout, stdin);
             cbreak( );
