@@ -1641,7 +1641,7 @@ void remap(int tmarg, const short *colors)
                       orgcolors[i].blue);
 }
 
-void extended(int tmarg)
+static void show_color_cube( int tmarg)
 {
     short i, x, y, z, lmarg = (short)(COLS - 77) / 2;
 
@@ -1894,8 +1894,8 @@ void colorTest(WINDOW *win)
     if (can_change_color())
         remap(tmarg, colors);
 
-    if (COLORS >= 256)
-        extended(tmarg);
+    if( COLORS >= 256 && COLOR_PAIRS >= 256)
+        show_color_cube( tmarg);
 
 #if defined( __PDCURSESMOD__)
     if (can_change_color() && (long)COLORS == ((1L << 24) + 256L)
@@ -1903,7 +1903,7 @@ void colorTest(WINDOW *win)
         supergradient( tmarg);
 #endif
 
-    if (can_change_color() && COLORS >= 768)
+    if (can_change_color() && COLORS >= 768 && COLOR_PAIRS > 256)
         gradient(tmarg);
 }
 #endif
