@@ -5,7 +5,11 @@
 #include <string.h>
 #include <error.h>
 #include <time.h>
-#include <linux/input.h>
+#if defined( __has_include)
+   #if __has_include(<linux/input.h>)
+      #include <linux/input.h>
+   #endif
+#endif
 #include <libevdev-1.0/libevdev/libevdev.h>
 #include <linux/uinput.h>
 #include <sys/types.h>
