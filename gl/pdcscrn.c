@@ -307,6 +307,10 @@ int PDC_scr_open(void)
     int displaynum = 0;
     int h, w;
     const char *ptsz, *fname;
+    const char *resize_mode = getenv( "PDC_RESIZE");
+
+    if( resize_mode)
+       pdc_resize_mode = atoi( resize_mode);
 
     PDC_LOG(("PDC_scr_open() - called\n"));
 

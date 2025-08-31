@@ -88,6 +88,9 @@ the existing LINES & COLS to fit the window size. `PDC_GL_RESIZE_SCALE` does
 the same, but keeps aspect ratio by adding black bars. `PDC_GL_RESIZE_INTEGER`
 changes scaling in integer steps.
 
+Alternatively,  one can set the environment variable PDC_RESIZE to 0, 1, 2, or
+3 to get the four options listed above.
+
 `pdc_interpolation_mode` can be used to change between nearest-neighbor
 (`PDC_GL_INTERPOLATE_NEAREST`) and bilinear filtering
 (`PDC_GL_INTERPOLATE_BILINEAR`) when the frame is scaled larger than its native
