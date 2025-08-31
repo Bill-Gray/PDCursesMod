@@ -112,7 +112,13 @@ struct psf2_header {
         /* charsize = height * ((width + 7) / 8) */
 };
 
-#define IS_UTF8_STARTING_BYTE( c) (!((c) & 0x80) || ((c) > 0xc1 && (c) < 0xf5))
+/* 'Right half of fullwidth characters' are encoded as the 'usual' Unicode
+point for that character,  with 0x200000 added.  Therefore,  we're
+potentially encoding/decoding values as high as 0x30ffff;  in such a
+case,  the starting UTF-8 byte can be as high as 0xFC (instead of the usual
+limit of 0xF4).  */
+
+#define IS_UTF8_STARTING_BYTE( c) (!((c) & 0x80) || ((c) > 0xc1 && (c) <= 0xfc))
 
 static uint32_t *_decipher_psf2_unicode_table( const uint8_t *buff, const size_t info_len,
                      uint32_t *unicode_info_size)

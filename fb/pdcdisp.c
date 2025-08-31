@@ -19,6 +19,24 @@
 #include "../common/acs_defs.h"
 #include "../common/pdccolor.h"
 
+extern struct font_info PDC_font_info;
+extern struct video_info PDC_fb;
+
+static bool _is_fullwidth_glyph( const chtype c)
+{
+   const int unicode_point = (int)( c & A_CHARTEXT) | 0x200000;
+   const int glyph_idx = find_psf_or_vgafont_glyph( &PDC_font_info, unicode_point);
+
+   return( glyph_idx >= 0 && glyph_idx < (int)PDC_font_info.n_glyphs);
+}
+
+static void _redraw_cursor( void)
+{
+    chtype *tptr = curscr->_y[SP->cursrow] + SP->curscol;
+
+    PDC_transform_line_sliced( SP->cursrow, SP->curscol, 1, tptr);
+}
+
 /* Blinking of text and the cursor in this port has to be handled a
 little strangely.  "When possible",  we check to see if blink_interval
 milliseconds (currently set to 0.5 seconds) has elapsed since the
@@ -50,13 +68,13 @@ void PDC_check_for_blinking( void)
             if( c[x1] & A_BLINK)
             {
                x2 = x1 + 1;
-               while( x2 < SP->cols && (c[x2] & A_BLINK) && x2 - x1 < MAX_PACKET_LEN - 1)
+               while( x2 < SP->cols && (c[x2] & A_BLINK))
                   x2++;
-               PDC_transform_line( y, x1, x2 - x1, c + x1);
+               PDC_transform_line_sliced( y, x1, x2 - x1, c + x1);
                x1 = x2;
             }
          if( SP->visibility && y == SP->cursrow)
-            PDC_transform_line( y, SP->curscol, 1, c + SP->curscol);
+            _redraw_cursor( );
       }
    }
 }
@@ -77,8 +95,7 @@ void PDC_gotoyx( int row, int col)
         const int temp_visibility = SP->visibility;
 
         SP->visibility = 0;
-        PDC_transform_line( SP->cursrow, SP->curscol, 1,
-                           curscr->_y[SP->cursrow] + SP->curscol);
+        _redraw_cursor( );
         SP->visibility = temp_visibility;
     }
 
@@ -88,7 +105,7 @@ void PDC_gotoyx( int row, int col)
     {
         SP->cursrow = row;
         SP->curscol = col;
-        PDC_transform_line( row, col, 1, curscr->_y[row] + col);
+        _redraw_cursor( );
     }
 }
 
@@ -103,9 +120,6 @@ static const uint8_t *_get_raw_glyph_bytes( struct font_info *font, int unicode_
         glyph_idx = 0;
     return( font->glyphs + glyph_idx * font_char_size_in_bytes * font->height);
 }
-
-extern struct font_info PDC_font_info;
-extern struct video_info PDC_fb;
 
 void PDC_draw_rectangle( const int xpix, const int ypix,
                   const int xsize, const int ysize, const uint32_t color)
@@ -156,6 +170,8 @@ be modified for line drawings or a cursor,  or it's a combined
 character,  or it's bold or italic,  we build the glyph in the
 scratch space and return 'scratch' instead.  */
 
+static int fullwidth_offset;
+
 static const uint8_t *_get_glyph( const chtype ch, const int cursor_type,
                                  uint8_t *scratch)
 {
@@ -179,7 +195,7 @@ static const uint8_t *_get_glyph( const chtype ch, const int cursor_type,
         c = (int)acs_map[c & 0x7f];
     else if( c < (int)' ' || (c >= 0x80 && c <= 0x9f))
         c = ' ';
-    rval = _get_raw_glyph_bytes( &PDC_font_info, c);
+    rval = _get_raw_glyph_bytes( &PDC_font_info, c | fullwidth_offset);
 #ifdef USING_COMBINING_CHARACTER_SCHEME
     if( cursor_type || (ch & (LINE_ATTRIBS | A_BOLD | A_ITALIC)) || root)
 #else
@@ -351,7 +367,7 @@ bool PDC_remove_mouse_cursor( void)
    assert( right >= left);
    while( y <= bottom && y < SP->lines && right >= left)
       {
-      PDC_transform_line( y, left, right - left + 1, curscr->_y[y] + left);
+      PDC_transform_line_sliced( y, left, right - left + 1, curscr->_y[y] + left);
       y++;
       }
    _mouse_cursor_shown = TRUE;
@@ -408,6 +424,7 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
     int cursor_to_draw = 0;
     const int line_len = PDC_fb.line_length * 8 / PDC_fb.bits_per_pixel;
     uint8_t scratch[300];
+    bool is_fullwidth = FALSE;
 #ifdef HAVE_MOUSE
     const int t_width = _orig_font_width( );
     const int left = x * t_width, right = (x + len) * t_width;
@@ -434,6 +451,17 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
             len = 1;    /* ... then fall through and just draw the cell with the cursor */
         }
     }
+    fullwidth_offset = 0;
+    if( x + len < SP->cols)     /* check for fullwidth character at end */
+      if( _is_fullwidth_glyph( srcp[len - 1]))
+         {
+         if( len > 1)
+            PDC_transform_line( lineno, x, len - 1, srcp);
+         x += len - 1;
+         srcp += len - 1;
+         len = 2;
+         is_fullwidth = TRUE;
+         }
     while( len)
     {
         int run_len = 0, x1, y1;
@@ -502,7 +530,10 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
                     fb_ptr += line_len - PDC_font_info.width;
                     fontptr += font_char_size_in_bytes;
                 }
-                srcp++;
+                if( !is_fullwidth)
+                   srcp++;
+                else
+                    fullwidth_offset = 0x200000;
                 tptr += next_glyph;
             }
         }
@@ -548,7 +579,10 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
                     fb_ptr += line_len - PDC_font_info.width;
                     fontptr += font_char_size_in_bytes;
                 }
-                srcp++;
+                if( !is_fullwidth)
+                   srcp++;
+                else
+                    fullwidth_offset = 0x200000;
                 len--;
                 tptr += next_glyph;
                 x++;
