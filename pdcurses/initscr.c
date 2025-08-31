@@ -368,7 +368,7 @@ SCREEN *set_term(SCREEN *new_scr)
 
 void delscreen(SCREEN *sp)
 {
-    int i = 0;
+    int i;
 
     PDC_LOG(("delscreen() - called\n"));
 
