@@ -24,6 +24,7 @@ Defined by this header:
    Macro          | Meaning / value
    :--------------|---------------------------------------------------
    PDCURSES       | PDCurses-only features are available
+   PDCURSESMOD    | PDCursesMod-only features are available
    PDC_BUILD      | API build version
    PDC_VER_MAJOR  | major version number
    PDC_VER_MINOR  | minor version number
@@ -135,7 +136,10 @@ extern "C"
 typedef unsigned char bool;
 #endif
 
-#if defined( CHTYPE_32)
+#if defined( CHTYPE_16)
+   typedef uint16_t chtype; /* 8-bit attr + 8-bit char */
+   typedef uint32_t mmask_t;
+#elif defined( CHTYPE_32)
    typedef uint32_t chtype;       /* chtypes will be 32 bits */
    typedef uint32_t mmask_t;
 #else
@@ -316,7 +320,7 @@ to determine which button(s) are held at a given time.            */
    BUTTON5_PRESSED are returned for mouse scroll wheel up and down;
    otherwise PDCurses doesn't support buttons 4 and 5... except
    as described above for WinGUI,  and perhaps to be extended to
-   other PDCurses flavors  */
+   other PDCursesMod flavors  */
 
 #define BUTTON4_RELEASED       PDC_SHIFTED_BUTTON( BUTTON1_RELEASED,       4)
 #define BUTTON4_PRESSED        PDC_SHIFTED_BUTTON( BUTTON1_PRESSED,        4)
@@ -413,7 +417,7 @@ PDCEX  char         ttytype[];    /* terminal name/description */
 Text Attributes
 ===============
 
-By default,  PDCurses uses 64-bit integers for its chtype.  All chtypes
+By default,  PDCursesMod uses 64-bit integers for its chtype.  All chtypes
 have bits devoted to character data,  attribute data,  and color pair data.
 There are three configurations supported :
 
@@ -448,11 +452,21 @@ Default, 64-bit chtype,  both wide- and 8-bit character builds:
    12 attribute bits (8-19)
    12 color pair bits (20-31),  for 4096 pairs
 
-All attribute modifier schemes include eight "basic" bits:  bold, underline,
-right-line, left-line, italic, reverse and blink attributes,  plus the
-alternate character set indicator. For 32-bit narrow builds, three more
-bits are used for overlined, dimmed, and strikeout attributes; a fourth
-bit is reserved.
+16-bit chtypes (CHTYPE_16 #defined,  must be narrow characters) :
+
+   color pair    |modifs |character
+   --------------|-------|--------------
+   15 14 13 12 11|10 9 8 |7 6 5 4 3 2 1
+
+   8 character bits (0-7);  only 8-bit charsets will work
+   3 attribute bits (8-10) : bold,  reverse,  blink
+   5 color pair bits (11-15),  for 32 pairs
+
+Except for 16-bit chtypes,  all attribute modifier schemes include eight
+"basic" bits:  bold, underline, right-line, left-line, italic, reverse
+and blink attributes,  plus the alternate character set indicator. For
+32-bit narrow builds, three more bits are used for overlined, dimmed,
+and strikeout attributes; a fourth bit is reserved.
 
 Default chtypes have enough character bits to support the full range of
 Unicode,  all attributes,  and 2^20 = 1048576 color pairs.  Note,  though,
@@ -467,7 +481,12 @@ capability.
 
 #define WA_NORMAL      (chtype)0
 
-#ifndef CHTYPE_32
+#ifdef CHTYPE_16
+   # define PDC_CHARTEXT_BITS      8
+   # define PDC_ATTRIBUTE_BITS     3
+   # define PDC_UNUSED_BITS        0
+   # define PDC_COLOR_BITS         5
+#elif !defined( CHTYPE_32)
             /* 64-bit chtypes,  both wide- and narrow */
     # define PDC_CHARTEXT_BITS   21
     # define PDC_ATTRIBUTE_BITS  17
@@ -499,6 +518,16 @@ capability.
 # define A_CHARTEXT     (((chtype)1 << PDC_CHARTEXT_BITS) - 1)
 
 #define PDC_ATTRIBUTE_BIT( N)  ((chtype)1 << (N))
+#ifdef CHTYPE_16
+# define WA_BOLD         WA_NORMAL
+# define WA_RIGHT        WA_NORMAL
+# define WA_LEFT         WA_NORMAL
+# define WA_ITALIC       WA_NORMAL
+# define WA_UNDERLINE    WA_NORMAL
+# define WA_REVERSE      PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS)
+# define WA_BLINK        PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 1)
+# define WA_ALTCHARSET   PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 2)
+#else
 # define WA_ALTCHARSET   PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS)
 # define WA_RIGHT        PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 1)
 # define WA_LEFT         PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 2)
@@ -507,6 +536,7 @@ capability.
 # define WA_REVERSE      PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 5)
 # define WA_BLINK        PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 6)
 # define WA_BOLD         PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 7)
+#endif
 #if PDC_COLOR_BITS >= 11
     # define WA_TOP        PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 8)
     # define WA_STRIKEOUT  PDC_ATTRIBUTE_BIT( PDC_CHARTEXT_BITS + 9)
@@ -1342,12 +1372,16 @@ PDCEX  int     echo(void);
    #ifdef PDC_FORCE_UTF8
       #ifdef CHTYPE_32
          #define endwin endwin_u32_4400
+      #elif defined CHTYPE_16
+         #define endwin endwin_u16_4400
       #else
          #define endwin endwin_u64_4400
       #endif
    #else
       #ifdef CHTYPE_32
          #define endwin endwin_w32_4400
+      #elif defined CHTYPE_16
+         #define endwin endwin_w16_4400
       #else
          #define endwin endwin_w64_4400
       #endif
@@ -1355,6 +1389,8 @@ PDCEX  int     echo(void);
 #else       /* 8-bit chtypes */
    #ifdef CHTYPE_32
       #define endwin endwin_x32_4400
+   #elif defined CHTYPE_16
+      #define endwin endwin_x16_4400
    #else
       #define endwin endwin_x64_4400
    #endif

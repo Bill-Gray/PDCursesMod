@@ -147,6 +147,8 @@ int wnoutrefresh(WINDOW *win)
     return OK;
 }
 
+#define DUMMY_CHAR_NEXT_TO_FULLWIDTH  MAX_UNICODE
+
 /* The following ensures that PDC_transform_line() is fed a maximum of
 MAX_PACKET_LEN at a time;  'dummy' characters in cells next to fullwidth
 characters are not sent;  and we break packets after combining characters
@@ -159,6 +161,14 @@ void PDC_transform_line_sliced( int lineno, int x, int len, const chtype *srcp)
     assert( x + len <= COLS);
     assert( lineno >= 0);
     assert( lineno < SP->lines);
+#if PDC_CHARTEXT_BITS == 21
+    if( x && (*srcp & A_CHARTEXT) == DUMMY_CHAR_NEXT_TO_FULLWIDTH)
+    {                   /* starting on a dummy next to a fullwidth */
+        x--;
+        srcp--;
+        len++;
+    }
+#endif
     while( len)
     {
 #ifdef PDC_WIDE
