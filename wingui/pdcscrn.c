@@ -1780,8 +1780,8 @@ static LRESULT ALIGN_STACK CALLBACK WndProc (const HWND hwnd,
         {
             modified_key_to_return = numpad_unicode_value;
             numpad_unicode_value = 0;
-            SP->key_modifiers = 0;
         }
+        SP->key_modifiers = 0;
         if( modified_key_to_return )
         {
             add_key_to_queue( modified_key_to_return );
