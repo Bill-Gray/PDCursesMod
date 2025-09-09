@@ -8,7 +8,7 @@
 #include <string.h>
 #include <stdio.h>
 
-int PDC_wc_to_utf8( char *dest, const int32_t code);
+PDCEX int PDC_wc_to_utf8( char *dest, const int32_t code);
 
 static void show_unicode( const unsigned start, const unsigned val)
 {
@@ -25,12 +25,17 @@ static void show_unicode( const unsigned start, const unsigned val)
       }
    for( i = 0; i < 256; i++)
       {
+#if defined( PDCURSES) && !defined( PDC_WIDE)
+      move( (i % 16) + 3, (i / 16) * 3 + 3);
+      addch( i);
+#else
       wchar_t c[2];
 
       move( (i % 16) + 3, (i / 16) * 3 + 3);
       c[0] = (wchar_t)( i + start);
       c[1] = ' ';
       addnwstr( c, 2);
+#endif
       }
    mvchgat( (val - start) % 16 + 3, ((val - start) / 16) * 3 + 3,
                2, A_REVERSE, 0, NULL);

@@ -134,7 +134,7 @@ int delay_output(int ms)
     return napms(ms);
 }
 
-int PDC_wc_to_utf8( char *dest, const int32_t code)
+PDCEX int PDC_wc_to_utf8( char *dest, const int32_t code)
 {
    int n_bytes_out;
 
@@ -166,7 +166,7 @@ int PDC_wc_to_utf8( char *dest, const int32_t code)
            }
            n_bytes_out = 3;
        }
-       else if( code < MAX_UNICODE)      /* Unicode past 64K,  i.e.,  SMP */
+       else if( code < 0x110000)      /* Unicode past 64K,  i.e.,  SMP */
        {
            if( dest)
            {
