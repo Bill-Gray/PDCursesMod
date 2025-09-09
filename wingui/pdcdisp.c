@@ -395,7 +395,9 @@ static void PDC_transform_line_given_hdc( const HDC hdc, const int lineno,
     assert( x >= 0);
     assert( len <= SP->cols - x);
     assert( lineno < SP->lines && len > 0 && lineno >= 0);
+#ifdef PDC_WIDE
     assert( (srcp[len - 1] & A_CHARTEXT) != MAX_UNICODE);
+#endif
     if( lineno == SP->cursrow && SP->curscol >= x && SP->curscol < x + len)
         if( PDC_current_cursor_state( ))
             cursor_overwritten = TRUE;
@@ -422,7 +424,6 @@ static void PDC_transform_line_given_hdc( const HDC hdc, const int lineno,
         {
             chtype ch = srcp[i] & A_CHARTEXT;
 
-            assert( ch != MAX_UNICODE);
 #ifdef USING_COMBINING_CHARACTER_SCHEME
             if( ch > 0xffff && ch < MAX_UNICODE)  /* use Unicode surrogates to fit */
             {               /* >64K values into 16-bit wchar_t: */
@@ -596,7 +597,9 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
         const HDC hdc = (override_hdc ? override_hdc : GetDC( PDC_hWnd)) ;
 
         assert( len);
+#ifdef PDC_WIDE
         assert( (srcp[len - 1] & A_CHARTEXT) != MAX_UNICODE);
+#endif
         PDC_transform_line_given_hdc( hdc, lineno, x, len, srcp);
         ReleaseDC( PDC_hWnd, hdc);
     }
