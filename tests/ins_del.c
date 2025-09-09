@@ -44,7 +44,12 @@ int main( const int argc, const char **argv)
     wmove( win, top_scroll, 0);
 #endif
     rval = wsetscrreg( win, top_scroll, bottom_scroll);
-    assert( rval == OK);
+    if( OK != rval)
+    {
+        attr_on( A_REVERSE, NULL);
+        mvaddstr( 5, 0, "wsetscrreg( ) failed");
+        attr_off( A_REVERSE, NULL);
+    }
     wclear( win);
     keypad( win, TRUE);
     while( c != 'q')
