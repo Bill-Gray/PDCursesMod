@@ -23,10 +23,10 @@ void PDC_beep(void)
 /* 1080 seconds = 18 minutes = 1/80 day is exactly 19663 ticks.
 If asked to nap for longer than 1080000 milliseconds,  we take
 one or more 18-minute naps.  This avoids wraparound issues and
-the integer overflows that would result for ms > MAX_LONG / 859
-(about 42 minutes).  */
+the integer overflows that would result from really large values
+of ms (beyond about 22.38 hours).  */
 
-#define MAX_NAP_SPAN      (MS_PER_DAY / 80ul)
+#define MAX_NAP_SPAN      (MS_PER_DAY / 80L)
 
 void PDC_napmsl( long ms)
 {
@@ -39,13 +39,9 @@ void PDC_napmsl( long ms)
          PDC_napmsl( MAX_NAP_SPAN);
          ms -= MAX_NAP_SPAN;
     }
-        /* We should convert from milliseconds to BIOS ticks by
-           multiplying by MAX_TICK and dividing by MS_PER_DAY.  But
-           that would overflow,  and we'd need floating point math.
-           47181/859 = MS_PER_DAY / MAX_TICK to within four parts per
-           billion and won't overflow (because 0 <= ms <= MAX_NAP_SPAN). */
-    ticks_to_wait = (ms * 859L + 23590L) / 47181L;
-    if( ms && !ticks_to_wait)
+    ticks_to_wait = ms / 55;   /* see 'approx.c' for info on the following line */
+    ticks_to_wait += (ticks_to_wait * 1465 + (ms % 55) * 19663 + 540000) / 1080000;
+    if( ms > 0 && !ticks_to_wait)
         ticks_to_wait = 1;
     tick0 = getdosmemdword(0x46c);
     for( ;;)
