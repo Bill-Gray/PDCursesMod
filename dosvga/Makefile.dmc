@@ -71,7 +71,7 @@ DEMOOBS    =  calendar.obj firework.obj init_col.obj mbrot.obj \
 newtest.obj ozdemo.obj picsview.obj ptest.obj rain.obj speed.obj \
 testcurs.obj test_pan.obj tuidemo.obj widetest.obj worm.obj xmas.obj tui.obj
 
-TESTOBS    = brk_test.obj del_test.obj focus.obj ins_del.obj \
+TESTOBJS   = brk_test.obj del_test.obj focus.obj ins_del.obj \
 	keytest.obj opaque.obj restart.obj ripoff.obj show_col.obj
 
 $(LIBOBJS) $(PDCOBJS) : $(PDCURSES_HEADERS)
