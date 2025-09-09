@@ -285,8 +285,10 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
        chtype changes = *srcp ^ prev_ch;
        size_t bytes_out = 0;
 
+#ifdef PDC_WIDE
        assert( ch != MAX_UNICODE);
        assert( len == 1 || ch < MAX_UNICODE);
+#endif
        if( _is_altcharset( *srcp))
           ch = (int)acs_map[ch & 0x7f];
        if( ch < (int)' ' || (ch >= 0x80 && ch <= 0x9f))
@@ -347,9 +349,13 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
 #else
            bytes_out = PDC_wc_to_utf8( obuff, (wchar_t)ch);
 #endif
-           while( count < len && !((srcp[0] ^ srcp[count]) & ~A_CHARTEXT)
-                        && (ch = (srcp[count] & A_CHARTEXT)) < (int)MAX_UNICODE)
+           while( count < len && !((srcp[0] ^ srcp[count]) & ~A_CHARTEXT))
            {
+               ch = srcp[count] & A_CHARTEXT;
+#ifdef PDC_WIDE
+               assert( ch < MAX_UNICODE);
+#endif
+
                if( _is_altcharset( srcp[count]))
                   ch = (int)acs_map[ch & 0x7f];
 #ifdef DOS
