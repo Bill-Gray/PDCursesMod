@@ -1,6 +1,39 @@
 Generally speaking,  this history mentions only the more significant
 changes.  See the git log for full details.
 
+Current PDCursesMod - 2025 September 07
+=======================================
+
+Minor new features
+------------------
+
+- Framebuffer and DRM ports can show fullwidth characters.  bc3b4d8449
+
+- chtypes can be short (16-bit) integers.  This is mostly of use in very
+  memory-restricted environments,  such as in some DOS code.  e215a6d4b5
+
+- For the GL port,  the 'resize' mode can be set via the PDC_RESIZE
+  environment variable.  b8f822040e
+
+- Added a new 'show_uni' test program to display Unicode data.  d0c2ef2953
+
+- 'naptest.c' (test code for the DOS napms() function) improved and now
+  works with compilers other than just Digital Mars.  677ec0c9da
+
+Bug fixes
+---------
+
+- PDC_millisecs() now will usually pick a better underlying timekeeping
+  function.  7906c61500
+
+- WinGUI : mouse modifiers (Ctr, Alt, Shift) became 'stuck' from the
+  previous keys hit,  and were not turned off when the modifier keys
+  in question were released.  9f9819fe8d
+
+- The DOS/DOSVGA napms() code didn't handle negative nap times correctly.
+  Also fixed a timing error of one part in 250 million (only a theoretical
+  problem;  no DOS clock is that accurate).  75da2de072
+
 PDCursesMod 4.5.3 - 2025 August 11
 ==================================
 
