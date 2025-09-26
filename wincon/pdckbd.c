@@ -617,13 +617,13 @@ static void _process_mouse_event(void)
 
     /* Handle scroll wheel */
 
-#ifdef HOUSE_WHEELED
+#ifdef MOUSE_WHEELED
     if (MEV.dwEventFlags == MOUSE_WHEELED)
         event = (MEV.dwButtonState & 0xFF000000) ?
                PDC_MOUSE_WHEEL_DOWN : PDC_MOUSE_WHEEL_UP;
 #endif
 
-#ifdef HOUSE_HWHEELED
+#ifdef MOUSE_HWHEELED
     if (MEV.dwEventFlags == MOUSE_HWHEELED)
         event = (MEV.dwButtonState & 0xFF000000) ?
                PDC_MOUSE_WHEEL_RIGHT : PDC_MOUSE_WHEEL_LEFT;
