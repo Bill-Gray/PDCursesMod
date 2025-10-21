@@ -74,14 +74,38 @@ void PDC_gotoyx(int y, int x)
 
 #ifdef USING_COMBINING_CHARACTER_SCHEME
    int PDC_expand_combined_characters( const cchar_t c, cchar_t *added);  /* addch.c */
+
+static size_t _unpack_combined_character( wchar_t *obuff, const size_t buffsize,
+                                       const cchar_t ch)
+{
+    cchar_t root, newchar;
+    size_t rval = 1;
+
+    root = ch;
+    while( rval < buffsize && (root = PDC_expand_combined_characters( root,
+                       &newchar)) > MAX_UNICODE)
+       obuff[rval++] = (wchar_t)newchar;
+    obuff[0] = (wchar_t)root;
+    if( rval < buffsize)
+       obuff[rval++] = (wchar_t)newchar;
+    assert( rval < buffsize);
+    assert( rval > 1);
+    return( rval);
+}
 #endif
-int PDC_wc_to_utf8( char *dest, const int32_t code);
 
 #define OBUFF_SIZE 100
 
 static PACKED_RGB _reversed( const PACKED_RGB ival)
 {
    return( (ival & 0xff00) | (ival >> 16) | ((ival << 16) & 0xff0000));
+}
+
+static int _put_into_xchar2b_string( XChar2b *string, const int32_t ch)
+{
+   string->byte1 = ch >> 8;
+   string->byte2 = ch & 0xff;
+   return( 1);
 }
 
 void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
@@ -106,21 +130,31 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
         cursor_to_draw = (SP->blink_state ? SP->visibility & 0xff : (SP->visibility >> 8));
     while( len)
     {
-       int i = 0, j;
+       int i = 0, j, chars_out = 0;
        PACKED_RGB bg, fg;
        int xpix = x * PDC_font_width;
        const int ypix = (lineno + 1) * PDC_font_height;
 
        while( i < len && !((srcp[i] ^ srcp[0]) & ~A_CHARTEXT))
           {
-          int16_t ch;
+          int32_t ch;
 
           if( _is_altcharset( srcp[i]))
-             ch = (int16_t)acs_map[srcp[i] & 0x7f];
+             ch = (int32_t)acs_map[srcp[i] & 0x7f];
           else
-             ch = (int16_t)( srcp[i] & A_CHARTEXT);
-          string[i].byte1 = ch >> 8;
-          string[i].byte2 = ch & 0xff;
+             ch = (int32_t)( srcp[i] & A_CHARTEXT);
+          if( ch < (int)MAX_UNICODE)
+             chars_out += _put_into_xchar2b_string( string + chars_out, ch);
+#ifdef USING_COMBINING_CHARACTER_SCHEME
+          else if( ch > (int)MAX_UNICODE)       /* combining character sequence */
+             {
+             wchar_t expanded[10];
+             size_t i, n_wchars = _unpack_combined_character( expanded, 10, ch);
+
+             for( i = 0; i < n_wchars; i++)
+                chars_out += _put_into_xchar2b_string( string + chars_out, expanded[i]);
+             }
+#endif
           i++;
           }
        PDC_get_rgb_values( *srcp & ~A_REVERSE, &fg, &bg);
@@ -146,7 +180,7 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
           prev_bg = bg;
           }
        XDrawImageString16( dis, win, curr_gc, xpix,
-                                 ypix - PDC_font_descent, string, i);
+                                 ypix - PDC_font_descent, string, chars_out);
        if( x <= SP->curscol && x + i > SP->curscol && cursor_to_draw)
           {
           const int cursor_height = PDC_font_height / (cursor_to_draw == 2 ? 1 : 4);
