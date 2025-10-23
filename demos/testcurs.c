@@ -342,9 +342,6 @@ int main(int argc, char *argv[])
             break;
 #ifdef KEY_RESIZE
         case KEY_RESIZE:
-# ifdef PDCURSES
-            resize_term(0, 0);
-# endif
             old_option = -1;
             erase();
             display_menu(old_option, new_option);
@@ -1840,19 +1837,19 @@ void colorTest(WINDOW *win)
         "COLOR_CYAN", "COLOR_MAGENTA", "COLOR_YELLOW", "COLOR_WHITE"
     };
 
-    bool widecol = (COLORS >= 16);
-    chtype fill = widecol ? ' ' : '@';
+    const bool widecol = (COLORS >= 16);
+    const chtype fill = widecol ? ' ' : '@';
+    const int tmarg = (LINES - 19) / 2;
+    const int col1 = (COLS - 60) / 2;
+    const int col2 = col1 + 20;
+    const int col3 = col2 + 20;
 
-    int i, j, tmarg, col1, col2, col3;
+    int i, j;
 
     INTENTIONALLY_UNUSED_PARAMETER( win);
     if (!has_colors())
         return;
 
-    tmarg = (LINES - 19) / 2;
-    col1 = (COLS - 60) / 2;
-    col2 = col1 + 20;
-    col3 = col2 + 20;
 
     attrset(A_BOLD);
     mvaddstr(tmarg, (COLS - 22) / 2, "Color Attribute Macros");
