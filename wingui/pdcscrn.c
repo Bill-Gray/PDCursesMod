@@ -1673,13 +1673,13 @@ static LRESULT ALIGN_STACK CALLBACK WndProc (const HWND hwnd,
                 {
                     mouse_wheel_vertical_loc -= mouse_wheel_sensitivity;
                     _add_raw_mouse_event( 0, PDC_MOUSE_WHEEL_UP, modifiers,
-                                                mouse_x, mouse_y);
+                                                pt.x, pt.y);
                 }
                 while( mouse_wheel_vertical_loc < -mouse_wheel_sensitivity / 2)
                 {
                     mouse_wheel_vertical_loc += mouse_wheel_sensitivity;
                     _add_raw_mouse_event( 0, PDC_MOUSE_WHEEL_DOWN, modifiers,
-                                                mouse_x, mouse_y);
+                                                pt.x, pt.y);
                 }
             }
             else       /* must be a horizontal event: */
@@ -1689,13 +1689,13 @@ static LRESULT ALIGN_STACK CALLBACK WndProc (const HWND hwnd,
                 {
                     mouse_wheel_horizontal_loc -= mouse_wheel_sensitivity;
                     _add_raw_mouse_event( 0, PDC_MOUSE_WHEEL_RIGHT, modifiers,
-                                                mouse_x, mouse_y);
+                                                pt.x, pt.y);
                 }
                 while( mouse_wheel_horizontal_loc < -mouse_wheel_sensitivity / 2)
                 {
                     mouse_wheel_horizontal_loc += mouse_wheel_sensitivity;
                     _add_raw_mouse_event( 0, PDC_MOUSE_WHEEL_LEFT, modifiers,
-                                                mouse_x, mouse_y);
+                                                pt.x, pt.y);
                 }
             }
         }

@@ -114,7 +114,7 @@ char *keyname(int key)
               "LAUNCH_MAIL", "MEDIA_SELECT",
               "LAUNCH_APP1", "LAUNCH_APP2", "LAUNCH_APP3", "LAUNCH_APP4",
               "LAUNCH_APP5", "LAUNCH_APP6", "LAUNCH_APP7", "LAUNCH_APP8",
-              "LAUNCH_APP9", "LAUNCH_APP10" };
+              "LAUNCH_APP9", "LAUNCH_APP10", "FOCUS_IN", "FOCUS_OUT" };
     const size_t n_keys = sizeof( key_names) / sizeof( key_names[0]);
 
     PDC_LOG(("keyname() - called: key %d\n", key));

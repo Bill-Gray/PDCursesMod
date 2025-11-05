@@ -44,8 +44,8 @@ Defined by this header:
 #define PDC_VER_MINOR    5
 #define PDC_VER_CHANGE   3
 #define PDC_VER_YEAR   2025
-#define PDC_VER_MONTH     9
-#define PDC_VER_DAY      07
+#define PDC_VER_MONTH    10
+#define PDC_VER_DAY      23
 
 #define PDC_STRINGIZE( x) #x
 #define PDC_stringize( x) PDC_STRINGIZE( x)
@@ -1310,6 +1310,13 @@ characters are PDCursesMod extensions and totally non-portable. */
 #define KEY_LAUNCH_APP9       (KEY_OFFSET + 0x141)
 #define KEY_LAUNCH_APP10      (KEY_OFFSET + 0x142)
    /* 0x200 - 0x142 = 0xbe = 190(decimal) keys are currently reserved */
+
+/* The following may,  eventually,  be used to note that the PDCursesMod
+window has received or lost input focus,  on platforms where such can
+make sense.    */
+
+#define KEY_FOCUS_IN          (KEY_OFFSET + 0x143)
+#define KEY_FOCUS_OUT         (KEY_OFFSET + 0x144)
 
 #define KEY_MIN       KEY_BREAK         /* Minimum curses key value */
 #define KEY_MAX       (KEY_OFFSET + 0x200)  /* Maximum curses key */
