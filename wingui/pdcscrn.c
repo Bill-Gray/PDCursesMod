@@ -1613,7 +1613,7 @@ Note,  though,  that in Win9x,  detection of the Shift keys is hardware
 dependent;  if you've an unusual keyboard,  both Shift keys may be
 detected as right, or both as left. */
 
-#if defined(_WIN32) && defined(__GNUC__)
+#if defined(_WIN32) && defined(__GNUC__) && !defined(_ARM64_)
 #define ALIGN_STACK __attribute__((force_align_arg_pointer))
 #else
 #define ALIGN_STACK
