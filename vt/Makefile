@@ -33,8 +33,6 @@ ifeq ($(DOS),Y)
 	CFLAGS	+= -DDOS
 	E = .exe
 	RM = del
-else
-	CFLAGS	+= -fPIC
 endif
 
 ifeq ($(UTF8),Y)
@@ -80,6 +78,18 @@ STRIP	= $(PREFIX)strip
 
 ifeq ($(shell uname -s),FreeBSD)
 	CC = cc
+endif
+
+TARGET_TRIPLE := $(subst -, ,$(shell $(CC) -dumpmachine))
+TARGET_ARCH   := $(word 1,$(TARGET_TRIPLE))
+TARGET_OS     := $(word 3,$(TARGET_TRIPLE))
+
+ifeq      ($(TARGET_OS),mingw32)
+else ifeq ($(TARGET_OS),cygwin)
+else ifeq ($(TARGET_OS),msdosdjgpp)
+	CFLAGS += -DDOS
+else
+	CFLAGS += -fPIC
 endif
 
 ifeq ($(DLL),Y)

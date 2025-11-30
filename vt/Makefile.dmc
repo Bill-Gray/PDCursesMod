@@ -62,7 +62,7 @@ scanw.obj scr_dump.obj scroll.obj slk.obj termattr.obj terminfo.obj \
 touch.obj util.obj window.obj debug.obj
 
 PDCOBJS = pdcclip.obj pdcdisp.obj pdcgetsc.obj pdckbd.obj pdcscrn.obj \
-pdcsetsc.obj pdcutil.obj getch2.obj
+pdcsetsc.obj pdcutil.obj
 
 DEMOOBS    =  calendar.obj firework.obj init_col.obj mbrot.obj \
 newtest.obj ozdemo.obj picsview.obj ptest.obj rain.obj speed.obj \
@@ -231,9 +231,6 @@ pdcsetsc.obj: $(osdir)\pdcsetsc.c
    $(OSBUILD)
 
 pdcutil.obj: $(osdir)\pdcutil.c
-   $(OSBUILD)
-
-getch2.obj: getch2.c
    $(OSBUILD)
 
 calendar.exe:   $(demodir)\calendar.c

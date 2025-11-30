@@ -10,18 +10,33 @@
    #include <sys/select.h>
    #include <unistd.h>
 #endif
+
+/* Digital Mars and DJGPP for DOS each implement getch() and/or _getch().
+The following,  declared _before_ curses.h is #included,  enable us to
+evade conflicts with the PDCursesMod getch().   */
+
+#ifdef __DJGPP__
+int dmc_getch( void)
+{
+   return( getch( ));
+}
+#endif
+
+#if defined( __DMC__)
+int dmc_getch( void)         /* see 'getch2.c' */
+{
+   return( _getch( ));
+}
+#endif
+
 #include "curspriv.h"
 #include "pdcvt.h"
 #include "../common/mouse.c"
 
-#if defined( __BORLANDC__)
+#if defined( __BORLANDC__) || defined( __DJGPP__)
    #define WINDOWS_VERSION_OF_KBHIT kbhit
 #else
    #define WINDOWS_VERSION_OF_KBHIT _kbhit
-#endif
-
-#ifdef __DMC__
-   int dmc_getch( void);         /* see 'getch2.c' */
 #endif
 
 /* Modified from the accepted answer at
@@ -84,7 +99,7 @@ static bool check_key( int *c)
        {
        rval = TRUE;
        if( c)
-#ifdef __DMC__
+#if defined( __DMC__) || defined( __DJGPP__)
           *c = dmc_getch( );         /* see 'getch2.c' */
 #else
           *c = _getch( );
@@ -443,8 +458,12 @@ int PDC_get_key( void)
          {
          int key2;
 
+#ifdef __DJGPP__                 /* DJGPP returns kbhit() = 1 only once for */
+         key2 = dmc_getch( );    /* escape sequences,  not twice as other  */
+#else                            /* compilers for MS-DOS do */
          while( !check_key( &key2))
             ;
+#endif
          rval = xlate_vt_codes_for_dos( rval, key2);
          return( rval);
          }
