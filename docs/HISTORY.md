@@ -1,7 +1,7 @@
 Generally speaking,  this history mentions only the more significant
 changes.  See the git log for full details.
 
-Current PDCursesMod - 2025 September 07
+Current PDCursesMod - 2025 November 30
 =======================================
 
 Minor new features
@@ -20,6 +20,9 @@ Minor new features
 - 'naptest.c' (test code for the DOS napms() function) improved and now
   works with compilers other than just Digital Mars.  677ec0c9da
 
+- VT platform can be compiled with djgpp and runs correctly (see issue
+  #340).  Parts of the fix by Gisle Vanem.   222b475523
+
 Bug fixes
 ---------
 
@@ -33,6 +36,15 @@ Bug fixes
 - The DOS/DOSVGA napms() code didn't handle negative nap times correctly.
   Also fixed a timing error of one part in 250 million (only a theoretical
   problem;  no DOS clock is that accurate).  75da2de072
+
+- Fixed unknown attribute warning when compiling WinCon for (mostly)
+  non-Intel(R) platforms.  Report from nhmall.  2067b43551
+
+- WinGUI : positions returned for mouse wheel events were wrong.
+  cd8cd7efd8
+
+- WinCon : a typo prevented mouse wheel events from working at all.
+  Fix provided by Jordan Hemming.  93dba3adf6
 
 PDCursesMod 4.5.3 - 2025 August 11
 ==================================
