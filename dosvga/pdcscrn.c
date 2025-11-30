@@ -1370,22 +1370,26 @@ static int _vgafont_open(void)
 
 static void _vgafont_close(bool bold)
 {
+    INTENTIONALLY_UNUSED_PARAMETER(bold);
     /* no operation */
 }
 
 static unsigned _vgafont_char_width(bool bold)
 {
+    INTENTIONALLY_UNUSED_PARAMETER(bold);
     return 8;
 }
 
 static unsigned _vgafont_char_height(bool bold)
 {
+    INTENTIONALLY_UNUSED_PARAMETER(bold);
     return 14;
 }
 
 static const unsigned char *_vgafont_glyph_data(bool bold, unsigned long pos)
 {
     unsigned pos437;
+    INTENTIONALLY_UNUSED_PARAMETER(bold);
 #ifdef PDC_WIDE
     pos437 = _unicode_to_cp437(pos);
 #else
@@ -1734,4 +1738,8 @@ and probably never will.         */
 void PDC_set_resize_limits( const int new_min_lines, const int new_max_lines,
                   const int new_min_cols, const int new_max_cols)
 {
+    INTENTIONALLY_UNUSED_PARAMETER(new_min_lines);
+    INTENTIONALLY_UNUSED_PARAMETER(new_max_lines);
+    INTENTIONALLY_UNUSED_PARAMETER(new_min_cols);
+    INTENTIONALLY_UNUSED_PARAMETER(new_max_cols);
 }
