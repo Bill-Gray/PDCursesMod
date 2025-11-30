@@ -76,6 +76,7 @@ int PDC_curs_set(int visibility)
 
 void PDC_set_title(const char *title)
 {
+    INTENTIONALLY_UNUSED_PARAMETER(title);
     PDC_LOG(("PDC_set_title() - called: <%s>\n", title));
 }
 
