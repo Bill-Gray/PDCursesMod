@@ -39,6 +39,10 @@ int dmc_getch( void)         /* see 'getch2.c' */
    #define WINDOWS_VERSION_OF_KBHIT _kbhit
 #endif
 
+#ifdef USE_CONIO
+   #include "../common/dos_key.h"
+#endif
+
 /* Modified from the accepted answer at
 
 https://stackoverflow.com/questions/33025599/move-the-cursor-in-a-c-program
@@ -130,40 +134,14 @@ void PDC_flushinp( void)
 #ifdef USE_CONIO
 static int xlate_vt_codes_for_dos( const int key1, const int key2)
 {
-   static const int tbl[] =   {
-      KEY_UP,      72,
-      KEY_DOWN,    80,
-      KEY_LEFT,    75,
-      KEY_RIGHT,   77,
-      KEY_F(11),  133,
-      KEY_F(12),  134,
-      KEY_IC,      82,
-      KEY_DC,      83,
-      KEY_PPAGE,   73,
-      KEY_NPAGE,   81,
-      KEY_HOME, 2, '[', 'H',
-      KEY_END,  2, 'O', 'F',
-
-      KEY_F(1),   59,
-      KEY_F(2),   60,
-      KEY_F(3),   61,
-      KEY_F(4),   62,
-      KEY_F(5),   63,
-      KEY_F(6),   64,
-      KEY_F(7),   65,
-      KEY_F(8),   66,
-      KEY_F(9),   67,
-      KEY_F(10),   68,
-      0, 0 };
-   int i, rval = 0;
+   int rval = 0;
+   const int max_key2 = (int)( sizeof( key_table) / sizeof( key_table[0]));
 
    INTENTIONALLY_UNUSED_PARAMETER( key1);
-   for( i = 0; tbl[i] && !rval; i += 2)
-      if( key2 == tbl[i + 1])
-         rval = tbl[i];
+   if( key2 >= 0 && key2 < max_key2)         /* see ../common/dos_key.h */
+      rval = key_table[key2];                /* for key_table[]         */
    return( rval);
 }
-
 #endif
 
 #define MAX_COUNT 15
