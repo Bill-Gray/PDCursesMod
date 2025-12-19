@@ -539,7 +539,6 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
         }
         if( PDC_fb.bits_per_pixel == 8)
         {
-            const int line_len = PDC_fb.line_length; /* / sizeof( uint8_t); */
             int i, integer_fg_idx, integer_bg_idx;
             uint8_t fg_idx, bg_idx;
             uint8_t *tptr = (uint8_t *)PDC_fb.framebuf + video_offset;
@@ -570,13 +569,13 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
             {
                 const uint8_t *fontptr = _get_glyph( *srcp, cursor_to_draw, scratch);
                 uint8_t *fb_ptr = tptr;
-                int i, j;
+                int k, j;
 
-                for( i = 0; i < (int)PDC_font_info.height; i++)
+                for( k = 0; k < (int)PDC_font_info.height; k++)
                 {
                     for( j = 0; j < (int)PDC_font_info.width; j++)
                         *fb_ptr++ = ((fontptr[j >> 3] << (j & 7)) & 0x80) ? fg_idx : bg_idx;
-                    fb_ptr += line_len - PDC_font_info.width;
+                    fb_ptr += PDC_fb.line_length - PDC_font_info.width;
                     fontptr += font_char_size_in_bytes;
                 }
                 if( !is_fullwidth)
