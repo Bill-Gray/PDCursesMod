@@ -41,7 +41,7 @@ newtest.exe ozdemo.exe picsview.exe ptest.exe rain.exe speed.exe \
 testcurs.exe test_pan.exe tuidemo.exe widetest.exe worm.exe xmas.exe
 
 TESTS      = brk_test.exe del_test.exe focus.exe ins_del.exe \
-	keytest.exe opaque.exe restart.exe ripoff.exe show_col.exe
+	keytest.exe naptest.exe opaque.exe restart.exe ripoff.exe show_col.exe
 
 all:    $(LIBCURSES) $(DEMOS)
 

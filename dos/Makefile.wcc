@@ -29,6 +29,9 @@ CFLAGS = -DCHTYPE_32
 
 !include $(PDCURSES_SRCDIR)/common/watcom.mif
 
+TESTS += naptest.exe
+tests: naptest.exe
+
 configure:
    $(COPY) $(PDCURSES_SRCDIR)\common\config*.c cursconf.c
    $(CC) $(CFLAGS) cursconf.c

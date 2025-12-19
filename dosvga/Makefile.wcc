@@ -28,3 +28,6 @@ CFLAGS = -DCHTYPE_32
 !endif
 
 !include $(PDCURSES_SRCDIR)/common/watcom.mif
+
+TESTS += naptest.exe
+tests: naptest.exe
