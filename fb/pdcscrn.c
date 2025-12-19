@@ -297,7 +297,7 @@ static int _load_psf_font( const int font_num)
 
 #ifdef PDC_WIDE
             /* If there's no Unicode info,  the font is probably a CP437 one. */
-            /* We can use the data in uni_info.h to make the translations. */
+            /* We can use the table in 'psf_wide.h' (our default font).       */
     if( !PDC_font_info.unicode_info)
        PDC_font_info.unicode_info =  _decipher_psf2_unicode_table(
                font_bytes + UNICODE_INFO_OFFSET, UNICODE_INFO_SIZE,
