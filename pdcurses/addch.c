@@ -147,7 +147,7 @@ For PDCursesMod,  only PDC_wcwidth is used,  modified to take an
 int argument instead of wchar_t,  because in MS-land, wchar_t
 is 16 bits;  getting the full Unicode range requires 21 bits.
 Also modified format/indenting to conform to PDCurses norms,
-and (December 2024) updated from Unicode 5.0 to 16.0.0.  See
+and (November 2025) updated from Unicode 5.0 to 17.0.0.  See
 uni_tbl.c in the Bill-Gray/junk repository.
 
 Following function modified from one in the README.md at
@@ -209,9 +209,10 @@ static bool _uniset_test( uint16_t const set[][2], uint32_t c)
 PDCEX int PDC_wcwidth( const int32_t ucs)
 {
       /* see 'uni_tbl.c' in the Bill-Gray/junk repo */
-const uint16_t tbl_for_zero_width_chars[][2] = {
+
+const uint16_t tbl_for_zero_width_chars[358][2] = {
      { /* plane 0 */ 0, 202 },
-     { /* plane 1 */ 202, 333 },
+     { /* plane 1 */ 202, 340 },
      { /* plane 2 */ 0, 0 },
      { /* plane 3 */ 0, 0 },
      { /* plane 4 */ 0, 0 },
@@ -224,7 +225,7 @@ const uint16_t tbl_for_zero_width_chars[][2] = {
      { /* plane 11 */ 0, 0 },
      { /* plane 12 */ 0, 0 },
      { /* plane 13 */ 0, 0 },
-     { /* plane 14 */ 333, 334 },
+     { /* plane 14 */ 340, 341 },
      { /* plane 15 */ 0, 0 },
      { /* plane 16 */ 0, 0 },
      { 0x00AD, 0x036F }, { 0x0483, 0x0489 }, { 0x0591, 0x05BD },
@@ -297,7 +298,7 @@ const uint16_t tbl_for_zero_width_chars[][2] = {
      { 0xFFF9, 0xFFFB }, { 0x01FD, 0x01FD }, { 0x02E0, 0x02E0 },
      { 0x0376, 0x037A }, { 0x0A01, 0x0A0F }, { 0x0A38, 0x0A3F },
      { 0x0AE5, 0x0AE6 }, { 0x0D24, 0x0D27 }, { 0x0D69, 0x0D6D },
-     { 0x0EAB, 0x0EAC }, { 0x0EFC, 0x0EFF }, { 0x0F46, 0x0F50 },
+     { 0x0EAB, 0x0EAC }, { 0x0EFA, 0x0EFF }, { 0x0F46, 0x0F50 },
      { 0x0F82, 0x0F85 }, { 0x1001, 0x1001 }, { 0x1038, 0x1046 },
      { 0x1070, 0x1070 }, { 0x1073, 0x1074 }, { 0x107F, 0x1081 },
      { 0x10B3, 0x10B6 }, { 0x10B9, 0x10BA }, { 0x10BD, 0x10BD },
@@ -322,6 +323,7 @@ const uint16_t tbl_for_zero_width_chars[][2] = {
      { 0x19E0, 0x19E0 }, { 0x1A01, 0x1A0A }, { 0x1A33, 0x1A38 },
      { 0x1A3B, 0x1A3E }, { 0x1A47, 0x1A47 }, { 0x1A51, 0x1A56 },
      { 0x1A59, 0x1A5B }, { 0x1A8A, 0x1A96 }, { 0x1A98, 0x1A99 },
+     { 0x1B60, 0x1B60 }, { 0x1B62, 0x1B64 }, { 0x1B66, 0x1B66 },
      { 0x1C30, 0x1C3D }, { 0x1C3F, 0x1C3F }, { 0x1C92, 0x1CA7 },
      { 0x1CAA, 0x1CB0 }, { 0x1CB2, 0x1CB3 }, { 0x1CB5, 0x1CB6 },
      { 0x1D31, 0x1D45 }, { 0x1D47, 0x1D47 }, { 0x1D90, 0x1D91 },
@@ -337,10 +339,11 @@ const uint16_t tbl_for_zero_width_chars[][2] = {
      { 0xDA75, 0xDA75 }, { 0xDA84, 0xDA84 }, { 0xDA9B, 0xDAAF },
      { 0xE000, 0xE02A }, { 0xE08F, 0xE08F }, { 0xE130, 0xE136 },
      { 0xE2AE, 0xE2AE }, { 0xE2EC, 0xE2EF }, { 0xE4EC, 0xE4EF },
-     { 0xE5EE, 0xE5EF }, { 0xE8D0, 0xE8D6 }, { 0xE944, 0xE94A },
-     { 0x0001, 0x01EF } };
+     { 0xE5EE, 0xE5EF }, { 0xE6E3, 0xE6E3 }, { 0xE6E6, 0xE6E6 },
+     { 0xE6EE, 0xE6EF }, { 0xE6F5, 0xE6F5 }, { 0xE8D0, 0xE8D6 },
+     { 0xE944, 0xE94A }, { 0x0001, 0x01EF } };
 
-const uint16_t tbl_for_fullwidth_chars[][2] = {
+const uint16_t tbl_for_fullwidth_chars[101][2] = {
      { /* plane 0 */ 0, 47 },
      { /* plane 1 */ 47, 82 },
      { /* plane 2 */ 82, 83 },
