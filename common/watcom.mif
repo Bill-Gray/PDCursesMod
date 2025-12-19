@@ -107,8 +107,11 @@ DEMOS = calendar$(E) firework$(E) init_col$(E) mbrot$(E) newtest$(E) &
     testcurs$(E) tuidemo$(E) widetest$(E) worm$(E) xmas$(E)
 
 TESTS = brk_test$(E) del_test$(E) focus$(E) ins_del$(E) keytest$(E) &
-   opaque$(E) restart$(E) ripoff$(E) show_col$(E) show_uni$(E)
+   opaque$(E) restart$(E) ripoff$(E) show_col$(E)
 
+!ifeq WIDE Y
+TESTS += show_uni$(E)
+!endif
 
 PDCNAME = pdcurses
 
@@ -214,6 +217,7 @@ clean: .symbolic
     @if exist *.lib -$(DEL) *.lib
     @if exist *.dll -$(DEL) *.dll
     @for %f in ($(DEMOS)) do @if exist %f -$(DEL) %f
+    @for %f in ($(TESTS)) do @if exist %f -$(DEL) %f
     @if exist *.err -$(DEL) *.err
     @if exist *.map -$(DEL) *.map
     @if exist *.res -$(DEL) *.res
