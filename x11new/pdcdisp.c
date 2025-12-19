@@ -143,7 +143,9 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
              ch = (int32_t)acs_map[srcp[i] & 0x7f];
           else
              ch = (int32_t)( srcp[i] & A_CHARTEXT);
+#ifdef PDC_WIDE
           if( ch < (int)MAX_UNICODE)
+#endif
              chars_out += _put_into_xchar2b_string( string + chars_out, ch);
 #ifdef USING_COMBINING_CHARACTER_SCHEME
           else if( ch > (int)MAX_UNICODE)       /* combining character sequence */
