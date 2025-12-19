@@ -1,7 +1,7 @@
 # GNU MAKE Makefile for PDCurses library for Linux framebuffer
 #
 # Usage: [g]make [DEBUG=Y] [WIDE=Y] [UTF8=Y] [LIBNAME=(name)]
-#                [DLLNAME=(name)] [DRM=Y] [CHTYPE_32=Y] [target]
+#                [DLLNAME=(name)] [DRM=Y] [CHTYPE_32=Y] [CHTYPE_16=Y] [target]
 #
 # where target can be any of:
 # [all|demos|libpdcurses.a|testcurs]...
@@ -22,7 +22,7 @@ RM		= rm -f
 # If your system doesn't have these, remove the defines here
 SFLAGS		= -DHAVE_VSNPRINTF -DHAVE_VSSCANF
 
-CFLAGS  = -Wall -Wextra -pedantic -Werror
+CFLAGS  = -Wall -Wextra -pedantic -Werror -Wshadow
 ifeq ($(DEBUG),Y)
 	CFLAGS  += -g -DPDCDEBUG
 else
@@ -48,6 +48,10 @@ ifdef CHTYPE_32
 	CFLAGS += -DCHTYPE_32
 endif
 
+ifdef CHTYPE_16
+	CFLAGS += -DCHTYPE_16
+endif
+
 LIBNAME=pdcurses
 DLLNAME=pdcurses
 
@@ -56,10 +60,6 @@ LIBCURSES	= lib$(LIBNAME).a
 CC	= $(PREFIX)gcc
 LIBEXE = $(PREFIX)ar
 STRIP	= $(PREFIX)strip
-
-ifeq ($(shell uname -s),FreeBSD)
-	CC = cc
-endif
 
 ifeq ($(DLL),Y)
 		DLL_SUFFIX = .so
