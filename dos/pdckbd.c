@@ -8,56 +8,7 @@
 # include <signal.h>
 #endif
 
-/************************************************************************
- *    Table for key code translation of function keys in keypad mode    *
- *    These values are for strict IBM keyboard compatibles only         *
- ************************************************************************/
-
-static short key_table[] =
-{
-    -1,             ALT_ESC,        -1,             0,
-    -1,             -1,             -1,             -1,
-    -1,             -1,             -1,             -1,
-    -1,             -1,             ALT_BKSP,       KEY_BTAB,
-    ALT_Q,          ALT_W,          ALT_E,          ALT_R,
-    ALT_T,          ALT_Y,          ALT_U,          ALT_I,
-    ALT_O,          ALT_P,          ALT_LBRACKET,   ALT_RBRACKET,
-    ALT_ENTER,      -1,             ALT_A,          ALT_S,
-    ALT_D,          ALT_F,          ALT_G,          ALT_H,
-    ALT_J,          ALT_K,          ALT_L,          ALT_SEMICOLON,
-    ALT_FQUOTE,     ALT_BQUOTE,     -1,             ALT_BSLASH,
-    ALT_Z,          ALT_X,          ALT_C,          ALT_V,
-    ALT_B,          ALT_N,          ALT_M,          ALT_COMMA,
-    ALT_STOP,       ALT_FSLASH,     -1,             ALT_PADSTAR,
-    -1,             -1,             -1,             KEY_F(1),
-    KEY_F(2),       KEY_F(3),       KEY_F(4),       KEY_F(5),
-    KEY_F(6),       KEY_F(7),       KEY_F(8),       KEY_F(9),
-    KEY_F(10),      -1,             -1,             KEY_HOME,
-    KEY_UP,         KEY_PPAGE,      ALT_PADMINUS,   KEY_LEFT,
-    KEY_B2,         KEY_RIGHT,      ALT_PADPLUS,    KEY_END,
-    KEY_DOWN,       KEY_NPAGE,      KEY_IC,         KEY_DC,
-    KEY_F(13),      KEY_F(14),      KEY_F(15),      KEY_F(16),
-    KEY_F(17),      KEY_F(18),      KEY_F(19),      KEY_F(20),
-    KEY_F(21),      KEY_F(22),      KEY_F(25),      KEY_F(26),
-    KEY_F(27),      KEY_F(28),      KEY_F(29),      KEY_F(30),
-    KEY_F(31),      KEY_F(32),      KEY_F(33),      KEY_F(34),
-    KEY_F(37),      KEY_F(38),      KEY_F(39),      KEY_F(40),
-    KEY_F(41),      KEY_F(42),      KEY_F(43),      KEY_F(44),
-    KEY_F(45),      KEY_F(46),      -1,             CTL_LEFT,
-    CTL_RIGHT,      CTL_END,        CTL_PGDN,       CTL_HOME,
-    ALT_1,          ALT_2,          ALT_3,          ALT_4,
-    ALT_5,          ALT_6,          ALT_7,          ALT_8,
-    ALT_9,          ALT_0,          ALT_MINUS,      ALT_EQUAL,
-    CTL_PGUP,       KEY_F(11),      KEY_F(12),      KEY_F(23),
-    KEY_F(24),      KEY_F(35),      KEY_F(36),      KEY_F(47),
-    KEY_F(48),      CTL_UP,         CTL_PADMINUS,   CTL_PADCENTER,
-    CTL_PADPLUS,    CTL_DOWN,       CTL_INS,        CTL_DEL,
-    CTL_TAB,        CTL_PADSLASH,   CTL_PADSTAR,    ALT_HOME,
-    ALT_UP,         ALT_PGUP,       -1,             ALT_LEFT,
-    -1,             ALT_RIGHT,      -1,             ALT_END,
-    ALT_DOWN,       ALT_PGDN,       ALT_INS,        ALT_DEL,
-    ALT_PADSLASH,   ALT_TAB,        ALT_PADENTER,   -1
-};
+#include "../common/dos_key.h"
 
 static struct {unsigned short pressed, released;} button[3];
 
@@ -80,7 +31,7 @@ void PDC_set_keyboard_binary(bool on)
     setmode(fileno(stdin), on ? O_BINARY : O_TEXT);
     signal(SIGINT, on ? SIG_IGN : SIG_DFL);
 #else
-   INTENTIONALLY_UNUSED_PARAMETER( on);
+    INTENTIONALLY_UNUSED_PARAMETER( on);
 #endif
 }
 
