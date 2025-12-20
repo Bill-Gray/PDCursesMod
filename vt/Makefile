@@ -19,9 +19,6 @@ include $(common)/libobjs.mif
 
 RM		= rm -f
 
-# If your system doesn't have these, remove the defines here
-SFLAGS		= -DHAVE_VSNPRINTF -DHAVE_VSSCANF
-
 CFLAGS  = -Wall -Wextra -pedantic -Werror
 ifeq ($(DEBUG),Y)
 	CFLAGS  += -g -DPDCDEBUG
@@ -45,6 +42,10 @@ endif
 
 ifdef CHTYPE_32
 	CFLAGS += -DCHTYPE_32
+endif
+
+ifdef CHTYPE_16
+	CFLAGS += -DCHTYPE_16
 endif
 
 ifdef _w64
@@ -149,10 +150,10 @@ terminfo.o : $(TERM_HEADER)
 panel.o ptest: $(PANEL_HEADER)
 
 $(LIBOBJS) : %.o: $(srcdir)/%.c
-	$(BUILD) $(SFLAGS) -c $<
+	$(BUILD) -c $<
 
 $(PDCOBJS) : %.o: $(osdir)/%.c
-	$(BUILD) $(SFLAGS) -c $<
+	$(BUILD) -c $<
 
 $(DEMOS_EXCEPT_TUIDEMO): %$(E): $(demodir)/%.c
 	$(BUILD) $(DEMOFLAGS) -o$@ $< $(LDFLAGS)
