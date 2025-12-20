@@ -23,8 +23,15 @@ TARGET = dos
 LTARGET = dos4g
 !else
 LTARGET = dos
+CFLAGS = -DCHTYPE_32
 !endif
 
-CFLAGS =
+!ifdef CHTYPE_16 Y
+CFLAGS = -DCHTYPE_16
+!endif
+
+!ifdef CHTYPE_32 Y
+CFLAGS = -DCHTYPE_32
+!endif
 
 !include $(PDCURSES_SRCDIR)/common/watcom.mif

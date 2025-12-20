@@ -27,6 +27,10 @@ LTARGET   = dos
 CFLAGS = -DCHTYPE_32
 !endif
 
+!ifdef CHTYPE_16 Y
+CFLAGS = -DCHTYPE_16
+!endif
+
 !include $(PDCURSES_SRCDIR)/common/watcom.mif
 
 TESTS += naptest.exe

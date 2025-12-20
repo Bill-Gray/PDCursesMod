@@ -21,9 +21,16 @@ TARGET = dos
 
 !ifeq MODEL f
 LTARGET = dos4g
-CFLAGS =
 !else
 LTARGET = dos
+CFLAGS = -DCHTYPE_32
+!endif
+
+!ifdef CHTYPE_16 Y
+CFLAGS = -DCHTYPE_16
+!endif
+
+!ifdef CHTYPE_32 Y
 CFLAGS = -DCHTYPE_32
 !endif
 
