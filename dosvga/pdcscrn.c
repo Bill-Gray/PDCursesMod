@@ -322,7 +322,7 @@ static void _load_palette(void)
         }
 
         /* Load the DAC registers from the current palette */
-        for (i = 0; i < 1 << PDC_state.bits_per_pixel; i++)
+        for (i = 0; i < 1u << PDC_state.bits_per_pixel; i++)
             PDC_init_color(i, PDC_state.colors[i].r, PDC_state.colors[i].g,
                     PDC_state.colors[i].b);
     }
@@ -760,7 +760,7 @@ static unsigned _find_mode(
         /* At least as many rows and columns as requested */
         new_cols = mode_info0.XResolution / PDC_state.font_width;
         new_rows = mode_info0.YResolution / PDC_state.font_height;
-        if (new_cols < cols || new_rows < rows)
+        if (new_cols < (unsigned)cols || new_rows < (unsigned)rows)
             continue;
 
         /* Among modes that are large enough for rows and cols, choose one

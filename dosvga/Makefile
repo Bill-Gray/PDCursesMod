@@ -20,10 +20,10 @@ include $(common)/libobjs.mif
 
 PDCURSES_DOS_H	= $(osdir)/pdcdos.h
 
-CC		= gcc
-STRIP	= strip
+CC		= $(PREFIX)gcc
+STRIP	= $(PREFIX)strip
 
-CFLAGS  = -Wall
+CFLAGS  = -Wall -Wextra -Wshadow -Werror -pedantic
 ifeq ($(DEBUG),Y)
 	CFLAGS  += -g -DPDCDEBUG
 	LDFLAGS = -g
@@ -38,9 +38,9 @@ ifeq ($(WIDE),Y)
 	CFLAGS += -DPDC_WIDE
 endif
 
-LINK		= gcc
+LINK		= $(PREFIX)gcc
 
-LIBEXE		= ar
+LIBEXE		= $(PREFIX)ar
 LIBFLAGS	= rcv
 
 LIBCURSES	= pdcurses.a

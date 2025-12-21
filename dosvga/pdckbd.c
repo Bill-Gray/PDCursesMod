@@ -80,12 +80,13 @@ static const unsigned short button_map[3] = {0, 2, 1};
 
 void PDC_set_keyboard_binary(bool on)
 {
-    INTENTIONALLY_UNUSED_PARAMETER(on);
     PDC_LOG(("PDC_set_keyboard_binary() - called\n"));
 
 #ifdef __DJGPP__
     setmode(fileno(stdin), on ? O_BINARY : O_TEXT);
     signal(SIGINT, on ? SIG_IGN : SIG_DFL);
+#else
+    INTENTIONALLY_UNUSED_PARAMETER(on);
 #endif
 }
 

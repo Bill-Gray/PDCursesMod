@@ -556,8 +556,8 @@ void PDC_private_cursor_off(void)
         return;
 
     PDC_state.cursor_visible = FALSE;
-    if (PDC_state.cursor_row < (unsigned)LINES
-    &&  PDC_state.cursor_col < (unsigned)COLS)
+    if (PDC_state.cursor_row < LINES
+    &&  PDC_state.cursor_col < COLS)
     {
         static const chtype space = ' ';
 
@@ -573,7 +573,7 @@ void PDC_private_cursor_on(int row, int col)
     PDC_state.cursor_visible = TRUE;
     PDC_state.cursor_row = row;
     PDC_state.cursor_col = col;
-    if (row < (unsigned)LINES && col < (unsigned)COLS)
+    if (row < LINES && col < COLS)
     {
         static const chtype space = ' ';
 
