@@ -9,7 +9,7 @@
 #include <sys/mman.h>
 #include <fcntl.h>
 #include "pdcfb.h"
-#include "psf.c"
+#include "../common/psf.c"
 
 struct video_info PDC_fb;
 
@@ -19,7 +19,7 @@ struct video_info PDC_fb;
     #include <linux/fb.h>
 #endif
 #ifdef PDC_WIDE
-   #include "psf_wide.h"
+   #include "../common/psf_wide.h"
 #else
    #include "../dosvga/font.h"
 #endif

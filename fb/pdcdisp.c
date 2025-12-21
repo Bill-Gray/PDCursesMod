@@ -8,7 +8,7 @@
 
 #include "curspriv.h"
 #include "pdcfb.h"
-#include "psf.h"
+#include "../common/psf.h"
 
 #ifdef PDC_WIDE
     #define USE_UNICODE_ACS_CHARS 1

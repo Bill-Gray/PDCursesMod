@@ -19,7 +19,7 @@ int PDC_cycle_display( void);
 #include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include "psf.h"
+#include "../common/psf.h"
 #include "pdcfb.h"
 
 static int _key_to_mouse_modifiers( const int key_modifs)

@@ -1,5 +1,5 @@
 /* PSF2 font for wide builds.  Glyphs extracted from Unifont with
-'sub_hex',  then converted to the following array using 'hex2psf2'.
+'sub_437',  then converted to the following array using 'hex2psf2'.
 This font contains 271 glyphs. The first 256 are from CP437;  the last
 fifteen add glyphs for "thick box characters" and scan line 1, 3, 7, and
 9 glyphs,  so that we have all ACS and WACS glyphs.         */
