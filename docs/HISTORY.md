@@ -23,6 +23,16 @@ Minor new features
 - VT platform can be compiled with djgpp and runs correctly (see issue
   #340).  Parts of the fix by Gisle Vanem.   222b475523
 
+- OpenWATCOM builds in DOS,  DOSVGA,  and VT ports allow you to specify
+  CHTYPE_32=Y or CHTYPE_16=Y (default is 64-bit chtypes).  8e415f1351
+
+- Unicode fullwidth/halfwidth/zero-width definitions updated from the
+  Unicode 16.0.0 standard to 17.0.0.  6ab0d4f2a8
+
+- DOS key remapping for the VT port now uses the same table as the DOS,
+  DOSVGA,  and OS/2 ports.  This results in slightly simpler code,  and
+  means a DOS VT port recognizes quite a few more keys.  4ce36296ad
+
 Bug fixes
 ---------
 
