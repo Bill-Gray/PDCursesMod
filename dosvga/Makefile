@@ -45,7 +45,7 @@ LIBFLAGS	= rcv
 
 LIBCURSES	= pdcurses.a
 
-.PHONY: all libs clean demos dist
+.PHONY: all libs clean demos tests dist
 
 all:	libs
 
@@ -56,9 +56,14 @@ clean:
 	-$(RM) *.a
 	-$(RM) *.exe
 
-demos:	$(DEMOS)
+demos:	libs $(DEMOS)
 ifneq ($(DEBUG),Y)
 	$(STRIP) *.exe
+endif
+
+tests:	libs $(TESTS)
+ifneq ($(DEBUG),Y)
+	$(STRIP) $(TESTS)
 endif
 
 $(LIBCURSES) : $(LIBOBJS) $(PDCOBJS)
@@ -79,8 +84,10 @@ $(LIBOBJS) : %.o: $(srcdir)/%.c
 $(PDCOBJS) : %.o: $(osdir)/%.c
 	$(CC) -c $(CFLAGS) $<
 
-firework.exe ozdemo.exe rain.exe testcurs.exe worm.exe xmas.exe \
-ptest.exe: %.exe: $(demodir)/%.c
+$(DEMOS_EXCEPT_TUIDEMO): %.exe: $(demodir)/%.c
+	$(CC) $(CFLAGS) -o$@ $< $(LIBCURSES)
+
+$(TESTS): %$(E): $(testdir)/%.c
 	$(CC) $(CFLAGS) -o$@ $< $(LIBCURSES)
 
 tuidemo.exe: tuidemo.o tui.o
