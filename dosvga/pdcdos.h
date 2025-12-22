@@ -42,13 +42,6 @@
 #  define PDC_FAR
 # endif
 
-/* Information about the current video state */
-struct PDC_color
-{
-    short r, g, b;
-    unsigned long mapped;
-};
-
 struct PDC_video_state
 {
     /* Information about the current video mode: */
@@ -92,8 +85,6 @@ struct PDC_video_state
     int cursor_col;
     unsigned char cursor_start;
     unsigned char cursor_end;
-
-    struct PDC_color colors[PDC_MAXCOL];
 };
 extern struct PDC_video_state PDC_state;
 

@@ -4,6 +4,9 @@
 #include "pdcvesa.h"
 #include "font.h"
 
+#include "../common/pdccolor.h"
+#include "../common/pdccolor.c"
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -11,7 +14,6 @@ struct PDC_video_state PDC_state;
 
 static int saved_scrnmode[3];
 
-static void _init_palette(void);
 static void _load_palette(void);
 static int _get_mode_info(unsigned mode, struct ModeInfoBlock *mode_info);
 static unsigned _find_video_mode(int rows, int cols);
@@ -143,10 +145,8 @@ int PDC_scr_open(void)
 
     SP = calloc(1, sizeof(SCREEN));
 
-    if (!SP)
+    if (!SP || PDC_init_palette( ))
         return ERR;
-
-    _init_palette();
 
     /* Set up fonts:
      * * first try PDC_FONT and PDC_FONT_BOLD
@@ -212,7 +212,7 @@ int PDC_resize_screen(int nlines, int ncols)
     if (PDC_state.bits_per_pixel <= 8)
         COLORS = 1 << PDC_state.bits_per_pixel;
     else
-        COLORS = PDC_MAXCOL;
+        COLORS = 256 + (256 * 256 * 256);
 
     return OK;
 }
@@ -241,49 +241,6 @@ void PDC_save_screen_mode(int i)
     if (i >= 0 && i <= 2)
     {
         saved_scrnmode[i] = _get_scrn_mode();
-    }
-}
-
-/* _init_palette -- set up the initial palette */
-
-static void _init_palette(void)
-{
-    unsigned i, r, g, b;
-
-    /* The basic eight colors and their bold forms */
-    for (i = 0; i < 8; i++)
-    {
-        PDC_state.colors[i+0].r = (i & COLOR_RED)   ?  750 :   0;
-        PDC_state.colors[i+0].g = (i & COLOR_GREEN) ?  750 :   0;
-        PDC_state.colors[i+0].b = (i & COLOR_BLUE)  ?  750 :   0;
-        PDC_state.colors[i+8].r = (i & COLOR_RED)   ? 1000 : 250;
-        PDC_state.colors[i+8].g = (i & COLOR_GREEN) ? 1000 : 250;
-        PDC_state.colors[i+8].b = (i & COLOR_BLUE)  ? 1000 : 250;
-    }
-
-    /* 6x6x6 color cube */
-    i = 16;
-    for (r = 0; r < 6; r++)
-    {
-        for (g = 0; g < 6; g++)
-        {
-            for (b = 0; b < 6; b++)
-            {
-                PDC_state.colors[i].r = (r ? r * 157 + 215 : 0);
-                PDC_state.colors[i].g = (g ? g * 157 + 215 : 0);
-                PDC_state.colors[i].b = (b ? b * 157 + 215 : 0);
-                i++;
-            }
-        }
-    }
-
-    /* 24 shades of gray */
-    for (i = 232; i < 256; i++)
-    {
-        r = (i - 232) * 40 + 30;
-        PDC_state.colors[i].r = r;
-        PDC_state.colors[i].g = r;
-        PDC_state.colors[i].b = r;
     }
 }
 
@@ -323,17 +280,12 @@ static void _load_palette(void)
 
         /* Load the DAC registers from the current palette */
         for (i = 0; i < 1u << PDC_state.bits_per_pixel; i++)
-            PDC_init_color(i, PDC_state.colors[i].r, PDC_state.colors[i].g,
-                    PDC_state.colors[i].b);
-    }
-    else
-    {
-        unsigned i;
+        {
+           int r, g, b;
 
-        /* Set up mappings from color index to RGB */
-        for (i = 0; i < PDC_MAXCOL; i++)
-            PDC_init_color(i, PDC_state.colors[i].r, PDC_state.colors[i].g,
-                    PDC_state.colors[i].b);
+           PDC_color_content( i, &r, &g, &b);
+           PDC_init_color( i, r, g, b);
+        }
     }
 }
 
@@ -342,28 +294,32 @@ bool PDC_can_change_color(void)
     return TRUE;
 }
 
-int PDC_color_content(int color, int *red, int *green, int *blue)
+int PDC_color_content( int color, int *red, int *green, int *blue)
 {
-    *red   = PDC_state.colors[color].r;
-    *green = PDC_state.colors[color].g;
-    *blue  = PDC_state.colors[color].b;
+    const PACKED_RGB col = PDC_get_palette_entry( color);
+
+    *red =   DIVROUND( (int32_t)Get_RValue(col) * (int32_t)1000, (int32_t)255);
+    *green = DIVROUND( (int32_t)Get_GValue(col) * (int32_t)1000, (int32_t)255);
+    *blue =  DIVROUND( (int32_t)Get_BValue(col) * (int32_t)1000, (int32_t)255);
 
     return OK;
 }
 
 int PDC_init_color(int color, int red, int green, int blue)
 {
-    /* Scale */
-    unsigned r = DIVROUND((unsigned long)red * PDC_state.red_max, 1000);
-    unsigned g = DIVROUND((unsigned long)green * PDC_state.green_max, 1000);
-    unsigned b = DIVROUND((unsigned long)blue * PDC_state.blue_max, 1000);
+    const PACKED_RGB new_rgb = PACK_RGB(DIVROUND((int32_t)red   * (int32_t)255, (int32_t)1000),
+                                        DIVROUND((int32_t)green * (int32_t)255, (int32_t)1000),
+                                        DIVROUND((int32_t)blue  * (int32_t)255, (int32_t)1000));
 
-    PDC_state.colors[color].r = red;
-    PDC_state.colors[color].g = green;
-    PDC_state.colors[color].b = blue;
+    if( !PDC_set_palette_entry( color, new_rgb))
+        curscr->_clear = TRUE;
 
     if (PDC_state.bits_per_pixel <= 8)
     {
+        /* Scale */
+        const unsigned r = DIVROUND((unsigned long)red * PDC_state.red_max, 1000);
+        const unsigned g = DIVROUND((unsigned long)green * PDC_state.green_max, 1000);
+        const unsigned b = DIVROUND((unsigned long)blue * PDC_state.blue_max, 1000);
         PDCREGS regs;
 #if !defined(PDC_FLAT) && !defined(__WATCOMC__)
         struct SREGS sregs;
@@ -423,14 +379,6 @@ int PDC_init_color(int color, int red, int green, int blue)
 
         PDCINT(0x10, regs);
     }
-    else
-    {
-        PDC_state.colors[color].mapped =
-                  ((unsigned long)r << PDC_state.red_pos)
-                | ((unsigned long)g << PDC_state.green_pos)
-                | ((unsigned long)b << PDC_state.blue_pos);
-    }
-
     return OK;
 }
 
