@@ -147,12 +147,13 @@ int wnoutrefresh(WINDOW *win)
     return OK;
 }
 
-#define DUMMY_CHAR_NEXT_TO_FULLWIDTH  MAX_UNICODE
-
 /* The following ensures that PDC_transform_line() is fed a maximum of
 MAX_PACKET_LEN at a time;  'dummy' characters in cells next to fullwidth
 characters are not sent;  and we break packets after combining characters
-and fullwidth characters,  avoiding some possible mis-alignment issues. */
+and fullwidth characters,  avoiding some possible mis-alignment issues.
+If the cursor is shown,  that character is drawn by itself,  with
+SP->drawing_cursor set to the actual desired cursor (which,  on some
+platforms,  varies as SP->blink_state flips).      */
 
 void PDC_transform_line_sliced( int lineno, int x, int len, const chtype *srcp)
 {
@@ -161,7 +162,28 @@ void PDC_transform_line_sliced( int lineno, int x, int len, const chtype *srcp)
     assert( x + len <= COLS);
     assert( lineno >= 0);
     assert( lineno < SP->lines);
-#if PDC_CHARTEXT_BITS == 21
+    if( lineno == SP->cursrow && x <= SP->curscol && x + len > SP->curscol)
+    {
+        const int vis = (SP->visibility >> (SP->blink_state ? 8 : 0)) & 0xff;
+
+        if( vis)
+        {
+            const int before = SP->curscol - x;
+
+            if( before)   /* some text before the cursor */
+            {
+                PDC_transform_line_sliced( lineno, x, before, srcp);
+                x += before;
+                len -= before;
+                srcp += before;
+            }
+            if( len > 1)    /* some text after the cursor */
+                PDC_transform_line_sliced( lineno, x + 1, len - 1, srcp + 1);
+            len = 1;        /* ...and now just the cursor itself */
+            SP->drawing_cursor = vis;
+        }
+    }
+#ifdef DUMMY_CHAR_NEXT_TO_FULLWIDTH
     if( x && (*srcp & A_CHARTEXT) == DUMMY_CHAR_NEXT_TO_FULLWIDTH)
     {                   /* starting on a dummy next to a fullwidth */
         x--;
@@ -192,6 +214,7 @@ void PDC_transform_line_sliced( int lineno, int x, int len, const chtype *srcp)
         len -= i;
         srcp += i;
     }
+    SP->drawing_cursor = 0;
 }
 
 int doupdate(void)
