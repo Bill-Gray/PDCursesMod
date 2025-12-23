@@ -5,6 +5,7 @@
 #include <assert.h>
 #include "../common/pdccolor.h"
 #include "../common/mouse.c"
+#include "../common/blink.c"
 #ifdef WIN32_LEAN_AND_MEAN
    #ifdef PDC_WIDE
       #include <shellapi.h>
@@ -1503,48 +1504,8 @@ static int convert_key_modifiers_for_mouse( const int key_modifiers)
 
 static void HandleTimer( const WPARAM wParam )
 {
-    int i;           /* see WndProc() notes */
-
     INTENTIONALLY_UNUSED_PARAMETER( wParam);
-    SP->blink_state ^= 1;
-    if( SP->termattrs & A_BLINK)
-    {
-        for( i = 0; i < SP->lines; i++)
-        {
-            if( curscr->_y[i])
-            {
-                int j = 0;
-                chtype *line = curscr->_y[i];
-
-                /* skip over starting text that isn't blinking: */
-                while( j < SP->cols)
-                {
-                    int k;
-
-                    while( j < SP->cols && !(line[j] & A_BLINK))
-                        j++;
-                    k = j;
-                    while( j < SP->cols && (line[j] & A_BLINK))
-                        j++;
-                    if( k != j)
-                        PDC_transform_line_sliced( i, k, j - k, line + k);
-                }
-            }
-/*          else
-                MessageBox( 0, "NULL _y[] found\n", "PDCurses", MB_OK);  */
-        }
-    }
-    if( SP->cursrow >=SP->lines || SP->curscol >= SP->cols
-        || SP->cursrow < 0 || SP->curscol < 0
-        || !curscr->_y || !curscr->_y[SP->cursrow])
-        {
-            debug_printf( "Cursor off-screen: %d %d, %d %d\n",
-                          SP->cursrow, SP->curscol, SP->lines, SP->cols);
-            assert( 0);
-        }
-    else if( PDC_CURSOR_IS_BLINKING)
-             PDC_transform_line_sliced( SP->cursrow, SP->curscol, 1,
-                                 curscr->_y[SP->cursrow] + SP->curscol);
+    PDC_check_for_blinking( );
 }
 
       /* Options to enlarge/shrink the font are currently commented out. */

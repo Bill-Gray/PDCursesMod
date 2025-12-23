@@ -135,7 +135,7 @@ box) in place of any visible cursor.  */
 static int PDC_current_cursor_state( void)
 {
     extern HWND PDC_hWnd;
-    const int shift_amount = (SP->blink_state ? 0 : 8);
+    const int shift_amount = (SP->blink_state ? 8 : 0);
     const int cursor_style_for_unfocussed_window =
                PDC_CURSOR( PDC_CURSOR_OUTLINE, PDC_CURSOR_OUTLINE);
     int cursor_style;
@@ -154,43 +154,6 @@ static void redraw_cursor( const HDC hdc)
 
     if( cursor_style > 0 && cursor_style < N_CURSORS)
         redraw_cursor_from_index( hdc, cursor_style);
-}
-
-/* position "hardware" cursor at (y, x).  We don't have a for-real hardware */
-/* cursor in this version,  of course,  but we can fake it.  Note that much */
-/* of the logic was borrowed from the SDL version.  In particular,  the     */
-/* cursor is moved by first overwriting the "original" location.            */
-
-void PDC_gotoyx(int row, int col)
-{
-    PDC_LOG(("PDC_gotoyx() - called: row %d col %d from row %d col %d\n",
-             row, col, SP->cursrow, SP->curscol));
-
-                /* clear the old cursor,  if it's on-screen: */
-    if( SP->cursrow >= 0 && SP->curscol >= 0 &&
-         SP->cursrow < SP->lines && SP->curscol < SP->cols)
-    {
-        const int temp_visibility = SP->visibility;
-
-        SP->visibility = 0;
-        PDC_transform_line_sliced( SP->cursrow, SP->curscol, 1,
-                           curscr->_y[SP->cursrow] + SP->curscol);
-        SP->visibility = temp_visibility;
-    }
-
-               /* ...then draw the new (assuming it's actually visible).    */
-               /* This used to require some logic.  Now the redraw_cursor() */
-               /* function figures out what cursor should be drawn, if any. */
-    if( SP->visibility)
-    {
-        extern HWND PDC_hWnd;
-        HDC hdc = GetDC( PDC_hWnd) ;
-
-        SP->curscol = col;
-        SP->cursrow = row;
-        redraw_cursor( hdc);
-        ReleaseDC( PDC_hWnd, hdc) ;
-    }
 }
 
 #ifndef USER_DEFAULT_SCREEN_DPI /* defined in newer versions of WinUser.h */
@@ -371,7 +334,6 @@ static void PDC_transform_line_given_hdc( const HDC hdc, const int lineno,
     extern int PDC_cxChar, PDC_cyChar;
     int i, curr_color = -1;
     attr_t font_attrib = (attr_t)-1;
-    int cursor_overwritten = FALSE;
     PACKED_RGB foreground_rgb = 0;
     chtype prev_ch = 0;
 
@@ -398,9 +360,6 @@ static void PDC_transform_line_given_hdc( const HDC hdc, const int lineno,
 #ifdef PDC_WIDE
     assert( (srcp[len - 1] & A_CHARTEXT) != MAX_UNICODE);
 #endif
-    if( lineno == SP->cursrow && SP->curscol >= x && SP->curscol < x + len)
-        if( PDC_current_cursor_state( ))
-            cursor_overwritten = TRUE;
 
     while( len)
     {
@@ -581,7 +540,7 @@ static void PDC_transform_line_given_hdc( const HDC hdc, const int lineno,
     }
     SelectObject( hdc, hOldFont);
                /* ...did we step on the cursor?  If so,  redraw it: */
-    if( cursor_overwritten)
+    if( SP->drawing_cursor && PDC_current_cursor_state( ))
         redraw_cursor( hdc);
 }
 
