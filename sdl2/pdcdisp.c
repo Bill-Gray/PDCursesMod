@@ -3,6 +3,7 @@
 #include "pdcsdl.h"
 
 #include <stdlib.h>
+#include <assert.h>
 #include <string.h>
 
 # ifdef PDC_WIDE
@@ -13,6 +14,7 @@
 
 # include "../common/acs_defs.h"
 # include "../common/pdccolor.h"
+# include "../common/blink.c"
 
 #define MAXRECT 200     /* maximum number of rects to queue up before
                            an update is forced; the number was chosen
@@ -22,7 +24,6 @@ static SDL_Rect uprect[MAXRECT];       /* table of rects to update */
 static chtype oldch = (chtype)(-1);    /* current attribute */
 static int rectcount = 0;              /* index into uprect */
 static int foregr = -2, backgr = -2; /* current foreground, background */
-static bool blinked_off = FALSE;
 /* do the real updates on a delay */
 
 void PDC_update_rects(void)
@@ -170,7 +171,7 @@ static void _set_attr(chtype ch)
 #define Sn_CHARS      0x10
 #define SCAN_LINE( n)      (Sn_CHARS | ((n - 1) << 8))
 
-static bool _grprint(chtype ch, const SDL_Rect dest)
+static bool _grprint( const chtype ch, const SDL_Rect dest)
 {
     int i = 0;
     bool rval;
@@ -285,90 +286,6 @@ static SDL_Surface *_render_ttf_glyph(chtype ch)
 
 #endif
 
-/* draw a cursor at (y, x) */
-
-void PDC_gotoyx(int row, int col)
-{
-    SDL_Rect src, dest;
-    chtype ch;
-    int oldrow, oldcol;
-
-    PDC_LOG(("PDC_gotoyx() - called: row %d col %d from row %d col %d\n",
-             row, col, SP->cursrow, SP->curscol));
-
-    oldrow = SP->cursrow;
-    oldcol = SP->curscol;
-
-    /* clear the old cursor */
-
-    PDC_transform_line(oldrow, oldcol, 1, curscr->_y[oldrow] + oldcol);
-
-    if (!SP->visibility)
-    {
-        PDC_update_rects();
-        return;
-    }
-
-    /* draw a new cursor by overprinting the existing character in
-       reverse, either the full cell (when visibility == 2) or the
-       lowest quarter of it (when visibility == 1) */
-
-    ch = curscr->_y[row][col] ^ A_REVERSE;
-
-    _set_attr(ch);
-
-    src.h = (SP->visibility == 1) ? pdc_fheight >> 2 : pdc_fheight;
-    src.w = pdc_fwidth;
-
-    dest.y = (row + 1) * pdc_fheight - src.h + pdc_yoffset;
-    dest.x = col * pdc_fwidth + pdc_xoffset;
-    dest.h = src.h;
-    dest.w = src.w;
-
-#ifdef PDC_WIDE
-    SDL_FillRect(pdc_screen, &dest, get_pdc_mapped( backgr));
-
-    if (!(SP->visibility == 2 && _is_altcharset( ch) &&
-        _grprint(ch & (0x7f | A_ALTCHARSET), dest)))
-    {
-        if( _is_altcharset( ch))
-            ch = acs_map[ch & 0x7f];
-
-        pdc_font = _render_ttf_glyph(ch);
-
-        if (pdc_font)
-        {
-            int center = pdc_fwidth > pdc_font->w ?
-                        (pdc_fwidth - pdc_font->w) >> 1 : 0;
-            src.x = 0;
-            src.y = pdc_fheight - src.h;
-            dest.x += center;
-            SDL_BlitSurface(pdc_font, &src, pdc_screen, &dest);
-            dest.x -= center;
-            SDL_FreeSurface(pdc_font);
-            pdc_font = NULL;
-        }
-    }
-#else
-    if( _is_altcharset( ch))
-        ch = acs_map[ch & 0x7f];
-
-    src.x = (ch & 0xff) % 32 * pdc_fwidth;
-    src.y = (ch & 0xff) / 32 * pdc_fheight + (pdc_fheight - src.h);
-
-    SDL_BlitSurface(pdc_font, &src, pdc_screen, &dest);
-#endif
-
-    if (oldrow != row || oldcol != col)
-    {
-        if (rectcount == MAXRECT)
-            PDC_update_rects();
-
-        uprect[rectcount++] = dest;
-    }
-    PDC_update_rects();
-}
-
 static bool _merge_rects( SDL_Rect *a, const SDL_Rect *b)
 {
     if( a->x == b->x && a->w == b->w)
@@ -404,7 +321,7 @@ static bool _merge_rects( SDL_Rect *a, const SDL_Rect *b)
     return FALSE;
 }
 
-void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
+static void _new_packet( attr_t attr, const int lineno, const int x, const int len, const chtype *srcp)
 {
     SDL_Rect src, dest;
     int j;
@@ -413,7 +330,7 @@ void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
 #endif
     attr_t sysattrs = SP->termattrs;
     short hcol = SP->line_color;
-    bool blink = blinked_off && (attr & A_BLINK) && (sysattrs & A_BLINK);
+    const bool blink = SP->blink_state && (attr & A_BLINK) && (sysattrs & A_BLINK);
 
     if (rectcount == MAXRECT)
         PDC_update_rects();
@@ -439,6 +356,8 @@ void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
                                            uprect + rectcount - 1))
        rectcount--;
 
+    if( blink)
+        attr ^= A_REVERSE;
     _set_attr(attr);
 
     if (backgr == -1)
@@ -454,9 +373,6 @@ void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
     for (j = 0; j < len; j++)
     {
         chtype ch = srcp[j];
-
-        if (blink)
-            ch = ' ';
 
         dest.w = pdc_fwidth;
 
@@ -501,15 +417,14 @@ void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
 
         SDL_BlitSurface(pdc_font, &src, pdc_screen, &dest);
 #endif
-
-        if (!blink && (attr & (A_LEFT | A_RIGHT)))
+        if (!blink && (attr & (WA_LEFT | WA_RIGHT)))
         {
             dest.w = pdc_fthick;
 
-            if (attr & A_LEFT)
+            if (attr & WA_LEFT)
                 SDL_FillRect(pdc_screen, &dest, get_pdc_mapped( hcol));
 
-            if (attr & A_RIGHT)
+            if (attr & WA_RIGHT)
             {
                 dest.x += pdc_fwidth - pdc_fthick;
                 SDL_FillRect(pdc_screen, &dest, get_pdc_mapped( hcol));
@@ -528,7 +443,7 @@ void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
     }
 #endif
 
-    if (!blink && (attr & (WA_UNDERLINE | WA_TOP | WA_STRIKEOUT)))
+    if( (!blink && (attr & (WA_UNDERLINE | WA_TOP | WA_STRIKEOUT))) || SP->drawing_cursor)
     {
         dest.x = pdc_fwidth * x + pdc_xoffset;
         dest.h = pdc_fthick;
@@ -545,6 +460,14 @@ void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
         {
            dest.y += (pdc_fheight - pdc_fthick) / 2;
            SDL_FillRect(pdc_screen, &dest, get_pdc_mapped( hcol));
+           dest.y -= (pdc_fheight - pdc_fthick) / 2;
+        }
+        if( SP->drawing_cursor == 5          /* bottom half block cursor */
+               || SP->drawing_cursor == 1)   /* underscore */
+        {
+           dest.h = pdc_fheight / (SP->drawing_cursor == 1 ? 5 : 2);
+           dest.y += pdc_fheight - dest.h;
+           SDL_FillRect(pdc_screen, &dest, get_pdc_mapped( hcol));
         }
     }
 }
@@ -554,16 +477,27 @@ void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
 
 void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
 {
-    attr_t old_attr, attr;
+    attr_t old_attr;
     int i, j;
+    chtype tch;
 
     PDC_LOG(("PDC_transform_line() - called: lineno=%d\n", lineno));
+    if( SP->drawing_cursor)
+    {
+        assert( len == 1);
+        tch = *srcp;
+        if( SP->drawing_cursor == 2)   /* full-cell blinking */
+            tch ^= A_REVERSE;
+        if( SP->drawing_cursor == 3)   /* hollow box */
+            tch ^= A_UNDERLINE | A_TOP | A_LEFT | A_RIGHT;
+        srcp = &tch;
+    }
 
     old_attr = *srcp & (A_ATTRIBUTES ^ A_ALTCHARSET);
 
     for (i = 1, j = 1; j < len; i++, j++)
     {
-        attr = srcp[i] & (A_ATTRIBUTES ^ A_ALTCHARSET);
+        const chtype attr = srcp[i] & (A_ATTRIBUTES ^ A_ALTCHARSET);
 
         if (attr != old_attr)
         {
@@ -576,56 +510,6 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
     }
 
     _new_packet(old_attr, lineno, x, i, srcp);
-}
-
-static Uint32 _blink_timer(Uint32 interval, void *param)
-{
-    SDL_Event event;
-
-    INTENTIONALLY_UNUSED_PARAMETER( param);
-    event.type = SDL_USEREVENT;
-    SDL_PushEvent(&event);
-    return(interval);
-}
-
-void PDC_blink_text(void)
-{
-    static SDL_TimerID blinker_id = 0;
-    int i, j, k;
-
-    oldch = (chtype)(-1);
-
-    if (!(SP->termattrs & A_BLINK))
-    {
-        SDL_RemoveTimer(blinker_id);
-        blinker_id = 0;
-    }
-    else if (!blinker_id)
-    {
-        blinker_id = SDL_AddTimer(500, _blink_timer, NULL);
-        blinked_off = TRUE;
-    }
-
-    blinked_off = !blinked_off;
-
-    for (i = 0; i < SP->lines; i++)
-    {
-        const chtype *srcp = curscr->_y[i];
-
-        for (j = 0; j < SP->cols; j++)
-            if (srcp[j] & A_BLINK)
-            {
-                k = j;
-                while (k < SP->cols && (srcp[k] & A_BLINK))
-                    k++;
-                PDC_transform_line(i, j, k - j, srcp + j);
-                j = k;
-            }
-    }
-
-    oldch = (chtype)(-1);
-
-    PDC_doupdate();
 }
 
 void PDC_doupdate(void)
