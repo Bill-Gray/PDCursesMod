@@ -32,5 +32,3 @@ extern bool pdc_own_screen;          /* if pdc_screen was not set
 
 PDCEX  void PDC_update_rects(void);
 PDCEX  void PDC_retile(void);
-
-extern void PDC_blink_text(void);

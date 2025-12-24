@@ -70,18 +70,12 @@ int PDC_set_blink(bool blinkon)
     if (blinkon)
     {
         if (!(SP->termattrs & A_BLINK))
-        {
             SP->termattrs |= A_BLINK;
-            PDC_blink_text();
-        }
     }
     else
     {
         if (SP->termattrs & A_BLINK)
-        {
             SP->termattrs &= ~A_BLINK;
-            PDC_blink_text();
-        }
     }
 
     return OK;
