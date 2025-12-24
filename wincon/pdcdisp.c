@@ -155,7 +155,6 @@ static void _set_ansi_color(short f, short b, attr_t attr)
 #endif
 
 #ifdef PDC_WIDE
-const chtype DUMMY_CHAR_NEXT_TO_FULLWIDTH = (chtype)MAX_UNICODE;
 #define IS_SUPPLEMENTAL_MULTILINGUAL_PLANE( c) ((c) & 0x1f0000)
 #endif
 
