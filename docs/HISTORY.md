@@ -1,7 +1,7 @@
 Generally speaking,  this history mentions only the more significant
 changes.  See the git log for full details.
 
-Current PDCursesMod - 2025 November 30
+Current PDCursesMod - 2025 December 24
 =======================================
 
 Minor new features
@@ -32,6 +32,20 @@ Minor new features
 - DOS key remapping for the VT port now uses the same table as the DOS,
   DOSVGA,  and OS/2 ports.  This results in slightly simpler code,  and
   means a DOS VT port recognizes quite a few more keys.  4ce36296ad
+
+- Blinking and PDC_gotoyx() code is almost identical between the SDLn,
+  x11new,  GL,  WinGUI,  and framebuffer/DRM ports;  that code is now
+  in common/blink.c.  This allows the cursor to blink in all of those
+  ports and (in some cases) for the caret and hollow-box cursor styles
+  to be supported.  f06ab53f0a  f6657a39a5  fec5d8be50  9e3cde79ae
+  4c8d3a0398  9e3cde79ae
+
+- DOSVGA now supports ~16 million (2^24 + 256) colors and 1M (2^20)
+  color pairs,  similar to (and using the same underlying code as)
+  WinGUI,  SDLs,  GL,  framebuffer/DRM,  and x11new.  bd4cc9c616
+
+- DOSVGA Makefile revised to simplify use of DJGPP,  and to use full
+  warnings.  A few 'nuisance' warnings were corrected.  141b7f642b
 
 Bug fixes
 ---------
