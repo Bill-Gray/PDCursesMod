@@ -359,7 +359,7 @@ static int _process_mouse_event(void)
     if(viewport.h == 0) viewport.h = 1;
     mouse_x = (event.motion.x-viewport.x) * SP->cols / viewport.w;
     mouse_y = (event.motion.y-viewport.y) * SP->lines / viewport.h;
-    if(mouse_x < 0 || mouse_x >= COLS || mouse_y < 0 || mouse_y >= LINES)
+    if(mouse_x < 0 || mouse_x >= COLS || mouse_y < 0 || mouse_y >= SP->lines)
         return -1;
 
     SP->mouse_status.x = mouse_x;
@@ -514,8 +514,6 @@ int PDC_get_key(void)
     case SDL_TEXTINPUT:
         PDC_mouse_set();
         return _process_key_event();
-    case SDL_USEREVENT:
-        PDC_blink_text();
     }
 
     return -1;

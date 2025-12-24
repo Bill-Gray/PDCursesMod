@@ -48,5 +48,4 @@ extern int pdc_fheight, pdc_fwidth;  /* font height and width */
 extern int pdc_fthick;               /* thickness for highlights and
                                         rendered ACS glyphs */
 extern void PDC_pump_and_peep(void);
-extern void PDC_blink_text(void);
 extern SDL_Rect PDC_get_viewport(void);

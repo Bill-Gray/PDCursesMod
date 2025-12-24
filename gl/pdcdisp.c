@@ -4,6 +4,7 @@
 #include "glfuncs.h"
 
 #include <stdlib.h>
+#include <assert.h>
 #include <string.h>
 
 # ifdef PDC_WIDE
@@ -14,11 +15,10 @@
 
 # include "../common/acs_defs.h"
 # include "../common/pdccolor.h"
+# include "../common/blink.c"
 
 static chtype oldch = (chtype)(-1);    /* current attribute */
 static int foregr = -2, backgr = -2; /* current foreground, background */
-static bool blinked_off = FALSE;
-
 
 struct color_data
 {
@@ -598,40 +598,19 @@ static void _set_attr(chtype ch)
     }
 }
 
-/* draw a cursor at (y, x) */
-
-void PDC_gotoyx(int row, int col)
-{
-    int oldrow, oldcol;
-
-    PDC_LOG(("PDC_gotoyx() - called: row %d col %d from row %d col %d\n",
-             row, col, SP->cursrow, SP->curscol));
-
-    oldrow = SP->cursrow;
-    oldcol = SP->curscol;
-
-    /* clear the old cursor */
-
-    PDC_transform_line(oldrow, oldcol, 1, curscr->_y[oldrow] + oldcol);
-
-    if (SP->visibility)
-        draw_cursor(row, col, SP->visibility);
-    PDC_doupdate();
-}
-
-void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
+static void _new_packet( attr_t attr, const int lineno, const int x, const int len, const chtype *srcp)
 {
     int j;
     attr_t sysattrs = SP->termattrs;
-    bool blink = blinked_off && (attr & A_BLINK) && (sysattrs & A_BLINK);
+    const bool blink = SP->blink_state && (attr & A_BLINK) && (sysattrs & A_BLINK);
 
+    if( blink)
+        attr ^= A_REVERSE;
     _set_attr(attr);
 
     for (j = 0; j < len; j++)
     {
         chtype ch = srcp[j];
-
-        if (blink) ch = ' ';
 
         if( _is_altcharset( ch))
             ch = acs_map[ch & 0x7f];
@@ -648,16 +627,27 @@ void _new_packet(attr_t attr, int lineno, int x, int len, const chtype *srcp)
 
 void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
 {
-    attr_t old_attr, attr;
+    attr_t old_attr;
     int i, j;
+    chtype tch;
 
     PDC_LOG(("PDC_transform_line() - called: lineno=%d\n", lineno));
+    if( SP->drawing_cursor)
+    {
+        assert( len == 1);
+        tch = *srcp;
+        if( SP->drawing_cursor == 3)   /* hollow box */
+            tch ^= A_UNDERLINE | A_TOP | A_LEFT | A_RIGHT;
+        if( SP->drawing_cursor == 4)    /* caret */
+            tch ^= A_LEFT;
+        srcp = &tch;
+    }
 
     old_attr = *srcp & (A_ATTRIBUTES ^ A_ALTCHARSET);
 
     for (i = 1, j = 1; j < len; i++, j++)
     {
-        attr = srcp[i] & (A_ATTRIBUTES ^ A_ALTCHARSET);
+        const chtype attr = srcp[i] & (A_ATTRIBUTES ^ A_ALTCHARSET);
 
         if (attr != old_attr)
         {
@@ -670,56 +660,8 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
     }
 
     _new_packet(old_attr, lineno, x, i, srcp);
-}
-
-static Uint32 _blink_timer(Uint32 interval, void *param)
-{
-    SDL_Event event;
-
-    INTENTIONALLY_UNUSED_PARAMETER( param);
-    event.type = SDL_USEREVENT;
-    SDL_PushEvent(&event);
-    return(interval);
-}
-
-void PDC_blink_text(void)
-{
-    static SDL_TimerID blinker_id = 0;
-    int i, j, k;
-
-    oldch = (chtype)(-1);
-
-    if (!(SP->termattrs & A_BLINK))
-    {
-        SDL_RemoveTimer(blinker_id);
-        blinker_id = 0;
-    }
-    else if (!blinker_id)
-    {
-        blinker_id = SDL_AddTimer(500, _blink_timer, NULL);
-        blinked_off = TRUE;
-    }
-
-    blinked_off = !blinked_off;
-
-    for (i = 0; i < SP->lines; i++)
-    {
-        const chtype *srcp = curscr->_y[i];
-
-        for (j = 0; j < SP->cols; j++)
-            if (srcp[j] & A_BLINK)
-            {
-                k = j;
-                while (k < SP->cols && (srcp[k] & A_BLINK))
-                    k++;
-                PDC_transform_line(i, j, k - j, srcp + j);
-                j = k;
-            }
-    }
-
-    oldch = (chtype)(-1);
-
-    PDC_doupdate();
+    if( SP->drawing_cursor <= 2)
+        draw_cursor( lineno, x, SP->drawing_cursor);
 }
 
 void PDC_doupdate(void)
