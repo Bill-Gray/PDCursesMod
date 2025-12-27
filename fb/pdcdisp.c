@@ -343,7 +343,6 @@ order from what the other platforms expect : */
 void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
 {
     const int font_char_size_in_bytes = (PDC_font_info.width + 7) >> 3;
-    int cursor_to_draw = 0;
     const int line_len = PDC_fb.line_length * 8 / PDC_fb.bits_per_pixel;
     uint8_t scratch[300];
     bool is_fullwidth = FALSE;
@@ -358,21 +357,6 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
     assert( lineno >= 0);
     assert( lineno < SP->lines);
     assert( len > 0);
-    if( lineno == SP->cursrow && x <= SP->curscol && x + len > SP->curscol)
-    {
-        cursor_to_draw = (SP->blink_state ? SP->visibility & 0xff : (SP->visibility >> 8));
-        if( cursor_to_draw)   /* if there's a cursor appearing in this run of text... */
-        {
-            if( x < SP->curscol)  /* ...draw the part _before_ the cursor (if any)... */
-                PDC_transform_line( lineno, x, SP->curscol - x, srcp);
-            len -= SP->curscol - x;
-            srcp += SP->curscol - x;
-            x = SP->curscol;
-            if( len > 1)          /* ...then the part _after the cursor (if any)... */
-                PDC_transform_line( lineno, x + 1, len - 1, srcp + 1);
-            len = 1;    /* ... then fall through and just draw the cell with the cursor */
-        }
-    }
     fullwidth_offset = 0;
     if( x + len < SP->cols)     /* check for fullwidth character at end */
       if( _is_fullwidth_glyph( srcp[len - 1]))
@@ -389,6 +373,7 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
         int run_len = 0, x1, y1;
         PACKED_RGB fg, bg;
         long video_offset, next_glyph;
+        bool reverse = (SP->drawing_cursor == 2);
 
         assert( PDC_orientation >= 0 && PDC_orientation < 4);
         switch( PDC_orientation)
@@ -425,6 +410,8 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
             bg = 0;
         bg = SWAP_RED_AND_BLUE( bg);
         if( *srcp & A_REVERSE)
+            reverse = !reverse;
+        if( reverse)
         {
             PACKED_RGB temp_rgb = fg;
 
@@ -441,7 +428,7 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
             x += run_len;
             while( run_len--)
             {
-                const uint8_t *fontptr = _get_glyph( *srcp, cursor_to_draw, scratch);
+                const uint8_t *fontptr = _get_glyph( *srcp, SP->drawing_cursor, scratch);
                 uint32_t *fb_ptr = tptr;
                 int i, j;
 
@@ -489,7 +476,7 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
             bg_idx = (uint8_t)integer_bg_idx;
             for( i = 0; i < run_len; i++)
             {
-                const uint8_t *fontptr = _get_glyph( *srcp, cursor_to_draw, scratch);
+                const uint8_t *fontptr = _get_glyph( *srcp, SP->drawing_cursor, scratch);
                 uint8_t *fb_ptr = tptr;
                 int k, j;
 
