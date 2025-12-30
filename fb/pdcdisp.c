@@ -79,12 +79,8 @@ static void _add_combining_character_glyph( uint8_t *glyph, const int code_point
 
 extern int PDC_orientation;
 
-#define LINE_ATTRIBS (WA_UNDERLINE | WA_TOP | WA_LEFT | WA_RIGHT | WA_STRIKEOUT)
-
-#define LOC_UNDERLINE      1
-#define LOC_RIGHT          2
-#define LOC_TOP            4
-#define LOC_LEFT           8
+#define SIDE_LINE_ATTRIBS (A_UNDERLINE | A_TOP | A_LEFT | A_RIGHT)
+#define LINE_ATTRIBS (SIDE_LINE_ATTRIBS | A_STRIKEOUT)
 
 /* Usually,  we can just return a pointer to the glyph data from
 the PSF file (using _get_raw_glyph_bytes()).  If the glyph has to
@@ -125,7 +121,7 @@ static const uint8_t *_get_glyph( const chtype ch, const int cursor_type,
 #endif
     {
         const int font_char_size_in_bytes = (PDC_font_info.width + 7) >> 3;
-        int i, line_mask;
+        int i;
 
         memcpy( scratch, rval, PDC_font_info.charsize);
         rval = (const uint8_t *)scratch;
@@ -152,18 +148,13 @@ static const uint8_t *_get_glyph( const chtype ch, const int cursor_type,
             _add_combining_character_glyph( scratch, (int)newchar);
         }
 #endif
-        if( cursor_type > 0 && cursor_type < 8)
+        if( cursor_type == 1 || cursor_type >= 5)
         {
             const int cursors[8] = { 0, '_', FULL_BLOCK, 0,   /*outlined block */
-                           LEFT_HALF_BLOCK, LOWER_HALF_BLOCK, 0, '+' };
+                           LEFT_HALF_BLOCK, LOWER_HALF_BLOCK, CENTERED_SQUARE, '+' };
 
             _add_combining_character_glyph( scratch, cursors[cursor_type]);
         }
-        line_mask = (ch & WA_UNDERLINE ? LOC_UNDERLINE : 0)
-                           | (ch & WA_LEFT ? LOC_LEFT : 0)
-                           | (ch & WA_TOP ? LOC_TOP : 0)
-                           | (ch & WA_RIGHT ? LOC_RIGHT : 0);
-        line_mask = (line_mask >> PDC_orientation) | (line_mask << (4 - PDC_orientation));
         if( ch & WA_STRIKEOUT)
         {
             if( PDC_orientation & 1)   /* rotated left or right */
@@ -178,15 +169,15 @@ static const uint8_t *_get_glyph( const chtype ch, const int cursor_type,
                 memset( scratch + (PDC_font_info.height / 2) * font_char_size_in_bytes,
                         0xff, font_char_size_in_bytes);
         }
-        if( line_mask & LOC_TOP)
+        if( ch & WA_TOP)
             memset( scratch, 0xff, font_char_size_in_bytes);
-        if( line_mask & LOC_UNDERLINE)
+        if( ch & WA_UNDERLINE)
             memset( scratch + (PDC_font_info.height - 1) * font_char_size_in_bytes,
                         0xff, font_char_size_in_bytes);
-        if( line_mask & LOC_LEFT)
+        if( ch & WA_LEFT)
             for( i = 0; i < (int)PDC_font_info.height; i++)
                scratch[i * font_char_size_in_bytes] |= 0x80;
-        if( line_mask & LOC_RIGHT)
+        if( ch & WA_RIGHT)
         {
             scratch += font_char_size_in_bytes - 1;
             for( i = 0; i < (int)PDC_font_info.height; i++)
@@ -194,6 +185,23 @@ static const uint8_t *_get_glyph( const chtype ch, const int cursor_type,
         }
     }
     return( rval);
+}
+
+static const uint8_t *_get_rotated_glyph( chtype ch, const int cursor_type,
+                                 uint8_t *scratch)
+{
+   if( PDC_orientation && (ch & SIDE_LINE_ATTRIBS))
+      {
+      chtype new_ch = ch & ~SIDE_LINE_ATTRIBS;
+      size_t i;
+      const chtype masks[4] = { A_TOP, A_RIGHT, A_UNDERLINE, A_LEFT};
+
+      for( i = 0; i < 4; i++)
+         if( ch & masks[i])
+            new_ch |= masks[(i + PDC_orientation) & 3];
+      ch = new_ch;
+      }
+   return( _get_glyph( ch, cursor_type, scratch));
 }
 
 #ifdef HAVE_MOUSE
@@ -219,7 +227,6 @@ const unsigned char cursor_data[117] = { 19, 1, 1,
 
 static void _draw_pixel( int xpix, int ypix, const int black)
 {
-    extern int PDC_orientation;
     const int line_len = PDC_fb.line_length * 8 / PDC_fb.bits_per_pixel;
     int tval;
     long video_offset;
@@ -346,6 +353,7 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
     const int line_len = PDC_fb.line_length * 8 / PDC_fb.bits_per_pixel;
     uint8_t scratch[300];
     bool is_fullwidth = FALSE;
+    chtype cursor_ch;
 #ifdef HAVE_MOUSE
     const int t_width = _orig_font_width( );
     const int left = x * t_width, right = (x + len) * t_width;
@@ -358,6 +366,13 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
     assert( lineno < SP->lines);
     assert( len > 0);
     fullwidth_offset = 0;
+    if( SP->drawing_cursor >= 2 && SP->drawing_cursor <= 4)
+    {           /* blink full cell, outlined box, or caret */
+        const chtype flags[3] = { A_REVERSE, SIDE_LINE_ATTRIBS, A_LEFT };
+
+        cursor_ch = *srcp ^ flags[SP->drawing_cursor - 2];
+        srcp = &cursor_ch;
+    }
     if( x + len < SP->cols)     /* check for fullwidth character at end */
       if( _is_fullwidth_glyph( srcp[len - 1]))
          {
@@ -373,7 +388,6 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
         int run_len = 0, x1, y1;
         PACKED_RGB fg, bg;
         long video_offset, next_glyph;
-        bool reverse = (SP->drawing_cursor == 2);
 
         assert( PDC_orientation >= 0 && PDC_orientation < 4);
         switch( PDC_orientation)
@@ -410,8 +424,6 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
             bg = 0;
         bg = SWAP_RED_AND_BLUE( bg);
         if( *srcp & A_REVERSE)
-            reverse = !reverse;
-        if( reverse)
         {
             PACKED_RGB temp_rgb = fg;
 
@@ -428,7 +440,7 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
             x += run_len;
             while( run_len--)
             {
-                const uint8_t *fontptr = _get_glyph( *srcp, SP->drawing_cursor, scratch);
+                const uint8_t *fontptr = _get_rotated_glyph( *srcp, SP->drawing_cursor, scratch);
                 uint32_t *fb_ptr = tptr;
                 int i, j;
 
@@ -476,7 +488,7 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
             bg_idx = (uint8_t)integer_bg_idx;
             for( i = 0; i < run_len; i++)
             {
-                const uint8_t *fontptr = _get_glyph( *srcp, SP->drawing_cursor, scratch);
+                const uint8_t *fontptr = _get_rotated_glyph( *srcp, SP->drawing_cursor, scratch);
                 uint8_t *fb_ptr = tptr;
                 int k, j;
 
