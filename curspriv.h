@@ -122,14 +122,6 @@ int     PDC_wscrl(WINDOW *win, const int top, const int bottom, int n);
    #define IS_HIGH_SURROGATE( c) ((c) >= 0xd800 && (c) < 0xdc00)
 #endif
 
-#ifdef CHTYPE_32
-   #define MAX_UNICODE 0xffff
-#else
-   #define MAX_UNICODE 0x110000
-#endif
-
-#define DUMMY_CHAR_NEXT_TO_FULLWIDTH  MAX_UNICODE
-
 int     PDC_mbtowc(wchar_t *, const char *, size_t);
 size_t  PDC_mbstowcs(wchar_t *, const char *, size_t);
 size_t  PDC_wcstombs(char *, const wchar_t *, size_t);
@@ -139,6 +131,13 @@ int PDC_expand_combined_characters( const cchar_t c, cchar_t *added);
 #endif
 #endif
 
+#if PDC_CHARTEXT_BITS == 21
+   #define MAX_UNICODE 0x110000
+#else
+   #define MAX_UNICODE 0xffff
+#endif
+
+#define DUMMY_CHAR_NEXT_TO_FULLWIDTH  MAX_UNICODE
 
 #ifdef PDCDEBUG
 # define PDC_LOG(x) if (SP && SP->dbfp) PDC_debug x

@@ -183,7 +183,7 @@ void PDC_transform_line_sliced( int lineno, int x, int len, const chtype *srcp)
             SP->drawing_cursor = vis;
         }
     }
-#ifdef DUMMY_CHAR_NEXT_TO_FULLWIDTH
+#ifdef PDC_WIDE
     if( x && (*srcp & A_CHARTEXT) == DUMMY_CHAR_NEXT_TO_FULLWIDTH)
     {                   /* starting on a dummy next to a fullwidth */
         x--;
