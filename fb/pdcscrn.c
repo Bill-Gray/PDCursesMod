@@ -18,11 +18,7 @@ struct video_info PDC_fb;
 #else       /* using Linux framebuffer */
     #include <linux/fb.h>
 #endif
-#ifdef PDC_WIDE
-   #include "../common/psf_wide.h"
-#else
-   #include "../dosvga/font.h"
-#endif
+#include "../common/psf_wide.h"
 
 static struct termios orig_term;
 
