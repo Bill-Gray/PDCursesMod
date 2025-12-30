@@ -311,5 +311,5 @@ ripoff.exe:     $(testdir)\ripoff.c
 show_col.exe:   $(testdir)\show_col.c
    $(TESTBUILD)
 
-naptest.exe:    naptest.c
+naptest.exe:    $(testdir)\naptest.c
    $(TESTBUILD) $(LIBCURSES)
