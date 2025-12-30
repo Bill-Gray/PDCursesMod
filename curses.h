@@ -45,7 +45,7 @@ Defined by this header:
 #define PDC_VER_CHANGE   3
 #define PDC_VER_YEAR   2025
 #define PDC_VER_MONTH    12
-#define PDC_VER_DAY      24
+#define PDC_VER_DAY      30
 
 #define PDC_STRINGIZE( x) #x
 #define PDC_stringize( x) PDC_STRINGIZE( x)
@@ -419,7 +419,7 @@ Text Attributes
 
 By default,  PDCursesMod uses 64-bit integers for its chtype.  All chtypes
 have bits devoted to character data,  attribute data,  and color pair data.
-There are three configurations supported :
+There are four configurations supported :
 
 Default, 64-bit chtype,  both wide- and 8-bit character builds:
 
@@ -470,10 +470,9 @@ and strikeout attributes; a fourth bit is reserved.
 
 Default chtypes have enough character bits to support the full range of
 Unicode,  all attributes,  and 2^20 = 1048576 color pairs.  Note,  though,
-that as of 2022 Jun 17,  only WinGUI,  VT,  X11,  Linux framebuffer,  OpenGL,
-and SDLn have COLOR_PAIRS = 1048576.  Other platforms (DOSVGA,  Plan9, WinCon)
-may join them.  Some (DOS,  OS/2) simply do not have full-color
-capability.
+that as of 2025 Dec 30,  only WinGUI,  VT,  X11 and X11new,  Linux
+framebuffer,  DOSVGA,  OpenGL,  and SDLn have COLOR_PAIRS = 1048576.
+Plan9 and WinCon may join them.  DOS and OS/2 lack full-color capability.
 
 **man-end****************************************************************/
 
