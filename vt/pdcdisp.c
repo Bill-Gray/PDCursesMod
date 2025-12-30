@@ -349,13 +349,15 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
 #else
            bytes_out = PDC_wc_to_utf8( obuff, (wchar_t)ch);
 #endif
+#ifdef PDC_WIDE
+           while( count < len && !((srcp[0] ^ srcp[count]) & ~A_CHARTEXT)
+                        && (ch = (srcp[count] & A_CHARTEXT)) < (int)MAX_UNICODE)
+           {
+#else
            while( count < len && !((srcp[0] ^ srcp[count]) & ~A_CHARTEXT))
            {
                ch = srcp[count] & A_CHARTEXT;
-#ifdef PDC_WIDE
-               assert( ch < MAX_UNICODE);
 #endif
-
                if( _is_altcharset( srcp[count]))
                   ch = (int)acs_map[ch & 0x7f];
 #ifdef DOS
