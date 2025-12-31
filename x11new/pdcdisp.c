@@ -172,11 +172,11 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
              {
                  if( attr_out & A_LEFT)
                     XDrawLine( dis, win, curr_gc, xpix, ypix - PDC_font_height,
-                                                  xpix, ypix);
+                                                  xpix, ypix - 1);
                  xpix += PDC_font_width - 1;
                  if( attr_out & A_RIGHT)
                     XDrawLine( dis, win, curr_gc, xpix, ypix - PDC_font_height,
-                                                  xpix, ypix);
+                                                  xpix, ypix - 1);
                  xpix++;
              }
        }
