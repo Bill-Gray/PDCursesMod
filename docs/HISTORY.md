@@ -1,8 +1,8 @@
 Generally speaking,  this history mentions only the more significant
 changes.  See the git log for full details.
 
-Current PDCursesMod - 2026 January 06
-=====================================
+PDCursesMod 4.5.4 - 2026 January 07
+===================================
 
 Minor new features
 ------------------
