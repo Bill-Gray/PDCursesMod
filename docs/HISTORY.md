@@ -1,8 +1,8 @@
 Generally speaking,  this history mentions only the more significant
 changes.  See the git log for full details.
 
-Current PDCursesMod - 2025 December 24
-=======================================
+Current PDCursesMod - 2026 January 06
+=====================================
 
 Minor new features
 ------------------
@@ -69,6 +69,10 @@ Bug fixes
 
 - WinCon : a typo prevented mouse wheel events from working at all.
   Fix provided by Jordan Hemming.  93dba3adf6
+
+- Fullwidth characters are now shown correctly for 32-bit chtypes (if they
+  are supported on that platform in the first place,  and the font
+  actually has glyphs for them).  3d6bc63caa
 
 PDCursesMod 4.5.3 - 2025 August 11
 ==================================
