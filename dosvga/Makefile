@@ -22,6 +22,7 @@ PDCURSES_DOS_H	= $(osdir)/pdcdos.h
 
 CC		= $(PREFIX)gcc
 STRIP	= $(PREFIX)strip
+TESTS += naptest$(E)
 
 CFLAGS  = -Wall -Wextra -Wshadow -Werror -pedantic
 ifeq ($(DEBUG),Y)
@@ -30,6 +31,14 @@ ifeq ($(DEBUG),Y)
 else
 	CFLAGS  += -O2
 	LDFLAGS =
+endif
+
+ifdef CHTYPE_32
+	CFLAGS += -DCHTYPE_32
+endif
+
+ifdef CHTYPE_16
+	CFLAGS += -DCHTYPE_16
 endif
 
 CFLAGS += -I$(PDCURSES_SRCDIR)
