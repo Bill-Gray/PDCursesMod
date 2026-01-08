@@ -358,7 +358,7 @@ int wchgat(WINDOW *win, int n, attr_t attr, short color, const void *opts)
     if (!win)
         return ERR;
 
-    newattr = (attr & A_ATTRIBUTES) | COLOR_PAIR(integer_color_pair);
+    newattr = (attr & (A_ATTRIBUTES & ~A_COLOR)) | COLOR_PAIR(integer_color_pair);
 
     startpos = win->_curx;
     endpos = ((n < 0) ? win->_maxx : min(startpos + n, win->_maxx)) - 1;
