@@ -84,6 +84,11 @@ if(PDC_BUILD_SHARED)
         set_target_properties(${PDCURSE_PROJ} PROPERTIES MACOSX_RPATH 1)
     endif()
 
+    if(APPLE OR UNIX)
+        target_compile_definitions(${PDCURSE_PROJ} PRIVATE PDC_ENABLE_VISIBILITY)
+        set_target_properties(${PDCURSE_PROJ} PROPERTIES C_VISIBILITY_PRESET hidden)
+    endif()
+
     if(${PROJECT_NAME} STREQUAL "sdl2")
         if(PDC_WIDE OR PDC_UTF8)
             target_link_libraries(${PDCURSE_PROJ} ${EXTRA_LIBS}
