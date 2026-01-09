@@ -130,5 +130,11 @@ macro (demo_app dir targ)
     add_dependencies(${bin_name} ${PDCURSE_PROJ})
     set_target_properties(${bin_name} PROPERTIES OUTPUT_NAME ${targ})
 
+    if(APPLE)
+        set_target_properties(${bin_name} PROPERTIES INSTALL_RPATH "@executable_path/../../lib/${PROJECT_NAME}")
+    elseif(UNIX)
+        set_target_properties(${bin_name} PROPERTIES INSTALL_RPATH "$ORIGIN/../../lib/${PROJECT_NAME}")
+    endif()
+
     install(TARGETS ${bin_name} RUNTIME DESTINATION ${PDCURSES_DIST}/bin/${PROJECT_NAME} COMPONENT applications)
 endmacro ()
