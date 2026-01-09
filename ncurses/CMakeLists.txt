@@ -6,8 +6,18 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 if(APPLE)
-    # look for brew version first
-    set(CMAKE_LIBRARY_PATH /usr/local/opt/ncurses/lib)
+    # default location for brew on intel macos
+    set(CMAKE_LIBRARY_PATH "/usr/local/opt/ncurses/lib")
+    find_program(BREW_PROGRAM brew)
+    if(BREW_PROGRAM)
+        execute_process(COMMAND "${BREW_PROGRAM}" --prefix OUTPUT_VARIABLE BREW_PREFIX)
+        string(STRIP "${BREW_PREFIX}" BREW_PREFIX)
+        if(IS_DIRECTORY "${BREW_PREFIX}")
+            message(STATUS "Found brew: ${BREW_PREFIX}")
+            # look for brew version first
+            set(CMAKE_LIBRARY_PATH "${BREW_PREFIX}/opt/ncurses/lib")
+        endif()
+    endif()
 endif()
 
 set(CURSES_NEED_WIDE PDC_WIDE)
