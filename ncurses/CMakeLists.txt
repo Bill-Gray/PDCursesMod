@@ -6,6 +6,8 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 if(APPLE)
+    # default location for brew on intel macos
+    set(CMAKE_LIBRARY_PATH "/usr/local/opt/ncurses/lib")
     find_program(BREW_PROGRAM brew)
     if(BREW_PROGRAM)
         execute_process(COMMAND "${BREW_PROGRAM}" --prefix OUTPUT_VARIABLE BREW_PREFIX)
