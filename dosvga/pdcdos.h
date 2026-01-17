@@ -78,18 +78,8 @@ struct PDC_video_state
     unsigned font_width;     /* Width of font in pixels */
     unsigned font_height;    /* Height of font in pixels */
     unsigned underline;      /* Where to draw the underline */
-
-    /* Cursor state */
-    bool cursor_visible;
-    int cursor_row;
-    int cursor_col;
-    unsigned char cursor_start;
-    unsigned char cursor_end;
 };
 extern struct PDC_video_state PDC_state;
-
-extern void PDC_private_cursor_off(void);
-extern void PDC_private_cursor_on(int row, int col);
 
 #ifdef __DJGPP__        /* Note: works only in plain DOS... */
 # define PDC_FLAT 1

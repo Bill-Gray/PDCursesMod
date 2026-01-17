@@ -10,6 +10,7 @@
 
 #include "../common/acs_defs.h"
 #include "../common/pdccolor.h"
+#include "../common/blink.c"
 
 #ifdef __DJGPP__
 #include <go32.h>
@@ -41,15 +42,6 @@ static void _video_read(void *data, unsigned long addr, size_t size);
 static void _video_write(unsigned long addr, const void *data, size_t size);
 static unsigned _set_window(unsigned window, unsigned long addr);
 
-/* position hardware cursor at (y, x) */
-
-void PDC_gotoyx(int row, int col)
-{
-    if (PDC_state.cursor_visible)
-        PDC_private_cursor_off();
-    PDC_private_cursor_on(row, col);
-}
-
 /* Draw a run of characters with the same colors */
 /* Used with 4 bit pixels only */
 
@@ -76,6 +68,21 @@ static void _new_packet(unsigned long colors, int lineno, int x, int len, const 
 
     /* Which plane we're writing */
     unsigned plane;
+    unsigned cursor_line = PDC_state.font_height;
+
+    if( 1 == SP->drawing_cursor)   /* cursor is bottom quarter of glyph */
+        cursor_line -= cursor_line / 4;
+    else if( 2 == SP->drawing_cursor)   /* cursor is full block  */
+        cursor_line = 0;
+    else if( 5 == SP->drawing_cursor)   /* cursor is bottom half of glyph */
+        cursor_line /= 2;
+
+    if( (*srcp & A_BLINK) && SP->blink_state && (SP->termattrs & A_BLINK))
+    {
+        fore ^= back;
+        back ^= fore;
+        fore ^= back;
+    }
 
     /* Compute these just once */
     for (i = 0; i < len; ++i)
@@ -125,6 +132,8 @@ static void _new_packet(unsigned long colors, int lineno, int x, int len, const 
                 unsigned num_bytes = 0;
                 int col;
 
+                if( line == cursor_line)
+                    invert ^= 0xff;
                 /* Loop once per column */
                 cp = addr;
                 for (col = 0; col < len; ++col)
@@ -378,7 +387,7 @@ we need to swap bits 0-7 with those in 16-23.   */
 
 /* PDC_transform_line for 8, 15, 16, 24 and 32 bit pixels */
 
-static void _transform_line_8(int lineno, int x, int len, const chtype *srcp)
+static void _transform_line_8( const int lineno, const int x, const int len, const chtype *srcp)
 {
     unsigned char bytes[1024];
     unsigned long addr = _address_8(lineno, x);
@@ -399,7 +408,14 @@ static void _transform_line_8(int lineno, int x, int len, const chtype *srcp)
     unsigned char r_mask = 0x80 >> ((PDC_state.font_width - 1) % 8);
 
     int col;
-    unsigned line;
+    unsigned line, cursor_line = PDC_state.font_height;
+
+    if( 1 == SP->drawing_cursor)   /* cursor is bottom quarter of glyph */
+        cursor_line -= cursor_line / 4;
+    else if( 2 == SP->drawing_cursor)   /* cursor is full block  */
+        cursor_line = 0;
+    else if( 5 == SP->drawing_cursor)   /* cursor is bottom half of glyph */
+        cursor_line /= 2;
 
     /* Compute basic glyph data only once per character */
     for (col = 0; col < len; col++)
@@ -472,10 +488,7 @@ static void _transform_line_8(int lineno, int x, int len, const chtype *srcp)
                     byte |= r_mask;
                 if (line == PDC_state.underline)
                     byte |= glyphs[col].ul_mask;
-                if (PDC_state.cursor_visible
-                &&  lineno == PDC_state.cursor_row
-                &&  col + x == PDC_state.cursor_col
-                &&  PDC_state.cursor_start <= line && line <= PDC_state.cursor_end)
+                if( line > cursor_line)
                     byte ^= 0xFF;
 
                 /* Number of pixels to render on this pass */
@@ -544,7 +557,7 @@ static unsigned long _get_colors(chtype glyph)
 
     if ((attr & A_BOLD) != 0 && fore < 16)
         fore |= 8;
-    if ((attr & A_BLINK) != 0 && back < 16)
+    if ((attr & A_BLINK) != 0 && back < 16 && !(SP->termattrs & A_BLINK))
         back |= 8;
 
     if (attr & A_REVERSE)
@@ -556,41 +569,6 @@ static unsigned long _get_colors(chtype glyph)
 
     /* Return them as a pair */
     return ((unsigned long)back << 16) | fore;
-}
-
-void PDC_private_cursor_off(void)
-{
-    /* This gets called before atrtab is set up; avoid a null dereference */
-    if (!SP || !SP->pairs)
-        return;
-
-    PDC_state.cursor_visible = FALSE;
-    if (PDC_state.cursor_row < LINES
-    &&  PDC_state.cursor_col < COLS)
-    {
-        static const chtype space = ' ';
-
-        PDC_transform_line(PDC_state.cursor_row, PDC_state.cursor_col, 1,
-                (curscr && curscr->_y)
-                        ? &curscr->_y[PDC_state.cursor_row][PDC_state.cursor_col]
-                        : &space);
-    }
-}
-
-void PDC_private_cursor_on(int row, int col)
-{
-    PDC_state.cursor_visible = TRUE;
-    PDC_state.cursor_row = row;
-    PDC_state.cursor_col = col;
-    if (row < LINES && col < COLS)
-    {
-        static const chtype space = ' ';
-
-        PDC_transform_line(PDC_state.cursor_row, PDC_state.cursor_col, 1,
-                (curscr && curscr->_y)
-                        ? &curscr->_y[PDC_state.cursor_row][PDC_state.cursor_col]
-                        : &space);
-    }
 }
 
 static unsigned long _address_4(int row, int col)

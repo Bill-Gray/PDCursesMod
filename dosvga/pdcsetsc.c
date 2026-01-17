@@ -40,34 +40,11 @@ pdcsetsc
 
 int PDC_curs_set(int visibility)
 {
-    int ret_vis, start, end;
+    const int ret_vis = SP->visibility;
 
     PDC_LOG(("PDC_curs_set() - called: visibility=%d\n", visibility));
 
-    ret_vis = SP->visibility;
     SP->visibility = visibility;
-
-    switch (visibility)
-    {
-        case 0:  /* invisible */
-            start = 1;
-            end = 0;
-            break;
-        case 2:  /* highly visible */
-            start = 0;   /* full-height block */
-            end = PDC_state.font_height - 1;
-            break;
-        default:  /* normal visibility */
-            start = SP->orig_cursor >> 8;
-            end =   SP->orig_cursor & 0xFF;
-    }
-
-    PDC_private_cursor_off();
-    PDC_state.cursor_start = start;
-    PDC_state.cursor_end = end;
-    if (visibility != 0)
-        PDC_private_cursor_on(PDC_state.cursor_row, PDC_state.cursor_col);
-
     return ret_vis;
 }
 
@@ -79,7 +56,20 @@ void PDC_set_title(const char *title)
 
 int PDC_set_blink(bool blinkon)
 {
-    return blinkon ? ERR : OK;
+    if (!SP)
+        return ERR;
+    else
+    {
+        const attr_t prev_termattrs = SP->termattrs;
+
+        if( blinkon)
+            SP->termattrs |= A_BLINK;
+        else
+            SP->termattrs &= ~A_BLINK;
+        if( prev_termattrs != SP->termattrs)
+           curscr->_clear = TRUE;
+        return OK;
+    }
 }
 
 int PDC_set_bold(bool boldon)

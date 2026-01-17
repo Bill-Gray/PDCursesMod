@@ -184,7 +184,7 @@ int PDC_scr_open(void)
     SP->audible = TRUE;
 
     SP->mono = FALSE;
-    SP->termattrs = A_COLOR | A_REVERSE | A_UNDERLINE;
+    SP->termattrs = A_COLOR | A_REVERSE | A_UNDERLINE | A_BLINK;
 
     SP->_preserve = FALSE;
 

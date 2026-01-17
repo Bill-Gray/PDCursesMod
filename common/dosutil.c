@@ -3,6 +3,10 @@
 /* Common pieces between DOS,  DOSVGA,  and VT built for DOS
 'pdcutil' functions */
 
+#ifdef CHECK_FOR_BLINKING
+void PDC_check_for_blinking( void);
+#endif
+
 void PDC_beep(void)
 {
     PDCREGS regs;
@@ -49,6 +53,10 @@ void PDC_napmsl( long ms)
         long ticks_elapsed = getdosmemdword(0x46c) - tick0;
         PDCREGS regs;
 
+#ifdef CHECK_FOR_BLINKING
+        if( SP)
+            PDC_check_for_blinking( );
+#endif
         if( ticks_elapsed < 0L)     /*  midnight rollover */
             ticks_elapsed += MAX_TICK;
         if (ticks_elapsed >= ticks_to_wait)

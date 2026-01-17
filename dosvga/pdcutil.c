@@ -1,5 +1,7 @@
 /* PDCurses */
 
+#define CHECK_FOR_BLINKING
+
 #include "pdcdos.h"
 #include "../common/dosutil.c"
 
