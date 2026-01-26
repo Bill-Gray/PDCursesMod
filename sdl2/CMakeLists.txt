@@ -39,10 +39,10 @@ macro (sdl2_app dir targ)
     endif()
 
     if(PDC_WIDE OR PDC_UTF8)
-        target_link_libraries(${bin_name} ${PDCURSE_PROJ} ${EXTRA_LIBS}
+        target_link_libraries(${bin_name} PUBLIC ${PDCURSE_PROJ} ${EXTRA_LIBS}
             "${SDL2_LIBRARIES};${SDL2_TTF_LIBRARY};${FT2_LIBRARY};${ZLIB_LIBRARY};${SDL2_DEP_LIBRARIES}")
     else()
-        target_link_libraries(${bin_name} ${PDCURSE_PROJ} ${EXTRA_LIBS}
+        target_link_libraries(${bin_name} PUBLIC ${PDCURSE_PROJ} ${EXTRA_LIBS}
         "${SDL2_LIBRARIES};${SDL2_TTF_DEP_LIBRARIES};${SDL2_DEP_LIBRARIES}")
     endif()
 
