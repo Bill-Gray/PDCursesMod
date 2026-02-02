@@ -274,7 +274,7 @@ static int _int32_to_wchar_array( wchar_t *obuff, const int obuffsize, const int
 int getcchar(const cchar_t *wcval, wchar_t *wch, attr_t *attrs,
              short *color_pair, void *opts)
 {
-    int32_t c[20];
+    int32_t c[CCHARW_MAX];
     int n = 0;
 
     assert( wcval);
@@ -285,7 +285,7 @@ int getcchar(const cchar_t *wcval, wchar_t *wch, attr_t *attrs,
             fullwidth character to its left.  If c[0] > 0x110001,  it's
             a marker for a combining character string. */
 #ifdef USING_COMBINING_CHARACTER_SCHEME
-    while( n < 10 && c[n] >= COMBINED_CHAR_START)
+    while( n < CCHARW_MAX - 1 && c[n] >= COMBINED_CHAR_START)
     {
         cchar_t added;
 
@@ -308,7 +308,7 @@ int getcchar(const cchar_t *wcval, wchar_t *wch, attr_t *attrs,
             c[i] = c[j];
             c[j] = swap_val;
         }
-        _int32_to_wchar_array( wch, 20, c);
+        _int32_to_wchar_array( wch, CCHARW_MAX, c);
         assert( attrs);
         assert( color_pair);
         if (!attrs || !color_pair)
@@ -325,17 +325,18 @@ int getcchar(const cchar_t *wcval, wchar_t *wch, attr_t *attrs,
 int setcchar(cchar_t *wcval, const wchar_t *wch, const attr_t attrs,
              short color_pair, const void *opts)
 {
-    int32_t ochar[20], rval;
+    int32_t ochar[CCHARW_MAX], rval;
+    const int integer_color_pair = (opts ? *(int *)opts : (int)color_pair);
 #ifdef USING_COMBINING_CHARACTER_SCHEME
     int i;
 #endif
 
-    const int integer_color_pair = (opts ? *(int *)opts : (int)color_pair);
     assert( wcval);
     assert( wch);
     if (!wcval || !wch)
         return ERR;
-    _wchar_to_int32_array( ochar, 20, wch);
+    if( _wchar_to_int32_array( ochar, CCHARW_MAX, wch) < 0)
+        return ERR;
     rval = ochar[0];
          /* If len_out > 1,  we have combining characters.  See */
          /* 'addch.c' for a discussion of how we handle those.  */

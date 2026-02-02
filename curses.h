@@ -45,7 +45,7 @@ Defined by this header:
 #define PDC_VER_CHANGE   4
 #define PDC_VER_YEAR   2026
 #define PDC_VER_MONTH   01
-#define PDC_VER_DAY     07
+#define PDC_VER_DAY     31
 
 #define PDC_STRINGIZE( x) #x
 #define PDC_stringize( x) PDC_STRINGIZE( x)
@@ -148,6 +148,7 @@ typedef unsigned char bool;
    #define PDC_LONG_MMASK
    #ifdef PDC_WIDE
       #define USING_COMBINING_CHARACTER_SCHEME
+      #define CCHARW_MAX   20
    #endif
 #endif
 
