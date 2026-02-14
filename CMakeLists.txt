@@ -5,9 +5,9 @@ if(NOT CMAKE_BUILD_TYPE)
     message(STATUS "CMAKE_BUILD_TYPE not set, defaulting to MinSizeRel.")
 endif()
 
-set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/cmake")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-include (get_version)
+include(get_version)
 project(pdcurses VERSION "${CURSES_VERSION}" LANGUAGES C)
 
 if(MSVC)
@@ -47,21 +47,17 @@ elseif(PDC_DOSVT_BUILD) # currently requires a unique toolchain file
 elseif(PDC_OS2_BUILD) # currently requires a unique toolchain file
 
     add_subdirectory(os2)
-    
+
 else()
 
     add_subdirectory(ncurses)
-    
+
     if(PDC_SDL2_BUILD)
-    
         add_subdirectory(sdl2)
-        
     endif()
 
     if(PDC_GL_BUILD)
-    
         add_subdirectory(gl)
-        
     endif()
 
     if(UNIX)
@@ -69,13 +65,11 @@ else()
     endif()
 
     if(WIN32)
-    
         add_subdirectory(wincon)
         add_subdirectory(wingui)
         add_subdirectory(vt)
-        
     endif()
-   
+
 endif()
 
 add_custom_target(uninstall "${CMAKE_COMMAND}" -P "${CMAKE_SOURCE_DIR}/cmake/make_uninstall.cmake")
