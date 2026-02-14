@@ -86,6 +86,10 @@ ifdef CHTYPE_32
 	CFLAGS += -DCHTYPE_32
 endif
 
+ifdef CHTYPE_16
+	CFLAGS += -DCHTYPE_16
+endif
+
 LIBNAME=pdcurses
 DLLNAME=pdcurses
 
