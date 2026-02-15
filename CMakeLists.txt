@@ -78,6 +78,8 @@ else()
    
 endif()
 
+install(FILES curses.h panel.h DESTINATION ${CMAKE_BUILD_TYPE}/include)
+
 add_custom_target(uninstall "${CMAKE_COMMAND}" -P "${CMAKE_SOURCE_DIR}/cmake/make_uninstall.cmake")
 
 set(CPACK_COMPONENTS_ALL applications)
