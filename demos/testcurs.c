@@ -1557,14 +1557,14 @@ void attrTest(WINDOW *win)
     mvaddstr(tmarg + 15, col1, "A_STRIKEOUT");
 #endif
 
-    attr_set( WA_TOP, 0, NULL);
+    (void)attr_set( WA_TOP, 0, NULL);
     mvaddstr(tmarg + 15, col2, "A_TOP");
 
-    attr_set( WA_DIM, 0, NULL);
+    (void)attr_set( WA_DIM, 0, NULL);
     mvaddstr(tmarg + 17, col2, "A_DIM");
 
 #ifdef WA_ITALIC
-    attr_set( WA_ITALIC | WA_UNDERLINE, 0, NULL);
+    (void)attr_set( WA_ITALIC | WA_UNDERLINE, 0, NULL);
     mvaddstr(tmarg + 3, col2, "Underlined Italic");
 #endif
 
@@ -1574,10 +1574,10 @@ void attrTest(WINDOW *win)
     attrset( A_BLINK | A_UNDERLINE);
     mvaddstr(tmarg + 7, col2, "Underlined Blink");
 
-    attr_set( WA_LEFT, 0, NULL);
+    (void)attr_set( WA_LEFT, 0, NULL);
     mvaddstr(tmarg + 9, col2, "A_LEFT");
 
-    attr_set( WA_RIGHT, 0, NULL);
+    (void)attr_set( WA_RIGHT, 0, NULL);
     mvaddstr(tmarg + 11, col2, "A_RIGHT");
 
     attrset(A_BLINK|A_REVERSE);
