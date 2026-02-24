@@ -219,7 +219,9 @@ int main(int argc, char *argv[])
 
     if (initTest(&win, argc, argv))
         return 1;
-
+#ifdef __PDCURSESMOD__
+    PDC_set_title( "testcurs -- PDCurses* demo/test program");
+#endif
     for( i = 1; i < argc; i++)
         if( argv[i][0] == '-')
             switch( argv[i][1])
@@ -1654,16 +1656,16 @@ static void show_color_cube( int tmarg)
 
     mvaddstr(tmarg + 2, lmarg, "6x6x6 Color Cube (16-231):");
 
-    mvaddstr(tmarg + 4,  lmarg, "Blk      Red");
-    mvaddstr(tmarg + 11, lmarg, "Blue    Mgta");
+    mvaddstr(tmarg + 4,  lmarg, "Black    Red");
+    mvaddstr(tmarg + 11, lmarg, "Blue Magenta");
     if( COLS >= 77)
     {
-        mvaddstr(tmarg + 4,  lmarg + 65, "Grn      Yel");
+        mvaddstr(tmarg + 4,  lmarg + 65, "Green Yellow");
         mvaddstr(tmarg + 11, lmarg + 65, "Cyan   White");
     }
     else
     {
-        mvaddstr(tmarg + 11, COLS - 12, "Grn      Yel");
+        mvaddstr(tmarg + 11, COLS - 12, "Green Yellow");
         mvaddstr(tmarg + 18, COLS - 12, "Cyan   White");
     }
 
@@ -1818,7 +1820,7 @@ void gradient(int tmarg)
 
     attrset(A_NORMAL);
     if( cnum >= COLORS || pnum >= COLOR_PAIRS)
-       mvaddstr(tmarg + 18, 3, "RAN OUT OF COLORS");
+       mvprintw(tmarg + 18, 3, "RAN OUT OF COLORS at %d colors", (int)cnum);
     mvaddstr(tmarg + 19, 3, "Press any key to continue");
     curTest();
 }
