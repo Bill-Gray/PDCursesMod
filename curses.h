@@ -44,8 +44,8 @@ Defined by this header:
 #define PDC_VER_MINOR    5
 #define PDC_VER_CHANGE   4
 #define PDC_VER_YEAR   2026
-#define PDC_VER_MONTH   01
-#define PDC_VER_DAY     31
+#define PDC_VER_MONTH   02
+#define PDC_VER_DAY     25
 
 #define PDC_STRINGIZE( x) #x
 #define PDC_stringize( x) PDC_STRINGIZE( x)
@@ -418,11 +418,10 @@ PDCEX  char         ttytype[];    /* terminal name/description */
 Text Attributes
 ===============
 
-By default,  PDCursesMod uses 64-bit integers for its chtype.  All chtypes
-have bits devoted to character data,  attribute data,  and color pair data.
-There are four configurations supported :
+All chtypes have bits devoted to character data,  attribute data,  and color
+pair data.  There are four configurations supported :
 
-Default, 64-bit chtype,  both wide- and 8-bit character builds:
+### Default, 64-bit chtype,  both wide- and 8-bit character builds:
 
    color pair    | unused |  modifiers      | character eg 'a'
    --------------|--------|-----------------------|--------------------
@@ -433,7 +432,11 @@ Default, 64-bit chtype,  both wide- and 8-bit character builds:
     6 currently unused bits (38-43)
    20 color pair bits (44-63),  enough for 1048576 color pairs
 
-32-bit chtypes with wide characters (CHTYPE_32 and PDC_WIDE are #defined):
+   As of 2025 Dec 30,  WinGUI,  VT, X11 and X11new,  Linux framebuffer,
+   DOSVGA,  OpenGL,  and SDLn can have COLOR_PAIRS = 1048576.  Plan9 and
+   WinCon may join them.  DOS and OS/2 lack full-color capability.
+
+### 32-bit chtypes with wide characters (CHTYPE_32 and PDC_WIDE are #defined):
 
    color pair       | modifiers             | character eg 'a'
    -----------------|-----------------------|--------------------
@@ -443,37 +446,27 @@ Default, 64-bit chtype,  both wide- and 8-bit character builds:
    8 attribute bits (16-23)
    8 color pair bits (24-31),  for 256 color pairs
 
-32-bit chtypes with narrow characters (CHTYPE_32 #defined,  PDC_WIDE is not):
+### 32-bit chtypes with narrow characters (CHTYPE_32 #defined,  PDC_WIDE is not):
 
    color pair          |     modifiers       |character
    --------------------|---------------------|----------------
-   31 30 29 .. 22 21 20|19 18 17 16 .. 10 9 8|7 6 5 4 3 2 1
+   31 30 29 .. 22 21 20|19 18 17 16 .. 10 9 8|7 6 5 4 3 2 1 0
 
    8 character bits (0-7);  only 8-bit charsets will work
    12 attribute bits (8-19)
    12 color pair bits (20-31),  for 4096 pairs
 
-16-bit chtypes (CHTYPE_16 #defined,  must be narrow characters) :
+### 16-bit chtypes (CHTYPE_16 #defined,  must be narrow characters) :
 
    color pair    |modifs |character
-   --------------|-------|--------------
-   15 14 13 12 11|10 9 8 |7 6 5 4 3 2 1
+   --------------|-------|---------------
+   15 14 13 12 11|10 9 8 |7 6 5 4 3 2 1 0
 
    8 character bits (0-7);  only 8-bit charsets will work
    3 attribute bits (8-10) : bold,  reverse,  blink
    5 color pair bits (11-15),  for 32 pairs
 
-Except for 16-bit chtypes,  all attribute modifier schemes include eight
-"basic" bits:  bold, underline, right-line, left-line, italic, reverse
-and blink attributes,  plus the alternate character set indicator. For
-32-bit narrow builds, three more bits are used for overlined, dimmed,
-and strikeout attributes; a fourth bit is reserved.
-
-Default chtypes have enough character bits to support the full range of
-Unicode,  all attributes,  and 2^20 = 1048576 color pairs.  Note,  though,
-that as of 2025 Dec 30,  only WinGUI,  VT,  X11 and X11new,  Linux
-framebuffer,  DOSVGA,  OpenGL,  and SDLn have COLOR_PAIRS = 1048576.
-Plan9 and WinCon may join them.  DOS and OS/2 lack full-color capability.
+   This is normally used only in very low-memory situations.
 
 **man-end****************************************************************/
 

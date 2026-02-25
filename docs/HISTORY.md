@@ -1,8 +1,8 @@
 Generally speaking,  this history mentions only the more significant
 changes.  See the git log for full details.
 
-PDCursesMod 4.5.4 - 2026 January 07
-===================================
+PDCursesMod 4.5.4 - 2026 February 25
+====================================
 
 Minor new features
 ------------------
@@ -11,6 +11,7 @@ Minor new features
 
 - chtypes can be short (16-bit) integers.  This is mostly of use in very
   memory-restricted environments,  such as in some DOS code.  e215a6d4b5
+  a3762aa3fd
 
 - For the GL port,  the 'resize' mode can be set via the PDC_RESIZE
   environment variable.  b8f822040e
@@ -42,7 +43,9 @@ Minor new features
 
 - DOSVGA now supports ~16 million (2^24 + 256) colors and 1M (2^20)
   color pairs,  similar to (and using the same underlying code as)
-  WinGUI,  SDLs,  GL,  framebuffer/DRM,  and x11new.  bd4cc9c616
+  WinGUI,  SDLs,  GL,  framebuffer/DRM,  and x11new.  It also now
+  supports blinking and a few cursor styles (caret,  half-block,
+  underscore,  full block).  bd4cc9c616  ac0c9459aa
 
 - DOSVGA Makefile revised to simplify use of DJGPP,  and to use full
   warnings.  A few 'nuisance' warnings were corrected.  141b7f642b
@@ -73,6 +76,10 @@ Bug fixes
 - Fullwidth characters are now shown correctly for 32-bit chtypes (if they
   are supported on that platform in the first place,  and the font
   actually has glyphs for them).  3d6bc63caa
+
+- wchgat( ) didn't mask out colors from 'attr'.  This could lead to
+  garbage display when those colors were ORred with those from the
+  'color' parameter.  f19bc59406d
 
 PDCursesMod 4.5.3 - 2025 August 11
 ==================================
