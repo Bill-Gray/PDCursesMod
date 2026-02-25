@@ -7,6 +7,9 @@
 #include <locale.h>
 #include <assert.h>
 
+#if NCURSES_VERSION_PATCH >= 20170311 || __PDCURSES__
+            /* we have alloc_pair(), free_pair(), init_extended_color() */
+
 #ifdef WACS_S1
 # define HAVE_WIDE
 #endif
@@ -354,3 +357,10 @@ int main( const int argc, const char **argv)
         fclose( input_fp);
     return( 0);
 }
+#else
+int main( void)
+{
+   printf( "This build lacks the new_pair functions\n");
+   return( 0);
+}
+#endif
