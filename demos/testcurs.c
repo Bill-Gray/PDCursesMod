@@ -226,6 +226,7 @@ int main(int argc, char *argv[])
         if( argv[i][0] == '-')
             switch( argv[i][1])
             {
+#if defined( __PDCURSES__) || defined( NCURSES_DEBUG_LIB)
                 case 'd':
                     {
                         unsigned flags;
@@ -234,6 +235,7 @@ int main(int argc, char *argv[])
                             curses_trace( flags);
                     }
                     break;
+#endif
                 case 'i': case 'I':
                     mouseinterval( atoi( argv[i] + 2));
                     break;
