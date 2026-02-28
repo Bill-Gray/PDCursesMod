@@ -1,24 +1,22 @@
 message(STATUS "**** ${PROJECT_NAME} ****")
 
-set(PDCURSES_SRCDIR ${CMAKE_SOURCE_DIR})
 set(PDCURSES_DIST ${CMAKE_INSTALL_PREFIX}/${CMAKE_BUILD_TYPE})
 
-set(osdir ${PDCURSES_SRCDIR}/${PROJECT_NAME})
-set(demodir ${PDCURSES_SRCDIR}/demos)
-
 set(pdc_src_files
-    ${osdir}/pdcclip.c
-    ${osdir}/pdcdisp.c
-    ${osdir}/pdcgetsc.c
-    ${osdir}/pdckbd.c
-    ${osdir}/pdcscrn.c
-    ${osdir}/pdcsetsc.c
-    ${osdir}/pdcutil.c
+    pdcclip.c
+    pdcdisp.c
+    pdcgetsc.c
+    pdckbd.c
+    pdcscrn.c
+    pdcsetsc.c
+    pdcutil.c
 )
 
-include_directories (..)
-include_directories (${osdir})
-
+if(NOT TARGET pdcurses_include_dirs)
+    add_library(pdcurses_include_dirs INTERFACE)
+    target_include_directories(pdcurses_include_dirs SYSTEM INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>)
+    target_include_directories(pdcurses_include_dirs INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+endif()
 
 if(WIN32 AND NOT WATCOM)
     include(dll_version)
@@ -84,19 +82,17 @@ if(PDC_BUILD_SHARED)
         set_target_properties(${PDCURSE_PROJ} PROPERTIES MACOSX_RPATH 1)
     endif()
 
+    target_link_libraries(${PDCURSE_PROJ} PRIVATE ${EXTRA_LIBS})
+
     if(${PROJECT_NAME} STREQUAL "sdl2")
         if(PDC_WIDE OR PDC_UTF8)
-            target_link_libraries(${PDCURSE_PROJ} ${EXTRA_LIBS}
-                ${SDL2_LIBRARIES} ${SDL2_TTF_LIBRARY} ${FT2_LIBRARY} ${ZLIB_LIBRARY}
-                ${SDL2_DEP_LIBRARIES})
+            target_link_libraries(${PDCURSE_PROJ} PRIVATE ${SDL2_LIBRARIES} ${SDL2_TTF_LIBRARY}
+                ${FT2_LIBRARY} ${ZLIB_LIBRARY} ${SDL2_DEP_LIBRARIES})
         else()
-            target_link_libraries(${PDCURSE_PROJ} ${EXTRA_LIBS}
-                ${SDL2_LIBRARIES} ${SDL2_DEP_LIBRARIES})
+            target_link_libraries(${PDCURSE_PROJ} PRIVATE ${SDL2_LIBRARIES} ${SDL2_DEP_LIBRARIES})
         endif()
     elseif((${PROJECT_NAME} STREQUAL "wincon") OR (${PROJECT_NAME} STREQUAL "wingui"))
-        target_link_libraries(${PDCURSE_PROJ} ${EXTRA_LIBS} ${WINCON_WINGUI_DEP_LIBS})
-    else()
-        target_link_libraries(${PDCURSE_PROJ} ${EXTRA_LIBS})
+        target_link_libraries(${PDCURSE_PROJ} PRIVATE ${WINCON_WINGUI_DEP_LIBS})
     endif()
 
     install(TARGETS ${PDCURSE_PROJ}
@@ -111,6 +107,8 @@ else()
     set_target_properties(${PDCURSE_PROJ} PROPERTIES OUTPUT_NAME "pdcursesstatic")
 endif()
 
+target_link_libraries(${PDCURSE_PROJ} PUBLIC pdcurses_include_dirs)
+
 macro (demo_app dir targ)
     set(bin_name "${PROJECT_NAME}_${targ}")
     if(${targ} STREQUAL "tuidemo")
@@ -121,10 +119,9 @@ macro (demo_app dir targ)
 
     add_executable(${bin_name} ${ARGV2} ${src_files})
 
+    target_link_libraries(${bin_name} PRIVATE ${PDCURSE_PROJ} ${EXTRA_LIBS})
     if((${PROJECT_NAME} STREQUAL "wincon") OR (${PROJECT_NAME} STREQUAL "wingui"))
-        target_link_libraries(${bin_name} ${PDCURSE_PROJ} ${EXTRA_LIBS} ${WINCON_WINGUI_DEP_LIBS})
-    else()
-        target_link_libraries(${bin_name} ${PDCURSE_PROJ} ${EXTRA_LIBS})
+        target_link_libraries(${bin_name} PRIVATE ${WINCON_WINGUI_DEP_LIBS})
     endif()
 
     add_dependencies(${bin_name} ${PDCURSE_PROJ})
