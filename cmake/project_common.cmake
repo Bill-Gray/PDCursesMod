@@ -84,6 +84,11 @@ if(PDC_BUILD_SHARED)
         set_target_properties(${PDCURSE_PROJ} PROPERTIES MACOSX_RPATH 1)
     endif()
 
+    if(APPLE OR UNIX)
+        target_compile_definitions(${PDCURSE_PROJ} PRIVATE PDC_ENABLE_VISIBILITY)
+        set_target_properties(${PDCURSE_PROJ} PROPERTIES C_VISIBILITY_PRESET hidden)
+    endif()
+
     if(${PROJECT_NAME} STREQUAL "sdl2")
         if(PDC_WIDE OR PDC_UTF8)
             target_link_libraries(${PDCURSE_PROJ} ${EXTRA_LIBS}
@@ -129,6 +134,12 @@ macro (demo_app dir targ)
 
     add_dependencies(${bin_name} ${PDCURSE_PROJ})
     set_target_properties(${bin_name} PROPERTIES OUTPUT_NAME ${targ})
+
+    if(APPLE)
+        set_target_properties(${bin_name} PROPERTIES INSTALL_RPATH "@executable_path/../../lib/${PROJECT_NAME}")
+    elseif(UNIX)
+        set_target_properties(${bin_name} PROPERTIES INSTALL_RPATH "$ORIGIN/../../lib/${PROJECT_NAME}")
+    endif()
 
     install(TARGETS ${bin_name} RUNTIME DESTINATION ${PDCURSES_DIST}/bin/${PROJECT_NAME} COMPONENT applications)
 endmacro ()
