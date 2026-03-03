@@ -1,8 +1,11 @@
 /* PDCurses */
 
 #include "pdcwin.h"
-
 #include <stdlib.h>
+#if !defined( __WATCOMC__) && !defined( __DMC__)
+   #include <wincon.h>
+   #define USE_GET_CONSOLE_WINDOW
+#endif
 
 /* Color component table */
 
@@ -418,7 +421,11 @@ int PDC_scr_open(void)
     is_nt = !(GetVersion() & 0x80000000);
 #endif
 
+#ifdef USE_GET_CONSOLE_WINDOW
     pdc_wt = !((BOOL) SendMessage(GetConsoleWindow(), WM_GETICON, 0, 0));
+#else
+    pdc_wt = !!getenv("WT_SESSION");
+#endif
     str = pdc_wt ? NULL : getenv("ConEmuANSI");
     pdc_conemu = !!str;
     pdc_ansi =
