@@ -22,10 +22,11 @@ static void beep_thread(LPVOID lpParameter)
 void PDC_beep(void)
 {
     PDC_LOG(("PDC_beep() - called\n"));
-#if defined(__TURBOC__)
-    beep_thread( 0);
-#else
+
     _beep_count++;
+#if (defined(_MSC_VER) && _MSC_VER < 1900) || defined( __TURBOC__)
+    beep_thread( 0);    /* Turbo C and old MSVC lack _beginthread */
+#else
     if( _beep_count == 1)
         _beginthread( beep_thread, 0, NULL);
 #endif
