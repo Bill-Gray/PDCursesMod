@@ -157,30 +157,24 @@ int create_term( const char* szCommand, const char **args,
                   {
                   case '[' :            /* Control Sequence Introducer (CSI) */
                      {
-                     bool valid_csi_sequence = false;
-
                      while( i < sizeof( buff) - 1
                             && 1 == read( master_fd, buff + i, 1))
                         {
                         i++;
-                        if( buff[i - 1] >= '@')
+                        if( buff[i - 1] >= '@')    /* valid CSI sequence */
                            {
                            buff[i] = '\0';
-                           valid_csi_sequence = true;
-                           break;
-                           }
-                        }
-                     if( valid_csi_sequence)   /* valid CSI sequence */
-                        {
-                        switch( buff[i - 1])
-                           {
-                           case 'K':
-                              delch( );
-                              break;
-                           case 'P':
-                              delch( );
-                              break;
-                           default:
+                           switch( buff[i - 1])
+                              {
+                              case 'K':
+                                 delch( );
+                                 break;
+                              case 'P':
+                                 delch( );
+                                 break;
+                              default:
+                                 break;
+                              }
                               break;
                            }
                         }
@@ -211,6 +205,8 @@ int create_term( const char* szCommand, const char **args,
                                  }
                                break;
                            default:
+                               while( 1 == read( master_fd, &nChar, 1))
+                                 ;
                                break;
                            }
                         }
