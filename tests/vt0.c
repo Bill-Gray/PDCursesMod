@@ -20,7 +20,7 @@ PDCurses instead.  Or probably other implementations of curses.
 
 https://learning.oreilly.com/library/view/the-linux-programming/9781593272203/xhtml/ch64.xhtml
 
-   In this program,  we start a child process (by default,  /usr/bin/bash -i).
+   In this program,  we start a child process (by default,  /bin/bash -i).
 The parent process connects to its stdin and stdout,  initializes curses,
 and enters a loop.  If a character is received via getch( ),  it's
 written to the child's stdin.  If characters are read from the child's
@@ -254,7 +254,7 @@ int main( const int argc, const char **argv)
 
    if( argc < 2)
       {
-      static const char *arguments[4] = { NULL, "/usr/bin/bash", "-i", NULL };
+      static const char *arguments[4] = { NULL, "/bin/bash", "-i", NULL };
 
       argv = arguments;
       }
