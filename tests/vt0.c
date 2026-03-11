@@ -233,6 +233,7 @@ int create_term( const char* szCommand, const char **args,
                      exit( -1);
                   if( !write( master_fd, xlates[i].xlation, strlen( xlates[i].xlation)))
                      exit( -1);
+                  break;
                   }
             }
          }
