@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <string.h>
 #include <unistd.h>
+#include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <termios.h>
@@ -13,10 +14,11 @@
 #include "curses.h"
 #include "../common/xlates.h"
 
-/* (Very) primitive terminal emulator using PDCursesMod.  Could use
-PDCurses instead.  Or probably other implementations of curses.
+/* (Very) primitive *nix terminal emulator using PDCursesMod.  Could
+use PDCurses instead,  with minor changes required for color handling.
+Other implementations of curses would probably work as well.
 
-   We set up a pseudterminal (pty).  Much of this comes from
+   We set up a pseudoterminal (pty).  Much of this comes from
 
 https://learning.oreilly.com/library/view/the-linux-programming/9781593272203/xhtml/ch64.xhtml
 
@@ -28,17 +30,40 @@ stdout,  we add them to the screen via addch( ).
 
    Note,  too,  that this is _not_ a full-fledged terminal emulator
 (though I think it could be turned into one).  It handles the escape
-sequence for setting the window title and a couple of other escape
-sequences to delete characters;  that was just enough to avoid having
-a window full of junk. You could call this a VT0 emulator... hence the
-file name.
+sequence for setting the window title and a few escape sequences to
+delete characters, set colors,  and so on.  Screen resizing is not well
+handled.   You could call this a VT0 emulator... hence the file name.
 
-   It works decently on SDLn,  x11new,  and Linux framebuffer (DRM).
+   It works decently on SDLn,  x11new,  and Linux framebuffer/DRM.
 
    I could imagine something similar allowing us to build a Windows console.
 */
 
 int     PDC_mbtowc(wchar_t *, const char *, size_t);
+
+/* Many VTn control sequences have a series of integer parameters,  separated
+by colons or semicolons.  get_param( ) evaluates and returns one such parameter,
+advancing the pointer to the next parameter (if any),  and returning -1 if
+we've run out of parameters (or hit an error).        */
+
+static int get_param( const char **iptr)
+{
+   const char *tptr = *iptr;
+   int rval;
+
+   if( !isdigit( *tptr))
+      rval = -1;
+   else
+      {
+      rval = *tptr++ - '0';
+      while( isdigit( *tptr))
+         rval = rval * 10 + *tptr++ - '0';
+      if( *tptr == ':' || *tptr == ';')
+         tptr++;
+      }
+   *iptr = tptr;
+   return( rval);
+}
 
 int create_term( const char* szCommand, const char **args,
                  const char **environ)
@@ -111,6 +136,7 @@ int create_term( const char* szCommand, const char **args,
       clear( );
       keypad(stdscr, TRUE);
       start_color( );
+      use_default_colors( );
       addstr( "Welcome to PDCursesModTerm!\n");
       setbuf( stdout, NULL);
       raw( );
@@ -166,16 +192,91 @@ int create_term( const char* szCommand, const char **args,
                            buff[i] = '\0';
                            switch( buff[i - 1])
                               {
+                              case 'H':
+                                 {
+                                 int row, col;
+
+                                 if( sscanf( buff, "%d;%d", &row, &col) == 2)
+                                    move( row - 1, col - 1);
+                                 }
+                                 break;
                               case 'K':
-                                 delch( );
+                                 clrtoeol( );
                                  break;
                               case 'P':
                                  delch( );
+                                 break;
+                              case 'm':       /* color(s)/attribute(s) */
+                                 {
+                                 int ival;
+                                 const char *tptr = buff;
+                                 static int fg = -1, bg = -1;
+                                 const int old_bg = bg, old_fg = fg;
+
+                                 while( (ival = get_param( &tptr)) >= 0)
+                                    {
+                                    const attr_t att[9] = { A_BOLD, A_DIM, A_ITALIC,
+                                                A_UNDERLINE, A_BLINK, 0, A_REVERSE,
+                                                A_INVIS, A_STRIKEOUT };
+
+                                    if( !ival)
+                                       {
+                                       attrset( 0);
+                                       fg = bg = -1;
+                                       }
+                                    else if( ival < 10)
+                                       attron( att[ival - 1]);
+                                    else if( ival < 22)
+                                       ;            /* shouldn't happen */
+                                    else if( ival < 30)
+                                       attroff( att[ival - 21]);
+                                    else if( ival < 38)
+                                       fg = ival - 30;
+                                    else if( ival == 38 || ival == 48)   /* true-color handling */
+                                       {
+                                       const int val2 = get_param( &tptr);
+                                       const int val3 = get_param( &tptr);
+                                       int new_idx = -1;
+
+                                       if( val2 == 5 && val3 >= 0)
+                                          new_idx = val3;   /* color selected by index */
+                                       else if( val2 == 2 && val3 >= 0)
+                                          {
+                                          const int val4 = get_param( &tptr);
+                                          const int val5 = get_param( &tptr);
+
+                                          new_idx = val3  | (val4 << 8) | (val5 << 16);
+                                          new_idx += 256;
+                                          }
+                                       if( new_idx >= 0)
+                                          {
+                                          if( ival == 38)
+                                             fg = new_idx;
+                                          else
+                                             bg = new_idx;
+                                          }
+                                       }
+                                    else if( ival == 39)
+                                       fg = -1;            /* foreground to default */
+                                    else if( ival < 48)
+                                       bg = ival - 40;
+                                    else if( ival == 49)
+                                       bg = -1;            /* foreground to default */
+                                    }
+                                 if( fg != old_fg || bg != old_bg)
+                                    {
+                                    const int pair_idx = (fg == -1 && bg == -1) ? 0 :
+                                                 alloc_pair( fg, bg);
+
+                                    color_set( pair_idx, NULL);
+                                    }
+                                 }
                                  break;
                               default:
                                  break;
                               }
                               break;
+                           i = 0;      /* reset for another possible sequence */
                            }
                         }
                      }
