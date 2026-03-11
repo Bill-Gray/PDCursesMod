@@ -58,7 +58,7 @@ if(CURSES_FOUND)
         endif()
 
         target_include_directories(${bin_name} PUBLIC ${CURSES_INCLUDE_DIR})
-        target_link_libraries(${bin_name} ${CURSES_LIBRARIES})
+        target_link_libraries(${bin_name} PUBLIC ${CURSES_LIBRARIES})
         set_target_properties(${bin_name} PROPERTIES OUTPUT_NAME ${targ})
         
         install(TARGETS ${bin_name} RUNTIME DESTINATION ${PDCURSES_DIST}/bin/${PROJECT_NAME} COMPONENT applications)
