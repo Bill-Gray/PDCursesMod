@@ -89,7 +89,6 @@ int create_term( const char* szCommand, const char **args,
       char *name = ptsname( master_fd);
       int term_fd;
       struct termios term;
-      struct winsize ws;
 
       if (setsid() == -1)
          return( -1);
@@ -105,10 +104,6 @@ int create_term( const char* szCommand, const char **args,
       term.c_oflag &= ~OPOST;
       term.c_iflag &= ~ICRNL;
       tcsetattr( term_fd, TCSANOW, &term);
-
-      ws.ws_row = 25;
-      ws.ws_col = 80;
-      ioctl( term_fd, TIOCSWINSZ, &ws);
 
       /* redirect stdin,  stdout,  stderr  */
       if( -1 == dup2( term_fd, STDIN_FILENO)
@@ -127,6 +122,7 @@ int create_term( const char* szCommand, const char **args,
       {
       int wait_status;
       SCREEN *screen_pointer = newterm(NULL, stdout, stdin);
+      struct winsize ws;
 
       /* close unused file descriptors, these are for child only : */
       fcntl( master_fd, F_SETFL, O_NONBLOCK);
@@ -144,6 +140,10 @@ int create_term( const char* szCommand, const char **args,
       refresh( );
       timeout( 20);
 
+      ws.ws_row = LINES;
+      ws.ws_col = COLS;
+      ioctl( master_fd, TIOCSWINSZ, &ws);
+
       while( waitpid( pid_child, &wait_status, WNOHANG) >= 0)
          {
          char nChar;
@@ -157,7 +157,8 @@ int create_term( const char* szCommand, const char **args,
 
                if( !(nChar & 0x80))
                   {
-                  addch( nChar);
+                  if( nChar != 7)      /* Ctrl-G = 'bell' */
+                     addch( nChar);
                   buffsize = 0;
                   }
                else
@@ -189,6 +190,8 @@ int create_term( const char* szCommand, const char **args,
                         i++;
                         if( buff[i - 1] >= '@')    /* valid CSI sequence */
                            {
+                           int param = atoi( buff + ((*buff == '?') ? 1 : 0));
+
                            buff[i] = '\0';
                            switch( buff[i - 1])
                               {
@@ -200,11 +203,34 @@ int create_term( const char* szCommand, const char **args,
                                     move( row - 1, col - 1);
                                  }
                                  break;
+                              case 'G':
+                                 move( getcury( stdscr), (param > 1 ? param - 1 : 0));
+                                 break;
                               case 'K':
                                  clrtoeol( );
                                  break;
+                              case 'J':
+                                 switch( buff[i - 2])
+                                    {
+                                    case '1':
+                                       /* erase above... TBD */
+                                       break;
+                                    case '2':
+                                       clear( );
+                                       break;
+                                    default:
+                                       clrtobot( );
+                                       break;
+                                    }
+                                 break;
                               case 'P':
-                                 delch( );
+                              case 'X':
+                                 {
+                                 if( param < 1)
+                                    param = 1;
+                                 while( param--)
+                                    delch( );
+                                 }
                                  break;
                               case 'm':       /* color(s)/attribute(s) */
                                  {
@@ -312,6 +338,15 @@ int create_term( const char* szCommand, const char **args,
                            }
                         }
                      break;
+                  case '(':         /* designate character set : not used yet */
+                     if( read( master_fd, &nChar, 1) == 1)
+                        if( nChar == '%' || nChar == '"' || nChar == '&')
+                           {
+                           int n_read = read( master_fd, &nChar, 1);
+
+                           assert( 1 == n_read);
+                           }
+                     break;
                   default:
                      break;
                   }
@@ -325,6 +360,13 @@ int create_term( const char* szCommand, const char **args,
                nChar = (char)ch;
                if( !write( master_fd, &nChar, 1))
                   exit( -1);
+               }
+            else if( ch == KEY_RESIZE)
+               {
+               ws.ws_row = LINES;
+               ws.ws_col = COLS;
+               if( ioctl( master_fd, TIOCSWINSZ, &ws) == -1)
+                  printf( "Failed to set\n");
                }
             else for( size_t i = 0; i < sizeof( xlates) / sizeof( xlates[0]); i++)
                if( xlates[i].key_code == ch)
