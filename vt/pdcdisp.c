@@ -1,4 +1,8 @@
-#ifdef DOS
+#if defined( _WIN32) && !defined( PDC_WIDE)
+   #define DOS
+#endif
+
+#if defined DOS
    #define USE_UNICODE_ACS_CHARS 0
 #else
    #define USE_UNICODE_ACS_CHARS 1
@@ -12,6 +16,7 @@
 #include <stdlib.h>
 #ifdef _WIN32
     #include <io.h>
+    #include <fcntl.h>
 #else
     #include <unistd.h>
 #endif
@@ -40,6 +45,9 @@ int PDC_get_terminal_fd( void)
          fprintf(stderr, "No output device found\n");
          exit( -1);
          }
+#if defined( _WIN32) && defined( PDC_WIDE) && defined( _O_U8TEXT)
+      _setmode( stdout_fd, _O_U8TEXT);
+#endif
 #endif
       }
    return( stdout_fd);
