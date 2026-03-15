@@ -173,7 +173,7 @@ static void color_string( char *otext, const PACKED_RGB rgb)
    const int blue = Get_BValue( rgb);
 
    if( PDC_has_rgb_color)
-      sprintf( otext, "2;%d;%d;%dm", red, green, blue);
+      sprintf( otext, "2:%d:%d:%dm", red, green, blue);
    else
       {
       int idx;
@@ -191,7 +191,7 @@ static void color_string( char *otext, const PACKED_RGB rgb)
          idx = ((blue - 35) / 40) + ((green - 35) / 40) * 6
                   + ((red - 35) / 40) * 36 + 16;
 
-      sprintf( otext, "5;%dm", idx);
+      sprintf( otext, "5:%dm", idx);
       }
 }
 
@@ -231,7 +231,7 @@ static void reset_color( char *obuff, const chtype ch)
             sprintf( obuff, CSI "4%dm", get_sixteen_color_idx( bg));
         else
             {
-            strcpy( obuff, CSI "48;");
+            strcpy( obuff, CSI "48:");
             color_string( obuff + 5, bg);
             }
         prev_bg = bg;
@@ -246,7 +246,7 @@ static void reset_color( char *obuff, const chtype ch)
             sprintf( obuff, CSI "3%dm", get_sixteen_color_idx( fg));
         else
             {
-            strcpy( obuff, CSI "38;");
+            strcpy( obuff, CSI "38:");
             color_string( obuff + 5, fg);
             }
         prev_fg = fg;
