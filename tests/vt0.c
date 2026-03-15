@@ -31,8 +31,8 @@ stdout,  we add them to the screen via addch( ).
    Note,  too,  that this is _not_ a full-fledged terminal emulator
 (though I think it could be turned into one).  It handles the escape
 sequence for setting the window title and a few escape sequences to
-delete characters, set colors,  and so on.  Screen resizing is not well
-handled.   You could call this a VT0 emulator... hence the file name.
+delete characters,  set colors,  and so on.  You could call this a VT0
+emulator... hence the file name.
 
    It works decently on SDLn,  x11new,  and Linux framebuffer/DRM.
 
@@ -64,6 +64,8 @@ static int get_param( const char **iptr)
    *iptr = tptr;
    return( rval);
 }
+
+static int verbose = 0;
 
 int create_term( const char* szCommand, const char **args,
                  const char **environ)
@@ -139,16 +141,19 @@ int create_term( const char* szCommand, const char **args,
       scrollok( stdscr, TRUE);
       refresh( );
       timeout( 20);
-
-      ws.ws_row = LINES;
-      ws.ws_col = COLS;
-      ioctl( master_fd, TIOCSWINSZ, &ws);
+      ws.ws_row = ws.ws_col = 0;
 
       while( waitpid( pid_child, &wait_status, WNOHANG) >= 0)
          {
          char nChar;
          int ch;
 
+         if( ws.ws_row != LINES ||  ws.ws_col != COLS)
+            {
+            ws.ws_row = LINES;
+            ws.ws_col = COLS;
+            ioctl( master_fd, TIOCSWINSZ, &ws);
+            }
          while( 1 == read( master_fd, &nChar, 1))
             {
             if( nChar != 27)
@@ -299,6 +304,8 @@ int create_term( const char* szCommand, const char **args,
                                  }
                                  break;
                               default:
+                                 if( verbose)
+                                    fprintf( stderr, "Unused CSI '%s'\n", buff);
                                  break;
                               }
                               break;
@@ -332,6 +339,8 @@ int create_term( const char* szCommand, const char **args,
                                  }
                                break;
                            default:
+                               if( verbose)
+                                  fprintf( stderr, "Unused OSC\n");
                                while( 1 == read( master_fd, &nChar, 1))
                                  ;
                                break;
@@ -346,6 +355,8 @@ int create_term( const char* szCommand, const char **args,
 
                            assert( 1 == n_read);
                            }
+                     if( verbose)
+                        fprintf( stderr, "Charset '%c' (not used)\n", nChar);
                      break;
                   default:
                      break;
@@ -360,13 +371,6 @@ int create_term( const char* szCommand, const char **args,
                nChar = (char)ch;
                if( !write( master_fd, &nChar, 1))
                   exit( -1);
-               }
-            else if( ch == KEY_RESIZE)
-               {
-               ws.ws_row = LINES;
-               ws.ws_col = COLS;
-               if( ioctl( master_fd, TIOCSWINSZ, &ws) == -1)
-                  printf( "Failed to set\n");
                }
             else for( size_t i = 0; i < sizeof( xlates) / sizeof( xlates[0]); i++)
                if( xlates[i].key_code == ch)
@@ -392,10 +396,17 @@ int create_term( const char* szCommand, const char **args,
 }
 
 
-int main( const int argc, const char **argv)
+int main( int argc, const char **argv)
 {
    extern const char **environ;
 
+   if( argc > 1 && !strcmp( argv[1], "-d"))
+      {
+      verbose = 1;
+      argv[1] = NULL;
+      argv++;
+      argc--;
+      }
    if( argc < 2)
       {
       static const char *arguments[4] = { NULL, "/bin/bash", "-i", NULL };
