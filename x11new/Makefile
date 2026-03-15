@@ -51,6 +51,7 @@ endif
 LIBNAME=libpdcurses
 DLLNAME=pdcurses
 XLIBS = -lX11 -lpthread
+TESTS += vt0$(E)
 
 LIBFLAGS = rv
 LIBCURSES	= $(LIBNAME).a
@@ -88,7 +89,7 @@ all:	libs
 libs:	$(LIBCURSES)
 
 clean:
-	-$(RM) *.o trace $(LIBCURSES) $(DEMOS) $(TESTS) vt0$(E)
+	-$(RM) *.o trace $(LIBCURSES) $(DEMOS) $(TESTS)
 
 demos:	libs $(DEMOS)
 ifneq ($(DEBUG),Y)
@@ -109,7 +110,6 @@ endif
 $(LIBOBJS) $(PDCOBJS) : $(PDCURSES_HEADERS)
 $(DEMOS) : $(PDCURSES_CURSES_H) $(LIBCURSES)
 $(TESTS) : $(PDCURSES_CURSES_H) $(LIBCURSES)
-vt0$(E)  : $(PDCURSES_CURSES_H) $(LIBCURSES)
 tui.o tuidemo.o : $(PDCURSES_CURSES_H)
 terminfo.o : $(TERM_HEADER)
 panel.o ptest: $(PANEL_HEADER)
@@ -124,9 +124,6 @@ $(DEMOS_EXCEPT_TUIDEMO): %: $(demodir)/%.c
 	$(BUILD) $(DEMOFLAGS) -o$@ $< $(LDFLAGS)
 
 $(TESTS): %: $(testdir)/%.c
-	$(BUILD) $(DEMOFLAGS) -o$@ $< $(LDFLAGS)
-
-vt0$(E): %: $(testdir)/%.c
 	$(BUILD) $(DEMOFLAGS) -o$@ $< $(LDFLAGS)
 
 tuidemo$(E) : tuidemo.o tui.o
