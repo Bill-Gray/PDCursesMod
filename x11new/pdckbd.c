@@ -640,8 +640,8 @@ static bool check_key( int *c)
          const long t_end = PDC_millisecs( ) + SP->mouse_wait;
          long t;
 
-         while( (t = PDC_millisecs( )) < t_end && !XPending( dis))
-            napms( t_end - t < 20L ? (int)( t_end - t) : 20);
+         while( (t = t_end - PDC_millisecs( )) > 0 && !XPending( dis))
+            napms( t < 20L ? (int)t : 20);
          }
       if( !XPending( dis) || (!wait_for_more_mouse && _mlist_count))
          {

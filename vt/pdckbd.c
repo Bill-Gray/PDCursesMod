@@ -433,9 +433,10 @@ int PDC_get_key( void)
                while( more_mouse)
                   {
                   const long t_end = PDC_millisecs( ) + SP->mouse_wait;
+                  long t;
 
-                  while( !check_key( NULL) && PDC_millisecs( ) < t_end)
-                     PDC_napms( 20);
+                  while( !check_key( NULL) && (t = t_end - PDC_millisecs( )) > 0)
+                     PDC_napms( t < 20 ? (int)t : 20);
                   more_mouse = (check_key( NULL) && PDC_get_key( ) == KEY_MOUSE);
                   }
                recursed = FALSE;
