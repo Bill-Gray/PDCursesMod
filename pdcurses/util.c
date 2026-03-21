@@ -201,9 +201,9 @@ static int _wchar_to_int32_array( int32_t *obuff, const int obuffsize, const wch
 
     for( i = 0; i < obuffsize && *wch; i++)
     {
-        if( IS_SURROGATE( wch[0]))
+        if( PDC_IS_SURROGATE( wch[0]))
         {
-            if( IS_LOW_SURROGATE( wch[1]) && IS_HIGH_SURROGATE( wch[0]))
+            if( PDC_IS_LOW_SURROGATE( wch[1]) && PDC_IS_HIGH_SURROGATE( wch[0]))
                 obuff[i] = (((int32_t)wch[0] - 0xd800) << 10) + 0x10000
                        + (int32_t)wch[1] - 0xdc00;
             else         /* malformed surrogate pair */

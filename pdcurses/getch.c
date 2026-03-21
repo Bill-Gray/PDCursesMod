@@ -662,11 +662,11 @@ static int _raw_wgetch( WINDOW *win)
    int rval = _raw_wgetch_no_surrogate_pairs( win);
 
 #ifdef PDC_WIDE
-   if( IS_HIGH_SURROGATE( rval))
+   if( PDC_IS_HIGH_SURROGATE( rval))
       {
       const int c = _raw_wgetch_no_surrogate_pairs( win);
 
-      if( IS_LOW_SURROGATE( c))
+      if( PDC_IS_LOW_SURROGATE( c))
          rval = ((rval - 0xd800) << 10) + 0x10000 + c - 0xdc00;
       }
 #endif
