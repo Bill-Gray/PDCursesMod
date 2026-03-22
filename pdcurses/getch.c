@@ -407,6 +407,39 @@ static int _mouse_key(void)
     return key;
 }
 
+#ifdef _WIN32
+#undef MOUSE_MOVED
+#include <windows.h>
+
+/* GetSystemTimeAsFileTime( ) returns the time in units of 0.1 microsecond.
+We want milliseconds,  i.e.,  one ten-thousandth of that.  Also,  it returns
+the time as a 64-bit integer,  spread across two unsigned 32-bit ints.
+
+   If 64-bit long integers are supported,  we simply shift A,  add B,
+cast to a long,  and divide by 10000.  If they are not (the usual case),
+less obvious arithmetic is needed.  See commit message for details.  */
+
+long PDC_millisecs( void)
+{
+   FILETIME ft;
+   long rval;
+#if LONG_MAX < 9223372036854775807L
+   DWORD tval;
+
+   GetSystemTimeAsFileTime( &ft);
+   tval = ft.dwHighDateTime % 10000u;
+   rval = 429496L * tval + (456L * tval + (long)(ft.dwLowDateTime >> 4)) / 625L;
+#else
+   uint64_t tval;
+
+   GetSystemTimeAsFileTime( &ft);
+   tval = ((uint64_t)ft.dwHighDateTime << 32) | (uint64_t)ft.dwLowDateTime;
+   rval = (long)( tval / 10000u);
+#endif
+   return( rval);
+}
+#else       /* Non-Microsoft Windows cases */
+
 /* ftime() is considered obsolete.  But it's all we have for
 millisecond precision on older compilers/systems.  We'll
 use clock_gettime() or gettimeofday() when available. */
@@ -460,6 +493,7 @@ long PDC_millisecs( void)
     return( (long)t.time * 1000L + (long)t.millitm);
 }
 #endif
+#endif      /* #ifndef _WIN32 */
 
 /* On many systems,  checking for a key hit is quite slow.  If
 PDC_check_key( ) returns FALSE,  we can safely stop checking for
