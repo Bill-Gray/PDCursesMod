@@ -1,11 +1,14 @@
 Generally speaking,  this history mentions only the more significant
 changes.  See the git log for full details.
 
-PDCursesMod 4.5.4 - 2026 February 25
-====================================
+PDCursesMod 4.5.4 - 2026 March 21
+=================================
 
 Minor new features
 ------------------
+
+- Added 'vt0.c' example code for a PDCurses/PDCursesMod-based terminal
+  emulator.  2df44e183f,  several subsequent commits.
 
 - Framebuffer and DRM ports can show fullwidth characters.  bc3b4d8449
 
@@ -55,6 +58,13 @@ Bug fixes
 
 - PDC_millisecs() now will usually pick a better underlying timekeeping
   function.  7906c61500
+
+- Overflow in PDC_millisecs() could conceivably happen,  affecting the
+  handling of mouse clicks.  e23eb347f6
+
+- On Microsoft Windows,  the VT port should emit alternative character
+  set glyphs using code page 437 characters for 8-bit character builds
+  and Unicode characters for wide builds.  615a32c652
 
 - WinGUI : mouse modifiers (Ctr, Alt, Shift) became 'stuck' from the
   previous keys hit,  and were not turned off when the modifier keys
