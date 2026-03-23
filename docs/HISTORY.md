@@ -1,7 +1,7 @@
 Generally speaking,  this history mentions only the more significant
 changes.  See the git log for full details.
 
-PDCursesMod 4.5.4 - 2026 March 21
+PDCursesMod 4.5.4 - 2026 March 23
 =================================
 
 Minor new features
@@ -55,6 +55,9 @@ Minor new features
 
 Bug fixes
 ---------
+
+- Input processing now follows the Open Group (SUSv2) specifications.
+  9e0b701fb0
 
 - PDC_millisecs() now will usually pick a better underlying timekeeping
   function.  7906c61500
