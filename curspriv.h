@@ -168,6 +168,7 @@ int PDC_expand_combined_characters( const cchar_t c, cchar_t *added);
 #define OFF_SCREEN_WINDOWS_TO_LEFT_AND_TOP            2
 
 #define INTENTIONALLY_UNUSED_PARAMETER( param) (void)(param)
+#define BLOCKING_INPUT -1
 
 #define _is_altcharset( ch)  (((ch) & (A_ALTCHARSET | (A_CHARTEXT ^ 0x7f))) == A_ALTCHARSET)
 
@@ -185,7 +186,6 @@ struct _win               /* definition of a window */
     bool  _clear;         /* causes clear at next refresh */
     bool  _leaveit;       /* leaves cursor where it is */
     bool  _scroll;        /* allows window scrolling */
-    bool  _nodelay;       /* input character wait flag */
     bool  _immed;         /* immediate update flag */
     bool  _sync;          /* synchronise window ancestors */
     bool  _use_keypad;    /* flags keypad key mode active */

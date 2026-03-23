@@ -187,6 +187,7 @@ WINDOW *PDC_makenew(int nlines, int ncols, int begy, int begx)
     win->_clear = (bool) ((nlines == LINES) && (ncols == COLS));
     win->_bmarg = nlines - 1;
     win->_parx = win->_pary = -1;
+    win->_delayms = BLOCKING_INPUT;
 
     /* init to say window all changed */
 
@@ -426,7 +427,6 @@ WINDOW *subwin(WINDOW *orig, int nlines, int ncols, int begy, int begx)
     win->_bkgd = orig->_bkgd;
     win->_leaveit = orig->_leaveit;
     win->_scroll = orig->_scroll;
-    win->_nodelay = orig->_nodelay;
     win->_delayms = orig->_delayms;
     win->_use_keypad = orig->_use_keypad;
     win->_immed = orig->_immed;
@@ -519,7 +519,6 @@ WINDOW *dupwin(WINDOW *win)
     new_win->_clear = win->_clear;
     new_win->_leaveit = win->_leaveit;
     new_win->_scroll = win->_scroll;
-    new_win->_nodelay = win->_nodelay;
     new_win->_delayms = win->_delayms;
     new_win->_use_keypad = win->_use_keypad;
     new_win->_tmarg = win->_tmarg;
@@ -612,7 +611,6 @@ WINDOW *resize_window(WINDOW *win, int nlines, int ncols)
     new_win->_clear = win->_clear;
     new_win->_leaveit = win->_leaveit;
     new_win->_scroll = win->_scroll;
-    new_win->_nodelay = win->_nodelay;
     new_win->_delayms = win->_delayms;
     new_win->_use_keypad = win->_use_keypad;
     new_win->_tmarg = (win->_tmarg > new_win->_maxy - 1) ? 0 : win->_tmarg;

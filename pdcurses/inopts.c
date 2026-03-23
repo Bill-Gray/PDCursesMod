@@ -170,6 +170,8 @@ int cbreak(void)
         return ERR;
 
     SP->cbreak = TRUE;
+    SP->delaytenths = 0;
+    SP->raw_inp = FALSE;
 
     return OK;
 }
@@ -184,6 +186,7 @@ int nocbreak(void)
 
     SP->cbreak = FALSE;
     SP->delaytenths = 0;
+    SP->raw_inp = TRUE;
 
     return OK;
 }
@@ -254,6 +257,7 @@ int halfdelay(int tenths)
         return ERR;
 
     SP->delaytenths = tenths;
+    SP->raw_inp = FALSE;
 
     return OK;
 }
@@ -335,7 +339,8 @@ int nodelay(WINDOW *win, bool flag)
     if (!win)
         return ERR;
 
-    win->_nodelay = flag;
+    win->_delayms = (flag ? 0 : BLOCKING_INPUT);
+    SP->delaytenths = 0;
 
     return OK;
 }
@@ -369,7 +374,9 @@ int raw(void)
         return ERR;
 
     PDC_set_keyboard_binary(TRUE);
+    SP->delaytenths = 0;
     SP->raw_inp = TRUE;
+    SP->cbreak = TRUE;
 
     return OK;
 }
@@ -383,7 +390,9 @@ int noraw(void)
         return ERR;
 
     PDC_set_keyboard_binary(FALSE);
+    SP->delaytenths = 0;
     SP->raw_inp = FALSE;
+    SP->cbreak = FALSE;
 
     return OK;
 }
@@ -422,30 +431,9 @@ void wtimeout(WINDOW *win, int delay)
         return;
 
     if (delay < 0)
-    {
-        /* This causes a blocking read on the window, so turn on delay
-           mode */
-
-        win->_nodelay = FALSE;
-        win->_delayms = 0;
-    }
-    else if (!delay)
-    {
-        /* This causes a non-blocking read on the window, so turn off
-           delay mode */
-
-        win->_nodelay = TRUE;
-        win->_delayms = 0;
-    }
+        win->_delayms = BLOCKING_INPUT;
     else
-    {
-        /* This causes the read on the window to delay for the number of
-           milliseconds. Also forces the window into non-blocking read
-           mode */
-
-        /*win->_nodelay = TRUE;*/
         win->_delayms = delay;
-    }
 }
 
 void timeout(int delay)
@@ -488,7 +476,7 @@ bool is_nodelay(const WINDOW *win)
     if (!win)
         return FALSE;
 
-    return win->_nodelay;
+    return !win->_delayms;
 }
 
 bool is_notimeout(const WINDOW *win)

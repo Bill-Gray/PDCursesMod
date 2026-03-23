@@ -527,8 +527,6 @@ bool PDC_is_function_key( const int key)
    return( key >= KEY_MIN && key < KEY_MAX);
 }
 
-#define WAIT_FOREVER    -1
-
 static int _raw_wgetch_no_surrogate_pairs( WINDOW *win)
 {
     int key = ERR, remaining_millisecs;
@@ -544,8 +542,6 @@ static int _raw_wgetch_no_surrogate_pairs( WINDOW *win)
         remaining_millisecs = 100 * SP->delaytenths;
     else
         remaining_millisecs = win->_delayms;
-    if( !remaining_millisecs && !win->_nodelay)
-        remaining_millisecs = WAIT_FOREVER;
 
     /* refresh window when wgetch is called if there have been changes
        to it and it is not a pad */
@@ -562,7 +558,7 @@ static int _raw_wgetch_no_surrogate_pairs( WINDOW *win)
 
     /* if normal and data in buffer */
 
-    else if ((!SP->raw_inp && !SP->cbreak) && (SP->c_gindex < SP->c_pindex))
+    else if ( !SP->cbreak && (SP->c_gindex < SP->c_pindex))
         key = SP->c_buffer[SP->c_gindex++];
 
     if( key != ERR)
@@ -587,7 +583,7 @@ static int _raw_wgetch_no_surrogate_pairs( WINDOW *win)
             /* if not, handle timeout() and halfdelay() */
             int nap_time = 50;
 
-            if (remaining_millisecs != WAIT_FOREVER)
+            if (remaining_millisecs != BLOCKING_INPUT)
             {
                 if (!remaining_millisecs)
                     return ERR;
@@ -662,7 +658,7 @@ static int _raw_wgetch_no_surrogate_pairs( WINDOW *win)
 
         /* if no buffering */
 
-        if (SP->raw_inp || SP->cbreak)
+        if( SP->cbreak)
         {
             if( key == KEY_RESIZE)
                 resize_term( 0, 0);

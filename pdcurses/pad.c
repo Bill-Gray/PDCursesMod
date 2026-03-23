@@ -148,7 +148,7 @@ WINDOW *subpad(WINDOW *orig, int nlines, int ncols, int begy, int begx)
     win->_attrs = orig->_attrs;
     win->_leaveit = orig->_leaveit;
     win->_scroll = orig->_scroll;
-    win->_nodelay = orig->_nodelay;
+    win->_delayms = orig->_delayms;
     win->_use_keypad = orig->_use_keypad;
     win->_parent = orig;
 
