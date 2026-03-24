@@ -3,34 +3,28 @@
 #include "pdcwin.h"
 #ifdef WIN32_LEAN_AND_MEAN
 #include <mmsystem.h>
-#include <process.h>
 #endif
 
-static volatile int _beep_count = 0;
-
-static void beep_thread(LPVOID lpParameter)
+static void _raw_beep( void)
 {
-    INTENTIONALLY_UNUSED_PARAMETER( lpParameter);
-    while( _beep_count)
-    {
-        if (!PlaySound((LPCTSTR) SND_ALIAS_SYSTEMDEFAULT, NULL, SND_ALIAS_ID))
-            Beep(800, 200);
-        _beep_count--;
-    }
+    flash( );
+    if (!PlaySound((LPCTSTR) SND_ALIAS_SYSTEMDEFAULT, NULL, SND_ALIAS_ID))
+        Beep(800, 200);
 }
 
 void PDC_beep(void)
 {
-    PDC_LOG(("PDC_beep() - called\n"));
+    if( !SP->n_beeps_queued)
+       {
+       const long beep_interval = 400;
 
-    _beep_count++;
-#if (defined(_MSC_VER) && _MSC_VER < 1900) || defined( __TURBOC__)
-    beep_thread( 0);    /* Turbo C and old MSVC lack _beginthread */
-#else
-    if( _beep_count == 1)
-        _beginthread( beep_thread, 0, NULL);
-#endif
+       _raw_beep( );
+       SP->t_next_beep = PDC_millisecs( ) + beep_interval;
+       }
+    SP->n_beeps_queued++;
 }
+
+void PDC_check_for_blinking( void);
 
 void PDC_napms(int ms)     /* 'ms' = milli,  _not_ microseconds! */
 {
@@ -43,6 +37,7 @@ void PDC_napms(int ms)     /* 'ms' = milli,  _not_ microseconds! */
     PDC_LOG(("PDC_napms() - called: ms=%d\n", ms));
 
     /* Pump all pending messages from WIN32 to the window handler */
+    PDC_check_for_blinking( );
     while( !PDC_bDone && curr_ms < milliseconds_sleep_limit )
     {
         const DWORD max_sleep_ms = 50;      /* check msgs 20 times/second */
@@ -59,6 +54,7 @@ void PDC_napms(int ms)     /* 'ms' = milli,  _not_ microseconds! */
             sleep_millisecs = max_sleep_ms;
         Sleep( sleep_millisecs);
         curr_ms += sleep_millisecs;
+        PDC_check_for_blinking( );
     }
 }
 
