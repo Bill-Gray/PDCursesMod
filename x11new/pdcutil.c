@@ -1,10 +1,31 @@
 #include <unistd.h>
 #include "curspriv.h"
+#include "pdcx11.h"
 
 void PDC_check_for_blinking( void);
 
+static void _raw_beep( void)
+{
+   if( !fork( ))        /* we're the child;  beep at 300 Hz for 0.1 second */
+      {
+      execlp( "play", "play", "-q", "-V0", "-n", "synth", "0.1", "sin", "300",
+                      (char *)NULL);
+                      /* if we get here,  play/SoX must not be installed */
+      flash( );       /* so we'll just flash the screen instead */
+      exit( );
+      }
+}
+
 void PDC_beep(void)
 {
+    if( !SP->n_beeps_queued)
+       {
+       const long beep_interval = 400;
+
+       _raw_beep( );
+       SP->t_next_beep = PDC_millisecs( ) + beep_interval;
+       }
+    SP->n_beeps_queued++;
 }
 
 void PDC_napms(int ms)

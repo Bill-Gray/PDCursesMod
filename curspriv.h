@@ -282,6 +282,8 @@ struct _screen
     FILE *output_fd, *input_fd;
     struct _port_info *pinfo;
     int drawing_cursor;
+    int n_beeps_queued;
+    long t_next_beep;
 };
 
 PDCEX  SCREEN       *SP;          /* curses variables */
