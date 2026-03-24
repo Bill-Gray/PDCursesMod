@@ -184,6 +184,8 @@ void PDC_get_rgb_values( const chtype srcp,
     else
         *background_rgb = PDC_get_palette_entry( background_index);
 
+    if( srcp & A_STANDOUT)
+        intensify_backgnd = TRUE;
     if( srcp & A_BLINK)
     {
         if( !(SP->termattrs & A_BLINK))   /* convert 'blinking' to 'bold' */
