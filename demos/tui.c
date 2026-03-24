@@ -164,7 +164,7 @@ static void idle(void)
     time_t t;
     struct tm *tp;
 
-    if (time (&t) == -1)
+    if ((int)time (&t) == -1)
         return;  /* time not available */
 
     tp = localtime(&t);
