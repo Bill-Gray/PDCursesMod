@@ -1874,11 +1874,11 @@ void colorTest(WINDOW *win)
     {
         if (widecol)
         {
-            init_pair(i + 4, COLOR_BLACK, colors[i]);
-            init_pair(i + 12, COLOR_BLACK, colors[i] + 8);
+            init_pair((short)( i + 4), COLOR_BLACK, colors[i]);
+            init_pair((short)(i + 12), COLOR_BLACK, colors[i] + 8);
         }
         else
-            init_pair(i + 4, colors[i], COLOR_BLACK);
+            init_pair((short)( i + 4), colors[i], COLOR_BLACK);
 
         mvaddstr(tmarg + i + 5, col1, colornames[i]);
 
