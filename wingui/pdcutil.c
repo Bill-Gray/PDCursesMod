@@ -4,19 +4,31 @@
 #ifdef WIN32_LEAN_AND_MEAN
 #include <mmsystem.h>
 #endif
+#if defined( __has_include)
+   #if( __has_include(<versionhelpers.h>))
+      #define USE_VERSION_HELPERS
+      #include <versionhelpers.h>
+   #endif
+#endif
+
+#ifndef USE_VERSION_HELPERS
+            /* If we lack version helpers,  assume old Windows */
+   #define IsWindows7OrGreater( )         0
+#endif
 
 static void _raw_beep( void)
 {
     flash( );
-    if (!PlaySound((LPCTSTR) SND_ALIAS_SYSTEMDEFAULT, NULL, SND_ALIAS_ID))
-        Beep(800, 200);
+    if( IsWindows7OrGreater( )
+                   || !PlaySound((LPCTSTR) SND_ALIAS_SYSTEMEXCLAMATION, NULL, SND_ALIAS_ID | SND_ASYNC))
+        Beep(400, 200);
 }
 
 void PDC_beep(void)
 {
     if( !SP->n_beeps_queued)
        {
-       const long beep_interval = 400;
+       const long beep_interval = 700;
 
        _raw_beep( );
        SP->t_next_beep = PDC_millisecs( ) + beep_interval;
