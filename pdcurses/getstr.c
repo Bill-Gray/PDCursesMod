@@ -91,7 +91,8 @@ int wgetnstr(WINDOW *win, char *str, int n)
 #else
     int ch, i, num, x, chars;
     char *p;
-    bool stop, oldecho, oldcbreak, old_delayms;
+    bool stop, oldecho, oldcbreak;
+    int old_delayms;
 
     PDC_LOG(("wgetnstr() - called\n"));
 
@@ -295,7 +296,8 @@ int wgetn_wstr(WINDOW *win, wint_t *wstr, int n)
 {
     int i, num, x, chars;
     wint_t *p;
-    bool stop, oldecho, oldcbreak, old_delayms;
+    bool stop, oldecho, oldcbreak;
+    int old_delayms;
 
     PDC_LOG(("wgetn_wstr() - called\n"));
 
