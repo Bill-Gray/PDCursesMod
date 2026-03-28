@@ -1,8 +1,4 @@
-#if defined( _WIN32) && !defined( PDC_WIDE)
-   #define DOS
-#endif
-
-#if defined DOS
+#if defined( DOS) || (defined( _WIN32) && !defined( PDC_WIDE))
    #define USE_UNICODE_ACS_CHARS 0
 #else
    #define USE_UNICODE_ACS_CHARS 1
@@ -140,6 +136,7 @@ void PDC_gotoyx(int y, int x)
 #define DIM_OFF       CSI "22m"
 #define REVERSE_ON    CSI "7m"
 #define STRIKEOUT_ON  CSI "9m"
+#define STRIKEOUT_OFF CSI "29m"
 
 /* see 'addch.c' for an explanation of how combining chars are handled. */
 
@@ -221,13 +218,21 @@ static void reset_color( char *obuff, const chtype ch)
         }
     PDC_get_rgb_values( ch, &fg, &bg);
     *obuff = '\0';
+    if( ch & A_REVERSE)
+         if( bg != prev_bg || fg != prev_fg)
+              if( bg == (PACKED_RGB)-1 || fg == (PACKED_RGB)-1)
+              {
+                  prev_fg = fg;
+                  prev_bg = bg;
+                  strcpy( obuff, REVERSE_ON);
+              }
     if( bg != prev_bg)
         {
         if( bg == (PACKED_RGB)-1)   /* default background */
             strcpy( obuff, CSI "49m");
         else if( !bg)
             strcpy( obuff, CSI "40m");
-        else if( COLORS == 16)
+        else if( COLORS <= 16)
             sprintf( obuff, CSI "4%dm", get_sixteen_color_idx( bg));
         else
             {
@@ -242,7 +247,7 @@ static void reset_color( char *obuff, const chtype ch)
         obuff += strlen( obuff);
         if( fg == (PACKED_RGB)-1)   /* default foreground */
             strcpy( obuff, CSI "39m");
-        else if( COLORS == 16)
+        else if( COLORS <= 16)
             sprintf( obuff, CSI "3%dm", get_sixteen_color_idx( fg));
         else
             {
@@ -302,36 +307,29 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
        if( ch < (int)' ' || (ch >= 0x80 && ch <= 0x9f))
           ch = ' ';
        *obuff = '\0';
-       if( changes & (A_REVERSE | A_STRIKEOUT | A_BOLD))
+       if( changes & (A_REVERSE | A_STRIKEOUT | A_BOLD | A_BLINK))
        {
           prev_ch = 0;
           changes = *srcp | A_COLOR;
           strcpy( obuff, RESET_ATTRS);
           reset_color( NULL, 0);
        }
-       if( SP->termattrs & *srcp & A_BOLD)
-          strcat( obuff, BOLD_ON);
+       if( SP->termattrs & changes & A_BOLD)
+          if( *srcp & A_BOLD)
+             strcat( obuff, BOLD_ON);
        if( changes & A_UNDERLINE)
           strcat( obuff, (*srcp & A_UNDERLINE) ? UNDERLINE_ON : UNDERLINE_OFF);
        if( changes & A_ITALIC)
           strcat( obuff, (*srcp & A_ITALIC) ? ITALIC_ON : ITALIC_OFF);
-#ifndef DOS
-       if( changes & A_REVERSE)
-          strcat( obuff, REVERSE_ON);
-#endif
-#ifndef _WIN32                /* MS doesn't support strikeout text */
        if( changes & A_STRIKEOUT)
-          strcat( obuff, STRIKEOUT_ON);
-#endif
+          strcat( obuff, (*srcp & A_STRIKEOUT) ? STRIKEOUT_ON : STRIKEOUT_OFF);
        if( SP->termattrs & changes & A_BLINK)
-          strcat( obuff, (*srcp & A_BLINK) ? BLINK_ON : BLINK_OFF);
+          if( *srcp & A_BLINK)
+             strcat( obuff, BLINK_ON);
        if( changes & (A_COLOR | A_STANDOUT | A_BLINK | A_REVERSE))
-#ifdef DOS
           reset_color( obuff + strlen( obuff), *srcp);
-#else
-          reset_color( obuff + strlen( obuff), *srcp & ~A_REVERSE);
-#endif
-       PDC_puts_to_stdout( obuff);
+       if( *obuff)
+          PDC_puts_to_stdout( obuff);
 #ifdef USING_COMBINING_CHARACTER_SCHEME
        if( ch > (int)MAX_UNICODE)      /* combining char sequence */
        {
