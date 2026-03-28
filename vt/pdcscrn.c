@@ -129,11 +129,9 @@ void PDC_reset_prog_mode( void)
     term.c_cc[VSTART] = _POSIX_VDISABLE;   /* disable Ctrl-Q */
     tcsetattr( fileno( SP->input_fd), TCSANOW, &term);
 #endif
-#if !defined( _WIN32) && !defined( DOS)
+#if !defined( DOS)
     if( !PDC_is_ansi)
         PDC_puts_to_stdout( CSI "?1006h");    /* Set SGR mouse tracking,  if available */
-#endif
-#ifndef DOS
     if( !SP->_preserve)
        PDC_puts_to_stdout( CSI "?47h");      /* Save screen */
 #endif
@@ -185,7 +183,7 @@ void PDC_save_screen_mode(int i)
 
 void PDC_scr_close( void)
 {
-#if !defined( _WIN32) && !defined( DOS)
+#if !defined( DOS)
    if( !PDC_is_ansi)
        PDC_puts_to_stdout( CSI "?1006l");    /* Turn off SGR mouse tracking */
 #endif
@@ -326,7 +324,11 @@ int PDC_scr_open(void)
         if( env)
            PDC_rows = atoi( env);
         if( PDC_rows < 2)
+#ifdef DOS
+           PDC_rows = 25;
+#else
            PDC_rows = 24;
+#endif
         env = getenv( "PDC_COLS");
         if( env)
            PDC_cols = atoi( env);
