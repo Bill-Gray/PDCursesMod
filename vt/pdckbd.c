@@ -367,13 +367,18 @@ int PDC_get_key( void)
 
                if( 3 == button)     /* need to determine which button released */
                   {
-                  event_type = BUTTON_PRESSED;
+                  event_type = BUTTON_RELEASED;
                   button = 0;
                   while( button < 3 && !((held >> button) & 1))
                      button++;
+                  if( button < 3)
+                     held &= ~(1 << button);
                   }
-               else
+               else if( idx < 35)
+                  {
+                  held |= (1 << button);
                   event_type = BUTTON_PRESSED;
+                  }
                }
             else                 /* SGR mouse encoding */
                {
