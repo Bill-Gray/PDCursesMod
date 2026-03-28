@@ -1,7 +1,7 @@
 Generally speaking,  this history mentions only the more significant
 changes.  See the git log for full details.
 
-PDCursesMod 4.5.4 - 2026 March 23
+PDCursesMod 4.5.4 - 2026 March 28
 =================================
 
 Minor new features
@@ -58,6 +58,11 @@ Bug fixes
 
 - Input processing now follows the Open Group (SUSv2) specifications.
   9e0b701fb0
+
+- VT now works fully on Microsoft Windows and MS-DOS,  fixing several
+  display issues.  Also,  mouse clicks are correctly handled on Windows
+  (DOSBox,  at least,  doesn't seem to know about mouse control
+  sequences).  9401517387  b3e0830262
 
 - PDC_millisecs() now will usually pick a better underlying timekeeping
   function.  7906c61500
