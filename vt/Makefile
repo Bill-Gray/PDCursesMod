@@ -89,6 +89,7 @@ ifeq      ($(TARGET_OS),mingw32)
 else ifeq ($(TARGET_OS),cygwin)
 else ifeq ($(TARGET_OS),msdosdjgpp)
 	CFLAGS += -DDOS
+	E = .exe
 else
 	CFLAGS += -fPIC
 endif
