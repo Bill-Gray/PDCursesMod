@@ -1,4 +1,5 @@
 #include <unistd.h>
+#include <stdlib.h>
 #include "curspriv.h"
 #include "pdcx11.h"
 
@@ -12,7 +13,7 @@ static void _raw_beep( void)
                       (char *)NULL);
                       /* if we get here,  play/SoX must not be installed */
       flash( );       /* so we'll just flash the screen instead */
-      exit( );
+      exit( 0);
       }
 }
 
