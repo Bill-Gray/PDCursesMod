@@ -47,6 +47,7 @@ WIDEOPT		= -DPDC_WIDE
 !endif
 
 !ifdef UTF8
+WIDEOPT		= -DPDC_WIDE
 UTF8OPT		= -DPDC_FORCE_UTF8
 !endif
 
