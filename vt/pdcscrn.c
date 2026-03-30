@@ -30,6 +30,7 @@ int PDC_is_ansi = FALSE;
 #endif
 
 int PDC_rows = -1, PDC_cols = -1;
+bool PDC_resize_occurred = FALSE;
 
 #ifdef _WIN32
 
@@ -118,9 +119,37 @@ static int set_win10_for_vt_codes( const bool setting_mode)
         PDC_get_screen_size( &PDC_cols, &PDC_rows);
     return( 0);
 }
+
+/* It appears that ConPTY doesn't provide any way to be signalled about
+window resizing.  You can't,  say,  set up a callback function,  or have
+an escape sequence omitted upon resizing.  You have to poll.
+
+   This seems so utterly stupid that I suspect I've overlooked something.
+But quite a bit of online searching has failed to find an alternative. */
+
+void PDC_check_for_resize( void)
+{
+   HANDLE hOut = GetStdHandle( STD_OUTPUT_HANDLE);
+   CONSOLE_SCREEN_BUFFER_INFO console_buff_info;
+   static short prev_X, prev_Y;
+
+   if( GetConsoleScreenBufferInfo( hOut, &console_buff_info))
+      if( console_buff_info.dwSize.X != prev_X || console_buff_info.dwSize.Y != prev_Y)
+      {
+         if( prev_X && prev_Y)
+         {
+             PDC_rows = console_buff_info.dwSize.Y;
+             PDC_cols = console_buff_info.dwSize.X;
+             PDC_resize_occurred = TRUE;
+             if (SP)
+                SP->resized = TRUE;
+         }
+         prev_X = console_buff_info.dwSize.X;
+         prev_Y = console_buff_info.dwSize.Y;
+      }
+}
 #endif
 
-bool PDC_resize_occurred = FALSE;
 static mmask_t _stored_trap_mbe;
 
 /* COLOR_PAIR to attribute encoding table. */
