@@ -59,6 +59,8 @@ emulation is in place.
 https://www.gnu.org/software/screen/manual/html_node/Control-Sequences.html
 */
 
+void PDC_check_for_resize( void);
+
 extern bool PDC_resize_occurred;
 
 static bool check_key( int *c)
@@ -100,6 +102,11 @@ static bool check_key( int *c)
     else
        rval = FALSE;
 #else
+#ifdef _WIN32
+    PDC_check_for_resize( );
+    if( PDC_resize_occurred)
+       return( TRUE);
+#endif
     if( WINDOWS_VERSION_OF_KBHIT( ))
        {
        rval = TRUE;
