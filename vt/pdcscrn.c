@@ -73,6 +73,7 @@ static int set_win10_for_vt_codes( const bool setting_mode)
     HANDLE hOut;
     DWORD dwMode = 0;
     static DWORD old_input_mode;
+    static UINT old_code_page = 0;
     const DWORD out_mask = ENABLE_VIRTUAL_TERMINAL_PROCESSING
                                | DISABLE_NEWLINE_AUTO_RETURN;
 
@@ -83,9 +84,18 @@ static int set_win10_for_vt_codes( const bool setting_mode)
         {
         GetConsoleMode( hIn, &old_input_mode);
         dwMode = ENABLE_VIRTUAL_TERMINAL_INPUT;
+#ifdef PDC_WIDE
+        old_code_page = SetConsoleOutputCP( 65001);
+#else
+        old_code_page = SetConsoleOutputCP( 437);
+#endif
         }
     else       /* restoring initial mode */
+        {
         dwMode = old_input_mode;
+        if( old_code_page)
+            SetConsoleOutputCP( old_code_page);
+        }
     if( !SetConsoleMode( hIn, dwMode))
         return GetLastError( );
         /* Set output mode to handle virtual terminal sequences */
