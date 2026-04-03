@@ -22,4 +22,4 @@ extern int PDC_is_ansi;
 #define CSI "\x1b["
 #define OSC "\x1b]"
 
-void PDC_puts_to_stdout( const char *buff);        /* pdcdisp.c */
+size_t PDC_puts_to_stdout( const char *buff);        /* pdcdisp.c */

@@ -13,6 +13,8 @@
 #ifdef _WIN32
     #include <io.h>
     #include <fcntl.h>
+
+    extern int PDC_wine_version;
 #else
     #include <unistd.h>
 #endif
@@ -55,21 +57,21 @@ int PDC_get_terminal_fd( void)
 
 #define TBUFF_SIZE 512
 
-static void put_to_stdout( const char *buff, size_t bytes_out)
+static size_t put_to_stdout( const char *buff, size_t bytes_out)
 {
     static char *tbuff = NULL;
     static size_t bytes_cached;
     int stdout_fd;
 
     if( !buff && !tbuff)
-        return;
+        return( 0);
 
     if( !buff && bytes_out == 1)        /* release memory at shutdown */
     {
         free( tbuff);
         tbuff = NULL;
         bytes_cached = 0;
-        return;
+        return( 0);
     }
 
     if( buff && !tbuff)
@@ -92,33 +94,40 @@ static void put_to_stdout( const char *buff, size_t bytes_out)
             while( bytes_cached)
             {
 #ifdef _WIN32
-                const size_t bytes_written = _write( stdout_fd, tbuff,
+                size_t bytes_written;
+
+                if( PDC_wine_version <= 0)
+                    bytes_written = _write( stdout_fd, tbuff,
                                              (unsigned int)bytes_cached);
+                else
+                    bytes_written = fwrite( tbuff, 1,
+                                             (unsigned int)bytes_cached, stdout);
 #else
                 const size_t bytes_written = write( stdout_fd, tbuff, bytes_cached);
 #endif
-
                 bytes_cached -= bytes_written;
                 if( bytes_cached)
                     memmove( tbuff, tbuff + bytes_written, bytes_cached);
             }
     }
+    return( bytes_cached);
 }
 
-void PDC_puts_to_stdout( const char *buff)
+size_t PDC_puts_to_stdout( const char *buff)
 {
-   put_to_stdout( buff, (buff ? strlen( buff) : 1));
+   return( put_to_stdout( buff, (buff ? strlen( buff) : 1)));
 }
 
 void PDC_gotoyx(int y, int x)
 {
    char tbuff[50];
 
-#ifdef HAVE_SNPRINTF
-   snprintf( tbuff, sizeof( tbuff), CSI "%d;%dH", y + 1, x + 1);
-#else
-   sprintf( tbuff, CSI "%d;%dH", y + 1, x + 1);
+   *tbuff = '\0';
+#ifdef _WIN32
+   if( PDC_wine_version > 0)
+      strcpy( tbuff, CSI "1;1H\r\n");
 #endif
+   sprintf( tbuff + strlen( tbuff), CSI "%d;%dH", y + 1, x + 1);
    PDC_puts_to_stdout( tbuff);
    PDC_doupdate( );
 }
@@ -341,7 +350,12 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
        if( changes & (A_COLOR | A_STANDOUT | A_BLINK | A_REVERSE))
           reset_color( obuff + strlen( obuff), *srcp);
        if( *obuff)
+#ifdef _WIN32
+          if( PDC_puts_to_stdout( obuff) > 50 && PDC_wine_version > 0)
+              PDC_gotoyx( lineno, x);
+#else
           PDC_puts_to_stdout( obuff);
+#endif
 #ifdef USING_COMBINING_CHARACTER_SCHEME
        if( ch > (int)MAX_UNICODE)      /* combining char sequence */
        {
@@ -378,7 +392,7 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
 #endif
                if( _is_altcharset( srcp[count]))
                   ch = (int)acs_map[ch & 0x7f];
-#ifdef DOS
+#if !defined( PDC_WIDE)
                obuff[bytes_out++] = (char)ch;
 #else
                if( ch < (int)' ' || (ch >= 0x80 && ch <= 0x9f))
@@ -398,6 +412,9 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
        prev_ch = *srcp;
        srcp += count;
        len -= count;
+#ifdef _WIN32
+       x += count;
+#endif
    }
 }
 
