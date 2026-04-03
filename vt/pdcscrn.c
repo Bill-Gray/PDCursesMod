@@ -44,6 +44,35 @@ bool PDC_resize_occurred = FALSE;
 #define DISABLE_NEWLINE_AUTO_RETURN        0x0008
 #endif
 
+/* Modified version of suggested Wine detection technique at
+
+https://www.winehq.org/pipermail/wine-devel/2008-September/069387.html
+
+Note that odd casting is required to avoid warnings/errors. */
+
+typedef const char *(CDECL *wine_ver_func)();
+#define VOID_FN_PTR (void(*)(void))
+
+static int _wine_version( void)
+{
+    wine_ver_func pwine_get_version;
+    HMODULE hntdll = (HMODULE)GetModuleHandle( "ntdll.dll");
+
+    if(!hntdll)            /* not running on NT,  i.e.,  WinME/98/95 */
+        return( -1);
+
+    pwine_get_version = (wine_ver_func) VOID_FN_PTR
+                    GetProcAddress( hntdll, "wine_get_version");
+    if( pwine_get_version)
+    {
+        const char *version_string = (const char *)pwine_get_version( );
+
+        return( atoi( version_string));
+    }
+    else         /* Wine not found;  we're on 'real' Windows(R) NT */
+        return( 0);
+}
+
 /* In DOS/Windows,  we have two possible modes of operation.  If we can
 successfully use SetConsoleMode to ENABLE_VIRTUAL_TERMINAL_INPUT,
 we have access to most of what we'd use on xterm.  If not,  we can only
@@ -68,6 +97,8 @@ static int PDC_get_screen_size( int *n_cols, int *n_rows)
     return( 0);
 }
 
+int PDC_wine_version;
+
 static int set_win10_for_vt_codes( const bool setting_mode)
 {
     const HANDLE hIn = GetStdHandle( STD_INPUT_HANDLE);
@@ -81,6 +112,12 @@ static int set_win10_for_vt_codes( const bool setting_mode)
     if( hIn == INVALID_HANDLE_VALUE)
         return GetLastError( );
     PDC_is_ansi = TRUE;
+    if( setting_mode)
+        {
+        PDC_wine_version = _wine_version( );
+        if( PDC_wine_version > 0)
+            setbuf( stdout, NULL);
+        }
     if( setting_mode)
         {
         GetConsoleMode( hIn, &old_input_mode);
