@@ -307,16 +307,15 @@ int PDC_get_key( void)
       }
    if( check_key( &rval))
       {
-      int c[MAX_COUNT], modifiers = 0;
+      int c[MAX_COUNT] = { 0 }, modifiers = 0;
 
 #ifdef USE_CONIO
       if( rval == 0 || rval == 224)
          {
-         int key2;
-
-#ifdef __DJGPP__                 /* DJGPP returns kbhit() = 1 only once for */
-         key2 = dmc_getch( );    /* escape sequences,  not twice as other  */
-#else                            /* compilers for MS-DOS do */
+#ifdef __DJGPP__                   /* DJGPP returns kbhit() = 1 only once for */
+         int key2 = dmc_getch( );  /* escape sequences,  not twice as other  */
+#else                              /* compilers for MS-DOS do */
+         int key2 = 0;
          while( !check_key( &key2))
             ;
 #endif
