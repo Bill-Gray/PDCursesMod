@@ -59,10 +59,6 @@ emulation is in place.
 https://www.gnu.org/software/screen/manual/html_node/Control-Sequences.html
 */
 
-void PDC_check_for_resize( void);
-
-extern bool PDC_resize_occurred;
-
 static bool check_key( int *c)
 {
     bool rval;
@@ -70,9 +66,6 @@ static bool check_key( int *c)
     struct timeval timeout;
     fd_set rdset;
     extern int PDC_n_ctrl_c;
-
-    if( PDC_resize_occurred)
-       return( TRUE);
 
 #ifdef HAVE_MOUSE
     _check_mouse( );
@@ -102,11 +95,6 @@ static bool check_key( int *c)
     else
        rval = FALSE;
 #else
-#ifdef _WIN32
-    PDC_check_for_resize( );
-    if( PDC_resize_occurred)
-       return( TRUE);
-#endif
     if( WINDOWS_VERSION_OF_KBHIT( ))
        {
        rval = TRUE;
@@ -123,9 +111,15 @@ static bool check_key( int *c)
     return( rval);
 }
 
+void PDC_check_for_resize( void);
+extern bool PDC_resize_occurred;
+
 bool PDC_check_key( void)
 {
-   if( _mlist_count)
+#ifdef _WIN32
+   PDC_check_for_resize( );
+#endif
+   if( _mlist_count || PDC_resize_occurred)
       return TRUE;
    return( check_key( NULL));
 }
@@ -134,7 +128,7 @@ void PDC_flushinp( void)
 {
    int thrown_away_char;
 
-   _mlist_count = 0;
+   _mlist_count = PDC_resize_occurred = 0;
    while( check_key( &thrown_away_char))
       ;
 }
@@ -295,6 +289,9 @@ int PDC_get_key( void)
    int rval = -1;
    static bool recursed = FALSE;
 
+#ifdef _WIN32
+   PDC_check_for_resize( );
+#endif
    if( PDC_resize_occurred)
       {
       PDC_resize_occurred = FALSE;
