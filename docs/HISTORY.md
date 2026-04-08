@@ -1,7 +1,7 @@
 Generally speaking,  this history mentions only the more significant
 changes.  See the git log for full details.
 
-PDCursesMod 4.5.4 - 2026 March 28
+PDCursesMod 4.5.4 - 2026 April 07
 =================================
 
 Minor new features
@@ -53,6 +53,8 @@ Minor new features
 - DOSVGA Makefile revised to simplify use of DJGPP,  and to use full
   warnings.  A few 'nuisance' warnings were corrected.  141b7f642b
 
+- VT platform now beeps.
+
 Bug fixes
 ---------
 
@@ -60,9 +62,11 @@ Bug fixes
   9e0b701fb0
 
 - VT now works fully on Microsoft Windows and MS-DOS,  fixing several
-  display issues.  Also,  mouse clicks are correctly handled on Windows
-  (DOSBox,  at least,  doesn't seem to know about mouse control
-  sequences).  9401517387  b3e0830262
+  display issues.  Also,  mouse clicks are correctly handled in the
+  VT platform on Windows,  and window resizing is (mostly) handled.
+  (Mouse control sequences appear to not be done in DOS,  so VT in
+  DOS continues to ignore mouse events.)  9401517387  b3e0830262
+  4861583385  ac2c5441f5  b3f4eca4bf  410f5cfad4  ace6fc1248
 
 - PDC_millisecs() now will usually pick a better underlying timekeeping
   function.  7906c61500
