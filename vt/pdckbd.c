@@ -499,7 +499,7 @@ int PDC_get_key( void)
             }
          }
       else if( rval == 127)
-         rval = 8;
+         rval = KEY_BACKSPACE;
       else if( rval > 0 && rval < 127)
          {
                /* The following 128 bits indicate which keys require Shift */

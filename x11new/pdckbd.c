@@ -73,7 +73,7 @@ static struct
  {XK_F18,       FALSE,  KEY_F(18),   KEY_F(30),    KEY_F(42),   KEY_F(54)},
  {XK_F19,       FALSE,  KEY_F(19),   KEY_F(31),    KEY_F(43),   KEY_F(55)},
  {XK_F20,       FALSE,  KEY_F(20),   KEY_F(32),    KEY_F(44),   KEY_F(56)},
- {XK_BackSpace, FALSE,  0x08,        0x08,         CTL_BKSP,    ALT_BKSP},
+ {XK_BackSpace, FALSE,  KEY_BACKSPACE, 0x08,       CTL_BKSP,    ALT_BKSP},
  {XK_Tab,       FALSE,  0x09,        KEY_BTAB,     CTL_TAB,     ALT_TAB},
 #if defined(XK_ISO_Left_Tab)
  {XK_ISO_Left_Tab, FALSE, 0x09,      KEY_BTAB,     CTL_TAB,     ALT_TAB},
@@ -485,7 +485,6 @@ static bool check_key( int *c)
 #else                                /* non-leaky,  i.e.,  non-XIM,  method */
             key = XLookupKeysym( &report.xkey, 0);
 #endif
-
             if( key >= 'a' && key <= 'z')
                 {
                 if( report.xkey.state & Mod1Mask)
@@ -510,7 +509,7 @@ static bool check_key( int *c)
 #endif
                 key_to_add = key;
                 }
-            else if( key >= XK_BackSpace && key <= XK_Escape)
+            else if( key > XK_Tab && key < XK_Escape)
                key_to_add = (int)( key & 0xff);
 #ifdef NO_LEAKS
             else if( key > 0 && key <= ' ')
