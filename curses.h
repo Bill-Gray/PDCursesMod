@@ -148,12 +148,12 @@ typedef unsigned char bool;
    #define PDC_LONG_MMASK
    #ifdef PDC_WIDE
       #define USING_COMBINING_CHARACTER_SCHEME
-      #define CCHARW_MAX   20
    #endif
 #endif
 
 #ifdef PDC_WIDE
 typedef chtype cchar_t;
+#define CCHARW_MAX   20
 #endif
 
 typedef chtype attr_t;
