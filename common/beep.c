@@ -27,9 +27,11 @@ use PlaySound( ) and get a more unpleasant noise.     */
 static void _raw_beep( void)
 {
     flash( );
+#ifndef __WATCOMC__
     if( IsWindows7OrGreater( )
                    || !PlaySound((LPCTSTR) SND_ALIAS_SYSTEMEXCLAMATION, NULL, SND_ALIAS_ID | SND_ASYNC))
         Beep(400, 200);
+#endif
 }
 #endif
 
