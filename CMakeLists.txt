@@ -70,6 +70,12 @@ else()
         add_subdirectory(vt)
     endif()
 
+    if(PDC_X11_BUILD)
+        # set(PDC_UTF8 ON)
+        # set(PDC_WIDE ON)
+        add_subdirectory(x11new)
+    endif()
+
 endif()
 
 add_custom_target(uninstall "${CMAKE_COMMAND}" -P "${CMAKE_SOURCE_DIR}/cmake/make_uninstall.cmake")
