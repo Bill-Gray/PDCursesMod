@@ -47,21 +47,21 @@ elseif(PDC_DOSVT_BUILD) # currently requires a unique toolchain file
 elseif(PDC_OS2_BUILD) # currently requires a unique toolchain file
 
     add_subdirectory(os2)
-    
+
 else()
 
     add_subdirectory(ncurses)
-    
+
     if(PDC_SDL2_BUILD)
-    
+
         add_subdirectory(sdl2)
-        
+
     endif()
 
     if(PDC_GL_BUILD)
-    
+
         add_subdirectory(gl)
-        
+
     endif()
 
     if(UNIX)
@@ -69,13 +69,21 @@ else()
     endif()
 
     if(WIN32)
-    
+
         add_subdirectory(wincon)
         add_subdirectory(wingui)
         add_subdirectory(vt)
-        
+
     endif()
-   
+
+    if(PDC_X11_BUILD)
+
+        # set(PDC_UTF8 ON)
+        # set(PDC_WIDE ON)
+        add_subdirectory(x11new)
+
+    endif()
+
 endif()
 
 add_custom_target(uninstall "${CMAKE_COMMAND}" -P "${CMAKE_SOURCE_DIR}/cmake/make_uninstall.cmake")

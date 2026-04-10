@@ -9,12 +9,13 @@ set (CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/cmake")
 set (PDCURSES_SRCDIR "${CMAKE_SOURCE_DIR}")
 
 include (get_version)
-project(pdcurses VERSION "${CURSES_VERSION}" LANGUAGES C)
+project(x11 VERSION "${CURSES_VERSION}" LANGUAGES C)
+
+message(STATUS "**** ${PROJECT_NAME} ****")
 
 message(STATUS "Generator .............. ${CMAKE_GENERATOR}")
 message(STATUS "Build Type ............. ${CMAKE_BUILD_TYPE}")
 
-include(build_options)
 option(PDC_NO_LEAKS "No Leaks" OFF)
 option(PDC_CHTYPE_16 "CHTYPE_16" OFF)
 
@@ -69,50 +70,53 @@ set (PDCURSES_SOURCES ${PDCURSES_SRCDIR}/pdcurses/addch.c
                       ${PDCURSES_SRCDIR}/x11new/pdcutil.c)
 
 if (PDC_BUILD_SHARED)
-    add_library(pdcurses SHARED ${PDCURSES_SOURCES})
+    add_library(${PROJECT_NAME} SHARED ${PDCURSES_SOURCES})
+    set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "pdcurses")
 else ()
-    add_library(pdcurses STATIC ${PDCURSES_SOURCES})
+    add_library(${PROJECT_NAME} STATIC ${PDCURSES_SOURCES})
+    set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "pdcursesstatic")
 endif ()
 
-target_include_directories(pdcurses PRIVATE "${PDCURSES_SRCDIR}"
+target_include_directories(${PROJECT_NAME} PRIVATE "${PDCURSES_SRCDIR}"
                                             "${CMAKE_CURRENT_BINARY_DIR}")
 
-target_compile_options (pdcurses PRIVATE -Wall -Wextra -pedantic -Werror -fPIC)
+target_compile_options (${PROJECT_NAME} PRIVATE -Wall -Wextra -pedantic -Werror -fPIC)
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    target_compile_options (pdcurses PRIVATE -g3)
-    target_compile_definitions(pdcurses PUBLIC -DPDCDEBUG)
+    target_compile_options (${PROJECT_NAME} PRIVATE -g3)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC -DPDCDEBUG)
 else ()
-    target_compile_options (pdcurses PRIVATE -O3)
+    target_compile_options (${PROJECT_NAME} PRIVATE -O3)
 endif ()
 
 if (PDC_NO_LEAKS)
-    target_compile_definitions(pdcurses PUBLIC -DNO_LEAKS)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC -DNO_LEAKS)
 endif ()
 
 
 if (PDC_UTF8)
-    target_compile_definitions(pdcurses PUBLIC -DPDC_FORCE_UTF8)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC -DPDC_FORCE_UTF8)
 endif ()
 
 if (PDC_WIDE)
-    target_compile_definitions(pdcurses PUBLIC -DPDC_WIDE)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC -DPDC_WIDE)
 endif ()
 
 if (PDC_CHTYPE_32)
-    target_compile_definitions(pdcurses PUBLIC -DCHTYPE_32)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC -DCHTYPE_32)
 endif ()
 
 if (PDC_CHTYPE_16)
-    target_compile_definitions(pdcurses PUBLIC -DCHTYPE_16)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC -DCHTYPE_16)
 endif ()
 
-target_link_libraries (pdcurses -lX11 -lpthread)
+target_link_libraries (${PROJECT_NAME} -lX11 -lpthread)
+set(PDCURSES_DIST ${CMAKE_INSTALL_PREFIX}/${CMAKE_BUILD_TYPE})
 
-install (TARGETS pdcurses
-         EXPORT pdcurses_Targets
-         ARCHIVE DESTINATION lib
-         LIBRARY DESTINATION lib
-         RUNTIME DESTINATION bin)
+install (TARGETS ${PROJECT_NAME}
+         EXPORT ${PROJECT_NAME}_Targets
+         ARCHIVE DESTINATION ${PDCURSES_DIST}/lib/${PROJECT_NAME}
+         LIBRARY DESTINATION ${PDCURSES_DIST}/lib/${PROJECT_NAME}
+         RUNTIME DESTINATION ${PDCURSES_DIST}/bin/${PROJECT_NAME})
 install (FILES "${PDCURSES_SRCDIR}/curses.h"
                "${PDCURSES_SRCDIR}/curspriv.h"
          DESTINATION include)
@@ -134,10 +138,11 @@ macro (x11_app dir targ)
     target_include_directories(${bin_name} PRIVATE "${PDCURSES_SRCDIR}"
                                                    "${CMAKE_CURRENT_BINARY_DIR}")
 
-    target_link_libraries(${bin_name} pdcurses -lX11 -lpthread)
+    target_link_libraries(${bin_name} ${PROJECT_NAME} -lX11 -lpthread)
 
-    add_dependencies(${bin_name} pdcurses)
+    add_dependencies(${bin_name} ${PROJECT_NAME})
     set_target_properties(${bin_name} PROPERTIES OUTPUT_NAME ${targ})
+    install(PROGRAMS "${CMAKE_CURRENT_BINARY_DIR}/${targ}" DESTINATION ${PDCURSES_DIST}/bin/${PROJECT_NAME})
 endmacro ()
 
 # demos
@@ -169,3 +174,4 @@ x11_app(../tests restart)
 x11_app(../tests ripoff)
 x11_app(../tests show_col)
 x11_app(../tests show_uni)
+
