@@ -93,7 +93,7 @@ if(PDC_BUILD_SHARED)
             target_link_libraries(${PDCURSE_PROJ} ${EXTRA_LIBS}
                 ${SDL2_LIBRARIES} ${SDL2_DEP_LIBRARIES})
         endif()
-    elseif((${PROJECT_NAME} STREQUAL "wincon") OR (${PROJECT_NAME} STREQUAL "wingui") OR (${PROJECT_NAME} STREQUAL "vt""))
+    elseif((${PROJECT_NAME} STREQUAL "wincon") OR (${PROJECT_NAME} STREQUAL "wingui") OR (${PROJECT_NAME} STREQUAL "vt"))
         target_link_libraries(${PDCURSE_PROJ} ${EXTRA_LIBS} ${WINCON_WINGUI_DEP_LIBS})
     else()
         target_link_libraries(${PDCURSE_PROJ} ${EXTRA_LIBS})
