@@ -15,7 +15,7 @@
 SysV) mouse functions in inputTest.  Otherwise,  the ncurses mouse
 interface will be used.       */
 
-// #define CLASSIC_MOUSE_INTERFACE
+/* #define CLASSIC_MOUSE_INTERFACE        */
 
 #if defined( CLASSIC_MOUSE_INTERFACE)
    #define BUTTON_MOVE_EVENTS (BUTTON1_MOVED | BUTTON2_MOVED | BUTTON3_MOVED \
@@ -649,21 +649,6 @@ void inputTest(WINDOW *win)
 
             wprintw(win, "Posn: Y: %d X: %d", MOUSE_Y_POS, MOUSE_X_POS);
         }
-        else if (PDC_get_key_modifiers())
-        {
-            waddstr(win, " Modifier(s):");
-            if (PDC_get_key_modifiers() & PDC_KEY_MODIFIER_SHIFT)
-                waddstr(win, " SHIFT");
-
-            if (PDC_get_key_modifiers() & PDC_KEY_MODIFIER_CONTROL)
-                waddstr(win, " CONTROL");
-
-            if (PDC_get_key_modifiers() & PDC_KEY_MODIFIER_ALT)
-                waddstr(win, " ALT");
-
-            if (PDC_get_key_modifiers() & PDC_KEY_MODIFIER_NUMLOCK)
-                waddstr(win, " NUMLOCK");
-        }
 #else             /* ncurses mouse handling */
         if (c == KEY_MOUSE)
         {
@@ -718,6 +703,21 @@ void inputTest(WINDOW *win)
                 wprintw( win, "  ? getmouse failed ?");
         }
 #endif
+        if( c != KEY_MOUSE && PDC_get_key_modifiers())
+        {
+            waddstr(win, " Modifier(s):");
+            if (PDC_get_key_modifiers() & PDC_KEY_MODIFIER_SHIFT)
+                waddstr(win, " SHIFT");
+
+            if (PDC_get_key_modifiers() & PDC_KEY_MODIFIER_CONTROL)
+                waddstr(win, " CONTROL");
+
+            if (PDC_get_key_modifiers() & PDC_KEY_MODIFIER_ALT)
+                waddstr(win, " ALT");
+
+            if (PDC_get_key_modifiers() & PDC_KEY_MODIFIER_NUMLOCK)
+                waddstr(win, " NUMLOCK");
+        }
         wrefresh(win);
         line++;
 
