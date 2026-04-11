@@ -59,6 +59,7 @@ static int nexty, nextx;
 static int key = ERR, ch = ERR;
 static bool quit = FALSE;
 static bool incurses = FALSE;
+static SCREEN *screen_pointer;
 
 #ifndef PDCURSES
 static char wordchar(void)
@@ -348,6 +349,7 @@ static void cleanup(void)   /* cleanup curses settings */
         delwin(wstat);
         curs_set(1);
         endwin();
+        delscreen( screen_pointer);
         incurses = FALSE;
     }
 }
@@ -531,7 +533,7 @@ void domenu(menu *mp)
 
 void startmenu(menu *mp, char *mtitle)
 {
-    initscr();
+    screen_pointer = newterm(NULL, stdout, stdin);
     incurses = TRUE;
     initcolor();
 
