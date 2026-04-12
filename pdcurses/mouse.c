@@ -297,6 +297,7 @@ bool mouse_trafo(int *y, int *x, bool to_screen)
 #define BUTTON_MOVE_EVENTS (BUTTON1_MOVED | BUTTON2_MOVED | BUTTON3_MOVED \
                           | BUTTON4_MOVED | BUTTON5_MOVED)
 #define ALL_MOVE_EVENTS  (BUTTON_MOVE_EVENTS | REPORT_MOUSE_POSITION)
+#define NO_MOUSE_EVENT        -42
 
 mmask_t mousemask(mmask_t mask, mmask_t *oldmask)
 {
@@ -317,6 +318,7 @@ mmask_t mousemask(mmask_t mask, mmask_t *oldmask)
 #endif
 
     mouse_set(mask);
+    SP->mouse_status.x = NO_MOUSE_EVENT;
 
     return SP->_trap_mbe;
 }
@@ -341,12 +343,13 @@ int nc_getmouse(MEVENT *event)
 
     assert( SP);
     assert( event);
-    if (!event || !SP)
+    if (!event || !SP || SP->mouse_status.x == NO_MOUSE_EVENT)
         return ERR;
 
     ungot = FALSE;
 
     request_mouse_pos();
+    SP->mouse_status.x = NO_MOUSE_EVENT;
 
     event->id = 0;
 
