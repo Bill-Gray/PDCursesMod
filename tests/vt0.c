@@ -65,6 +65,16 @@ static int get_param( const char **iptr)
    return( rval);
 }
 
+static int _get_color_idx( const int ival)
+{
+   assert( ival >= 0 && ival < 8);
+#if COLOR_RED == 1
+   return( ival);
+#else                      /* bits are in reversed order */
+   return( ((ival & 1) << 2) | (ival & 2) | (ival >> 2));
+#endif
+}
+
 static int verbose = 0;
 
 int create_term( const char* szCommand, const char **args,
@@ -262,7 +272,7 @@ int create_term( const char* szCommand, const char **args,
                                     else if( ival < 30)
                                        attroff( att[ival - 21]);
                                     else if( ival < 38)
-                                       fg = ival - 30;
+                                       fg = _get_color_idx( ival - 30);
                                     else if( ival == 38 || ival == 48)   /* true-color handling */
                                        {
                                        const int val2 = get_param( &tptr);
@@ -290,7 +300,7 @@ int create_term( const char* szCommand, const char **args,
                                     else if( ival == 39)
                                        fg = -1;            /* foreground to default */
                                     else if( ival < 48)
-                                       bg = ival - 40;
+                                       bg = _get_color_idx( ival - 40);
                                     else if( ival == 49)
                                        bg = -1;            /* foreground to default */
                                     }
