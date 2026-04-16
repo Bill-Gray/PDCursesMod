@@ -356,8 +356,6 @@ static void _new_packet( attr_t attr, const int lineno, const int x, const int l
                                            uprect + rectcount - 1))
        rectcount--;
 
-    if( blink)
-        attr ^= A_REVERSE;
     _set_attr(attr);
 
     if (backgr == -1)
@@ -387,6 +385,8 @@ static void _new_packet( attr_t attr, const int lineno, const int x, const int l
 #endif
             ch = acs_map[ch & 0x7f];
         }
+        if( blink)
+            ch = ' ';
 
 #ifdef PDC_WIDE
         ch &= A_CHARTEXT;

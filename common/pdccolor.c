@@ -170,6 +170,7 @@ void PDC_get_rgb_values( const chtype srcp,
 {
     const int color = (int)(( srcp & A_COLOR) >> PDC_COLOR_SHIFT);
     bool reverse_colors = ((srcp & A_REVERSE) ? TRUE : FALSE);
+    bool blinking = FALSE;
     bool intensify_backgnd = FALSE;
     bool default_foreground = FALSE, default_background = FALSE;
     int foreground_index, background_index;
@@ -191,7 +192,7 @@ void PDC_get_rgb_values( const chtype srcp,
         if( !(SP->termattrs & A_BLINK))   /* convert 'blinking' to 'bold' */
             intensify_backgnd = TRUE;
         else if( SP->blink_state & 1)
-            reverse_colors ^= 1;
+            blinking = TRUE;
     }
     if( default_foreground)
         *foreground_rgb = (PACKED_RGB)-1;
@@ -216,4 +217,6 @@ void PDC_get_rgb_values( const chtype srcp,
         *foreground_rgb = *background_rgb;
         *background_rgb = temp;
     }
+    if( blinking)
+        *foreground_rgb = *background_rgb;
 }

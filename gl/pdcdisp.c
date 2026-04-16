@@ -604,8 +604,6 @@ static void _new_packet( attr_t attr, const int lineno, const int x, const int l
     attr_t sysattrs = SP->termattrs;
     const bool blink = SP->blink_state && (attr & A_BLINK) && (sysattrs & A_BLINK);
 
-    if( blink)
-        attr ^= A_REVERSE;
     _set_attr(attr);
 
     for (j = 0; j < len; j++)
@@ -616,7 +614,8 @@ static void _new_packet( attr_t attr, const int lineno, const int x, const int l
             ch = acs_map[ch & 0x7f];
 
         ch &= A_CHARTEXT;
-
+        if( blink)
+            ch = ' ';
         draw_glyph(lineno, x+j, attr, ch,
             get_pdc_color(backgr), get_pdc_color(foregr));
     }
