@@ -92,9 +92,7 @@ if(PDC_BUILD_SHARED)
             target_link_libraries(${PDCURSE_PROJ} PRIVATE ${SDL2_LIBRARIES} ${SDL2_DEP_LIBRARIES})
         endif()
     elseif((${PROJECT_NAME} STREQUAL "wincon") OR (${PROJECT_NAME} STREQUAL "wingui") OR (${PROJECT_NAME} STREQUAL "vt"))
-        target_link_libraries(${PDCURSE_PROJ} ${EXTRA_LIBS} ${WINCON_WINGUI_DEP_LIBS})
-    else()
-        target_link_libraries(${PDCURSE_PROJ} ${EXTRA_LIBS})
+        target_link_libraries(${PDCURSE_PROJ} PRIVATE ${WINCON_WINGUI_DEP_LIBS})
     endif()
 
     install(TARGETS ${PDCURSE_PROJ}
