@@ -399,7 +399,11 @@ typedef struct _screen SCREEN;
 #  define PDCEX __declspec(dllimport) extern
 # endif
 #else
-# define PDCEX extern
+# ifdef PDC_ENABLE_VISIBILITY
+#  define PDCEX __attribute__((visibility("default"))) extern
+# else
+#  define PDCEX extern
+# endif
 #endif
 
 PDCEX  int          LINES;        /* terminal height */
