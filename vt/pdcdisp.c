@@ -1,4 +1,4 @@
-#ifdef DOS
+#if defined( DOS) || (defined( _WIN32) && !defined( PDC_WIDE))
    #define USE_UNICODE_ACS_CHARS 0
 #else
    #define USE_UNICODE_ACS_CHARS 1
@@ -12,6 +12,9 @@
 #include <stdlib.h>
 #ifdef _WIN32
     #include <io.h>
+    #include <fcntl.h>
+
+    extern int PDC_wine_version;
 #else
     #include <unistd.h>
 #endif
@@ -40,6 +43,9 @@ int PDC_get_terminal_fd( void)
          fprintf(stderr, "No output device found\n");
          exit( -1);
          }
+#if defined( _WIN32) && defined( PDC_WIDE) && defined( _O_U8TEXT)
+      _setmode( stdout_fd, _O_U8TEXT);
+#endif
 #endif
       }
    return( stdout_fd);
@@ -51,21 +57,21 @@ int PDC_get_terminal_fd( void)
 
 #define TBUFF_SIZE 512
 
-static void put_to_stdout( const char *buff, size_t bytes_out)
+static size_t put_to_stdout( const char *buff, size_t bytes_out)
 {
     static char *tbuff = NULL;
     static size_t bytes_cached;
     int stdout_fd;
 
     if( !buff && !tbuff)
-        return;
+        return( 0);
 
     if( !buff && bytes_out == 1)        /* release memory at shutdown */
     {
         free( tbuff);
         tbuff = NULL;
         bytes_cached = 0;
-        return;
+        return( 0);
     }
 
     if( buff && !tbuff)
@@ -88,33 +94,40 @@ static void put_to_stdout( const char *buff, size_t bytes_out)
             while( bytes_cached)
             {
 #ifdef _WIN32
-                const size_t bytes_written = _write( stdout_fd, tbuff,
+                size_t bytes_written;
+
+                if( PDC_wine_version <= 0)
+                    bytes_written = _write( stdout_fd, tbuff,
                                              (unsigned int)bytes_cached);
+                else
+                    bytes_written = fwrite( tbuff, 1,
+                                             (unsigned int)bytes_cached, stdout);
 #else
                 const size_t bytes_written = write( stdout_fd, tbuff, bytes_cached);
 #endif
-
                 bytes_cached -= bytes_written;
                 if( bytes_cached)
                     memmove( tbuff, tbuff + bytes_written, bytes_cached);
             }
     }
+    return( bytes_cached);
 }
 
-void PDC_puts_to_stdout( const char *buff)
+size_t PDC_puts_to_stdout( const char *buff)
 {
-   put_to_stdout( buff, (buff ? strlen( buff) : 1));
+   return( put_to_stdout( buff, (buff ? strlen( buff) : 1)));
 }
 
 void PDC_gotoyx(int y, int x)
 {
    char tbuff[50];
 
-#ifdef HAVE_SNPRINTF
-   snprintf( tbuff, sizeof( tbuff), CSI "%d;%dH", y + 1, x + 1);
-#else
-   sprintf( tbuff, CSI "%d;%dH", y + 1, x + 1);
+   *tbuff = '\0';
+#ifdef _WIN32
+   if( PDC_wine_version > 0)
+      strcpy( tbuff, CSI "1;1H\r\n");
 #endif
+   sprintf( tbuff + strlen( tbuff), CSI "%d;%dH", y + 1, x + 1);
    PDC_puts_to_stdout( tbuff);
    PDC_doupdate( );
 }
@@ -132,6 +145,7 @@ void PDC_gotoyx(int y, int x)
 #define DIM_OFF       CSI "22m"
 #define REVERSE_ON    CSI "7m"
 #define STRIKEOUT_ON  CSI "9m"
+#define STRIKEOUT_OFF CSI "29m"
 
 /* see 'addch.c' for an explanation of how combining chars are handled. */
 
@@ -157,6 +171,18 @@ static size_t _unpack_combined_character( wchar_t *obuff, const size_t buffsize,
 }
 #endif
 
+#ifdef _WIN32
+   #define COLOR_CMD_RGB   "2;%d;%d;%dm"
+   #define COLOR_CMD_IDX   "5;%dm"
+   #define COLOR_CMD_FOREGND   "38;"
+   #define COLOR_CMD_BACKGND   "48;"
+#else
+   #define COLOR_CMD_RGB   "2:%d:%d:%dm"
+   #define COLOR_CMD_IDX   "5:%dm"
+   #define COLOR_CMD_FOREGND   "38:"
+   #define COLOR_CMD_BACKGND   "48:"
+#endif
+
 static void color_string( char *otext, const PACKED_RGB rgb)
 {
    extern bool PDC_has_rgb_color;      /* pdcscrn.c */
@@ -165,7 +191,7 @@ static void color_string( char *otext, const PACKED_RGB rgb)
    const int blue = Get_BValue( rgb);
 
    if( PDC_has_rgb_color)
-      sprintf( otext, "2;%d;%d;%dm", red, green, blue);
+      sprintf( otext, COLOR_CMD_RGB, red, green, blue);
    else
       {
       int idx;
@@ -183,7 +209,7 @@ static void color_string( char *otext, const PACKED_RGB rgb)
          idx = ((blue - 35) / 40) + ((green - 35) / 40) * 6
                   + ((red - 35) / 40) * 36 + 16;
 
-      sprintf( otext, "5;%dm", idx);
+      sprintf( otext, COLOR_CMD_IDX, idx);
       }
 }
 
@@ -213,17 +239,25 @@ static void reset_color( char *obuff, const chtype ch)
         }
     PDC_get_rgb_values( ch, &fg, &bg);
     *obuff = '\0';
+    if( ch & A_REVERSE)
+         if( bg != prev_bg || fg != prev_fg)
+              if( bg == (PACKED_RGB)-1 || fg == (PACKED_RGB)-1)
+              {
+                  prev_fg = fg;
+                  prev_bg = bg;
+                  strcpy( obuff, REVERSE_ON);
+              }
     if( bg != prev_bg)
         {
         if( bg == (PACKED_RGB)-1)   /* default background */
             strcpy( obuff, CSI "49m");
         else if( !bg)
             strcpy( obuff, CSI "40m");
-        else if( COLORS == 16)
+        else if( COLORS <= 16)
             sprintf( obuff, CSI "4%dm", get_sixteen_color_idx( bg));
         else
             {
-            strcpy( obuff, CSI "48;");
+            strcpy( obuff, CSI COLOR_CMD_BACKGND);
             color_string( obuff + 5, bg);
             }
         prev_bg = bg;
@@ -234,11 +268,11 @@ static void reset_color( char *obuff, const chtype ch)
         obuff += strlen( obuff);
         if( fg == (PACKED_RGB)-1)   /* default foreground */
             strcpy( obuff, CSI "39m");
-        else if( COLORS == 16)
+        else if( COLORS <= 16)
             sprintf( obuff, CSI "3%dm", get_sixteen_color_idx( fg));
         else
             {
-            strcpy( obuff, CSI "38;");
+            strcpy( obuff, CSI COLOR_CMD_FOREGND);
             color_string( obuff + 5, fg);
             }
         prev_fg = fg;
@@ -294,36 +328,34 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
        if( ch < (int)' ' || (ch >= 0x80 && ch <= 0x9f))
           ch = ' ';
        *obuff = '\0';
-       if( changes & (A_REVERSE | A_STRIKEOUT | A_BOLD))
+       if( changes & (A_REVERSE | A_STRIKEOUT | A_BOLD | A_BLINK))
        {
           prev_ch = 0;
           changes = *srcp | A_COLOR;
           strcpy( obuff, RESET_ATTRS);
           reset_color( NULL, 0);
        }
-       if( SP->termattrs & *srcp & A_BOLD)
-          strcat( obuff, BOLD_ON);
+       if( SP->termattrs & changes & A_BOLD)
+          if( *srcp & A_BOLD)
+             strcat( obuff, BOLD_ON);
        if( changes & A_UNDERLINE)
           strcat( obuff, (*srcp & A_UNDERLINE) ? UNDERLINE_ON : UNDERLINE_OFF);
        if( changes & A_ITALIC)
           strcat( obuff, (*srcp & A_ITALIC) ? ITALIC_ON : ITALIC_OFF);
-#ifndef DOS
-       if( changes & A_REVERSE)
-          strcat( obuff, REVERSE_ON);
-#endif
-#ifndef _WIN32                /* MS doesn't support strikeout text */
        if( changes & A_STRIKEOUT)
-          strcat( obuff, STRIKEOUT_ON);
-#endif
+          strcat( obuff, (*srcp & A_STRIKEOUT) ? STRIKEOUT_ON : STRIKEOUT_OFF);
        if( SP->termattrs & changes & A_BLINK)
-          strcat( obuff, (*srcp & A_BLINK) ? BLINK_ON : BLINK_OFF);
+          if( *srcp & A_BLINK)
+             strcat( obuff, BLINK_ON);
        if( changes & (A_COLOR | A_STANDOUT | A_BLINK | A_REVERSE))
-#ifdef DOS
           reset_color( obuff + strlen( obuff), *srcp);
+       if( *obuff)
+#ifdef _WIN32
+          if( PDC_puts_to_stdout( obuff) > 50 && PDC_wine_version > 0)
+              PDC_gotoyx( lineno, x);
 #else
-          reset_color( obuff + strlen( obuff), *srcp & ~A_REVERSE);
+          PDC_puts_to_stdout( obuff);
 #endif
-       PDC_puts_to_stdout( obuff);
 #ifdef USING_COMBINING_CHARACTER_SCHEME
        if( ch > (int)MAX_UNICODE)      /* combining char sequence */
        {
@@ -360,7 +392,7 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
 #endif
                if( _is_altcharset( srcp[count]))
                   ch = (int)acs_map[ch & 0x7f];
-#ifdef DOS
+#if !defined( PDC_WIDE)
                obuff[bytes_out++] = (char)ch;
 #else
                if( ch < (int)' ' || (ch >= 0x80 && ch <= 0x9f))
@@ -380,6 +412,9 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
        prev_ch = *srcp;
        srcp += count;
        len -= count;
+#ifdef _WIN32
+       x += count;
+#endif
    }
 }
 

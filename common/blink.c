@@ -31,6 +31,17 @@ void PDC_check_for_blinking( void)
    const long t = PDC_millisecs( );
    const long blink_interval = 500L;
 
+   if( SP->n_beeps_queued && (int)( t - SP->t_next_beep) > 0)
+   {
+      const int saved_n = SP->n_beeps_queued;
+
+      if( saved_n > 1)
+      {
+         SP->n_beeps_queued = 0;
+         PDC_beep( );
+      }
+      SP->n_beeps_queued = saved_n - 1;
+   }
    if( !prev_time || t - prev_time > blink_interval)
    {
       int x1, y, x2;
@@ -39,7 +50,7 @@ void PDC_check_for_blinking( void)
       SP->blink_state ^= 1;
       for( y = 0; y < SP->lines; y++)
       {
-         chtype *c = curscr->_y[y];
+         const chtype *c = curscr->_y[y];
 
          for( x1 = 0; x1 < SP->cols; x1++)
             if( c[x1] & A_BLINK)

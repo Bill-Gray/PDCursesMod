@@ -1,46 +1,33 @@
-/* PDCurses */
+/* PDCursesMod */
 
 #include "pdcwin.h"
-#ifdef WIN32_LEAN_AND_MEAN
-#include <mmsystem.h>
-#include <process.h>
-#endif
+#include "../common/beep.c"
 
-static volatile int _beep_count = 0;
-
-static void beep_thread(LPVOID lpParameter)
+void PDC_napms(int ms)     /* 'ms' = milli,  _not_ microseconds! */
 {
-    INTENTIONALLY_UNUSED_PARAMETER( lpParameter);
-    while( _beep_count)
+    long t = PDC_millisecs( );
+    const long end_t = t + ms;
+    int remains;
+
+    do
     {
-        if (!PlaySound((LPCTSTR) SND_ALIAS_SYSTEMDEFAULT, NULL, SND_ALIAS_ID))
-            Beep(800, 200);
-        _beep_count--;
-    }
-}
+        remains = (int)( end_t - t);
 
-void PDC_beep(void)
-{
-    PDC_LOG(("PDC_beep() - called\n"));
-
-    _beep_count++;
-#if defined(_MSC_VER) && _MSC_VER < 1900
-    beep_thread( 0);    /* old MSVC lacks _beginthread */
-#else
-    if( _beep_count == 1)
-        _beginthread( beep_thread, 0, NULL);
-#endif
-}
-
-void PDC_napms(int ms)
-{
-    PDC_LOG(("PDC_napms() - called: ms=%d\n", ms));
-
-    if ((SP->termattrs & A_BLINK) && (GetTickCount() >= pdc_last_blink + 500))
-        PDC_blink_text();
-
-    if( ms)
-       Sleep(ms);
+        if( SP->n_beeps_queued && (int)( t - SP->t_next_beep) > 0)
+        {
+            SP->n_beeps_queued--;
+            SP->t_next_beep = t + beep_interval;
+            if( SP->n_beeps_queued > 0)
+               _raw_beep( );
+        }
+        if ((SP->termattrs & A_BLINK) && (GetTickCount() >= pdc_last_blink + 500))
+            PDC_blink_text();
+        if( remains > 0)
+        {
+           Sleep( remains > 50 ? 50 : remains);
+           t = PDC_millisecs( );
+        }
+    } while( remains > 0);
 }
 
 const char *PDC_sysname(void)

@@ -536,7 +536,7 @@ int waddch( WINDOW *win, const chtype ch)
     if( x || y)
     {
         const bool is_combining = (text && !text_width);
-        const bool is_low_surrogate = IS_LOW_SURROGATE( text);
+        const bool is_low_surrogate = PDC_IS_LOW_SURROGATE( text);
 
         if( is_combining || is_low_surrogate)
         {
@@ -553,7 +553,7 @@ int waddch( WINDOW *win, const chtype ch)
             if( is_combining)
                 text = COMBINED_CHAR_START
                          + PDC_find_combined_char_idx( prev_char, text);
-            else if( IS_HIGH_SURROGATE( prev_char))
+            else if( PDC_IS_HIGH_SURROGATE( prev_char))
                 text = 0x10000 + ((prev_char - 0xd800) << 10) + (text - 0xdc00);
             else     /* low surrogate after a non-high surrogate;  not */
                 text = prev_char;   /* supposed to happen */
@@ -586,8 +586,6 @@ int waddch( WINDOW *win, const chtype ch)
             if (!SP->raw_out)
                 x = 0;
 
-               /* Had this commented out.  I think it matters in */
-               /* wide,  non-UTF8 mode on some platforms. */
             wclrtoeol(win);
 
             if (++y > win->_bmarg)

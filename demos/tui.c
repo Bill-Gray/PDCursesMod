@@ -59,6 +59,7 @@ static int nexty, nextx;
 static int key = ERR, ch = ERR;
 static bool quit = FALSE;
 static bool incurses = FALSE;
+static SCREEN *screen_pointer;
 
 #ifndef PDCURSES
 static char wordchar(void)
@@ -70,7 +71,7 @@ static char wordchar(void)
 static char *padstr(char *s, int length)
 {
     static char buf[MAXSTRLEN];
-    char fmt[10];
+    char fmt[15];
 
     sprintf(fmt, (int)strlen(s) > length ? "%%.%ds" : "%%-%ds", length);
     sprintf(buf, fmt, s);
@@ -164,7 +165,7 @@ static void idle(void)
     time_t t;
     struct tm *tp;
 
-    if (time (&t) == -1)
+    if ((int)time (&t) == -1)
         return;  /* time not available */
 
     tp = localtime(&t);
@@ -348,6 +349,7 @@ static void cleanup(void)   /* cleanup curses settings */
         delwin(wstat);
         curs_set(1);
         endwin();
+        delscreen( screen_pointer);
         incurses = FALSE;
     }
 }
@@ -531,7 +533,7 @@ void domenu(menu *mp)
 
 void startmenu(menu *mp, char *mtitle)
 {
-    initscr();
+    screen_pointer = newterm(NULL, stdout, stdin);
     incurses = TRUE;
     initcolor();
 

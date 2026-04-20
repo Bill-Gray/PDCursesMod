@@ -15,7 +15,7 @@
 #define PDC_NCMOUSE
 #define DATA_DIR "."
 
-// #define RETSIGTYPE void
+/* #define RETSIGTYPE void    */
 #define TIME_WITH_SYS_TIME 1
 #define HAVE_SYS_TIME_H 1
 #define HAVE_SYS_TIME_SELECT 1
@@ -36,6 +36,7 @@
 #define HAVE_GETCURX 1
 #define HAVE_GETMAXX 1
 #define HAVE_GETNSTR 1
+#define HAVE_GETPARX 1
 #define HAVE_GETTIMEOFDAY 1
 #define HAVE_GETWIN 1
 #define HAVE_HALFDELAY 1
@@ -47,6 +48,8 @@
 #define HAVE_MATH_H 1
 #define HAVE_MATH_FUNCS 1
 #define HAVE_MENU_H 1
+#define HAVE_MVDERWIN 1
+#define HAVE_MVWIN    1
 #define HAVE_NAPMS 1
 #define HAVE_NEWPAD 1
 #define HAVE_PANEL_H 1

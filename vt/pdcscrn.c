@@ -30,6 +30,7 @@ int PDC_is_ansi = FALSE;
 #endif
 
 int PDC_rows = -1, PDC_cols = -1;
+bool PDC_resize_occurred = FALSE;
 
 #ifdef _WIN32
 
@@ -42,6 +43,35 @@ int PDC_rows = -1, PDC_cols = -1;
 #ifndef DISABLE_NEWLINE_AUTO_RETURN
 #define DISABLE_NEWLINE_AUTO_RETURN        0x0008
 #endif
+
+/* Modified version of suggested Wine detection technique at
+
+https://www.winehq.org/pipermail/wine-devel/2008-September/069387.html
+
+Note that odd casting is required to avoid warnings/errors. */
+
+typedef const char *(CDECL *wine_ver_func)();
+#define VOID_FN_PTR (void(*)(void))
+
+static int _wine_version( void)
+{
+    wine_ver_func pwine_get_version;
+    HMODULE hntdll = (HMODULE)GetModuleHandle( "ntdll.dll");
+
+    if(!hntdll)            /* not running on NT,  i.e.,  WinME/98/95 */
+        return( -1);
+
+    pwine_get_version = (wine_ver_func) VOID_FN_PTR
+                    GetProcAddress( hntdll, "wine_get_version");
+    if( pwine_get_version)
+    {
+        const char *version_string = (const char *)pwine_get_version( );
+
+        return( atoi( version_string));
+    }
+    else         /* Wine not found;  we're on 'real' Windows(R) NT */
+        return( 0);
+}
 
 /* In DOS/Windows,  we have two possible modes of operation.  If we can
 successfully use SetConsoleMode to ENABLE_VIRTUAL_TERMINAL_INPUT,
@@ -67,12 +97,15 @@ static int PDC_get_screen_size( int *n_cols, int *n_rows)
     return( 0);
 }
 
+int PDC_wine_version;
+
 static int set_win10_for_vt_codes( const bool setting_mode)
 {
     const HANDLE hIn = GetStdHandle( STD_INPUT_HANDLE);
     HANDLE hOut;
     DWORD dwMode = 0;
     static DWORD old_input_mode;
+    static UINT old_code_page = 0;
     const DWORD out_mask = ENABLE_VIRTUAL_TERMINAL_PROCESSING
                                | DISABLE_NEWLINE_AUTO_RETURN;
 
@@ -81,11 +114,26 @@ static int set_win10_for_vt_codes( const bool setting_mode)
     PDC_is_ansi = TRUE;
     if( setting_mode)
         {
+        PDC_wine_version = _wine_version( );
+        if( PDC_wine_version > 0)
+            setbuf( stdout, NULL);
+        }
+    if( setting_mode)
+        {
         GetConsoleMode( hIn, &old_input_mode);
         dwMode = ENABLE_VIRTUAL_TERMINAL_INPUT;
+#ifdef PDC_WIDE
+        old_code_page = SetConsoleOutputCP( 65001);
+#else
+        old_code_page = SetConsoleOutputCP( 437);
+#endif
         }
     else       /* restoring initial mode */
+        {
         dwMode = old_input_mode;
+        if( old_code_page)
+            SetConsoleOutputCP( old_code_page);
+        }
     if( !SetConsoleMode( hIn, dwMode))
         return GetLastError( );
         /* Set output mode to handle virtual terminal sequences */
@@ -108,9 +156,37 @@ static int set_win10_for_vt_codes( const bool setting_mode)
         PDC_get_screen_size( &PDC_cols, &PDC_rows);
     return( 0);
 }
+
+/* It appears that ConPTY doesn't provide any way to be signalled about
+window resizing.  You can't,  say,  set up a callback function,  or have
+an escape sequence omitted upon resizing.  You have to poll.
+
+   This seems so utterly stupid that I suspect I've overlooked something.
+But quite a bit of online searching has failed to find an alternative. */
+
+void PDC_check_for_resize( void)
+{
+   HANDLE hOut = GetStdHandle( STD_OUTPUT_HANDLE);
+   CONSOLE_SCREEN_BUFFER_INFO console_buff_info;
+   static short prev_X, prev_Y;
+
+   if( GetConsoleScreenBufferInfo( hOut, &console_buff_info))
+      if( console_buff_info.dwSize.X != prev_X || console_buff_info.dwSize.Y != prev_Y)
+      {
+         if( prev_X && prev_Y)
+         {
+             PDC_rows = console_buff_info.dwSize.Y;
+             PDC_cols = console_buff_info.dwSize.X;
+             PDC_resize_occurred = TRUE;
+             if (SP)
+                SP->resized = TRUE;
+         }
+         prev_X = console_buff_info.dwSize.X;
+         prev_Y = console_buff_info.dwSize.Y;
+      }
+}
 #endif
 
-bool PDC_resize_occurred = FALSE;
 static mmask_t _stored_trap_mbe;
 
 /* COLOR_PAIR to attribute encoding table. */
@@ -129,11 +205,9 @@ void PDC_reset_prog_mode( void)
     term.c_cc[VSTART] = _POSIX_VDISABLE;   /* disable Ctrl-Q */
     tcsetattr( fileno( SP->input_fd), TCSANOW, &term);
 #endif
-#if !defined( _WIN32) && !defined( DOS)
+#if !defined( DOS)
     if( !PDC_is_ansi)
         PDC_puts_to_stdout( CSI "?1006h");    /* Set SGR mouse tracking,  if available */
-#endif
-#ifndef DOS
     if( !SP->_preserve)
        PDC_puts_to_stdout( CSI "?47h");      /* Save screen */
 #endif
@@ -185,7 +259,7 @@ void PDC_save_screen_mode(int i)
 
 void PDC_scr_close( void)
 {
-#if !defined( _WIN32) && !defined( DOS)
+#if !defined( DOS)
    if( !PDC_is_ansi)
        PDC_puts_to_stdout( CSI "?1006l");    /* Turn off SGR mouse tracking */
 #endif
@@ -326,7 +400,11 @@ int PDC_scr_open(void)
         if( env)
            PDC_rows = atoi( env);
         if( PDC_rows < 2)
+#ifdef DOS
+           PDC_rows = 25;
+#else
            PDC_rows = 24;
+#endif
         env = getenv( "PDC_COLS");
         if( env)
            PDC_cols = atoi( env);

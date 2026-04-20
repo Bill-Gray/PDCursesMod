@@ -91,8 +91,10 @@ if(PDC_BUILD_SHARED)
         else()
             target_link_libraries(${PDCURSE_PROJ} PRIVATE ${SDL2_LIBRARIES} ${SDL2_DEP_LIBRARIES})
         endif()
-    elseif((${PROJECT_NAME} STREQUAL "wincon") OR (${PROJECT_NAME} STREQUAL "wingui"))
-        target_link_libraries(${PDCURSE_PROJ} PRIVATE ${WINCON_WINGUI_DEP_LIBS})
+    elseif((${PROJECT_NAME} STREQUAL "wincon") OR (${PROJECT_NAME} STREQUAL "wingui") OR (${PROJECT_NAME} STREQUAL "vt"))
+        target_link_libraries(${PDCURSE_PROJ} ${EXTRA_LIBS} ${WINCON_WINGUI_DEP_LIBS})
+    else()
+        target_link_libraries(${PDCURSE_PROJ} ${EXTRA_LIBS})
     endif()
 
     install(TARGETS ${PDCURSE_PROJ}
@@ -120,7 +122,7 @@ macro (demo_app dir targ)
     add_executable(${bin_name} ${ARGV2} ${src_files})
 
     target_link_libraries(${bin_name} PRIVATE ${PDCURSE_PROJ} ${EXTRA_LIBS})
-    if((${PROJECT_NAME} STREQUAL "wincon") OR (${PROJECT_NAME} STREQUAL "wingui"))
+    if((${PROJECT_NAME} STREQUAL "wincon") OR (${PROJECT_NAME} STREQUAL "wingui") OR (${PROJECT_NAME} STREQUAL "vt"))
         target_link_libraries(${bin_name} PRIVATE ${WINCON_WINGUI_DEP_LIBS})
     endif()
 

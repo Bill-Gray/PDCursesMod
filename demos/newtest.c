@@ -161,9 +161,9 @@ int main( int argc, char **argv)
     SCREEN *screen_pointer;
 #ifdef HAVE_WIDE
     unsigned unicode_offset = 0x80;
-#endif
 
-    setlocale(LC_ALL, ".utf8");
+    setlocale( LC_CTYPE, ".utf8");
+#endif
     ttytype[0] = 25;   ttytype[1] = 90;         /* Allow 25 to 90 lines... */
     ttytype[2] = 80;   ttytype[3] = (char)127;  /* ...and 80 to 127 columns */
          /* (This program gets weird artifacts when smaller than 25x80.) */
@@ -286,10 +286,11 @@ int main( int argc, char **argv)
         {
             mvaddstr( 1, COL1, "'Normal' white-on-black");
             mvaddstr( 2, COL1, longname( ));
-            attron( A_DIM);
+            attrset( A_REVERSE);
+            mvaddstr( 14, 41, "Reversed");
+            attrset( A_DIM);
             mvaddstr( 15, 41, "Dimmed text");
-            attroff( A_DIM);
-            attron( A_STANDOUT);
+            attrset( A_STANDOUT);
             mvaddstr( 16, 41, "Standout text");
             attroff( A_STANDOUT);
 #ifdef HAVE_WIDE
@@ -446,16 +447,14 @@ int main( int argc, char **argv)
         mvaddnstr( 20, color_block_start, cursor_state_text[cursor_state_2],
                                  xmax - color_block_start);
         curs_set( (cursor_state_1 << 8) | cursor_state_2);
-        for( i = 0; i < color_block_cols * color_block_lines; i++)
+        for( i = 0; i < color_block_cols * color_block_lines && i < 256
+                  && i < COLORS && i < COLOR_PAIRS; i++)
         {
-            const int n_color_blocks = (COLOR_PAIRS < 256 ? COLOR_PAIRS : 256);
-
-            attrset( COLOR_PAIR( i >= n_color_blocks ? 2 : i));
-            if( i > 2 && i < n_color_blocks)
+            if( i > 2)
                init_pair((short)i, (short)i, COLOR_BLACK);
+            attrset( COLOR_PAIR( i) | A_REVERSE);
             if( !(i % color_block_cols))
                move( i / color_block_cols, color_block_start);
-            attron( A_REVERSE);
             addstr( "  ");
         }
         move( cursor_y, cursor_x);
@@ -477,6 +476,14 @@ int main( int argc, char **argv)
             getchar( );
             refresh( );
         }
+        else if( c == KEY_UP)
+            cursor_y--;
+        else if( c == KEY_DOWN)
+            cursor_y++;
+        else if( c == KEY_LEFT)
+            cursor_x--;
+        else if( c == KEY_RIGHT)
+            cursor_x++;
         else if( c == KEY_F(1))
             quit = 1;
         else if( c == KEY_F(2))   /* toggle SLKs */
@@ -487,13 +494,19 @@ int main( int argc, char **argv)
             else
                 slk_clear( );
         }
+#ifdef ALT_A
+        else if( c == ALT_A)
+            cursor_state_1 = (cursor_state_1 + 1) % N_CURSORS;
+        else if( c == ALT_B)
+            cursor_state_2 = (cursor_state_2 + 1) % N_CURSORS;
+#endif
         else if( c >= KEY_F(3) && c <= KEY_F(18))
         {
             sscanf( labels[c - KEY_F(1)], "%x", (unsigned *)&fmt);
             if( use_slk)
                 slk_setup( show_slk_index_line ? -fmt : fmt);
         }
-        if( c != KEY_MOUSE)
+        if( c != KEY_MOUSE && c != ' ')
         {
             sprintf( buff, "Key %s", keyname( c));
 #ifdef HAVE_WIDE
@@ -515,21 +528,27 @@ int main( int argc, char **argv)
         else
         {
             MEVENT mouse_event;
-#ifdef __PDCURSES__
-            nc_getmouse( &mouse_event);
-#else
-            getmouse( &mouse_event);
-#endif
-            sprintf( buff, "Mouse at %d x %d: %x     ", mouse_event.x,
-                              mouse_event.y, (unsigned)mouse_event.bstate);
-            cursor_x = mouse_event.x;
-            cursor_y = mouse_event.y;
-            mvaddstr( 0, COL1, buff);
-            if( mouse_event.x >= color_block_start
-                            && mouse_event.y < color_block_lines)
+
+            if( KEY_MOUSE == c)
             {
-                int new_color = (mouse_event.x - color_block_start) / 2
-                              + mouse_event.y * color_block_cols;
+#ifdef __PDCURSES__
+                nc_getmouse( &mouse_event);
+#else
+                getmouse( &mouse_event);
+#endif
+                sprintf( buff, "Mouse at %d x %d: %x     ", mouse_event.x,
+                              mouse_event.y, (unsigned)mouse_event.bstate);
+                cursor_x = mouse_event.x;
+                cursor_y = mouse_event.y;
+            }
+            else
+                mouse_event.bstate = 1;
+            mvaddstr( 0, COL1, buff);
+            if( cursor_x >= color_block_start
+                            && cursor_y < color_block_lines)
+            {
+                int new_color = (cursor_x - color_block_start) / 2
+                              + cursor_y * color_block_cols;
 
                 if( new_color >= 256)
                     new_color = -1;
@@ -538,19 +557,19 @@ int main( int argc, char **argv)
 #endif
             }
 #ifdef PDCURSES
-            else if( mouse_event.x >= color_block_start)
+            else if( cursor_x >= color_block_start)
             {
                 int shift = ((mouse_event.bstate & BUTTON_MODIFIER_SHIFT) ?
                            N_CURSORS - 1 : 1);
 
-                if( mouse_event.y == 19)  /* blink/non-blink toggle */
+                if( cursor_y == 19)  /* blink/non-blink toggle */
                     cursor_state_1 = (cursor_state_1 + shift) % N_CURSORS;
-                else if( mouse_event.y == 20)  /* cycle cursor state */
+                else if( cursor_y == 20)  /* cycle cursor state */
                     cursor_state_2 = (cursor_state_2 + shift) % N_CURSORS;
             }
 #endif
-            else if( mouse_event.x >= 40 && mouse_event.x <= 52)
-               switch( mouse_event.y)
+            else if( cursor_x >= 40 && cursor_x <= 52)
+               switch( cursor_y)
                {
 #ifdef HAVE_WIDE
                   case 11:

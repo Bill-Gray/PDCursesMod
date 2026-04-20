@@ -56,12 +56,13 @@ static void _check_mouse( void)
    const int yper = ((PDC_orientation & 1) ? PDC_font_info.width : PDC_font_info.height);
    const int xmax = SP->cols * xper;
    const int ymax = SP->lines * yper;
-   long timeout = 0;
+   long prev_t = 0;
 
    _key_modifiers = PDC_get_modifiers( );
    if( _get_mouse_event( NULL))      /* already got events queued up */
       return;
-   while( (event = PDC_update_mouse( &button)) >= 0 || PDC_millisecs() < timeout)
+   while( (event = PDC_update_mouse( &button)) >= 0 ||
+                        (prev_t && PDC_millisecs() - prev_t < SP->mouse_wait))
       {
       int x, y;
 
@@ -88,13 +89,14 @@ static void _check_mouse( void)
             }
          else if( event == BUTTON_PRESSED || event == BUTTON_RELEASED)
             {
-            if( _add_raw_mouse_event( button - 1, event, modifs, x, y))
-               timeout = PDC_millisecs( ) + SP->mouse_wait;
+            if( _add_raw_mouse_event( button - 1, event, modifs, x, y)
+                        && SP->mouse_wait)
+               prev_t = PDC_millisecs( );
             else
                break;
             }
          }
-      else if( timeout)
+      else if( prev_t)
          napms( 10);
       }
    if( mx != PDC_mouse_x || my != PDC_mouse_y)

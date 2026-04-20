@@ -50,22 +50,26 @@ endif
 
 ifdef _w64
 	PREFIX  = x86_64-w64-mingw32-
-	E = .exe
+	IS_WIN = Y
 endif
 
 ifdef _w32
 	PREFIX  = i686-w64-mingw32-
-	E = .exe
+	IS_WIN = Y
 endif
 
 ifdef _a64
 	PREFIX  = aarch64-w64-mingw32-
-	E = .exe
+	IS_WIN = Y
 endif
 
 ifeq ($(OS),Windows_NT)
-	E = .exe
+	IS_WIN = Y
 	RM = cmd /c del
+endif
+
+ifeq ($(IS_WIN),Y)
+	E = .exe
 endif
 
 LIBNAME=libpdcurses
@@ -89,6 +93,7 @@ ifeq      ($(TARGET_OS),mingw32)
 else ifeq ($(TARGET_OS),cygwin)
 else ifeq ($(TARGET_OS),msdosdjgpp)
 	CFLAGS += -DDOS
+	E = .exe
 else
 	CFLAGS += -fPIC
 endif
@@ -99,6 +104,7 @@ ifeq ($(DLL),Y)
 		LIBCURSES	= $(DLLNAME).dll
 		LIBEXE = $(CC)
 		LIBFLAGS = -Wl,--out-implib,$(LIBNAME).a -shared -o
+		LIBSADDED = -lwinmm
 	else
 		ifeq ($(shell uname -s),Darwin)
 			DLL_SUFFIX = .dylib
@@ -108,6 +114,10 @@ ifeq ($(DLL),Y)
 		LIBEXE = $(CC)
 		LIBFLAGS = -shared -o
 		LIBCURSES = lib$(DLLNAME)$(DLL_SUFFIX)
+	endif
+else
+	ifeq ($(IS_WIN),Y)
+		EXELIBS = -lwinmm
 	endif
 endif
 
@@ -137,7 +147,7 @@ ifneq ($(DEBUG),Y)
 endif
 
 $(LIBCURSES) : $(LIBOBJS) $(PDCOBJS)
-	$(LIBEXE) $(LIBFLAGS) $@ $?
+	$(LIBEXE) $(LIBFLAGS) $@ $? $(LIBSADDED)
 ifeq ($(LIBCURSES),$(LIBNAME).a)
 	-$(RANLIB) $@
 endif
@@ -156,13 +166,13 @@ $(PDCOBJS) : %.o: $(osdir)/%.c
 	$(BUILD) -c $<
 
 $(DEMOS_EXCEPT_TUIDEMO): %$(E): $(demodir)/%.c
-	$(BUILD) $(DEMOFLAGS) -o$@ $< $(LDFLAGS)
+	$(BUILD) $(DEMOFLAGS) -o$@ $< $(LDFLAGS) $(EXELIBS)
 
 $(TESTS): %$(E): $(testdir)/%.c
-	$(BUILD) $(DEMOFLAGS) -o$@ $< $(LDFLAGS)
+	$(BUILD) $(DEMOFLAGS) -o$@ $< $(LDFLAGS) $(EXELIBS)
 
 tuidemo$(E) : tuidemo.o tui.o
-	$(LINK) tui.o tuidemo.o -o $@ $(LDFLAGS)
+	$(LINK) tui.o tuidemo.o -o $@ $(LDFLAGS) $(EXELIBS)
 
 tui.o: $(demodir)/tui.c $(demodir)/tui.h
 	$(BUILD) -c $(DEMOFLAGS) $(demodir)/tui.c

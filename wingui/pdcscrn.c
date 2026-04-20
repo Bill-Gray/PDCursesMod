@@ -1502,12 +1502,6 @@ static int convert_key_modifiers_for_mouse( const int key_modifiers)
    return( mouse_modifiers);
 }
 
-static void HandleTimer( const WPARAM wParam )
-{
-    INTENTIONALLY_UNUSED_PARAMETER( wParam);
-    PDC_check_for_blinking( );
-}
-
       /* Options to enlarge/shrink the font are currently commented out. */
 
 static HMENU set_menu( void)
@@ -1559,7 +1553,7 @@ button was pressed or released,  and that accumulated mouse events
 should be handled.  See '../common/mouse.c' for details.
 
    The other type,  issued every half second,  indicates that blinking
-should take place.  For these,  HandleTimer() is called (see above).
+should take place.  For these,  PDC_check_for_blinking( ) is called.
 
    On WM_PAINT,  we determine what parts of 'curscr' would be covered by
 the update rectangle,  and run those through PDC_transform_line.
@@ -1783,10 +1777,7 @@ static LRESULT ALIGN_STACK CALLBACK WndProc (const HWND hwnd,
                add_key_to_queue( KEY_MOUSE);
         }
         else if( SP && curscr && curscr->_y)
-        {
-            /* blink the blinking text */
-            HandleTimer( wParam );
-        }
+            PDC_check_for_blinking( );
         return 0;
 
     case WM_CLOSE:

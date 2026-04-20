@@ -134,7 +134,7 @@ int putwin(WINDOW *win, FILE *filep)
         return( ERR);
 
     if( !fprintf( filep, _format_nine_ints,
-         win->_clear, win->_leaveit, win->_scroll, win->_nodelay,
+         win->_clear, win->_leaveit, win->_scroll, 0,   /* was win->_nodelay */
          win->_immed, win->_sync, win->_use_keypad, win->_tmarg, win->_bmarg))
         return( ERR);
 
@@ -168,7 +168,7 @@ WINDOW *getwin(FILE *filep)
     WINDOW *win, temp_win;
     char buff[80];
     int nlines, y;
-    int _clear, _leaveit, _scroll, _nodelay, _immed, _sync, _use_keypad;
+    int _clear, _leaveit, _scroll, ignored_nodelay, _immed, _sync, _use_keypad;
     int version, window_size;
     bool failure = FALSE;
 
@@ -178,27 +178,20 @@ WINDOW *getwin(FILE *filep)
     memset( &temp_win, 0, sizeof( WINDOW));
 
     if (!filep || !fgets( buff, sizeof( buff), filep)
-                 || strncmp( buff, curses_version( ), 14))
-        failure = TRUE;
-    else if( !fgets( buff, sizeof( buff), filep)
+         || strncmp( buff, curses_version( ), 14)
+         || !fgets( buff, sizeof( buff), filep)
          || 9 != sscanf( buff, _format_nine_ints, &version, &window_size,
                   &temp_win._cury, &temp_win._curx, &temp_win._maxy, &temp_win._maxx,
                   &temp_win._begy, &temp_win._begx, &temp_win._flags)
-               || version != DUMPVER)
-        failure = TRUE;
-    else if( !fgets( buff, sizeof( buff), filep)
+         || version != DUMPVER
+         || !fgets( buff, sizeof( buff), filep)
          || 9 != sscanf( buff, _format_nine_ints, &_clear, &_leaveit,
-                     &_scroll, &_nodelay, &_immed, &_sync, &_use_keypad,
-                     &temp_win._tmarg, &temp_win._bmarg))
-        failure = TRUE;
-    else if( !fgets( buff, sizeof( buff), filep)
+                     &_scroll, &ignored_nodelay, &_immed, &_sync, &_use_keypad,
+                     &temp_win._tmarg, &temp_win._bmarg)
+         || !fgets( buff, sizeof( buff), filep)
          || 3 != sscanf( buff, _format_three_ints, &temp_win._delayms,
-                        &temp_win._parx, &temp_win._pary))
-        failure = TRUE;
-    else if( !fread( buff, 16, 1, filep))
-        failure = TRUE;
-
-    if( failure)
+                        &temp_win._parx, &temp_win._pary)
+         || !fread( buff, 16, 1, filep))
         return (WINDOW *)NULL;
 
     win = PDC_makenew( temp_win._maxy, temp_win._maxx, temp_win._begy, temp_win._begx);
@@ -220,7 +213,6 @@ WINDOW *getwin(FILE *filep)
     win->_clear      = (bool)_clear;
     win->_leaveit    = (bool)_leaveit;
     win->_scroll     = (bool)_scroll;
-    win->_nodelay    = (bool)_nodelay;
     win->_immed      = (bool)_immed;
     win->_sync       = (bool)_sync;
     win->_use_keypad = (bool)_use_keypad;

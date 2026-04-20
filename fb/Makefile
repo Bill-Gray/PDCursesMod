@@ -54,6 +54,7 @@ endif
 
 LIBNAME=pdcurses
 DLLNAME=pdcurses
+TESTS += vt0$(E)
 
 LIBFLAGS = rv
 LIBCURSES	= lib$(LIBNAME).a

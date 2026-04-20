@@ -87,6 +87,10 @@ ifdef CHTYPE_32
 	CFLAGS += -DCHTYPE_32
 endif
 
+ifdef CHTYPE_16
+	CFLAGS += -DCHTYPE_16
+endif
+
 LIBNAME=pdcurses
 DLLNAME=pdcurses
 
@@ -134,7 +138,7 @@ all:	libs
 libs:	$(LIBCURSES)
 
 clean:
-	-$(RM) *.o trace $(CLEAN) $(DEMOS) $(TESTS)
+	-$(RM) *.o trace $(CLEAN) $(DEMOS) $(TESTS) vt0$(E)
 
 demos:	$(DEMOS)
 ifneq ($(DEBUG),Y)
@@ -168,6 +172,7 @@ $(LIBOBJS) $(PDCOBJS) : $(PDCURSES_HEADERS)
 $(PDCOBJS) : $(PDCURSES_SDL_H)
 $(DEMOS) : $(PDCURSES_CURSES_H) $(LIBCURSES)
 $(TESTS) : $(PDCURSES_CURSES_H) $(LIBCURSES)
+vt0$(E)  : $(PDCURSES_CURSES_H) $(LIBCURSES)
 tui.o tuidemo.o : $(PDCURSES_CURSES_H)
 terminfo.o : $(TERM_HEADER)
 panel.o ptest$(E) test_pan$(E): $(PANEL_HEADER)
@@ -182,6 +187,9 @@ $(TESTS): %: $(testdir)/%.c
 	$(BUILD) $(DEMOFLAGS) -o$@ $< $(LDFLAGS)
 
 $(DEMOS_EXCEPT_TUIDEMO): %: $(demodir)/%.c
+	$(BUILD) $(DEMOFLAGS) -o$@ $< $(LDFLAGS)
+
+vt0$(E): %: $(testdir)/%.c
 	$(BUILD) $(DEMOFLAGS) -o$@ $< $(LDFLAGS)
 
 tuidemo$(E): tuidemo.o tui.o

@@ -15,7 +15,7 @@
 SysV) mouse functions in inputTest.  Otherwise,  the ncurses mouse
 interface will be used.       */
 
-// #define CLASSIC_MOUSE_INTERFACE
+/* #define CLASSIC_MOUSE_INTERFACE        */
 
 #if defined( CLASSIC_MOUSE_INTERFACE)
    #define BUTTON_MOVE_EVENTS (BUTTON1_MOVED | BUTTON2_MOVED | BUTTON3_MOVED \
@@ -219,11 +219,14 @@ int main(int argc, char *argv[])
 
     if (initTest(&win, argc, argv))
         return 1;
-
+#ifdef __PDCURSESMOD__
+    PDC_set_title( "testcurs -- PDCurses* demo/test program");
+#endif
     for( i = 1; i < argc; i++)
         if( argv[i][0] == '-')
             switch( argv[i][1])
             {
+#if defined( __PDCURSES__) || defined( NCURSES_DEBUG_LIB)
                 case 'd':
                     {
                         unsigned flags;
@@ -232,6 +235,7 @@ int main(int argc, char *argv[])
                             curses_trace( flags);
                     }
                     break;
+#endif
                 case 'i': case 'I':
                     mouseinterval( atoi( argv[i] + 2));
                     break;
@@ -645,21 +649,6 @@ void inputTest(WINDOW *win)
 
             wprintw(win, "Posn: Y: %d X: %d", MOUSE_Y_POS, MOUSE_X_POS);
         }
-        else if (PDC_get_key_modifiers())
-        {
-            waddstr(win, " Modifier(s):");
-            if (PDC_get_key_modifiers() & PDC_KEY_MODIFIER_SHIFT)
-                waddstr(win, " SHIFT");
-
-            if (PDC_get_key_modifiers() & PDC_KEY_MODIFIER_CONTROL)
-                waddstr(win, " CONTROL");
-
-            if (PDC_get_key_modifiers() & PDC_KEY_MODIFIER_ALT)
-                waddstr(win, " ALT");
-
-            if (PDC_get_key_modifiers() & PDC_KEY_MODIFIER_NUMLOCK)
-                waddstr(win, " NUMLOCK");
-        }
 #else             /* ncurses mouse handling */
         if (c == KEY_MOUSE)
         {
@@ -714,6 +703,21 @@ void inputTest(WINDOW *win)
                 wprintw( win, "  ? getmouse failed ?");
         }
 #endif
+        if( c != KEY_MOUSE && PDC_get_key_modifiers())
+        {
+            waddstr(win, " Modifier(s):");
+            if (PDC_get_key_modifiers() & PDC_KEY_MODIFIER_SHIFT)
+                waddstr(win, " SHIFT");
+
+            if (PDC_get_key_modifiers() & PDC_KEY_MODIFIER_CONTROL)
+                waddstr(win, " CONTROL");
+
+            if (PDC_get_key_modifiers() & PDC_KEY_MODIFIER_ALT)
+                waddstr(win, " ALT");
+
+            if (PDC_get_key_modifiers() & PDC_KEY_MODIFIER_NUMLOCK)
+                waddstr(win, " NUMLOCK");
+        }
         wrefresh(win);
         line++;
 
@@ -1555,14 +1559,14 @@ void attrTest(WINDOW *win)
     mvaddstr(tmarg + 15, col1, "A_STRIKEOUT");
 #endif
 
-    attr_set( WA_TOP, 0, NULL);
+    (void)attr_set( WA_TOP, 0, NULL);
     mvaddstr(tmarg + 15, col2, "A_TOP");
 
-    attr_set( WA_DIM, 0, NULL);
+    (void)attr_set( WA_DIM, 0, NULL);
     mvaddstr(tmarg + 17, col2, "A_DIM");
 
 #ifdef WA_ITALIC
-    attr_set( WA_ITALIC | WA_UNDERLINE, 0, NULL);
+    (void)attr_set( WA_ITALIC | WA_UNDERLINE, 0, NULL);
     mvaddstr(tmarg + 3, col2, "Underlined Italic");
 #endif
 
@@ -1572,10 +1576,10 @@ void attrTest(WINDOW *win)
     attrset( A_BLINK | A_UNDERLINE);
     mvaddstr(tmarg + 7, col2, "Underlined Blink");
 
-    attr_set( WA_LEFT, 0, NULL);
+    (void)attr_set( WA_LEFT, 0, NULL);
     mvaddstr(tmarg + 9, col2, "A_LEFT");
 
-    attr_set( WA_RIGHT, 0, NULL);
+    (void)attr_set( WA_RIGHT, 0, NULL);
     mvaddstr(tmarg + 11, col2, "A_RIGHT");
 
     attrset(A_BLINK|A_REVERSE);
@@ -1654,16 +1658,16 @@ static void show_color_cube( int tmarg)
 
     mvaddstr(tmarg + 2, lmarg, "6x6x6 Color Cube (16-231):");
 
-    mvaddstr(tmarg + 4,  lmarg, "Blk      Red");
-    mvaddstr(tmarg + 11, lmarg, "Blue    Mgta");
+    mvaddstr(tmarg + 4,  lmarg, "Black    Red");
+    mvaddstr(tmarg + 11, lmarg, "Blue Magenta");
     if( COLS >= 77)
     {
-        mvaddstr(tmarg + 4,  lmarg + 65, "Grn      Yel");
+        mvaddstr(tmarg + 4,  lmarg + 65, "Green Yellow");
         mvaddstr(tmarg + 11, lmarg + 65, "Cyan   White");
     }
     else
     {
-        mvaddstr(tmarg + 11, COLS - 12, "Grn      Yel");
+        mvaddstr(tmarg + 11, COLS - 12, "Green Yellow");
         mvaddstr(tmarg + 18, COLS - 12, "Cyan   White");
     }
 
@@ -1818,7 +1822,7 @@ void gradient(int tmarg)
 
     attrset(A_NORMAL);
     if( cnum >= COLORS || pnum >= COLOR_PAIRS)
-       mvaddstr(tmarg + 18, 3, "RAN OUT OF COLORS");
+       mvprintw(tmarg + 18, 3, "RAN OUT OF COLORS at %d colors", (int)cnum);
     mvaddstr(tmarg + 19, 3, "Press any key to continue");
     curTest();
 }
@@ -1870,11 +1874,11 @@ void colorTest(WINDOW *win)
     {
         if (widecol)
         {
-            init_pair(i + 4, COLOR_BLACK, colors[i]);
-            init_pair(i + 12, COLOR_BLACK, colors[i] + 8);
+            init_pair((short)( i + 4), COLOR_BLACK, colors[i]);
+            init_pair((short)(i + 12), COLOR_BLACK, colors[i] + 8);
         }
         else
-            init_pair(i + 4, colors[i], COLOR_BLACK);
+            init_pair((short)( i + 4), colors[i], COLOR_BLACK);
 
         mvaddstr(tmarg + i + 5, col1, colornames[i]);
 

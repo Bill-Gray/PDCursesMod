@@ -11,9 +11,9 @@ jobs:
     - name: make
       run: |
          cd vt
-         make demos
+         make demos tests
          cd ../fb
-         make UTF8=Y demos
+         make UTF8=Y demos tests
 
   buildOSX:
     runs-on: macOS-latest
@@ -23,7 +23,7 @@ jobs:
     - name: make
       run: |
          cd vt
-         make CLANG=Y demos
+         make CLANG=Y demos tests
 
   buildWindows:
     runs-on: windows-2022
@@ -34,9 +34,9 @@ jobs:
       run: |
         call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
         cd wingui
-        nmake UTF8=Y DLL=Y -f Makefile.vc demos
+        nmake UTF8=Y DLL=Y -f Makefile.vc demos tests
         cd ..\wincon
-        nmake DLL=Y -f Makefile.vc demos
+        nmake DLL=Y -f Makefile.vc demos tests
         cd ..\vt
-        nmake CHTYPE_32=Y -f Makefile.vc demos
+        nmake CHTYPE_32=Y -f Makefile.vc demos tests
       shell: cmd

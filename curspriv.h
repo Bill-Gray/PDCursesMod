@@ -116,11 +116,9 @@ bool    PDC_touched_range( const WINDOW *win, const int y, int *firstch, int *la
 int     PDC_wscrl(WINDOW *win, const int top, const int bottom, int n);
 
 #ifdef PDC_WIDE
-#ifndef IS_LOW_SURROGATE         /* Microsoft(R) Windows redefines these */
-   #define IS_LOW_SURROGATE( c) ((c) >= 0xdc00 && (c) < 0xe000)
-   #define IS_SURROGATE( x)       ((x) >= 0xd800 && (x) < 0xe000)
-   #define IS_HIGH_SURROGATE( c) ((c) >= 0xd800 && (c) < 0xdc00)
-#endif
+   #define PDC_IS_LOW_SURROGATE( c) ((c) >= 0xdc00 && (c) < 0xe000)
+   #define PDC_IS_SURROGATE( x)       ((x) >= 0xd800 && (x) < 0xe000)
+   #define PDC_IS_HIGH_SURROGATE( c) ((c) >= 0xd800 && (c) < 0xdc00)
 
 int     PDC_mbtowc(wchar_t *, const char *, size_t);
 size_t  PDC_mbstowcs(wchar_t *, const char *, size_t);
@@ -170,6 +168,7 @@ int PDC_expand_combined_characters( const cchar_t c, cchar_t *added);
 #define OFF_SCREEN_WINDOWS_TO_LEFT_AND_TOP            2
 
 #define INTENTIONALLY_UNUSED_PARAMETER( param) (void)(param)
+#define BLOCKING_INPUT -1
 
 #define _is_altcharset( ch)  (((ch) & (A_ALTCHARSET | (A_CHARTEXT ^ 0x7f))) == A_ALTCHARSET)
 
@@ -187,7 +186,6 @@ struct _win               /* definition of a window */
     bool  _clear;         /* causes clear at next refresh */
     bool  _leaveit;       /* leaves cursor where it is */
     bool  _scroll;        /* allows window scrolling */
-    bool  _nodelay;       /* input character wait flag */
     bool  _immed;         /* immediate update flag */
     bool  _sync;          /* synchronise window ancestors */
     bool  _use_keypad;    /* flags keypad key mode active */
@@ -284,6 +282,8 @@ struct _screen
     FILE *output_fd, *input_fd;
     struct _port_info *pinfo;
     int drawing_cursor;
+    int n_beeps_queued;
+    long t_next_beep;
 };
 
 PDCEX  SCREEN       *SP;          /* curses variables */

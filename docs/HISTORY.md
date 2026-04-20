@@ -1,16 +1,20 @@
 Generally speaking,  this history mentions only the more significant
 changes.  See the git log for full details.
 
-PDCursesMod 4.5.4 - 2026 January 07
-===================================
+PDCursesMod 4.5.4 - 2026 April 07
+=================================
 
 Minor new features
 ------------------
+
+- Added 'vt0.c' example code for a PDCurses/PDCursesMod-based terminal
+  emulator.  2df44e183f,  several subsequent commits.
 
 - Framebuffer and DRM ports can show fullwidth characters.  bc3b4d8449
 
 - chtypes can be short (16-bit) integers.  This is mostly of use in very
   memory-restricted environments,  such as in some DOS code.  e215a6d4b5
+  a3762aa3fd
 
 - For the GL port,  the 'resize' mode can be set via the PDC_RESIZE
   environment variable.  b8f822040e
@@ -42,16 +46,37 @@ Minor new features
 
 - DOSVGA now supports ~16 million (2^24 + 256) colors and 1M (2^20)
   color pairs,  similar to (and using the same underlying code as)
-  WinGUI,  SDLs,  GL,  framebuffer/DRM,  and x11new.  bd4cc9c616
+  WinGUI,  SDLs,  GL,  framebuffer/DRM,  and x11new.  It also now
+  supports blinking and a few cursor styles (caret,  half-block,
+  underscore,  full block).  bd4cc9c616  ac0c9459aa
 
 - DOSVGA Makefile revised to simplify use of DJGPP,  and to use full
   warnings.  A few 'nuisance' warnings were corrected.  141b7f642b
 
+- VT platform now beeps.
+
 Bug fixes
 ---------
 
+- Input processing now follows the Open Group (SUSv2) specifications.
+  9e0b701fb0
+
+- VT now works fully on Microsoft Windows and MS-DOS,  fixing several
+  display issues.  Also,  mouse clicks are correctly handled in the
+  VT platform on Windows,  and window resizing is (mostly) handled.
+  (Mouse control sequences appear to not be done in DOS,  so VT in
+  DOS continues to ignore mouse events.)  9401517387  b3e0830262
+  4861583385  ac2c5441f5  b3f4eca4bf  410f5cfad4  ace6fc1248
+
 - PDC_millisecs() now will usually pick a better underlying timekeeping
   function.  7906c61500
+
+- Overflow in PDC_millisecs() could conceivably happen,  affecting the
+  handling of mouse clicks.  e23eb347f6
+
+- On Microsoft Windows,  the VT port should emit alternative character
+  set glyphs using code page 437 characters for 8-bit character builds
+  and Unicode characters for wide builds.  615a32c652
 
 - WinGUI : mouse modifiers (Ctr, Alt, Shift) became 'stuck' from the
   previous keys hit,  and were not turned off when the modifier keys
@@ -73,6 +98,10 @@ Bug fixes
 - Fullwidth characters are now shown correctly for 32-bit chtypes (if they
   are supported on that platform in the first place,  and the font
   actually has glyphs for them).  3d6bc63caa
+
+- wchgat( ) didn't mask out colors from 'attr'.  This could lead to
+  garbage display when those colors were ORred with those from the
+  'color' parameter.  f19bc59406d
 
 PDCursesMod 4.5.3 - 2025 August 11
 ==================================

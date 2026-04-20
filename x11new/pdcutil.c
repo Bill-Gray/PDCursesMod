@@ -1,25 +1,34 @@
 #include <unistd.h>
+#include <stdlib.h>
 #include "curspriv.h"
+#include "pdcx11.h"
+#include "../common/beep.c"
 
 void PDC_check_for_blinking( void);
 
-void PDC_beep(void)
+void PDC_napms( const int ms)     /* 'ms' = milli,  _not_ microseconds! */
 {
-}
+    long curr_ms = PDC_millisecs( );
+    const long end_t = curr_ms + ms;
+    int remains;
 
-void PDC_napms(int ms)
-{
-    PDC_check_for_blinking( );
-    while( ms > 0)
+    PDC_LOG(("PDC_napms() - called: ms=%d\n", ms));
+
+    do
     {
-        const int ms_to_nap = (ms > 50 ? 50 : ms);
-
-        usleep( 1000 * ms_to_nap);
-        ms -= ms_to_nap;
+        remains = (int)( end_t - curr_ms);
         PDC_check_for_blinking( );
-    }
-}
+        if( remains > 0)
+        {
+            const int max_sleep_ms = 50;      /* check msgs 20 times/second */
 
+            if( remains > max_sleep_ms)
+                remains = max_sleep_ms;
+            usleep( remains * 1000);
+            curr_ms = PDC_millisecs( );
+        }
+    } while( remains > 0);
+}
 
 const char *PDC_sysname(void)
 {
