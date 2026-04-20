@@ -1,0 +1,27 @@
+name: Static Analysis
+
+# Runs on 'push' events to all branches - output will be printed to the console.
+# May be run manually as well.
+# Also runs on PRs, output shown in comments.
+on: [push, workflow_dispatch, pull_request]
+
+jobs:
+  static_analysis:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@master
+
+    - name: Run Static Analysis
+      uses: JacobDomagala/StaticAnalysis@master
+      with:
+        # note: c++ includes c checks
+        language: c++
+
+        use_cmake: true
+
+        # Optional Clang-Tidy arguments
+        clang_tidy_args: -checks='*,fuchsia-*,google-*,zircon-*,abseil-*,modernize-use-trailing-return-type'
+
+        # Optional Cppcheck arguments
+        cppcheck_args: --enable=all --suppress=missingIncludeSystem
