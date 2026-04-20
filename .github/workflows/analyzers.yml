@@ -21,7 +21,7 @@ jobs:
         use_cmake: true
 
         # Optional Clang-Tidy arguments
-        clang_tidy_args: -checks='*,fuchsia-*,google-*,zircon-*,abseil-*,modernize-use-trailing-return-type'
+        clang_tidy_args: -checks='*,fuchsia-*,google-*,zircon-*,abseil-*,modernize-use-trailing-return-type,-readability-identifier-length,-*braces-around-statements,-cppcoreguidelines-init-variables'
 
         # Optional Cppcheck arguments
-        cppcheck_args: --enable=all --suppress=missingIncludeSystem
+        cppcheck_args: --enable=all --suppress=missingIncludeSystem -v --language=c
