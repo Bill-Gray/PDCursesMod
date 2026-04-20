@@ -7,7 +7,7 @@ IF (PDC_SDL2_DEPS_BUILD)
         set(FLAGS_FOR_DYNAMIC_LINK -fPIC) 
     ENDIF()
 
-    SET(SDL2_RELEASE 2.26.2)
+    SET(SDL2_RELEASE 2.32.10)
     ExternalProject_Add(sdl2_ext
         GIT_REPOSITORY "https://github.com/libsdl-org/SDL.git"
         GIT_TAG "release-${SDL2_RELEASE}"
@@ -54,7 +54,7 @@ IF (PDC_SDL2_DEPS_BUILD)
 
         ExternalProject_Add(zlib_ext
             GIT_REPOSITORY "https://github.com/madler/zlib.git"
-            GIT_TAG "v1.2.11"
+            GIT_TAG "v1.3.2"
             GIT_SHALLOW true
             UPDATE_COMMAND ""
             DOWNLOAD_DIR ${CMAKE_BINARY_DIR}
@@ -76,13 +76,13 @@ IF (PDC_SDL2_DEPS_BUILD)
         SET(ZLIB_LIBRARY_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_BUILD_TYPE}/lib)
         IF("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
             IF(WIN32)
-                set(ZLIB_LIBRARY zlibd.lib)
+                set(ZLIB_LIBRARY zd.lib)
             ELSE()
                 set(ZLIB_LIBRARY z)
             ENDIF()
         ELSE()
             IF(WIN32)
-                set(ZLIB_LIBRARY zlib.lib)
+                set(ZLIB_LIBRARY z.lib)
             ELSE()
                 set(ZLIB_LIBRARY z)
             ENDIF()
@@ -90,7 +90,7 @@ IF (PDC_SDL2_DEPS_BUILD)
 
         ExternalProject_Add(freetype2_ext
             GIT_REPOSITORY "https://git.savannah.gnu.org/git/freetype/freetype2.git"
-            GIT_TAG "VER-2-12-1"
+            GIT_TAG "VER-2-14-3"
             GIT_SHALLOW true
             UPDATE_COMMAND ""
             DOWNLOAD_DIR ${CMAKE_BINARY_DIR}
