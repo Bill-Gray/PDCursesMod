@@ -210,6 +210,27 @@ int create_term( const char* szCommand, const char **args,
                            buff[i] = '\0';
                            switch( buff[i - 1])
                               {
+                              case 'h':
+                                 if( *buff == '?')
+                                    switch( param)
+                                       {
+                                       case 47:   /* use alt screen buff */
+                                             /* should actually save current screen... */
+                                           scrollok( stdscr, FALSE);
+                                           break;
+                                       }
+                                 break;
+                              case 'l':
+                                 if( *buff == '?')
+                                    switch( param)
+                                       {
+                                       case 47:   /* use normal screen buff */
+                                           clear( );
+                                           move( 0, 0);
+                                           scrollok( stdscr, TRUE);
+                                           break;
+                                       }
+                                 break;
                               case 'H':
                                  {
                                  int row, col;
@@ -376,6 +397,8 @@ int create_term( const char* szCommand, const char **args,
          refresh( );
          while( ERR != (ch = getch( )))
             {
+            if( ch == KEY_BACKSPACE)
+               ch = 8;
             if( ch > 0 && ch < 127)
                {
                nChar = (char)ch;
