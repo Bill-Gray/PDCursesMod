@@ -113,7 +113,7 @@ int SubWinTest(WINDOW *win)
 
 int BouncingBalls(WINDOW *win)
 {
-    chtype c1, c2, c3, ball1, ball2, ball3;
+    chtype ball1, ball2, ball3;
     int w, h, x1, y1, xd1, yd1, x2, y2, xd2, yd2, x3, y3, xd3, yd3, c;
 
     curs_set(0);
@@ -150,6 +150,8 @@ int BouncingBalls(WINDOW *win)
 
     while ((c = getch()) == ERR)
     {
+        chtype c1, c2, c3;
+
         x1 += xd1;
         if (x1 <= 1 || x1 >= w - 2)
             xd1 *= -1;

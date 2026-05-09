@@ -332,10 +332,18 @@ int main(int argc, char *argv[])
 
                 if (bottom != LINES - 1)
                 {
+                    short **new_ref;
+
                     for (y = LINES; y <= bottom; y++)
                         free(ref[y]);
 
-                    ref = (short **)realloc(ref, sizeof(short *) * LINES);
+                    new_ref = (short **)realloc(ref, sizeof(short *) * LINES);
+                    if( !new_ref)
+                    {
+                        cleanup( screen_pointer);
+                        exit( -1);
+                    }
+                    ref = new_ref;
 
                     for (y = bottom + 1; y < LINES; y++)
                     {
@@ -415,7 +423,7 @@ int main(int argc, char *argv[])
 
             switch (op->nopts)
             {
-            case 0:
+            case 0:                    /* screen resized to put a worm off-screen */
                 for (y = 0; y < LINES; y++)
                     free( ref[y]);
                 free( ref);

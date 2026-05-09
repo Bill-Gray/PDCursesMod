@@ -83,6 +83,8 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
              ch = (int32_t)acs_map[srcp[i] & 0x7f];
           else
              ch = (int32_t)( srcp[i] & A_CHARTEXT);
+          if( (srcp[0] & A_BLINK) && SP->blink_state && (SP->termattrs & A_BLINK))
+             ch = ' ';
 #ifdef PDC_WIDE
           if( ch < (int)MAX_UNICODE)
 #endif

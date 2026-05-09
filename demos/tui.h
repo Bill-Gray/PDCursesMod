@@ -21,7 +21,7 @@
 
 typedef void (*FUNC)(void);
 
-typedef struct 
+typedef struct
 {
     char *name; /* item label */
     FUNC  func; /* (pointer to) function */
@@ -37,7 +37,7 @@ WINDOW *bodywin(void);
 void    rmerror(void);
 void    rmstatus(void);
 
-void    titlemsg(char *msg);
+void    titlemsg(const char *msg);
 void    bodymsg(char *msg);
 void    errormsg(char *msg);
 void    statusmsg(char *msg);
@@ -51,7 +51,7 @@ void    startmenu(menu *mp, char *title);
 void    domenu(menu *mp);
 
 int     weditstr(WINDOW *win, char *buf, int field);
-WINDOW *winputbox(WINDOW *win, int nlines, int ncols);
+WINDOW *winputbox( const WINDOW *win, int nlines, int ncols);
 int     getstrings(char *desc[], char *buf[], int field);
 
 #define editstr(s,f)           (weditstr(stdscr,s,f))

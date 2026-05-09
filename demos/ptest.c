@@ -103,7 +103,7 @@ void rmpanel(PANEL *pan)
     delwin(win);
 }
 
-void fill_panel(PANEL *pan)
+void fill_panel( const PANEL *pan)
 {
     WINDOW *win = panel_window( pan);
     char num = *((char *)panel_userptr( pan) + 1);

@@ -297,13 +297,14 @@ int main( int argc, char **argv)
             mvaddwstr( 3, COL1, L"'N\xf3rm\xe4\x142' text,  bu\x163 w\xee\x1e0b\xea");
 #endif
             attron( A_BLINK);
-            sprintf( buff, "Blink %s", on_off_text( term_attrs( ) & WA_BLINK));
-
+            snprintf( buff, sizeof( buff),
+                               "Blink %s", on_off_text( term_attrs( ) & WA_BLINK));
             mvaddstr( 6, 40, buff);
             attron( A_BOLD);
             mvaddstr( 8, 40, "BlinkBold");
             attrset( A_BOLD);
-            sprintf( buff, "Bold %s", on_off_text( term_attrs( ) & WA_BOLD));
+            snprintf( buff, sizeof( buff),
+                               "Bold %s", on_off_text( term_attrs( ) & WA_BOLD));
             mvaddstr( 7, 40, buff);
             attron( A_BLINK);
 #ifdef A_ITALIC
@@ -351,11 +352,11 @@ int main( int argc, char **argv)
             for( i = 0; i < 8; i++)
                 {
 #ifdef HAVE_WIDE
-                sprintf( buff, "%02x",
+                snprintf( buff, sizeof( buff), "%02x",
                                 (unsigned)( i * 16 + unicode_offset) & 0xff);
 #else
-                sprintf( buff, "%02x", (unsigned)( i * 16 + 128) & 0xff);
-
+                snprintf( buff, sizeof( buff), "%02x",
+                                (unsigned)( i * 16 + 128) & 0xff);
 #endif
                 mvaddstr( 6 + i, 1, buff);
                 mvaddstr( 6 + i, 36, buff);
@@ -484,7 +485,7 @@ int main( int argc, char **argv)
             cursor_x--;
         else if( c == KEY_RIGHT)
             cursor_x++;
-        else if( c == KEY_F(1))
+        else if( c == KEY_F(1) || c == 'q')
             quit = 1;
         else if( c == KEY_F(2))   /* toggle SLKs */
         {
@@ -508,13 +509,13 @@ int main( int argc, char **argv)
         }
         if( c != KEY_MOUSE && c != ' ')
         {
-            sprintf( buff, "Key %s", keyname( c));
+            snprintf( buff, sizeof( buff), "Key %s", keyname( c));
 #ifdef HAVE_WIDE
             if( is_keycode == KEY_CODE_YES)
                *buff = '!';
 #endif
             if( !memcmp( buff + 4, "UNKNOWN", 7))
-                sprintf( buff + 11, " (%x)", c);
+                snprintf( buff + 11, sizeof( buff) - 11, " (%x)", c);
             if( c == KEY_RESIZE)
                 {
                 sprintf( buff + strlen( buff), "(%d x %d)       ",
@@ -536,7 +537,8 @@ int main( int argc, char **argv)
 #else
                 getmouse( &mouse_event);
 #endif
-                sprintf( buff, "Mouse at %d x %d: %x     ", mouse_event.x,
+                snprintf( buff, sizeof( buff),
+                              "Mouse at %d x %d: %x     ", mouse_event.x,
                               mouse_event.y, (unsigned)mouse_event.bstate);
                 cursor_x = mouse_event.x;
                 cursor_y = mouse_event.y;
@@ -544,6 +546,7 @@ int main( int argc, char **argv)
             else
                 mouse_event.bstate = 1;
             mvaddstr( 0, COL1, buff);
+#ifdef PDCURSES
             if( cursor_x >= color_block_start
                             && cursor_y < color_block_lines)
             {
@@ -552,11 +555,8 @@ int main( int argc, char **argv)
 
                 if( new_color >= 256)
                     new_color = -1;
-#ifdef PDCURSES
                 PDC_set_line_color( (short)new_color);
-#endif
             }
-#ifdef PDCURSES
             else if( cursor_x >= color_block_start)
             {
                 int shift = ((mouse_event.bstate & BUTTON_MODIFIER_SHIFT) ?
@@ -568,7 +568,7 @@ int main( int argc, char **argv)
                     cursor_state_2 = (cursor_state_2 + shift) % N_CURSORS;
             }
 #endif
-            else if( cursor_x >= 40 && cursor_x <= 52)
+            if( cursor_x >= 40 && cursor_x <= 52)
                switch( cursor_y)
                {
 #ifdef HAVE_WIDE
@@ -586,11 +586,11 @@ int main( int argc, char **argv)
 #endif
 #ifdef PDCURSES
                   case 6:
-                     PDC_set_blink( term_attrs( ) & WA_BLINK ? FALSE : TRUE);
+                     PDC_set_blink( (term_attrs( ) & WA_BLINK) ? FALSE : TRUE);
                      redraw = 1;
                      break;
                   case 7:
-                     PDC_set_bold( term_attrs( ) & WA_BOLD ? FALSE : TRUE);
+                     PDC_set_bold( (term_attrs( ) & WA_BOLD) ? FALSE : TRUE);
                      redraw = 1;
                      break;
 #endif

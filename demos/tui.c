@@ -68,7 +68,7 @@ static char wordchar(void)
 }
 #endif
 
-static char *padstr(char *s, int length)
+static char *padstr( const char *s, int length)
 {
     static char buf[MAXSTRLEN];
     char fmt[15];
@@ -81,13 +81,13 @@ static char *padstr(char *s, int length)
 
 static char *prepad(char *s, int length)
 {
-    int i;
     char *p = s;
 
     if (length > 0)
     {
-        memmove((void *)(s + length), (const void *)s, strlen(s) + 1);
+        int i;
 
+        memmove((void *)(s + length), (const void *)s, strlen(s) + 1);
         for (i = 0; i < length; i++)
             *p++ = ' ';
     }
@@ -163,7 +163,7 @@ static void idle(void)
 {
     char buf[MAXSTRLEN];
     time_t t;
-    struct tm *tp;
+    const struct tm *tp;
 
     if ((int)time (&t) == -1)
         return;  /* time not available */
@@ -179,10 +179,15 @@ static void idle(void)
 
 static void menudim(menu *mp, int *lines, int *columns)
 {
-    int n, l, mmax = 0;
+    int n, mmax = 0;
 
     for (n = 0; mp->func; n++, mp++)
-        if ((l = (int)strlen(mp->name)) > mmax) mmax = l;
+    {
+        const int l = (int)strlen( mp->name);
+
+        if( l > mmax)
+            mmax = l;
+    }
 
     *lines = n;
     *columns = mmax + 2;
@@ -246,13 +251,15 @@ static void mainhelp(void)
 
 static void mainmenu(menu *mp)
 {
-    int nitems, barlen, old = -1, cur = 0, c, cur0;
+    int nitems, barlen, old = -1, cur = 0, cur0;
 
     menudim(mp, &nitems, &barlen);
     repaintmainmenu(barlen, mp);
 
     while (!quit)
     {
+        int c;
+
         if (cur != old)
         {
             if (old != -1)
@@ -383,7 +390,7 @@ void rmstatus(void)
     rmline(wstat, 1);
 }
 
-void titlemsg(char *msg)
+void titlemsg( const char *msg)
 {
     mvwaddstr(wtitl, 0, 2, padstr(msg, bw - 3));
     wrefresh(wtitl);
@@ -739,7 +746,7 @@ int weditstr(WINDOW *win, char *buf, int field)
     return c;
 }
 
-WINDOW *winputbox(WINDOW *win, int nlines, int ncols)
+WINDOW *winputbox( const WINDOW *win, int nlines, int ncols)
 {
     WINDOW *winp;
     int cury, curx, begy, begx;
@@ -756,13 +763,17 @@ WINDOW *winputbox(WINDOW *win, int nlines, int ncols)
 int getstrings(char *desc[], char *buf[], int field)
 {
     WINDOW *winput;
-    int oldy, oldx, maxy, maxx, nlines, ncols, i, n, l, mmax = 0;
+    int oldy, oldx, maxy, maxx, nlines, ncols, i, n, mmax = 0;
     int c = 0;
     bool stop = FALSE;
 
     for (n = 0; desc[n]; n++)
-        if ((l = (int)strlen(desc[n])) > mmax)
+    {
+        const int l = (int)strlen( desc[n]);
+
+        if( l > mmax)
             mmax = l;
+    }
 
     nlines = n + 2; ncols = mmax + field + 4;
     getyx(wbody, oldy, oldx);

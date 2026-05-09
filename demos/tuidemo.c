@@ -70,19 +70,22 @@ char *getfname(char *desc, char *fname, int field)
 
 /**************************** a very simple file browser ******************/
 
-void showfile(char *fname)
+void showfile( const char *fname)
 {
-    int i, bh = bodylen();
+    int bh = bodylen();
     FILE *fp;
     char buf[MAXSTRLEN];
-    bool ateof = FALSE;
 
     statusmsg("FileBrowser: Hit key to continue, Q to quit");
 
     if ((fp = fopen(fname, "r")) != NULL)   /* file available? */
     {
+        bool ateof = FALSE;
+
         while (!ateof)
         {
+            int i;
+
             clsbody();
 
             for (i = 0; i < bh - 1 && !ateof; i++)
