@@ -233,14 +233,32 @@ int create_term( const char* szCommand, const char **args,
                                  break;
                               case 'H':
                                  {
-                                 int row, col;
+                                 int row = 1, col = 1;
 
-                                 if( sscanf( buff, "%d;%d", &row, &col) == 2)
-                                    move( row - 1, col - 1);
+                                 sscanf( buff, "%d;%d", &row, &col);
+                                 move( row - 1, col - 1);
                                  }
                                  break;
-                              case 'G':
-                                 move( getcury( stdscr), (param > 1 ? param - 1 : 0));
+                              case 'G':         /* cursor absolute posn */
+                              case 'C':         /* cursor forward */
+                              case 'D':         /* cursor backward */
+                                 {
+                                 int col = -1;
+
+                                 if( !param)
+                                    param = 1;
+                                 if( buff[i - 1] == 'G')
+                                    col = param - 1;
+                                 else if( buff[i - 1] == 'C')
+                                    col = getcurx( stdscr) + param;
+                                 else if( buff[i - 1] == 'D')
+                                    col = getcurx( stdscr) - param;
+                                 if( col < 0)
+                                    col = 0;
+                                 else if( col > getmaxx( stdscr) - 1)
+                                    col = getmaxx( stdscr) - 1;
+                                 move( getcury( stdscr), col);
+                                 }
                                  break;
                               case 'K':
                                  clrtoeol( );
@@ -275,6 +293,8 @@ int create_term( const char* szCommand, const char **args,
                                  static int fg = -1, bg = -1;
                                  const int old_bg = bg, old_fg = fg;
 
+                                 if( *buff == 'm')
+                                    strcpy( buff, "0m");
                                  while( (ival = get_param( &tptr)) >= 0)
                                     {
                                     const attr_t att[9] = { A_BOLD, A_DIM, A_ITALIC,
