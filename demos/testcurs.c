@@ -703,6 +703,7 @@ void inputTest(WINDOW *win)
                 wprintw( win, "  ? getmouse failed ?");
         }
 #endif
+#ifdef PDCURSES
         if( c != KEY_MOUSE && PDC_get_key_modifiers())
         {
             waddstr(win, " Modifier(s):");
@@ -718,6 +719,7 @@ void inputTest(WINDOW *win)
             if (PDC_get_key_modifiers() & PDC_KEY_MODIFIER_NUMLOCK)
                 waddstr(win, " NUMLOCK");
         }
+#endif
         wrefresh(win);
         line++;
 
