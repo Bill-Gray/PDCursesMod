@@ -208,15 +208,17 @@ bool is_linetouched(WINDOW *win, int line)
 
 bool is_wintouched(WINDOW *win)
 {
-    int i;
-
     PDC_LOG(("is_wintouched() - called: win=%p\n", win));
 
     assert( win);
     if (win)
+    {
+        int i;
+
         for (i = 0; i < win->_maxy; i++)
             if (win->_firstch[i] != _NO_CHANGE)
                 return TRUE;
+    }
 
     return FALSE;
 }

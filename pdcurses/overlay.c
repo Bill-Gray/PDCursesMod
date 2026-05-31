@@ -55,8 +55,7 @@ static int _copy_win(const WINDOW *src_w, WINDOW *dst_w, int src_tr,
                      int src_tc, int src_br, int src_bc, int dst_tr,
                      int dst_tc, bool _overlay)
 {
-    int col, line, y1, fc;
-    chtype *w1ptr, *w2ptr;
+    int col, line, y1;
 
     int lc = 0;
     int xdiff = src_bc - src_tc;
@@ -75,10 +74,10 @@ static int _copy_win(const WINDOW *src_w, WINDOW *dst_w, int src_tr,
 
     for (line = 0; line < ydiff; line++)
     {
-        w1ptr = src_w->_y[line + src_tr] + src_tc;
-        w2ptr = dst_w->_y[line + dst_tr] + dst_tc;
+        int fc = _NO_CHANGE;
+        const chtype *w1ptr = src_w->_y[line + src_tr] + src_tc;
+        chtype *w2ptr = dst_w->_y[line + dst_tr] + dst_tc;
 
-        fc = _NO_CHANGE;
 
         for (col = 0; col < xdiff; col++)
         {

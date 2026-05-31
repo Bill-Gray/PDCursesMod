@@ -409,7 +409,7 @@ void delscreen(SCREEN *sp)
 
 int resize_term(int nlines, int ncols)
 {
-    PANEL *panel_ptr = NULL;
+    const PANEL *panel_ptr = NULL;
 
     PDC_LOG(("resize_term() - called: nlines %d\n", nlines));
 

@@ -217,10 +217,10 @@ static void _drawone(int num)
 
 static void _redraw(void)
 {
-    int i;
-
     if( !hidden)
     {
+        int i;
+
         for (i = 0; i < labels; ++i)
             _drawone(i);
         if (label_fmt < 0)
@@ -279,7 +279,7 @@ int slk_set(int labnum, const char *label, int justify)
 
         /* Copy it */
 
-        for (i = 0; label[i] && i < MAX_LABEL_LENGTH - 1; i++)
+        for (i = 0; i < MAX_LABEL_LENGTH && label[i]; i++)
             slk[labnum].label[i] = label[i];
 
         /* Drop trailing spaces */

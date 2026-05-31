@@ -89,7 +89,7 @@ int wgetnstr(WINDOW *win, char *str, int n)
 
     return (int)PDC_wcstombs(str, wstr, n);
 #else
-    int ch, i, num, x, chars;
+    int i, num, x, chars;
     char *p;
     bool stop, oldecho, oldcbreak;
     int old_delayms;
@@ -120,7 +120,7 @@ int wgetnstr(WINDOW *win, char *str, int n)
 
     while (!stop)
     {
-        ch = wgetch(win);
+        int ch = wgetch(win);
 
         switch (ch)
         {

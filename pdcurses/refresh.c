@@ -93,7 +93,7 @@ int wnoutrefresh(WINDOW *win)
     {
         if (win->_firstch[i] != _NO_CHANGE && j >= 0)
         {
-            chtype *src = win->_y[i];
+            const chtype *src = win->_y[i];
             chtype *dest = curscr->_y[j] + begx;
 
             int first = win->_firstch[i]; /* first changed */
@@ -248,7 +248,7 @@ int doupdate(void)
         {
             int first, last;
 
-            chtype *src = curscr->_y[y];
+            const chtype *src = curscr->_y[y];
             chtype *dest = SP->lastscr->_y[y];
 
             if (clearall)

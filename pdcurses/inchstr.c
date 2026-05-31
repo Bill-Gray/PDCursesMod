@@ -62,7 +62,7 @@ inchstr
 
 int winchnstr(WINDOW *win, chtype *ch, int n)
 {
-    chtype *src;
+    const chtype *src;
     int i;
 
     PDC_LOG(("winchnstr() - called\n"));

@@ -527,7 +527,6 @@ WINDOW *dupwin(WINDOW *win)
     new_win->_pary = win->_pary;
     new_win->_parent = win->_parent;
     new_win->_bkgd = win->_bkgd;
-    new_win->_flags = win->_flags;
     PDC_add_window_to_list( new_win);
 
     return new_win;
