@@ -89,7 +89,6 @@ static void enlarge_glyph_cache( void)
     int new_glyph_cache_w = 2 * pdc_glyph_cache_w;
     int new_glyph_cache_h = 2 * pdc_glyph_cache_h;
     GLint max_texture_size = 0;
-    int i, j, layer;
     const float clear_color[4] = {0,0,0,0};
 
     if(new_glyph_cache_w == 0 || new_glyph_cache_h == 0)
@@ -145,6 +144,7 @@ static void enlarge_glyph_cache( void)
         /* Enlarging the texture should be possible if we're here. */
         int new_glyph_row_capacity = new_glyph_cache_h / pdc_fheight;
         pdc_glyph_col_capacity = new_glyph_cache_w / pdc_fwidth;
+        int i;
 
         if(pdc_font_texture != 0)
         {
@@ -158,10 +158,9 @@ static void enlarge_glyph_cache( void)
         }
         pdc_glyph_cache_w = new_glyph_cache_w;
         pdc_glyph_cache_h = new_glyph_cache_h;
-        pdc_glyph_start_col = realloc(
+        pdc_glyph_start_col = PDC_realloc_array(
             pdc_glyph_start_col,
-            sizeof(int) * new_glyph_row_capacity
-        );
+            new_glyph_row_capacity, sizeof( int));
         for(i = pdc_glyph_row_capacity; i < new_glyph_row_capacity; ++i)
             pdc_glyph_start_col[i] = 0;
 
@@ -170,7 +169,7 @@ static void enlarge_glyph_cache( void)
     else
     {
         bool* visited = calloc(grid_w * grid_h * grid_layers, sizeof(bool));
-        int attr;
+        int i, attr;
 
         /* If we're here, it's not possible to enlarge the texture, so we have
          * to evict everything that's not needed out of the texture. This can
@@ -186,7 +185,7 @@ static void enlarge_glyph_cache( void)
             Uint32 old_glyph = *cached_glyph;
             bool used = FALSE;
             int w = old_glyph >> 30;
-            int row;
+            int row, j, layer;
             if(old_glyph == 0)
                 continue;
 
@@ -286,9 +285,9 @@ static Uint32 alloc_glyph_cache(int w)
  */
 static void ensure_glyph_grid(int min_layers)
 {
-    int i, j, layer;
     if(SP->cols != grid_w || SP->lines != grid_h || grid_layers < min_layers)
     {
+        int i, j, layer;
         /* Update color grid first */
         struct color_data* new_colors = malloc(
             sizeof(struct color_data) * SP->lines * SP->cols
@@ -319,10 +318,9 @@ static void ensure_glyph_grid(int min_layers)
         /* Make sure we have enough grid layers */
         if(grid_layers < min_layers)
         {
-            glyph_grid_layers = realloc(
-                glyph_grid_layers,
-                sizeof(struct glyph_grid_layer) * min_layers
-            );
+            glyph_grid_layers = PDC_realloc_array(
+                glyph_grid_layers, min_layers,
+                sizeof(struct glyph_grid_layer));
             for(layer = grid_layers; layer < min_layers; ++layer)
             {
                 glyph_grid_layers[layer].occupancy = 0;
@@ -461,7 +459,7 @@ static Uint32 get_glyph_texture_index(Uint32 ch32)
             if(new_cache_size == 0) new_cache_size = 256;
             while((Uint32)new_cache_size < ch32) new_cache_size *= 2;
 
-            *cache = realloc(*cache, sizeof(Uint32)*new_cache_size);
+            *cache = PDC_realloc_array (*cache, new_cache_size, sizeof(Uint32));
             memset(
                 (*cache) + *cache_size, 0,
                 sizeof(Uint32)*(new_cache_size - *cache_size)
@@ -551,18 +549,19 @@ static void _set_attr(chtype ch)
 {
     attr_t sysattrs = SP->termattrs;
 
-#ifdef PDC_WIDE
-    int bold = (ch & A_BOLD) && (sysattrs & A_BOLD);
-    int italic = (ch & A_ITALIC) && (sysattrs & A_ITALIC);
-#else
-    int bold = 0;
-    int italic = 0;
-#endif
+#if defined( PDC_WIDE) && !defined( CHTYPE_16)
+    const int bold = (ch & A_BOLD) && (sysattrs & A_BOLD);
+    const int italic = (ch & A_ITALIC) && (sysattrs & A_ITALIC);
+
     cache_attr_index = (bold ? 1 : 0) | (italic ? 2 : 0);
     TTF_SetFontStyle(
         pdc_ttffont,
         (bold ? TTF_STYLE_BOLD : 0) | (italic ? TTF_STYLE_ITALIC : 0)
     );
+#else
+    cache_attr_index = 0;
+    TTF_SetFontStyle( pdc_ttffont, 0);
+#endif
 
     ch &= (A_COLOR|A_BOLD|A_BLINK|A_REVERSE);
 
@@ -791,7 +790,6 @@ void PDC_doupdate(void)
 
     u_line_color = glGetUniformLocation(
         pdc_foreground_shader_program, "line_color");
-    hcol = SP->line_color;
     if(hcol >= 0)
     {
         PACKED_RGB rgb = PDC_get_palette_entry(hcol);
