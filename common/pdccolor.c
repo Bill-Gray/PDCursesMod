@@ -93,18 +93,18 @@ didn't change (new RGB matched the old one),  and 1 if the color changed. */
 
 int PDC_set_palette_entry( const int idx, const PACKED_RGB rgb)
 {
-   int rval, i;
+   int rval;
 
    if( idx >= _palette_size)
       {
-      int new_size = _palette_size;
+      int i, new_size = _palette_size;
       const int initial_palette_size = 8;
 
       if( !new_size)
          new_size = initial_palette_size;
       while( new_size <= idx)
          new_size *= 2;
-      rgbs = (PACKED_RGB *)realloc( rgbs, new_size * sizeof( PACKED_RGB));
+      rgbs = (PACKED_RGB *)PDC_realloc_array( rgbs, new_size, sizeof( PACKED_RGB));
       assert( rgbs);
       if( !rgbs)
          return( -1);
@@ -131,12 +131,13 @@ int PDC_set_palette_entry( const int idx, const PACKED_RGB rgb)
 
 static PACKED_RGB intensified_color( PACKED_RGB ival)
 {
-    int rgb, i;
+    int i;
     PACKED_RGB oval = 0;
 
     for( i = 0; i < 3; i++, ival >>= 8)
     {
-        rgb = (int)( ival & 0xff);
+        int rgb = (int)( ival & 0xff);
+
         if( rgb >= 192)
             rgb = 255;
         else

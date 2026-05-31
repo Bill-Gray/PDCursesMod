@@ -158,7 +158,7 @@ static void _init_pair_core(int pair, int fg, int bg);
 static void _unlink_color_pair( const int pair_no)
 {
     PDC_PAIR *p = SP->pairs;
-    PDC_PAIR *curr = p + pair_no;
+    const PDC_PAIR *curr = p + pair_no;
 
     p[curr->next].prev = curr->prev;
     p[curr->prev].next = curr->next;
@@ -200,7 +200,7 @@ static void _check_hash_tbl( void)
    if( SP->pair_hash_tbl_used * 5 / 4 >= SP->pair_hash_tbl_size)
       {
       int i, n_pairs;
-      PDC_PAIR *p = SP->pairs;
+      const PDC_PAIR *p = SP->pairs;
 
       for( i = 1, n_pairs = 0; i < SP->pairs_allocated; i++)
          if( p[i].f != UNSET_COLOR_PAIR)
@@ -287,7 +287,7 @@ few cycles by not shifting.  */
 
 static void _set_cells_to_refresh_for_pair_change( const int pair)
 {
-    int x, y;
+    int y;
     const chtype mask = ((chtype)pair << PDC_COLOR_SHIFT);
 
     assert( SP->lines);
@@ -296,6 +296,7 @@ static void _set_cells_to_refresh_for_pair_change( const int pair)
         for( y = 0; y < SP->lines; y++)
         {
             chtype *line = curscr->_y[y];
+            int x;
 
             assert( line);
             for( x = 0; x < SP->cols; x++)
@@ -317,7 +318,7 @@ redrawn.    */
 
 static void _set_cells_to_refresh_for_attr_change( const chtype attr)
 {
-    int x, y;
+    int y;
 
     assert( SP->lines);
     assert( curscr && curscr->_y);
@@ -325,6 +326,7 @@ static void _set_cells_to_refresh_for_attr_change( const chtype attr)
         for( y = 0; y < SP->lines; y++)
         {
             const chtype *line = curscr->_y[y];
+            int x;
 
             assert( line);
             for( x = 0; x < SP->cols; x++)
@@ -352,8 +354,8 @@ static void _init_pair_core(int pair, int fg, int bg)
 
         while( pair >= new_size)
             new_size += new_size;
-        SP->pairs = (PDC_PAIR *)realloc( SP->pairs,
-                                      (new_size + 1) * sizeof( PDC_PAIR));
+        SP->pairs = (PDC_PAIR *)PDC_realloc_array( SP->pairs,
+                                      (new_size + 1), sizeof( PDC_PAIR));
         for( i = SP->pairs_allocated + 1; i <= new_size; i++)
         {
             p = SP->pairs + i;
@@ -476,7 +478,7 @@ bool can_change_color(void)
 
 int extended_pair_content(int pair, int *fg, int *bg)
 {
-    PDC_PAIR *p = SP->pairs + pair;
+    const PDC_PAIR *p = SP->pairs + pair;
 
     PDC_LOG(("pair_content() - called\n"));
 
@@ -627,7 +629,7 @@ int find_pair( int fg, int bg)
 
         if( (i = SP->pair_hash_tbl[idx]) > 0)
         {
-            PDC_PAIR *p = SP->pairs;
+            const PDC_PAIR *p = SP->pairs;
 
             if( p[i].f == fg && p[i].b == bg)
             {
@@ -671,7 +673,7 @@ int alloc_pair( int fg, int bg)
 
 int free_pair( int pair)
 {
-    PDC_PAIR *p;
+    const PDC_PAIR *p;
 
     assert( SP && SP->pairs);
     assert( pair >= 1 && pair < SP->pairs_allocated);

@@ -250,9 +250,9 @@ static int _process_key_event(void)
                 strlen(event.text.text));
         rval = (key > 0x7f ? -1 : _handle_alt_keys(key));
 #endif
-        if( strchr( "/+*-", rval))  /* may actually be PADSLASH, PADPLUS, */
-        {                           /* etc.  Wait 2 ms to see if a PADx   */
-            _stored_key = rval;     /* keystroke is coming in.            */
+        if( rval > 0 && strchr( "/+*-", rval))            /* may actually be */
+        {                           /* PADSLASH, PADPLUS, etc.  Wait 2 ms to */
+            _stored_key = rval;     /* see if a PADx keystroke is coming in. */
             _stored_timestamp = event.text.timestamp;
             rval = -1;
         }

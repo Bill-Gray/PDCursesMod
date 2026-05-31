@@ -158,8 +158,6 @@ int attroff(chtype attrs)
 
 int wattron(WINDOW *win, chtype attrs)
 {
-    chtype newcolr, oldcolr, newattr, oldattr;
-
     PDC_LOG(("wattron() - called\n"));
 
     assert( win);
@@ -168,10 +166,11 @@ int wattron(WINDOW *win, chtype attrs)
 
     if ((win->_attrs & A_COLOR) && (attrs & A_COLOR))
     {
-        oldcolr = win->_attrs & A_COLOR;
-        oldattr = win->_attrs ^ oldcolr;
-        newcolr = attrs & A_COLOR;
-        newattr = (attrs & A_ATTRIBUTES) ^ newcolr;
+        const chtype oldcolr = win->_attrs & A_COLOR;
+        const chtype oldattr = win->_attrs ^ oldcolr;
+        const chtype newcolr = attrs & A_COLOR;
+        chtype newattr = (attrs & A_ATTRIBUTES) ^ newcolr;
+
         newattr |= oldattr;
         win->_attrs = newattr | newcolr;
     }

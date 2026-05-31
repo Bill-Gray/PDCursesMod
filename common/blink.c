@@ -5,7 +5,7 @@ static void _redraw_cursor( void)
     if( SP->cursrow >= 0 && SP->curscol >= 0
          && SP->cursrow < SP->lines && SP->curscol < SP->cols)
     {
-       chtype *tptr = curscr->_y[SP->cursrow];
+       const chtype *tptr = curscr->_y[SP->cursrow];
 
        if( tptr)
           PDC_transform_line_sliced( SP->cursrow, SP->curscol, 1,

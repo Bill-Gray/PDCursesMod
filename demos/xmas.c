@@ -819,9 +819,6 @@ void reindeer(void)
 
     for (x_pos = 70; x_pos > 62; x_pos--)
     {
-        if (x_pos < 62)
-            y_pos = 1;
-
         for (looper = 0; looper < 4; looper++)
         {
             mvwaddch(dotdeer0, y_pos, x_pos, (chtype) '.');

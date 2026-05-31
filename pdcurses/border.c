@@ -107,7 +107,7 @@ border
    current background of win, as set by wbkgd(), should by combined with
    it. Attributes set explicitly in ch take precedence. */
 
-static chtype _attr_passthru(WINDOW *win, chtype ch)
+static chtype _attr_passthru( const WINDOW *win, chtype ch)
 {
     chtype attr;
 
