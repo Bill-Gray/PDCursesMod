@@ -181,15 +181,14 @@ void PDC_scr_free(void)
 
 int _get_displaynum(void)
 {
-    SDL_Rect size;
-    int i, xpos, ypos, displays;
-
-    displays = SDL_GetNumVideoDisplays();
+    const int displays = SDL_GetNumVideoDisplays();
 
     if (displays > 1)
     {
-        SDL_GetGlobalMouseState(&xpos, &ypos);
+        int i, xpos, ypos;
+        SDL_Rect size;
 
+        SDL_GetGlobalMouseState(&xpos, &ypos);
         for (i = 0; i < displays; i++)
         {
             SDL_GetDisplayBounds(i, &size);

@@ -28,8 +28,6 @@ static int foregr = -2, backgr = -2; /* current foreground, background */
 
 void PDC_update_rects(void)
 {
-    int i;
-
     if (rectcount)
     {
         /* if the maximum number of rects has been reached, we're
@@ -41,6 +39,7 @@ void PDC_update_rects(void)
         {
             int w = pdc_screen->w;
             int h = pdc_screen->h;
+            int i;
 
             for (i = 0; i < rectcount; i++)
             {
