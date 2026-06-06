@@ -12,8 +12,16 @@
    #define PDC_WIDE
 #endif
 
-#if defined(PDC_WIDE) && !defined(UNICODE)
-# define UNICODE
+#if defined( PDC_WIDE) || defined( UNICODE) || defined( _UNICODE)
+   #if !defined( PDC_WIDE)
+      # define PDC_WIDE
+   #endif
+   #if !defined( UNICODE)
+      # define UNICODE
+   #endif
+   #if !defined( _UNICODE)
+      # define _UNICODE
+   #endif
 #endif
 
 #define WIN32_LEAN_AND_MEAN
