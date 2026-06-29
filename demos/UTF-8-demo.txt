@@ -3,6 +3,8 @@ UTF-8 encoded sample plain-text file
 ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 
 Markus Kuhn [ˈmaʳkʊs kuːn] <http://www.cl.cam.ac.uk/~mgk25/> — 2002-07-25 CC BY
+2026 Jun 29 : added emojis,  'wide',  Chinese,  Korean,  Japanese from
+https://github.com/okibcn/nano-for-windows/blob/releases/UTF-8.txt
 
 
 The ASCII compatible UTF-8 encoding used in this plain-text file
@@ -22,6 +24,17 @@ Mathematics and sciences:
   ⊥ < a ≠ b ≡ c ≤ d ≪ ⊤ ⇒ (⟦A⟧ ⇔ ⟪B⟫),      ⎪⎢⎜ ⎲     ⎟⎥⎪
                                             ⎪⎢⎜ ⎳aⁱ-bⁱ⎟⎥⎪
   2H₂ + O₂ ⇌ 2H₂O, R = 4.7 kΩ, ⌀ 200 mm     ⎩⎣⎝i=1    ⎠⎦⎭
+
+Emojis!    >😀💃👍🪟😜🍕🍔🍟🌭🍿💘<
+Chinese    >的一是在不了有和人这中大<
+Korean     >나는 케이팝을 사랑안녕<
+Japanese   >やあ<
+
+Wide characters :
+ＡＰＰＬＥ
+ ＡＰＰＬＥ
+  ＡＰＰＬＥ
+
 
 Linguistics and dictionaries:
 
