@@ -46,7 +46,7 @@ static int _load_psf1( struct font_info *f, const uint8_t *buff, const long file
    struct psf1_header hdr;
    int n_references_found = 0;
 
-   if( buff[0] != PSF1_MAGIC0 && buff[1] != PSF1_MAGIC1)
+   if( buff[0] != PSF1_MAGIC0 || buff[1] != PSF1_MAGIC1)
       return( -1);
    memcpy( &hdr, buff, sizeof( hdr));
    f->font_type = 1;
