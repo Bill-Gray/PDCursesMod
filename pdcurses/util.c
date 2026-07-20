@@ -465,6 +465,8 @@ size_t PDC_mbstowcs(wchar_t *dest, const char *src, size_t n)
     }
 # else
     size_t i = mbstowcs(dest, src, n);
+    if (i == (size_t)-1)        /* an invalid multibyte sequence */
+        return i;
 # endif
     dest[i] = 0;
     return i;
@@ -473,28 +475,32 @@ size_t PDC_mbstowcs(wchar_t *dest, const char *src, size_t n)
 size_t PDC_wcstombs(char *dest, const wchar_t *src, size_t n)
 {
 # ifdef PDC_FORCE_UTF8
-    size_t i = 0;
+    size_t i = 0, count = 1;
 
     assert( src);
     assert( dest);
     if (!src || !dest)
         return 0;
 
-    while( i + 4 < n && *src)
-       i += PDC_wc_to_utf8( dest + i, *src++);
-    while( i < n && *src)
+    while( count && i + 4 < n && *src)
+       i += (count = PDC_wc_to_utf8( dest + i, *src++));
+    while( count && i < n && *src)
     {
        char tbuff[4];
-       size_t count = (size_t)PDC_wc_to_utf8( tbuff, *src++);
 
-       assert( count <= n - i);  /* partial UTF-8 decoding indicates error */
+       count = (size_t)PDC_wc_to_utf8( tbuff, *src++);
+       assert( count <= n - i);    /* don't go past end of buffer */
        if( count > n - i)
            count = n - i;
        memcpy( dest + i, tbuff, count);
        i += count;
     }
+    if( !count)                 /* invalid UTF-8 sequence encountered */
+        return (size_t)-1;
 # else
     size_t i = wcstombs(dest, src, n);
+    if( i == (size_t)-1)        /* a character the locale cannot encode */
+        return i;
 # endif
     dest[i] = '\0';
     return i;
