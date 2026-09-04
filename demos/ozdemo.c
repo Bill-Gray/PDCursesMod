@@ -223,7 +223,7 @@ int main(int argc, char **argv)
     const char *versions_1 =
             " DOS, DOSVGA, GL, Linux framebuffer/DRM, OS/2, OS/2 GUI,";
     const char *versions_2 =
-            " Plan 9, SDL 1/2, VT, Windows console & GUI, X11";
+            " Plan 9, SDL 1/2/3, VT, Windows console & GUI, X11";
     const char *hit_any_key =
             "       Type a key to continue or ESC to quit     ";
     SCREEN *screen_pointer = newterm(NULL, stdout, stdin);
