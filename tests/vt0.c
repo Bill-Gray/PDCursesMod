@@ -199,8 +199,10 @@ int create_term( const char* szCommand, const char **args,
                   {
                   case '[' :            /* Control Sequence Introducer (CSI) */
                      {
+                     ssize_t bytes_read = 0;
+
                      while( i < sizeof( buff) - 1
-                            && 1 == read( master_fd, buff + i, 1))
+                            && 1 == (bytes_read = read( master_fd, buff + i, 1)))
                         {
                         i++;
                         if( buff[i - 1] >= '@')    /* valid CSI sequence */
@@ -362,6 +364,11 @@ int create_term( const char* szCommand, const char **args,
                               break;
                            i = 0;      /* reset for another possible sequence */
                            }
+                        }
+                     if( bytes_read != 1)
+                        {
+                        buff[i] = '\0';
+                        fprintf( stderr, "Malformed CSI '%s'\n", buff);
                         }
                      }
                      break;
