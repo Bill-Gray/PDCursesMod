@@ -32,9 +32,10 @@ stdout,  we add them to the screen via addch( ).
 (though I think it could be turned into one).  It handles the escape
 sequence for setting the window title and a few escape sequences to
 delete characters,  set colors,  and so on.  You could call this a VT0
-emulator... hence the file name.
+emulator... hence the file name.  For a full-featured terminal emulator,
+it might be well to use libtsm ('terminal emulator state machine').
 
-   It works decently on SDLn,  x11new,  and Linux framebuffer/DRM.
+   This code works decently on SDLn,  x11new,  and Linux framebuffer/DRM.
 
    I could imagine something similar allowing us to build a Windows console.
 */
@@ -216,6 +217,12 @@ int create_term( const char* szCommand, const char **args,
                                  if( *buff == '?')
                                     switch( param)
                                        {
+                                       case 1:   /* Application Cursor Keys */
+                                           break;
+                                       case 12:  /* Start blinking cursor */
+                                           break;
+                                       case 25:   /* show cursor */
+                                           break;
                                        case 47:   /* use alt screen buff */
                                              /* should actually save current screen... */
                                            scrollok( stdscr, FALSE);
@@ -226,6 +233,12 @@ int create_term( const char* szCommand, const char **args,
                                  if( *buff == '?')
                                     switch( param)
                                        {
+                                       case 1:   /* Normal Cursor Keys */
+                                           break;
+                                       case 12:  /* Stop blinking cursor */
+                                           break;
+                                       case 25:   /* hide cursor */
+                                           break;
                                        case 47:   /* use normal screen buff */
                                            clear( );
                                            move( 0, 0);
