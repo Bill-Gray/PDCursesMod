@@ -329,6 +329,7 @@ int setcchar(cchar_t *wcval, const wchar_t *wch, const attr_t attrs,
 {
     int32_t ochar[CCHARW_MAX], rval;
     const int integer_color_pair = (opts ? *(int *)opts : (int)color_pair);
+    int n;
 #ifdef USING_COMBINING_CHARACTER_SCHEME
     int i;
 #endif
@@ -337,13 +338,14 @@ int setcchar(cchar_t *wcval, const wchar_t *wch, const attr_t attrs,
     assert( wch);
     if (!wcval || !wch)
         return ERR;
-    if( _wchar_to_int32_array( ochar, CCHARW_MAX, wch) < 0)
+    n = _wchar_to_int32_array( ochar, CCHARW_MAX, wch);
+    if( n < 0)
         return ERR;
     rval = ochar[0];
-         /* If len_out > 1,  we have combining characters.  See */
+         /* If n > 1,  we have combining characters.  See */
          /* 'addch.c' for a discussion of how we handle those.  */
 #ifdef USING_COMBINING_CHARACTER_SCHEME
-    for( i = 1; ochar[i]; i++)
+    for( i = 1; i < n; i++)
         rval = COMBINED_CHAR_START + PDC_find_combined_char_idx( rval, ochar[i]);
 #endif
     *wcval = rval | attrs | COLOR_PAIR(integer_color_pair);
