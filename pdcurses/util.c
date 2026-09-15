@@ -467,6 +467,11 @@ size_t PDC_mbstowcs(wchar_t *dest, const char *src, size_t n)
     }
 # else
     size_t i = mbstowcs(dest, src, n);
+    if (i == (size_t)-1)        /* an invalid multibyte sequence */
+    {
+        *dest = 0;
+        return i;
+    }
 # endif
     dest[i] = 0;
     return i;
