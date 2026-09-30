@@ -451,7 +451,9 @@ use clock_gettime() or gettimeofday() when available. */
    #endif
 #endif
 
-#if defined( _POSIX_C_SOURCE) && (_POSIX_C_SOURCE >= 199309L) \
+#if defined( macintosh) || (defined( __MWERKS__) && (defined( __MC68K__) || defined( __POWERPC__)))
+   #define HAVE_TICKCOUNT
+#elif defined( _POSIX_C_SOURCE) && (_POSIX_C_SOURCE >= 199309L) \
      && (!defined( __MINGW32__) || defined( CLOCK_REALTIME))
    /* only newer MinGW environments have clock_gettime and
       those have CLOCK_REALTIME as a macro */
@@ -464,7 +466,18 @@ use clock_gettime() or gettimeofday() when available. */
    #define HAVE_GETTIMEOFDAY
 #endif
 
-#if defined( HAVE_CLOCK_GETTIME)
+#if defined( HAVE_TICKCOUNT)
+#define erase PDC_mac_qd_erase
+#include <Events.h>
+#undef erase
+long PDC_millisecs( void)
+{
+    const unsigned long ticks = (unsigned long)TickCount( );
+
+    return( (long)(ticks * 16UL + (ticks * 2UL) / 3UL));
+}
+
+#elif defined( HAVE_CLOCK_GETTIME)
 long PDC_millisecs( void)
 {
     struct timespec t;

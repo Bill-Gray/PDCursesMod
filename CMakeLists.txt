@@ -53,6 +53,10 @@ elseif(PDC_X11_BUILD)
     # set(PDC_WIDE ON)
     add_subdirectory(x11new)
 
+elseif(CMAKE_SYSTEM_NAME MATCHES "^Retro")
+
+    add_subdirectory(mac)
+
 else()
 
     add_subdirectory(ncurses)

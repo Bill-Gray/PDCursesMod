@@ -1918,6 +1918,7 @@ void colorTest(WINDOW *win)
 #if HAVE_WIDE
 void wideTest(WINDOW *win)
 {
+    wint_t input[513];
     wchar_t tmp[513];
     size_t i;
 
@@ -1930,7 +1931,10 @@ void wideTest(WINDOW *win)
 
     echo();
 
-    get_wstr((wint_t *)tmp);
+    get_wstr(input);
+    for (i = 0; input[i]; i++)
+        tmp[i] = (wchar_t)input[i];
+    tmp[i] = 0;
     addstr("\n\n String:\n\n ");
     addwstr(tmp);
     addstr("\n\n\n Hex:\n\n ");

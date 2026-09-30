@@ -128,7 +128,14 @@ macro (demo_app dir targ)
         set(src_files ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/${targ}.c)
     endif()
 
-    add_executable(${bin_name} ${ARGV2} ${src_files})
+    if(CMAKE_SYSTEM_NAME MATCHES "^Retro")
+        set(bin_name ${targ})
+        add_application(${bin_name} ${src_files} ${PDC_MAC_RESOURCES})
+        add_dependencies(${bin_name} ${PROJECT_NAME}_resources)
+    else()
+        add_executable(${bin_name} ${ARGV2} ${src_files})
+        set_target_properties(${bin_name} PROPERTIES OUTPUT_NAME ${targ})
+    endif()
 
     target_link_libraries(${bin_name} PRIVATE ${PDCURSE_PROJ} ${EXTRA_LIBS})
     if((${PROJECT_NAME} STREQUAL "wincon") OR (${PROJECT_NAME} STREQUAL "wingui") OR (${PROJECT_NAME} STREQUAL "vt"))
@@ -136,7 +143,6 @@ macro (demo_app dir targ)
     endif()
 
     add_dependencies(${bin_name} ${PDCURSE_PROJ})
-    set_target_properties(${bin_name} PROPERTIES OUTPUT_NAME ${targ})
 
     install(TARGETS ${bin_name} RUNTIME DESTINATION ${PDCURSES_DIST}/bin/${PROJECT_NAME} COMPONENT applications)
 endmacro ()
