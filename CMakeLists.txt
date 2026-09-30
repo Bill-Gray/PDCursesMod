@@ -48,6 +48,11 @@ elseif(PDC_OS2_BUILD) # currently requires a unique toolchain file
 
     add_subdirectory(os2)
 
+elseif(PDC_X11_BUILD)
+    # set(PDC_UTF8 ON)
+    # set(PDC_WIDE ON)
+    add_subdirectory(x11new)
+
 else()
 
     add_subdirectory(ncurses)
