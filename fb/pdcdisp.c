@@ -476,14 +476,16 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
                 if( SP->blink_state)
                     reverse_colors ^= 1;
             }
+            if( integer_fg_idx == -1)
+               integer_fg_idx = 255;
+            if( integer_bg_idx == -1)
+               integer_bg_idx = 0;
             if( reverse_colors)
             {
                 const int swapval = integer_fg_idx;
                 integer_fg_idx = integer_bg_idx;
                 integer_bg_idx = swapval;
             }
-            if( integer_bg_idx == -1)
-               integer_bg_idx = 0;
             fg_idx = (uint8_t)integer_fg_idx;
             bg_idx = (uint8_t)integer_bg_idx;
             for( i = 0; i < run_len; i++)
