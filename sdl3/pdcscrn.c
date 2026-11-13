@@ -386,6 +386,12 @@ int PDC_scr_open(void)
 
     SDL_PumpEvents();
 
+#if defined(__APPLE__)
+    /* at least on macOS, the main window opens in the background;
+       ask the OS to bring it to the foreground. */
+    SDL_RaiseWindow(pdc_window);
+#endif
+
     /* Wait until window is exposed before getting surface */
 
     while (SDL_PollEvent(&event))
