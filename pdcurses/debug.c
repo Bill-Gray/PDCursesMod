@@ -56,7 +56,9 @@ debug
 
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
+#if !defined(macintosh) && !(defined(__MWERKS__) && (defined(__MC68K__) || defined(__POWERPC__)))
+	#include <sys/types.h>
+#endif
 #include <time.h>
 
 void PDC_debug(const char *fmt, ...)

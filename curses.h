@@ -179,7 +179,8 @@ enum PDC_port
     PDC_PORT_LINUX_FB = 10,
     PDC_PORT_OPENGL = 11,
     PDC_PORT_OS2GUI = 12,
-    PDC_PORT_SDL3 = 13
+    PDC_PORT_SDL3 = 13,
+    PDC_PORT_MAC = 14
 };
 
 /* Use this structure with PDC_get_version() for run-time info about the
