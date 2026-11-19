@@ -501,8 +501,8 @@ size_t PDC_wcstombs(char *dest, const wchar_t *src, size_t n)
 # else
     size_t i = wcstombs(dest, src, n);
 # endif
-    assert( -1 != (int)i && i < n);
-    if( (int)i < 0 || i >= n)        /* invalid sequence or insufficient space */
+    assert( i == (size_t)-1 || i <= n);
+    if( i == (size_t)-1)             /* invalid sequence */
         *dest = '\0';
     else
         dest[i] = '\0';
