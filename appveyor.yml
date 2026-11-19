@@ -132,6 +132,16 @@ environment:
       CMAKE_ARGS: '-DPDC_UTF8=ON'
       ARCHIVE_BASENAME: UTF8_X86
 
+    - APPVEYOR_BUILD_WORKER_IMAGE: 'Visual Studio 2013'
+      ARCHITECTURE: amd64_x86
+      CMAKE_ARGS: '-DPDC_WIDE=ON -DPDC_SDL2_BUILD=ON -DPDC_SDL2_DEPS_BUILD=ON'
+      ARCHIVE_BASENAME: WIDE_x86
+
+    - APPVEYOR_BUILD_WORKER_IMAGE: 'Visual Studio 2013'
+      ARCHITECTURE: amd64_x86
+      CMAKE_ARGS: '-DPDC_UTF8=ON -DPDC_SDL2_BUILD=ON -DPDC_SDL2_DEPS_BUILD=ON'
+      ARCHIVE_BASENAME: UTF8_x86
+
     - APPVEYOR_BUILD_WORKER_IMAGE: 'Visual Studio 2015'
       ARCHITECTURE: amd64_x86
       CMAKE_ARGS: '-DPDC_WIDE=ON -DPDC_SDL2_BUILD=ON -DPDC_SDL2_DEPS_BUILD=ON -DPDC_GL_BUILD=ON'
@@ -162,42 +172,42 @@ environment:
       CMAKE_ARGS: '-DPDC_UTF8=ON -DPDC_SDL2_BUILD=OFF -DPDC_SDL2_DEPS_BUILD=OFF -DPDC_GL_BUILD=OFF'
       ARCHIVE_BASENAME: UTF8_ARM
 
-    - APPVEYOR_BUILD_WORKER_IMAGE: 'Visual Studio 2017'
+    - APPVEYOR_BUILD_WORKER_IMAGE: 'Visual Studio 2022'
       ARCHITECTURE: amd64_arm
       CMAKE_ARGS: '-DPDC_WIDE=ON -DPDC_SDL2_BUILD=OFF -DPDC_SDL2_DEPS_BUILD=OFF -DPDC_GL_BUILD=OFF'
       ARCHIVE_BASENAME: WIDE_ARM
 
-    - APPVEYOR_BUILD_WORKER_IMAGE: 'Visual Studio 2017'
+    - APPVEYOR_BUILD_WORKER_IMAGE: 'Visual Studio 2022'
       ARCHITECTURE: amd64_arm
       CMAKE_ARGS: '-DPDC_UTF8=ON -DPDC_SDL2_BUILD=OFF -DPDC_SDL2_DEPS_BUILD=OFF -DPDC_GL_BUILD=OFF'
       ARCHIVE_BASENAME: UTF8_ARM
 
-    - APPVEYOR_BUILD_WORKER_IMAGE: 'Visual Studio 2017'
+    - APPVEYOR_BUILD_WORKER_IMAGE: 'Visual Studio 2022'
       ARCHITECTURE: amd64_arm64
       CMAKE_ARGS: '-DPDC_WIDE=ON -DPDC_SDL2_BUILD=OFF -DPDC_SDL2_DEPS_BUILD=OFF -DPDC_GL_BUILD=OFF'
       ARCHIVE_BASENAME: WIDE_ARM64
 
-    - APPVEYOR_BUILD_WORKER_IMAGE: 'Visual Studio 2017'
+    - APPVEYOR_BUILD_WORKER_IMAGE: 'Visual Studio 2022'
       ARCHITECTURE: amd64_arm64
       CMAKE_ARGS: '-DPDC_UTF8=ON -DPDC_SDL2_BUILD=OFF -DPDC_SDL2_DEPS_BUILD=OFF -DPDC_GL_BUILD=OFF'
       ARCHIVE_BASENAME: UTF8_ARM64
 
-    - APPVEYOR_BUILD_WORKER_IMAGE: 'Visual Studio 2017'
+    - APPVEYOR_BUILD_WORKER_IMAGE: 'Visual Studio 2022'
       ARCHITECTURE: amd64_x86
       CMAKE_ARGS: '-DPDC_WIDE=ON -DPDC_SDL2_BUILD=ON -DPDC_SDL2_DEPS_BUILD=ON -DPDC_GL_BUILD=ON'
       ARCHIVE_BASENAME: WIDE_x86
 
-    - APPVEYOR_BUILD_WORKER_IMAGE: 'Visual Studio 2017'
+    - APPVEYOR_BUILD_WORKER_IMAGE: 'Visual Studio 2022'
       ARCHITECTURE: amd64_x86
       CMAKE_ARGS: '-DPDC_UTF8=ON -DPDC_SDL2_BUILD=ON -DPDC_SDL2_DEPS_BUILD=ON -DPDC_GL_BUILD=ON'
       ARCHIVE_BASENAME: UTF8_x86
 
-    - APPVEYOR_BUILD_WORKER_IMAGE: 'Visual Studio 2017'
+    - APPVEYOR_BUILD_WORKER_IMAGE: 'Visual Studio 2022'
       ARCHITECTURE: amd64
       CMAKE_ARGS: '-DPDC_WIDE=ON -DPDC_SDL2_BUILD=ON -DPDC_SDL2_DEPS_BUILD=ON -DPDC_GL_BUILD=ON'
       ARCHIVE_BASENAME: WIDE_x64
 
-    - APPVEYOR_BUILD_WORKER_IMAGE: 'Visual Studio 2017'
+    - APPVEYOR_BUILD_WORKER_IMAGE: 'Visual Studio 2022'
       ARCHITECTURE: amd64
       CMAKE_ARGS: '-DPDC_UTF8=ON -DPDC_SDL2_BUILD=ON -DPDC_SDL2_DEPS_BUILD=ON -DPDC_GL_BUILD=ON'
       ARCHIVE_BASENAME: UTF8_x64
@@ -206,14 +216,18 @@ init:
   - echo BUILD_NUMBER=%APPVEYOR_BUILD_NUMBER%
   # curl defaults --keepalive-time 60 --max-time ?? about 10 minutes --connect-timeout ??
   - set CURL_ARGS=--location --fail --show-error --keepalive-time 10 --connect-timeout 10 --max-time 600
-  # Setup TOOLCHAIN for Visual Studio build tools
+  # Setup TOOLCHAIN for Visual Studio build tools, VS2013 as "ancient" test using VC2008 Express
   - if not DEFINED TOOLCHAIN (
-      if "%APPVEYOR_BUILD_WORKER_IMAGE%" == "Visual Studio 2015" (
+      if "%APPVEYOR_BUILD_WORKER_IMAGE%" == "Visual Studio 2013" (
+        set "TOOLCHAIN=VS2008"
+      ) else if "%APPVEYOR_BUILD_WORKER_IMAGE%" == "Visual Studio 2015" (
         set "TOOLCHAIN=VS2015"
       ) else if "%APPVEYOR_BUILD_WORKER_IMAGE%" == "Visual Studio 2017" (
         set "TOOLCHAIN=VS2017"
       ) else if "%APPVEYOR_BUILD_WORKER_IMAGE%" == "Visual Studio 2019" (
         set "TOOLCHAIN=VS2019"
+      ) else if "%APPVEYOR_BUILD_WORKER_IMAGE%" == "Visual Studio 2022" (
+        set "TOOLCHAIN=VS2022"
       )
     )
   # Setup TOOLCHAIN group variable as CMake Generator
@@ -235,12 +249,12 @@ init:
       set "ARTIFACT_NAME=open-watcom-2_0-c-win-x64.exe" &&
       set "ARTIFACT_URL=https://github.com/open-watcom/open-watcom-v2/releases/download/Current-build" &&
       set "PATH=%WATCOM%\BINNT64;%WATCOM%\BINW;%PATH%" 
+    ) else if "%TOOLCHAIN%"=="VS2013" (
+      set "VCVARSALL=%ProgramFiles(x86)%\Microsoft Visual Studio 9.0\VC\vcvarsall.bat"
     ) else if "%TOOLCHAIN%"=="VS2015" (
       set "VCVARSALL=%ProgramFiles(x86)%\Microsoft Visual Studio 14.0\VC\vcvarsall.bat"
-    ) else if "%TOOLCHAIN%"=="VS2017" (
-      set "VCVARSALL=%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat"
-    ) else if "%TOOLCHAIN%"=="VS2019" (
-      set "VCVARSALL=%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat"
+    ) else if "%TOOLCHAIN:~0,4%"=="VS20" (
+      set "VCVARSALL=%ProgramFiles(x86)%\Microsoft Visual Studio\%TOOLCHAIN:~2,4%\Community\VC\Auxiliary\Build\vcvarsall.bat"
     )
   # Setup Archive name
   - set "ARCHIVE=%TOOLCHAIN%_%CONFIGURATION%_%ARCHIVE_BASENAME%_%APPVEYOR_BUILD_NUMBER%"
