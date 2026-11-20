@@ -33,6 +33,47 @@ For DOS/Windows,  makefiles for Borland,  Digital Mars,  MSVC, and
 OpenWATCOM are provided,  but are at the 'it works on my machine' stage,
 and haven't really been thoroughly vetted by others yet.
 
+Building for Emscripten / the browser
+-------------------------------------
+
+The VT port also builds under Emscripten and renders into an xterm.js
+terminal,  or any other terminal emulator driven through a PTY-style
+JavaScript bridge such as xterm-pty.  Build the library with the wide
+character API and a 32-bit chtype:
+
+```sh
+mkdir build && cd build
+emcc -O2 -std=gnu99 -D_GNU_SOURCE -DPDC_WIDE -DCHTYPE_32 \
+     -I.. -c ../pdcurses/*.c ../vt/*.c
+emar rcs libpdcurses.a *.o
+```
+
+The 32-bit chtype matters for programs that keep color pairs in an `int`
+(Angband's attribute tables,  for example);  the default 64-bit chtype does
+not fit there.  With `PDC_WIDE`,  wide strings are written as UTF-8,  which
+is what the browser expects.
+
+Link applications with Asyncify enabled,  because `PDC_napms()` hands its
+wait to the browser event loop instead of blocking it:
+
+```sh
+emcc app.c libpdcurses.a -sASYNCIFY=1 -o app.js
+```
+
+At run time,  the terminal size is read from the PTY with `TIOCGWINSZ`,  so
+the program sees the size the xterm.js terminal had at startup.  Setting
+`TERM=xterm-256color` gives the full 256-color palette;  `PDC_VT=RGB`
+requests true color,  as on a native terminal.
+
+Some POSIX facilities have no browser equivalent:
+
+- Forking a sound player for the bell:  the port just flashes the screen.
+- `SIGWINCH`:  a resize of the xterm.js window is not delivered to the
+  program,  so the geometry stays fixed for its lifetime.
+- Clipboard functions,  which are absent on this platform anyway.
+- The terminfo and termcap functions remain the usual stubs;  the VT port
+  uses fixed ANSI sequences.
+
 Caveats
 -------
 
