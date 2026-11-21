@@ -9,3 +9,5 @@ struct video_info
 #ifdef HAVE_MOUSE
 extern int PDC_mouse_x, PDC_mouse_y;
 #endif
+
+int PDC_dimmed_index( const int idx);

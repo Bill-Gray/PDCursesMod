@@ -347,6 +347,69 @@ order from what the other platforms expect : */
 
 #define SWAP_RED_AND_BLUE( rgb) (((rgb) & 0xff00) | ((rgb) >> 16) | (((rgb) & 0xff) << 16))
 
+static int _find_nearest_color( const short *rgb)
+{
+    long best_dist = 200000L;
+    int i, best = 0;
+
+    for( i = 0; i < 256; i++)
+    {
+        const PACKED_RGB e = PDC_get_palette_entry( i);
+        long dist;
+        int diff;
+
+        diff = (int)( e & 0xff) - rgb[0];
+        dist = (long)diff * (long)diff;
+        diff = (int)( (e >> 8) & 0xff) - rgb[1];
+        dist += (long)diff * (long)diff;
+        diff = (int)( e >> 16) - rgb[2];
+        dist += (long)diff * (long)diff;
+        if( dist < best_dist)
+        {
+            best_dist = dist;
+            best = i;
+        }
+    }
+    return( best);
+}
+
+   /* For A_DIM in the 8-bit path: the palette entry nearest the colour */
+   /* with its red, green and blue knocked down by 1/3, as the 32-bit   */
+   /* path dims (pdccolor.c).  Worked out once for each entry, and      */
+   /* again only if the palette changes.                                */
+
+int PDC_dimmed_index( const int idx)
+{
+    static short *to = NULL;
+    short rgb[3];
+    int i;
+    PACKED_RGB c;
+
+    assert( idx >= -1 && idx < 255);
+    if( -1 == idx)      /* resetting remap table */
+    {
+        free( to);
+        to = NULL;
+        return( 0);
+    }
+    if( !to)
+    {
+        to = (short *)calloc( 256, sizeof( short));
+        for( i = 0; i < 256; i++)
+           to[i] = -1;
+    }
+    if( to[idx] >= 0)
+        return( to[idx]);
+    c = PDC_get_palette_entry( idx);
+    for( i = 0; i < 3; i++)
+    {
+        rgb[i] = (int)((c >> (i * 8)) & 0xff);
+        rgb[i] -= rgb[i] / 3;
+    }
+    to[idx] = _find_nearest_color( rgb);
+    return( to[idx]);
+}
+
 void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
 {
     const int font_char_size_in_bytes = (PDC_font_info.width + 7) >> 3;
@@ -418,7 +481,7 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
 
         PDC_get_rgb_values( *srcp & ~A_REVERSE, &fg, &bg);
         if( fg == (PACKED_RGB)-1)   /* default foreground */
-            fg = 0xffffff;
+            fg = ((*srcp & A_DIM) ? 0xA0A0A0 : 0xffffff);
         fg = SWAP_RED_AND_BLUE( fg);
         if( bg == (PACKED_RGB)-1)   /* default background */
             bg = 0;
@@ -480,6 +543,13 @@ void PDC_transform_line(int lineno, int x, int len, const chtype *srcp)
                integer_fg_idx = 255;
             if( integer_bg_idx == -1)
                integer_bg_idx = 0;
+                  /* A_DIM was left out here: dim text looked like any */
+                  /* other (WordGrinder's misspelt words, its only mark) */
+            if( *srcp & A_DIM)
+            {
+               integer_fg_idx = PDC_dimmed_index( integer_fg_idx);
+               integer_bg_idx = PDC_dimmed_index( integer_bg_idx);
+            }
             if( reverse_colors)
             {
                 const int swapval = integer_fg_idx;

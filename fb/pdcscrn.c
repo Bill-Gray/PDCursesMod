@@ -133,6 +133,7 @@ void PDC_scr_close( void)
    close( _framebuffer_fd);
 #endif
    _unload_font( );
+   PDC_dimmed_index( -1);
    return;
 }
 
@@ -535,5 +536,6 @@ int PDC_init_color( int color, int red, int green, int blue)
             fprintf( stderr, "Error setting palette.\n");
     }
 #endif
+    PDC_dimmed_index( -1);
     return OK;
 }
