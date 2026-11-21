@@ -45,6 +45,11 @@ played.)  If the attempt to call 'play' fails,  we flash the screen. */
 
 static void _raw_beep( void)
 {
+#ifdef __EMSCRIPTEN__
+   /* The browser has no processes,  so forking 'play' cannot work (and the
+      failed fork would pull Emscripten's libc stub object into the link). */
+   flash( );
+#else
    if( !fork( ))        /* we're the child;  beep at 400 Hz for 0.2 second */
       {
       execlp( "play", "play", "-q", "-V0", "-n", "synth", "0.2", "sin", "400",
@@ -53,6 +58,7 @@ static void _raw_beep( void)
       flash( );       /* so we'll just flash the screen instead */
       exit( 0);
       }
+#endif
 }
 #endif
 

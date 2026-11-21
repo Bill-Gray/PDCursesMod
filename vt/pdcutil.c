@@ -5,6 +5,9 @@
 #elif !defined( DOS)
    #include <unistd.h>
    #include <stdlib.h>
+   #ifdef __EMSCRIPTEN__
+      #include <emscripten.h>
+   #endif
 #endif
 #include "curspriv.h"
 
@@ -56,7 +59,15 @@ void PDC_napms(int ms)
 #else
         if( remains > 0)
         {
+#ifdef __EMSCRIPTEN__
+            /* usleep() blocks the browser's event loop,  which freezes
+               keyboard input and timers for the duration of the nap.
+               emscripten_sleep() yields to it instead.  This requires the
+               program to be linked with -sASYNCIFY. */
+            emscripten_sleep( remains);
+#else
             usleep( 1000 * remains);
+#endif
             t = PDC_millisecs( );
         }
 #endif
